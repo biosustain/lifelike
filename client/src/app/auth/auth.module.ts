@@ -19,10 +19,7 @@ import { authConfig } from './auth-config';
 import { authModuleConfig } from './auth-module-config';
 import { environment } from '../../environments/environment';
 
-const components = [
-    LoginComponent,
-    ResetPasswordDialogComponent
-];
+const components = [LoginComponent, ResetPasswordDialogComponent];
 
 // We need a factory since localStorage is not available at AOT build time
 export function storageFactory(): OAuthStorage {
@@ -30,21 +27,16 @@ export function storageFactory(): OAuthStorage {
 }
 
 @NgModule({
-    imports: [
-        OAuthModule.forRoot(),
-        EffectsModule.forFeature([AuthEffects]),
-        StoreModule.forFeature('auth', reducer),
-        SharedModule,
-    ],
-    declarations: components,
-    providers: [
-        LifelikeAuthGuard,
-        AuthenticationService,
-        LifelikeOAuthService,
-        LoginGuard,
-    ],
-    exports: components,
-    entryComponents: [ResetPasswordDialogComponent]
+  imports: [
+    OAuthModule.forRoot(),
+    EffectsModule.forFeature([AuthEffects]),
+    StoreModule.forFeature('auth', reducer),
+    SharedModule,
+  ],
+  declarations: components,
+  providers: [LifelikeAuthGuard, AuthenticationService, LifelikeOAuthService, LoginGuard],
+  exports: components,
+  entryComponents: [ResetPasswordDialogComponent],
 })
 export class LifelikeAuthModule {
   constructor(@Optional() @SkipSelf() parentModule: LifelikeAuthModule) {
@@ -59,11 +51,17 @@ export class LifelikeAuthModule {
       ngModule: LifelikeAuthModule,
       providers: environment.oauthEnabled
         ? [
-            { provide: APP_INITIALIZER, useFactory: authAppInitializerFactory, deps: [LifelikeOAuthService], multi: true },
+            {
+              provide: APP_INITIALIZER,
+              useFactory: authAppInitializerFactory,
+              deps: [LifelikeOAuthService],
+              multi: true,
+            },
             { provide: AuthConfig, useValue: authConfig },
             { provide: OAuthModuleConfig, useValue: authModuleConfig },
-            { provide: OAuthStorage, useFactory: storageFactory }]
-        : []
+            { provide: OAuthStorage, useFactory: storageFactory },
+          ]
+        : [],
     };
   }
 }

@@ -20,7 +20,6 @@ export class URIData {
 
 @Injectable()
 export class GenericDataProvider implements DataTransferDataProvider<URIData[] | string> {
-
   static readonly acceptedUriPattern = /^[A-Za-z0-9-]{1,40}:/;
 
   static getURIs(data: URIData[] = []) {
@@ -30,21 +29,30 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
     };
   }
 
-  static setURIs(dataTransfer: DataTransfer, data: URIData[], options: {
-    action?: 'replace' | 'append'
-  } = {}) {
+  static setURIs(
+    dataTransfer: DataTransfer,
+    data: URIData[],
+    options: {
+      action?: 'replace' | 'append';
+    } = {}
+  ) {
     if (data.length) {
       if (options.action === 'replace' || !dataTransfer.getData('text/uri-list')) {
         dataTransfer.setData('text/uri-list', this.marshalUriList(data));
       }
 
       // We can't always read the data transfer data
-      if (!dataTransfer.types.includes('text/x-moz-url') || dataTransfer.getData('text/x-moz-url')) {
-        const existing: URIData[] = options.action === 'replace' ? []
-          : GenericDataProvider.unmarshalMozUrlList(
-            dataTransfer.getData('text/x-moz-url'),
-            'Link',
-          );
+      if (
+        !dataTransfer.types.includes('text/x-moz-url') ||
+        dataTransfer.getData('text/x-moz-url')
+      ) {
+        const existing: URIData[] =
+          options.action === 'replace'
+            ? []
+            : GenericDataProvider.unmarshalMozUrlList(
+                dataTransfer.getData('text/x-moz-url'),
+                'Link'
+              );
         existing.push(...data);
         dataTransfer.setData('text/x-moz-url', GenericDataProvider.marshalMozUrlList(existing));
       }
@@ -52,11 +60,11 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
   }
 
   private static marshalMozUrlList(data: URIData[]): string {
-    return data.map(item => `${item.uri}\r\n${item.title.replace(/[\r\n]/g, '')}`).join('\r\n');
+    return data.map((item) => `${item.uri}\r\n${item.title.replace(/[\r\n]/g, '')}`).join('\r\n');
   }
 
   private static marshalUriList(data: URIData[]): string {
-    return data.map(item => item.uri).join('\r\n');
+    return data.map((item) => item.uri).join('\r\n');
   }
 
   private static unmarshalMozUrlList(data: string, fallbackTitle: string): URIData[] {
@@ -80,8 +88,8 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
 
   extractInternalUris(uris: URIData[]) {
     return uris
-      .filter(({uri}) => isInternalUri(uri))
-      .map(({uri, ...rest}) => ({
+      .filter(({ uri }) => isInternalUri(uri))
+      .map(({ uri, ...rest }) => ({
         ...rest,
         uri: new AppURL(uri.relativehref),
       }));
@@ -122,9 +130,16 @@ export class GenericDataProvider implements DataTransferDataProvider<URIData[] |
         });
       }
     } else if (dataTransfer.types.includes('text/uri-list')) {
-      const uris = dataTransfer.getData('text/uri-list').split(/\r?\n/g)
-        .filter(item => item.trim().length && !item.startsWith('#') && item.match(GenericDataProvider.acceptedUriPattern))
-        .map(uri => ({
+      const uris = dataTransfer
+        .getData('text/uri-list')
+        .split(/\r?\n/g)
+        .filter(
+          (item) =>
+            item.trim().length &&
+            !item.startsWith('#') &&
+            item.match(GenericDataProvider.acceptedUriPattern)
+        )
+        .map((uri) => ({
           title: text,
           uri: new AppURL(uri),
         }));

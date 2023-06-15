@@ -31,35 +31,38 @@ def upgrade():
 def downgrade():
     return
 
+
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     session = Session(op.get_bind())
 
     files_table = table(
-        'files',
-        column('filename', sa.String),
-        column('content_id', sa.Integer)
+        'files', column('filename', sa.String), column('content_id', sa.Integer)
     )
 
-    enrichment_files = session.execute(sa.select([
-        files_table.c.content_id,
-    ]).where(
-        files_table.c.filename.like('%.enrichment')
-    )).fetchall()
+    enrichment_files = session.execute(
+        sa.select(
+            [
+                files_table.c.content_id,
+            ]
+        ).where(files_table.c.filename.like('%.enrichment'))
+    ).fetchall()
 
     files_content_table = table(
         'files_content',
         column('id', sa.Integer),
         column('raw_file', sa.String),
-        column('checksum_sha256', sa.Binary)
+        column('checksum_sha256', sa.Binary),
     )
 
-    enrichment_files_content = session.execute(sa.select([
-        files_content_table.c.id,
-        files_content_table.c.raw_file,
-    ]).where(
-        files_content_table.c.id.in_([f.content_id for f in enrichment_files])
-    )).fetchall()
+    enrichment_files_content = session.execute(
+        sa.select(
+            [
+                files_content_table.c.id,
+                files_content_table.c.raw_file,
+            ]
+        ).where(files_content_table.c.id.in_([f.content_id for f in enrichment_files]))
+    ).fetchall()
 
     # Regulon, UniProt, String, GO, Biocyc
 
@@ -77,13 +80,10 @@ def data_upgrades():
 
         try:
             session.execute(
-                files_content_table.update().where(
-                    files_content_table.c.id == e.id
-                ).values(
-                        raw_file=enrichment_data,
-                        checksum_sha256=checksum_sha256
-                    )
-                )
+                files_content_table.update()
+                .where(files_content_table.c.id == e.id)
+                .values(raw_file=enrichment_data, checksum_sha256=checksum_sha256)
+            )
         except Exception:
             session.rollback()
             session.close()

@@ -39,7 +39,7 @@ DOMAIN_PARSERS = {
     'regulondb': regulondb_parser,
     'stringdb': stringdb_parser,
     'uniprot': uniprot_parser,
-    'zenodo-literature': literature_data_parser
+    'zenodo-literature': literature_data_parser,
 }
 
 
@@ -117,7 +117,9 @@ def main(argv):
     try:
         int(args.prefix.split('-')[1])
     except Exception:
-        raise ValueError('The argument change_id_prefix must be the JIRA card number; e.g LL-1234')
+        raise ValueError(
+            'The argument change_id_prefix must be the JIRA card number; e.g LL-1234'
+        )
 
     # get parser function using args.domain
     parser = get_domain_parser(args.domain)

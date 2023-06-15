@@ -7,7 +7,6 @@ import { PaginatedRequestOptions } from '../schemas/common';
   templateUrl: './pagination.component.html',
 })
 export class PaginationComponent<T extends PaginatedRequestOptions = PaginatedRequestOptions> {
-
   @Input() paging: T | undefined;
   @Input() collectionSize = 0;
   @Input() alwaysShow = false;

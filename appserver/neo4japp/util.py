@@ -22,7 +22,7 @@ def standardize_str(s) -> str:
 
 
 def encode_to_str(obj):
-    """Converts different types into a string representation. """
+    """Converts different types into a string representation."""
     if isinstance(obj, str):
         return obj
     elif isinstance(obj, Enum):
@@ -34,9 +34,7 @@ def encode_to_str(obj):
 
 
 def _snake_to_camel_update(k, v):
-    return {
-        snake_to_camel(encode_to_str(k)): v
-    }
+    return {snake_to_camel(encode_to_str(k)): v}
 
 
 def snake_to_camel_dict(d, new_dict: dict) -> dict:
@@ -49,7 +47,9 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
         if callable(getattr(v, 'to_dict', None)):
             new_dict.update(_snake_to_camel_update(k, v.to_dict()))
         elif type(v) is list:
-            new_dict.update(_snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v]))
+            new_dict.update(
+                _snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v])
+            )
         elif type(v) is dict:
             new_dict.update(_snake_to_camel_update(k, snake_to_camel_dict(v, {})))
         else:
@@ -91,7 +91,7 @@ def camel_to_snake(s):
     """
     if not s:
         return s
-    if (len(s) == 1):
+    if len(s) == 1:
         return s.lower()
 
     buf = [s[0].lower()]
@@ -101,7 +101,7 @@ def camel_to_snake(s):
     normal, lookahead = itertools.tee(s[1:])
     next(lookahead)
 
-    for (c, ahead) in itertools.zip_longest(normal, lookahead):
+    for c, ahead in itertools.zip_longest(normal, lookahead):
         # only add an underscore in front of an uppercase if it is not
         # preceded by an uppercase and is followed by a lowercase
         if c.isupper():
@@ -123,7 +123,9 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
         return d
     for k, v in d.items():
         if type(v) is list:
-            new_dict.update({camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]})
+            new_dict.update(
+                {camel_to_snake(k): [camel_to_snake_dict(i, {}) for i in v]}
+            )
         elif type(v) is dict:
             new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})
         elif type(v) is str:
@@ -197,8 +199,7 @@ class DictMixin:
                 # if the value of key is also an attrs class
                 # create an instance of it
                 value = json_dict.get(a.name)
-                if (value and
-                        issubclass(attr_type, CamelDictMixin)):
+                if value and issubclass(attr_type, CamelDictMixin):
                     # assumption is if attr_type is a subclass
                     # then value must be type dict
                     if isinstance(value, list):
@@ -208,7 +209,7 @@ class DictMixin:
                         attributes[a.name] = cls_list
                     else:
                         attributes[a.name] = attr_type.build_from_dict(value)
-                elif (value and isinstance(attr_type, EnumMeta)):
+                elif value and isinstance(attr_type, EnumMeta):
                     try:
                         attributes[a.name] = attr_type[str.upper(value)]
                     except TypeError:
@@ -294,7 +295,7 @@ class CasePreservedDict(DictMixin):
 
 
 @attr.s(frozen=True)
-class FileTransfer():
+class FileTransfer:
     model_file: Any = attr.ib()  # actually Response type
     status_code: int = attr.ib(validator=attr.validators.instance_of(int))
 
@@ -307,13 +308,13 @@ def compute_hash(data: dict, **kwargs) -> str:
     hexdigest = h.hexdigest()
 
     if 'limit' in kwargs:
-        return hexdigest[:kwargs['limit']]
+        return hexdigest[: kwargs['limit']]
     return hexdigest
 
 
 class AttrDict(dict):
-    """ Wrap a python dictionary into an object
-    """
+    """Wrap a python dictionary into an object"""
+
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
@@ -322,7 +323,9 @@ class AttrDict(dict):
         new_dict = {}
 
         if len(exclude):
-            new_dict = {key: self.__dict__[key] for key in self.__dict__ if key not in exclude}
+            new_dict = {
+                key: self.__dict__[key] for key in self.__dict__ if key not in exclude
+            }
         else:
             new_dict = self.__dict__
 
@@ -344,3 +347,13 @@ def compact(d):
 
 def equal_number_of_words(term_a: str, term_b: str) -> bool:
     return len(term_a.split(' ')) == len(term_b.split(' '))
+
+
+class Enumd(Enum):
+    @classmethod
+    def get(cls, key, default=None):
+        # Non-throwing value accessor modeled to behave like dict.get()
+        try:
+            return cls(key)
+        except ValueError:
+            return default

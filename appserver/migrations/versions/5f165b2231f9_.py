@@ -20,7 +20,7 @@ t_app_role = Table(
     'app_role',
     MetaData(),
     Column('id', Integer, primary_key=True),
-    Column('name', String)
+    Column('name', String),
 )
 
 
@@ -47,22 +47,20 @@ def data_upgrades():
         'admin',
         'project-read',
         'project-write',
-        'project-admin'
+        'project-admin',
     ]
 
     for role in potentially_missing_roles:
         check_role = conxn.execute(
-            select([
-                t_app_role.c.id,
-            ]).where(
-                t_app_role.c.name == role
-            )
+            select(
+                [
+                    t_app_role.c.id,
+                ]
+            ).where(t_app_role.c.name == role)
         ).fetchone()
 
         if check_role is None:
-            conxn.execute(
-                t_app_role.insert().values(name=role)
-            )
+            conxn.execute(t_app_role.insert().values(name=role))
 
 
 def data_downgrades():

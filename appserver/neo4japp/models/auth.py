@@ -21,7 +21,7 @@ user_role = db.Table(
         db.ForeignKey('app_role.id', ondelete='CASCADE'),
         index=True,
         primary_key=True,
-    )
+    ),
 )
 
 
@@ -32,8 +32,9 @@ class AppRole(RDBMSBase):
 
 class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
     """
-        User models to tie ownership of resources to
+    User models to tie ownership of resources to
     """
+
     __tablename__ = 'appuser'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +54,7 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
         lazy='subquery',
         # create a backreference in Role named
         # `users`, but don't load them
-        backref=db.backref('users', lazy=True)
+        backref=db.backref('users', lazy=True),
     )
 
     @property
@@ -70,8 +71,7 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
 
     def check_password(self, password):
         return bcrypt.checkpw(
-            password.encode("utf-8"),
-            self.password_hash.encode("utf-8")
+            password.encode("utf-8"), self.password_hash.encode("utf-8")
         )
 
     def has_role(self, role: str):

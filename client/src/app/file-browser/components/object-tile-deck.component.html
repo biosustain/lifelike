@@ -1,27 +1,31 @@
-<div class="tile-deck tile-deck-{{ tileDeckSize }}" appElementObserver
-     #bodyObserver="appElementObserver">
-  <div *ngFor="let o of objects.view$ | async" class="tile d-flex flex-column"
-       draggable="true" (dragstart)="objectDragStart($event, o)">
+<div
+  class="tile-deck tile-deck-{{ tileDeckSize }}"
+  appElementObserver
+  #bodyObserver="appElementObserver"
+>
+  <div
+    *ngFor="let o of objects.view$ | async"
+    class="tile d-flex flex-column"
+    draggable="true"
+    (dragstart)="objectDragStart($event, o)"
+  >
     <div class="d-flex tile-toolbar" *ngIf="tileToolbar">
-      <ng-container
-        [ngTemplateOutlet]="tileToolbar"
-        [ngTemplateOutletContext]="{$implicit:o}"
-      >
+      <ng-container [ngTemplateOutlet]="tileToolbar" [ngTemplateOutletContext]="{ $implicit: o }">
       </ng-container>
     </div>
     <div class="flex-fill d-flex justify-content-center align-items-center my-2">
-      <a [appLink]="o.getCommands(forEditing)" [newTab]="newTabObject"
-         class="text-muted">
+      <a [appLink]="o.getCommands(forEditing)" [newTab]="newTabObject" class="text-muted">
         <i class="fa-2x {{ o.fontAwesomeIcon }}"></i>
       </a>
     </div>
     <div class="text-truncate text-center">
-      <a [appLink]="o.getCommands(forEditing)"
-         [newTab]="newTabObject"
-         class="d-block text-truncate"
-         [appTextTruncateToTooltip]="o.filename"
-         [scroll$]="bodyObserver.scroll$"
-         appHasPlaceholder
+      <a
+        [appLink]="o.getCommands(forEditing)"
+        [newTab]="newTabObject"
+        class="d-block text-truncate"
+        [appTextTruncateToTooltip]="o.filename"
+        [scroll$]="bodyObserver.scroll$"
+        appHasPlaceholder
       >
         <strong>{{ o.effectiveName }}</strong>
       </a>
@@ -32,8 +36,10 @@
     </div>
   </div>
 
-  <div class="tile d-flex flex-column align-items-center justify-content-center"
-       *ngIf="showMoreButton">
+  <div
+    class="tile d-flex flex-column align-items-center justify-content-center"
+    *ngIf="showMoreButton"
+  >
     <div class="text-truncate text-center">
       <a [appLink]="moreLink" [newTab]="newTabMore" class="d-block text-truncate">
         {{ moreButtonText }}

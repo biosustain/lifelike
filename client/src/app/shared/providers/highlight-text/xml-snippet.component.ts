@@ -26,7 +26,7 @@ import { composeInternalLink } from '../../workspace-manager';
 
 @Component({
   selector: 'app-xml-snippet',
-  template: `<ng-content></ng-content>`
+  template: `<ng-content></ng-content>`,
 })
 export class XMLSnippetComponent extends XMLTag {
   update() {}

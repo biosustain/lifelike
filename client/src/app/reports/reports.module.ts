@@ -5,12 +5,8 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { CopyrightInfringementFormComponent } from './components/copyright-infringement-form.component';
 
-
 @NgModule({
   declarations: [CopyrightInfringementFormComponent],
-  imports: [
-    CommonModule,
-    SharedModule
-  ]
+  imports: [CommonModule, SharedModule],
 })
-export class ReportsModule { }
+export class ReportsModule {}

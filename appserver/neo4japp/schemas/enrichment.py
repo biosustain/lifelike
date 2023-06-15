@@ -19,8 +19,10 @@ class EnrichedGene(CamelCaseSchema):
     link = fields.String(allow_none=True)
     value = fields.String(allow_none=True)
     domains = fields.Dict(
-        keys=fields.String(), values=fields.Dict(
-            keys=fields.String(), values=fields.Nested(EnrichmentValue)), allow_none=True)
+        keys=fields.String(),
+        values=fields.Dict(keys=fields.String(), values=fields.Nested(EnrichmentValue)),
+        allow_none=True,
+    )
 
 
 class DomainInfo(CamelCaseSchema):
@@ -29,7 +31,8 @@ class DomainInfo(CamelCaseSchema):
 
 class EnrichmentResult(CamelCaseSchema):
     domainInfo = fields.Dict(
-        keys=fields.String(), values=fields.Nested(DomainInfo), required=True)
+        keys=fields.String(), values=fields.Nested(DomainInfo), required=True
+    )
     genes = fields.List(fields.Nested(EnrichedGene), required=True)
 
 
@@ -42,6 +45,7 @@ class EnrichmentData(CamelCaseSchema):
 
 # Requests
 # ----------------------------------------
+
 
 class EnrichmentTableSchema(CamelCaseSchema):
     data = fields.Nested(EnrichmentData, required=True)

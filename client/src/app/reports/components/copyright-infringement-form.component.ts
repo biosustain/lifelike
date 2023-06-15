@@ -25,13 +25,16 @@ export class CopyrightInfringementFormComponent implements OnInit, OnDestroy {
   constructor(
     private reportsService: ReportsService,
     private router: Router,
-    private readonly snackBar: MatSnackBar,
-  ) { }
+    private readonly snackBar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.form = new FormGroup({
       url: new FormControl('', Validators.required),
-      description: new FormControl('', [Validators.required, Validators.maxLength(this.DESCRIPTION_MAX_LEN)]),
+      description: new FormControl('', [
+        Validators.required,
+        Validators.maxLength(this.DESCRIPTION_MAX_LEN),
+      ]),
       name: new FormControl('', Validators.required),
       company: new FormControl('', Validators.required),
       address: new FormControl('', Validators.required),
@@ -50,30 +53,35 @@ export class CopyrightInfringementFormComponent implements OnInit, OnDestroy {
     });
 
     this.submitEvent = new Subject();
-    this.submitEvent.pipe(
-      map(() =>
-      this.reportsService.copyrightInfringementRequest({...this.form.value} as CopyrightInfringementRequest)
+    this.submitEvent
       .pipe(
-        catchError(() => {
-          this.snackBar.open(
-            'An error occurred while submitting your request. Please review the form for invalid inputs and try again in a moment.',
-            'close',
-            {duration: 5000},
-          );
-          return EMPTY;
-        }))
+        map(() =>
+          this.reportsService
+            .copyrightInfringementRequest({ ...this.form.value } as CopyrightInfringementRequest)
+            .pipe(
+              catchError(() => {
+                this.snackBar.open(
+                  'An error occurred while submitting your request. Please review the form for invalid inputs and try again in a moment.',
+                  'close',
+                  { duration: 5000 }
+                );
+                return EMPTY;
+              })
+            )
+        )
       )
-    ).pipe(exhaust()).subscribe(() => {
-      this.snackBar.open(
-        'Your request has been submitted. The Lifelike team will review your claim and you will be contacted shortly.',
-        'close'
-      );
-      this.router.navigateByUrl('/workspaces/local');
-    });
+      .pipe(exhaust())
+      .subscribe(() => {
+        this.snackBar.open(
+          'Your request has been submitted. The Lifelike team will review your claim and you will be contacted shortly.',
+          'close'
+        );
+        this.router.navigateByUrl('/workspaces/local');
+      });
   }
 
   ngOnDestroy(): void {
-      this.submitEvent.complete();
+    this.submitEvent.complete();
   }
 
   markAllAsDirty() {

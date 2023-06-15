@@ -12,7 +12,7 @@ source_labels = {
     EntityType.COMPOUND.value: 'db_BioCyc',
     EntityType.GENE.value: 'db_NCBI',
     EntityType.SPECIES.value: 'db_NCBI',
-    EntityType.PROTEIN.value: 'db_UniProt'
+    EntityType.PROTEIN.value: 'db_UniProt',
 }
 
 node_labels = {
@@ -30,7 +30,7 @@ node_labels = {
     EntityType.ENTITY.value: 'Entity',
     EntityType.COMPANY.value: 'Company',
     EntityType.LAB_SAMPLE.value: 'LabSample',
-    EntityType.LAB_STRAIN.value: 'LabStrain'
+    EntityType.LAB_STRAIN.value: 'LabStrain',
 }
 
 
@@ -323,7 +323,9 @@ def get_create_mesh_global_inclusion_query(entity_type):
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    """.replace(
+        'replace_with_param', query_label
+    )
 
 
 def get_create_chemical_global_inclusion_query():
@@ -437,4 +439,6 @@ def get_create_lifelike_global_inclusion_query(entity_type):
         r.file_reference = $file_uuid,
         r.entity_type = $entity_type,
         r.hyperlinks = $hyperlinks
-    """.replace('replace_with_param', query_label)
+    """.replace(
+        'replace_with_param', query_label
+    )

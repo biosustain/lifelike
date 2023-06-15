@@ -1,17 +1,16 @@
 export interface SankeyNodeHeight {
   min: {
-    enabled: boolean,
-    value: number
+    enabled: boolean;
+    value: number;
   };
   max: {
-    enabled: boolean,
-    ratio: number
+    enabled: boolean;
+    ratio: number;
   };
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface SankeyBaseOptions {
-}
+export interface SankeyBaseOptions {}
 
 export interface SankeyBaseState {
   shortestPathPlusN: number;

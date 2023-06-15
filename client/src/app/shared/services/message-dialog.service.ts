@@ -15,16 +15,13 @@ export interface MessageArguments extends ErrorLog {
   providedIn: 'root',
 })
 export class MessageDialog {
-  constructor(
-    private modalService: NgbModal,
-  ) {
-  }
+  constructor(private modalService: NgbModal) {}
 
-  display({type, ...error}: MessageArguments) {
+  display({ type, ...error }: MessageArguments) {
     const modalRef = this.modalService.open(MessageDialogComponent, {
       size: error.stacktrace ? 'lg' : 'md',
     });
-    Object.assign(modalRef.componentInstance, {type, error});
+    Object.assign(modalRef.componentInstance, { type, error });
     return modalRef.result;
   }
 }

@@ -1,9 +1,18 @@
 #!/bin/sh
 
-echo "> 🧶 Running yarn lint.."
-echo "This code assumes lint-stages being installed in client or globally."
-echo "In case the command has not been found please run 'yarn install' in client folder"
-cd client && yarn lint-staged
+# Runs linting on only files that are staged
+staged_files=$(getStaged client '')
+
+# shellcheck disable=SC2236
+if [[ -n $staged_files ]];
+then
+  (
+    echo "> 🧶 Running yarn lint.."
+    echo "This code assumes lint-stages being installed in client or globally."
+    echo "In case the command has not been found please run 'yarn install' in client folder"
+    cd client && yarn lint-staged
+  )
+fi
 
 # ALTERNATIVELY - without extra dependencies and consistent with other services
 #

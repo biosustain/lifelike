@@ -31,24 +31,25 @@ export class BrowserProjectListComponent {
     sort: 'name',
   });
   readonly projectList$: Observable<PipeStatus<ProjectList>> = this.paging$.pipe(
-    switchMap(options => this.projectService.list(options)),
-    addStatus(
-      new ProjectList(mockArrayOf(projectImplLoadingMock))
-    ),
+    switchMap((options) => this.projectService.list(options)),
+    addStatus(new ProjectList(mockArrayOf(projectImplLoadingMock))),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  constructor(protected readonly projectService: ProjectsService,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly projectActions: ProjectActions) {
-  }
+  constructor(
+    protected readonly projectService: ProjectsService,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly projectActions: ProjectActions
+  ) {}
 
   openCreateDialog() {
-    this.projectActions.openCreateDialog().then(project => {
-      this.workspaceManager.navigate(project.getCommands());
-    }, () => {
-    });
+    this.projectActions.openCreateDialog().then(
+      (project) => {
+        this.workspaceManager.navigate(project.getCommands());
+      },
+      () => {}
+    );
   }
 
   projectDragStart(event: DragEvent, project: ProjectImpl) {

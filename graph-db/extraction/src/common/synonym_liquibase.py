@@ -11,7 +11,9 @@ class SynonymIndexChangelogsGenerator(ChangeLogFileGenerator):
 
     def get_create_index_queries(self):
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
+        self.index_quieries.append(
+            get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME)
+        )
         return self.index_quieries
 
     def add_cypher_changesets(self):
@@ -30,8 +32,10 @@ class SynonymIndexChangelogsGenerator(ChangeLogFileGenerator):
 def main():
     task = SynonymIndexChangelogsGenerator('rcai')
     task.add_all_change_sets()
-    task.generate_changelog_file(f"synonym_index_changelog_{task.date_tag.replace('/', '')}.xml")
+    task.generate_changelog_file(
+        f"synonym_index_changelog_{task.date_tag.replace('/', '')}.xml"
+    )
 
 
 if __name__ == '__main__':
-   main()
+    main()

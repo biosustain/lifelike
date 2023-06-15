@@ -7,20 +7,12 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { ChartComponent } from './chart.component';
 
-const components = [
-  ChartComponent
-];
+const components = [ChartComponent];
 
 @NgModule({
   declarations: components,
-  imports: [
-    CommonModule,
-    SharedModule,
-    ChartsModule
-  ],
+  imports: [CommonModule, SharedModule, ChartsModule],
   exports: components,
-  providers: [ThemeService]
+  providers: [ThemeService],
 })
-export class ChartModule {
-
-}
+export class ChartModule {}

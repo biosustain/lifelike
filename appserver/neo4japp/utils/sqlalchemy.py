@@ -19,10 +19,11 @@ def ft_search(query, search_query, vector=None, regconfig=None):
         vector.op('@@')(sqlalchemy.func.tsq_parse(regconfig, search_query))
     )
 
-    query = query.add_columns(sqlalchemy.func.ts_rank_cd(
-        vector,
-        sqlalchemy.func.tsq_parse(search_query)
-    ).label('rank'))
+    query = query.add_columns(
+        sqlalchemy.func.ts_rank_cd(
+            vector, sqlalchemy.func.tsq_parse(search_query)
+        ).label('rank')
+    )
 
     return query.params(term=search_query)
 

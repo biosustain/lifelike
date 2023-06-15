@@ -17,8 +17,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  row-gap: $spacer * .25;
-  column-gap: $spacer * .25;
+  row-gap: $spacer * 0.25;
+  column-gap: $spacer * 0.25;
 }
 
 .module-title-bar-back {
@@ -55,7 +55,8 @@
 }
 
 .module-body-table {
-  th, td {
+  th,
+  td {
     &:first-child {
       padding-left: $module-body-padding-x;
     }

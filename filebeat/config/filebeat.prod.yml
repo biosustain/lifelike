@@ -28,7 +28,7 @@ filebeat.autodiscover:
             - type: container
               paths:
                 - /var/lib/docker/containers/${data.docker.container.id}/*.log
-              multiline.pattern: 'ERROR|INFO|DEBUG|WARN'
+              multiline.pattern: "ERROR|INFO|DEBUG|WARN"
               multiline.negate: true
               multiline.match: after
 
@@ -37,4 +37,4 @@ processors:
       host: "unix:///var/run/docker.sock"
 
 output.logstash:
-    hosts: ["elk.prod.lifelike.bio:5044"]
+  hosts: ["elk.prod.lifelike.bio:5044"]

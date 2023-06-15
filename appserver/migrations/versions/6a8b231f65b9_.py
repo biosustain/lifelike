@@ -26,7 +26,7 @@ def upgrade():
         sa.Column('name', sa.String(length=64), nullable=False),
         sa.Column('modified_date', sa.TIMESTAMP(timezone=True), nullable=False),
         sa.Column('checksum_md5', sa.String(length=32), nullable=False),
-        sa.PrimaryKeyConstraint('id', name=op.f('pk_lmdb'))
+        sa.PrimaryKeyConstraint('id', name=op.f('pk_lmdb')),
     )
     op.create_index(op.f('ix_lmdb_checksum_md5'), 'lmdb', ['checksum_md5'], unique=True)
     op.drop_table('lmdbs_dates')
@@ -40,8 +40,13 @@ def downgrade():
     op.create_table(
         'lmdbs_dates',
         sa.Column('name', sa.VARCHAR(length=256), autoincrement=False, nullable=False),
-        sa.Column('date', postgresql.TIMESTAMP(timezone=True), autoincrement=False, nullable=False),
-        sa.PrimaryKeyConstraint('name', name='pk_lmdbs_dates')
+        sa.Column(
+            'date',
+            postgresql.TIMESTAMP(timezone=True),
+            autoincrement=False,
+            nullable=False,
+        ),
+        sa.PrimaryKeyConstraint('name', name='pk_lmdbs_dates'),
     )
     op.drop_index(op.f('ix_lmdb_checksum_md5'), table_name='lmdb')
     op.drop_table('lmdb')

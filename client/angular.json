@@ -52,10 +52,8 @@
             ],
             "webWorkerTsConfig": "tsconfig.worker.json",
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/scss", "src/app"
-              ]
-            },
+              "includePaths": ["src/scss", "src/app"]
+            }
           },
           "configurations": {
             "dev": {
@@ -142,20 +140,11 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/scss/bootstrap.scss",
-              "src/lifelike-theme.scss",
-              "src/styles.scss"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/scss/bootstrap.scss", "src/lifelike-theme.scss", "src/styles.scss"],
             "scripts": [],
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/scss", "src/app"
-              ]
+              "includePaths": ["src/scss", "src/app"]
             }
           }
         },
@@ -168,9 +157,7 @@
               "e2e/tsconfig.json",
               "tsconfig.worker.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         },
         "e2e": {

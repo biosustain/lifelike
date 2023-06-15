@@ -10,7 +10,7 @@ interface CreateResizeObservableConfig {
 }
 
 const defaultCreateResizeObservableConfig: CreateResizeObservableConfig = {
-  leading: false
+  leading: false,
 };
 
 /**
@@ -27,7 +27,7 @@ export function createResizeObservable(
   element: HTMLElement,
   config = defaultCreateResizeObservableConfig
 ): Observable<DOMRectReadOnly> {
-  return new Observable<DOMRectReadOnly>(subscriber => {
+  return new Observable<DOMRectReadOnly>((subscriber) => {
     if (config.leading) {
       const size = element.getBoundingClientRect();
       subscriber.next(size);
@@ -52,12 +52,12 @@ export function createResizeObservable(
     };
   }).pipe(
     // Do not return value more often than once per frame
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+    throttleTime(0, animationFrameScheduler, { leading: true, trailing: true }),
     // Only actual change
     distinctUntilChanged(isEqual),
     debug('resize-observable', element),
     // Do no resize if not displayed
-    filter<DOMRect>(({width, height}) => width !== 0 && height !== 0),
+    filter<DOMRect>(({ width, height }) => width !== 0 && height !== 0),
     share()
   );
 }
@@ -67,14 +67,17 @@ interface Size {
   height: number;
 }
 
-export function createWindowResizeObservable(options?: boolean | AddEventListenerOptions): Observable<Size> {
-  return new Observable<Size>(subscriber => {
+export function createWindowResizeObservable(
+  options?: boolean | AddEventListenerOptions
+): Observable<Size> {
+  return new Observable<Size>((subscriber) => {
     const listener: Parameters<EventTarget['addEventListener']> = [
       'resize',
-      () => subscriber.next({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
+      () =>
+        subscriber.next({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        }),
     ];
     if (options) {
       listener.push(options);
@@ -85,12 +88,12 @@ export function createWindowResizeObservable(options?: boolean | AddEventListene
     };
   }).pipe(
     // Do not return value more often than once per frame
-    throttleTime(0, animationFrameScheduler, {leading: true, trailing: true}),
+    throttleTime(0, animationFrameScheduler, { leading: true, trailing: true }),
     // Only actual change
     distinctUntilChanged(isEqual),
     debug('window-resize-observable'),
     // Do no resize if not displayed
-    filter<Size>(({width, height}) => width !== 0 && height !== 0),
+    filter<Size>(({ width, height }) => width !== 0 && height !== 0),
     share()
   );
 }

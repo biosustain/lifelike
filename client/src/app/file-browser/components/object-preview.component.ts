@@ -24,33 +24,37 @@ import { FilesystemService } from '../services/filesystem.service';
   templateUrl: './object-preview.component.html',
 })
 export class ObjectPreviewComponent implements OnChanges {
-
   @Input() object: FilesystemObject;
   @Input() contentValue: Blob;
   @Input() highlightTerms: string[] | undefined;
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild('child', { static: false, read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
 
   private readonly object$ = new BehaviorSubject<FilesystemObject>(null);
   readonly previewComponent$ = this.object$.pipe(
-    mergeMap(object => {
+    mergeMap((object) => {
       if (object) {
-        const contentValue$ = this.contentValue ? of(this.contentValue) : this.filesystemService.getContent(object.hashId);
-        return this.objectTypeService.get(object).pipe(mergeMap(typeProvider => {
-          return typeProvider.createPreviewComponent(object, contentValue$, {
-            highlightTerms: this.highlightTerms,
-          });
-        }));
+        const contentValue$ = this.contentValue
+          ? of(this.contentValue)
+          : this.filesystemService.getContent(object.hashId);
+        return this.objectTypeService.get(object).pipe(
+          mergeMap((typeProvider) => {
+            return typeProvider.createPreviewComponent(object, contentValue$, {
+              highlightTerms: this.highlightTerms,
+            });
+          })
+        );
       } else {
         return of(null);
       }
-    }),
+    })
   );
 
-  constructor(protected readonly filesystemService: FilesystemService,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly objectTypeService: ObjectTypeService,
-              protected readonly ngZone: NgZone) {
-  }
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly ngZone: NgZone
+  ) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if ('object' in changes || 'contentValue' in changes) {
@@ -61,13 +65,10 @@ export class ObjectPreviewComponent implements OnChanges {
 
 @Component({
   selector: 'app-object-preview-outlet',
-  template: `
-    <ng-container #child></ng-container>
-  `,
+  template: ` <ng-container #child></ng-container> `,
 })
 export class ObjectPreviewOutletComponent implements AfterViewInit {
-
-  @ViewChild('child', {static: false, read: ViewContainerRef}) viewComponentRef: ViewContainerRef;
+  @ViewChild('child', { static: false, read: ViewContainerRef }) viewComponentRef: ViewContainerRef;
   private _componentRef: ComponentRef<any>;
 
   @Input()
@@ -96,5 +97,4 @@ export class ObjectPreviewOutletComponent implements AfterViewInit {
       }
     });
   }
-
 }

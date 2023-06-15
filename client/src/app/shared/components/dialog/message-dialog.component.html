@@ -5,16 +5,15 @@
 
   <app-modal-body>
     <div>
-      {{error.message}}
+      {{ error.message }}
     </div>
-    <br>
+    <br />
 
     <div *ngFor="let msg of error.additionalMsgs">
-      <p>{{msg}}</p>
+      <p>{{ msg }}</p>
     </div>
 
-    <app-error-details [error]="error">
-    </app-error-details>
+    <app-error-details [error]="error"> </app-error-details>
   </app-modal-body>
 
   <app-modal-footer>

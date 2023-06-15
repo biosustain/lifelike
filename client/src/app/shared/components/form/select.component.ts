@@ -5,8 +5,19 @@ import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 // Copy instead based on: https://github.com/ng-bootstrap/ng-bootstrap/issues/2632
 // import { PlacementArray } from '@ng-bootstrap/ng-bootstrap/util/positioning';
 declare type Placement =
-  'auto' | 'top' | 'bottom' | 'left' | 'right' | 'top-left' | 'top-right' | 'bottom-left' |
-  'bottom-right' | 'left-top' | 'left-bottom' | 'right-top' | 'right-bottom';
+  | 'auto'
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'left-top'
+  | 'left-bottom'
+  | 'right-top'
+  | 'right-bottom';
 declare type PlacementArray = Placement | Array<Placement> | string;
 
 let nextId = 0;
@@ -17,7 +28,7 @@ let nextId = 0;
 })
 export class SelectComponent<T = any> {
   componentId = nextId++;
-  @ViewChild('dropdown', {static: true, read: NgbDropdown}) dropdownComponent: NgbDropdown;
+  @ViewChild('dropdown', { static: true, read: NgbDropdown }) dropdownComponent: NgbDropdown;
   @Input() formId: string;
   @Input() choices: T[] = [];
   selection: Set<T> = new Set();
@@ -26,7 +37,7 @@ export class SelectComponent<T = any> {
   @Input() placement: PlacementArray = 'bottom-left bottom-right top-left top-right';
   @Input() emptyLabel = 'All';
   @Input() allLabel = 'All';
-  @Input() choiceLabel = choice => choice;
+  @Input() choiceLabel = (choice) => choice;
 
   @Input()
   set values(values: T[]) {

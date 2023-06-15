@@ -24,27 +24,28 @@ from typing import (
     List,
 )
 
-from neo4japp.constants import FILE_INDEX_ID, LogEventType
+from neo4japp.constants import LogEventType
 from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
-from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.models import (
-    Files, Projects,
+    Files,
+    Projects,
 )
 from neo4japp.models.files_queries import build_file_hierarchy_query
 from neo4japp.services.elastic import (
     ATTACHMENT_PIPELINE_ID,
-    ELASTIC_INDEX_SEED_PAIRS,
     ELASTIC_PIPELINE_SEED_PAIRS,
 )
 from neo4japp.services.elastic.query_parser_helpers import (
     BoolMust,
     BoolMustNot,
     BoolOperand,
-    BoolShould
+    BoolShould,
 )
 from neo4japp.utils import EventLog
 from app import app
 from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import config
 
 ParserElement.enablePackrat()
 
@@ -67,31 +68,31 @@ class ElasticService(ElasticConnection, GraphConnection):
                 self.elastic_client.indices.delete(index=index_id)
                 current_app.logger.info(
                     f'Deleted ElasticSearch index {index_id}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
                 )
             except Exception as e:
                 current_app.logger.error(
                     f'Failed to delete ElasticSearch index {index_id}',
                     exc_info=e,
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                    extra=EventLog(
+                        event_type=LogEventType.ELASTIC_FAILURE.value
+                    ).to_dict(),
                 )
                 return
 
         try:
             self.elastic_client.indices.create(
-                index=index_id,
-                body=index_definition,
-                include_type_name=True
+                index=index_id, body=index_definition, include_type_name=True
             )
             current_app.logger.info(
                 f'Created ElasticSearch index {index_id}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
             )
         except Exception as e:
             current_app.logger.error(
                 f'Failed to create ElasticSearch index {index_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
             )
             return
 
@@ -108,27 +109,30 @@ class ElasticService(ElasticConnection, GraphConnection):
         pipeline_definition_json = json.loads(pipeline_definition)
 
         try:
-            self.elastic_client.ingest.put_pipeline(id=pipeline_id, body=pipeline_definition_json)
+            self.elastic_client.ingest.put_pipeline(
+                id=pipeline_id, body=pipeline_definition_json
+            )
         except Exception as e:
             current_app.logger.error(
                 f'Failed to create or update ElasticSearch pipeline {pipeline_id}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
             )
             return
 
         current_app.logger.info(
             f'Created or updated ElasticSearch pipeline {pipeline_id}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
         )
 
     def recreate_indices_and_pipelines(self):
         """Recreates all currently defined Elastic pipelines and indices. If any indices/pipelines
-        do not exist, we create them here. If an index/pipeline does exist, we update it."""
-        for (pipeline_id, pipeline_definition_file) in ELASTIC_PIPELINE_SEED_PAIRS:
+        do not exist, we create them here. If an index/pipeline does exist, we update it.
+        """
+        for pipeline_id, pipeline_definition_file in ELASTIC_PIPELINE_SEED_PAIRS:
             self.update_or_create_pipeline(pipeline_id, pipeline_definition_file)
 
-        for (index_id, index_mapping_file) in ELASTIC_INDEX_SEED_PAIRS:
+        for index_id, index_mapping_file in config.get('ELASTIC_INDEX_SEED_PAIRS'):
             self.update_or_create_index(index_id, index_mapping_file)
         return 'done'
 
@@ -139,11 +143,13 @@ class ElasticService(ElasticConnection, GraphConnection):
         raise NotImplementedError()
 
     def delete_files(self, hash_ids: List[str]):
-        self._streaming_bulk_documents([
-            self._get_delete_obj(hash_id, FILE_INDEX_ID)
-            for hash_id in hash_ids
-        ])
-        self.elastic_client.indices.refresh(FILE_INDEX_ID)
+        self._streaming_bulk_documents(
+            [
+                self._get_delete_obj(hash_id, config.get('ELASTIC_FILE_INDEX_ID'))
+                for hash_id in hash_ids
+            ]
+        )
+        self.elastic_client.indices.refresh(config.get('ELASTIC_FILE_INDEX_ID'))
 
     def index_files(self, hash_ids: List[str] = None, batch_size: int = 50):
         """
@@ -161,16 +167,12 @@ class ElasticService(ElasticConnection, GraphConnection):
             filters.append(Files.hash_id.in_(hash_ids))
 
         # Gets the file/project pairs -- plus _all_ parents -- for the given file ids
-        query = self._get_file_hierarchy_query(
-            and_(*filters)
-        )
+        query = self._get_file_hierarchy_query(and_(*filters))
 
         # Removes any unnecessary parent rows, we only need to index what was given in hash_ids,
         # if anything
         if hash_ids is not None:
-            query = query.filter(
-                Files.hash_id.in_(hash_ids)
-            )
+            query = query.filter(Files.hash_id.in_(hash_ids))
 
         # Just return Files and Projects data, we don't care about any other columns
         query = query.with_entities(Files, Projects)
@@ -187,13 +189,12 @@ class ElasticService(ElasticConnection, GraphConnection):
         :param filter: SQL Alchemy filter
         :return: the query
         """
-        return build_file_hierarchy_query(filter, Projects, Files) \
-            .options(raiseload('*'),
-                     joinedload(Files.user),
-                     joinedload(Files.content))
+        return build_file_hierarchy_query(filter, Projects, Files).options(
+            raiseload('*'), joinedload(Files.user), joinedload(Files.content)
+        )
 
     def _windowed_query(self, q, column, windowsize):
-        """"Break a Query into chunks on a given column."""
+        """ "Break a Query into chunks on a given column."""
 
         single_entity = q.is_single_entity
         q = q.add_column(column).order_by(column)
@@ -223,7 +224,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         if file.content:
             content = file.content.raw_file
             file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(FileContentBuffer(content))
+            return file_type_service.get(file).to_indexable_content(
+                FileContentBuffer(content)
+            )
         else:
             return FileContentBuffer()
 
@@ -239,7 +242,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         # with the elasticsearch parallel_bulk
         with app.app_context():
             for file, project in batch:
-                yield self._get_index_obj(file, project, FILE_INDEX_ID)
+                yield self._get_index_obj(
+                    file, project, config.get('ELASTIC_FILE_INDEX_ID')
+                )
 
     def _lazy_create_index_docs_for_streaming_bulk(self, batch):
         """
@@ -249,9 +254,13 @@ class ElasticService(ElasticConnection, GraphConnection):
         :return: indexable object in generator form
         """
         for file, project in batch:
-            yield self._get_index_obj(file, project, FILE_INDEX_ID)
+            yield self._get_index_obj(
+                file, project, config.get('ELASTIC_FILE_INDEX_ID')
+            )
 
-    def _get_update_action_obj(self, file_hash_id: str, index_id: str, changes: dict = {}) -> dict:
+    def _get_update_action_obj(
+        self, file_hash_id: str, index_id: str, changes: dict = {}
+    ) -> dict:
         # 'filename': file.filename,
         # 'description': file.description,
         # 'uploaded_date': file.creation_date,
@@ -275,11 +284,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         }
 
     def _get_delete_obj(self, file_hash_id: str, index_id: str) -> dict:
-        return {
-            '_op_type': 'delete',
-            '_index': index_id,
-            '_id': file_hash_id
-        }
+        return {'_op_type': 'delete', '_index': index_id, '_id': file_hash_id}
 
     def _get_index_obj(self, file: Files, project: Projects, index_id) -> dict:
         """
@@ -303,7 +308,7 @@ class ElasticService(ElasticConnection, GraphConnection):
                 f'Failed to generate indexable data for file '
                 f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
             )
         else:
             data = base64.b64encode(indexable_content).decode('utf-8')
@@ -330,8 +335,8 @@ class ElasticService(ElasticConnection, GraphConnection):
                 'id': file.id,
                 'hash_id': file.hash_id,
                 'mime_type': file.mime_type,
-                'data_ok': bool(data)
-            }
+                'data_ok': bool(data),
+            },
         }
 
     def _parallel_bulk_documents(self, documents):
@@ -345,7 +350,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             self.elastic_client,
             documents,
             raise_on_error=False,
-            raise_on_exception=False
+            raise_on_exception=False,
         )
 
         for success, info in results:
@@ -355,12 +360,14 @@ class ElasticService(ElasticConnection, GraphConnection):
             if success:
                 current_app.logger.info(
                     f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
                 )
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                    extra=EventLog(
+                        event_type=LogEventType.ELASTIC_FAILURE.value
+                    ).to_dict(),
                 )
 
     def _streaming_bulk_documents(self, documents):
@@ -376,7 +383,7 @@ class ElasticService(ElasticConnection, GraphConnection):
             chunk_size=50,
             max_retries=5,
             raise_on_error=False,
-            raise_on_exception=False
+            raise_on_exception=False,
         )
 
         for success, info in results:
@@ -386,12 +393,14 @@ class ElasticService(ElasticConnection, GraphConnection):
             if success:
                 current_app.logger.info(
                     f'Elastic search bulk operation succeeded: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
                 )
             else:
                 current_app.logger.warning(
                     f'Elastic search bulk operation failed: {info}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+                    extra=EventLog(
+                        event_type=LogEventType.ELASTIC_FAILURE.value
+                    ).to_dict(),
                 )
 
     # End indexing methods
@@ -418,14 +427,14 @@ class ElasticService(ElasticConnection, GraphConnection):
         unmatched_parens = open_paren_indexes + close_paren_indexes
         unmatched_parens.sort()
         for i, idx in enumerate(unmatched_parens):
-            s = s[:idx - i] + s[idx - i + 1:]
+            s = s[: idx - i] + s[idx - i + 1 :]
 
         return s
 
     def _strip_unmatched_quotations(self, s: str) -> str:
-        if (s.count('"') % 2 == 1):
+        if s.count('"') % 2 == 1:
             odd_quote_idx = s.rfind('"')
-            return s[:odd_quote_idx] + s[odd_quote_idx + 1:]
+            return s[:odd_quote_idx] + s[odd_quote_idx + 1 :]
         return s
 
     def _strip_unmatched_characters(self, s: str) -> str:
@@ -462,10 +471,14 @@ class ElasticService(ElasticConnection, GraphConnection):
         token = QuotedString('"', unquoteResults=False) | Word(printables)
         parser = ZeroOrMore(token)
 
-        unique_non_keyword_tokens = list(set([
-                t for t in list(parser.parseString(string))
-                if t.lower() not in ['and', 'not', 'or']
-            ])
+        unique_non_keyword_tokens = list(
+            set(
+                [
+                    t
+                    for t in list(parser.parseString(string))
+                    if t.lower() not in ['and', 'not', 'or']
+                ]
+            )
         )
 
         words_phrases_and_wildcards = []
@@ -498,7 +511,9 @@ class ElasticService(ElasticConnection, GraphConnection):
         # Need to include these optional parens, otherwise something like '(r and "p and q")' will
         # be tokenized as ['(r', 'and', '"p', 'and', 'q")']
         quoted_term = QuotedString('"', unquoteResults=False)
-        quoted_term_with_parens = Optional(open_parens) + quoted_term + Optional(closed_parens)
+        quoted_term_with_parens = (
+            Optional(open_parens) + quoted_term + Optional(closed_parens)
+        )
         quoted_term_with_parens.setParseAction(''.join)
         operand = quoted_term_with_parens | term
         query_parser = ZeroOrMore(operand)
@@ -520,22 +535,18 @@ class ElasticService(ElasticConnection, GraphConnection):
             elif curr.lower() == 'not':
                 if _next.lower() in unstackable_logical_ops:
                     raise ServerException(
-                        title='Content Search Error',
-                        message='Your query appears malformed. A logical operator (AND/OR) was ' +
-                                'encountered immediately following a NOT operator, e.g. ' +
-                                '"dog not and cat." Please examine your query for possible ' +
-                                'errors and try again.',
-                        code=400
+                        message='Your query appears malformed. A logical operator (AND/OR) was '
+                        + 'encountered immediately following a NOT operator, e.g. '
+                        + '"dog not and cat." Please examine your query for possible '
+                        + 'errors and try again.'
                     )
                 new_query += [curr]
             elif curr.lower() in unstackable_logical_ops:
                 if _next.lower() in unstackable_logical_ops:
                     raise ServerException(
-                        title='Content Search Error',
-                        message='Your query appears malformed. Two logical operators (AND/OR) ' +
-                                'were encountered in succession, e.g. "dog and and cat." Please ' +
-                                'examine your query for possible errors and try again.',
-                        code=400
+                        message='Your query appears malformed. Two logical operators (AND/OR) '
+                        + 'were encountered in succession, e.g. "dog and and cat." Please '
+                        + 'examine your query for possible errors and try again.'
                     )
                 new_query += [curr]
             elif _next.lower() not in unstackable_logical_ops + [')']:
@@ -558,13 +569,11 @@ class ElasticService(ElasticConnection, GraphConnection):
 
         See the helper classes in `query_parser_helpers.py` for the object structure.
         """
-        boolOperand = QuotedString('"', unquoteResults=False) | Word(printables, excludeChars='()')
+        boolOperand = QuotedString('"', unquoteResults=False) | Word(
+            printables, excludeChars='()'
+        )
         boolOperand.setParseAction(
-            lambda token: BoolOperand(
-                token,
-                text_fields,
-                text_field_boosts
-            ),
+            lambda token: BoolOperand(token, text_fields, text_field_boosts),
         )
 
         # Define expression, based on expression operand and list of operations in precedence order
@@ -607,7 +616,9 @@ class ElasticService(ElasticConnection, GraphConnection):
                 '_source': False,
             }, []
 
-        words_phrases_and_wildcards = self._get_words_phrases_and_wildcards(user_search_query)
+        words_phrases_and_wildcards = self._get_words_phrases_and_wildcards(
+            user_search_query
+        )
         processed_query = self._pre_process_query(user_search_query)
         parser = self._get_query_parser(text_fields, text_field_boosts)
         result = parser.parseString(processed_query)[0].to_dict()
@@ -624,17 +635,18 @@ class ElasticService(ElasticConnection, GraphConnection):
             '_source': False,
         }, words_phrases_and_wildcards
 
+    @wrap_exceptions(ServerException, title='Content Search Error')
     def search(
-            self,
-            index_id: str,
-            user_search_query: str,
-            text_fields: List[str],
-            text_field_boosts: Dict[str, int],
-            return_fields: List[str],
-            offset: int = 0,
-            limit: int = 10,
-            filter_=None,
-            highlight=None
+        self,
+        index_id: str,
+        user_search_query: str,
+        text_fields: List[str],
+        text_field_boosts: Dict[str, int],
+        return_fields: List[str],
+        offset: int = 0,
+        limit: int = 10,
+        filter_=None,
+        highlight=None,
     ):
         es_query, search_phrases = self._build_query_clause(
             user_search_query=user_search_query,
@@ -655,12 +667,11 @@ class ElasticService(ElasticConnection, GraphConnection):
             )
         except ElasticRequestError as e:
             raise ServerException(
-                title='Content Search Error',
-                message='Something went wrong during content search. Please simplify your query ' +
-                        '(e.g. remove terms, filters, flags, etc.) and try again.',
-                code=400
+                message='Something went wrong during content search. Please simplify your query '
+                + '(e.g. remove terms, filters, flags, etc.) and try again.'
             ) from e
 
         es_response['hits']['hits'] = [doc for doc in es_response['hits']['hits']]
         return es_response, search_phrases
+
     # End search methods

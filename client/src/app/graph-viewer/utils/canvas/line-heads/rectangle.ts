@@ -7,17 +7,11 @@ import { CustomHead } from './custom';
 export class RectangleHead extends CustomHead {
   lineCap: CanvasLineCap = 'butt';
 
-  constructor(width: number,
-              height: number,
-              options: {} & ShapeTerminatorOptions = {}) {
-    super([
-      0, -height / 2,
-      -width, -height / 2,
-      -width, height / 2,
-      0, height / 2,
-      0, -height / 2,
-    ], [
-      -width, 0
-    ], options);
+  constructor(width: number, height: number, options: {} & ShapeTerminatorOptions = {}) {
+    super(
+      [0, -height / 2, -width, -height / 2, -width, height / 2, 0, height / 2, 0, -height / 2],
+      [-width, 0],
+      options
+    );
   }
 }

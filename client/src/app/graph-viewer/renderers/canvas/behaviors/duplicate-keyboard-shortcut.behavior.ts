@@ -17,7 +17,6 @@ import { NodeCreation } from '../../../actions/nodes';
 import { EdgeCreation } from '../../../actions/edges';
 import { GroupCreation } from '../../../actions/groups';
 
-
 export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
   // TODO: Test that
   private DEFAULT_OFFSET = 50;
@@ -37,28 +36,26 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
       const {
         [GraphEntityType.Edge]: edges = [] as UniversalGraphEdge[],
         [GraphEntityType.Node]: nodes = [] as UniversalGraphNode[],
-        [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
-      } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
+        [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[],
+      } = mapValues(groupBy(selection, 'type'), (g) => map(g, 'entity'));
       const hashMap = new Map<string, string>();
       this.graphView.selection.replace([]);
 
-      const cloneNode = ({hash, data, ...rest}: UniversalGraphNodeTemplate, select) => {
+      const cloneNode = ({ hash, data, ...rest }: UniversalGraphNodeTemplate, select) => {
         const newNode = createNode({
           ...rest,
           data: {
             ...data,
             x: data.x + this.DEFAULT_OFFSET,
             y: data.y + this.DEFAULT_OFFSET,
-          }
+          },
         });
         hashMap.set(hash, newNode.hash);
-        actions.push(
-          new NodeCreation('Duplicate node', newNode, select)
-        );
+        actions.push(new NodeCreation('Duplicate node', newNode, select));
         return newNode;
       };
 
-      for (const {hash, data, members, ...rest} of groups) {
+      for (const { hash, data, members, ...rest } of groups) {
         const newGroup = createGroupNode({
           ...rest,
           data: {
@@ -66,27 +63,25 @@ export class DuplicateKeyboardShortcutBehavior extends AbstractCanvasBehavior {
             x: data.x + this.DEFAULT_OFFSET,
             y: data.y + this.DEFAULT_OFFSET,
           },
-          members: members.map(node => cloneNode(node, false))
+          members: members.map((node) => cloneNode(node, false)),
         });
         // This works also for groups, as those inherit from the node
         hashMap.set(hash, newGroup.hash);
-        actions.push(
-          new GroupCreation('Duplicate group', newGroup, true)
-        );
+        actions.push(new GroupCreation('Duplicate group', newGroup, true));
       }
       for (const node of nodes) {
         if (!hashMap.has(node.hash)) {
           cloneNode(node, true);
         }
       }
-      for (const {from, to, ...rest} of this.graphView.edges) {
+      for (const { from, to, ...rest } of this.graphView.edges) {
         // Copy only if both nodes are copied as well
         if (hashMap.has(from) && hashMap.has(to)) {
           actions.push(
             new EdgeCreation(
               'Duplicate edge',
-              {...rest, to: hashMap.get(to), from: hashMap.get(from)} as UniversalGraphEdge,
-              true,
+              { ...rest, to: hashMap.get(to), from: hashMap.get(from) } as UniversalGraphEdge,
+              true
             )
           );
         }

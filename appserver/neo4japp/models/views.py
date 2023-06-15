@@ -33,11 +33,11 @@ class View(RDBMSBase):
             checksum_sha256 = cls.get_checksum(params)
 
         return db.session.execute(
-                insert(cls)
-                .values(checksum_sha256=checksum_sha256, params=params)
-                .on_conflict_do_update(
-                    index_elements=[cls.checksum_sha256],
-                    set_=dict(modification_date=db.func.now())
-                )
-                .returning(cls.id)
+            insert(cls)
+            .values(checksum_sha256=checksum_sha256, params=params)
+            .on_conflict_do_update(
+                index_elements=[cls.checksum_sha256],
+                set_=dict(modification_date=db.func.now()),
+            )
+            .returning(cls.id)
         ).fetchone()

@@ -64,5 +64,4 @@ export class ObjectVersion {
   }
 }
 
-export class ObjectVersionHistory extends ModelList<ObjectVersion> {
-}
+export class ObjectVersionHistory extends ModelList<ObjectVersion> {}

@@ -17,6 +17,7 @@ from sqlalchemy.orm.session import Session
 from urllib.parse import urlparse
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF
 from neo4japp.models import Files
@@ -57,26 +58,28 @@ def data_upgrades():
         column('mime_type', sa.String),
         column('annotations', postgresql.JSONB),
         column('excluded_annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB))
+        column('custom_annotations', postgresql.JSONB),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id,
-        tableclause1.c.annotations
-    ]).where(
-        and_(
-            or_(
-                tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
-                tableclause1.c.mime_type == FILE_MIME_TYPE_PDF
-            ),
-            tableclause1.c.annotations != '[]'
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause1.c.id, tableclause1.c.annotations]).where(
+            and_(
+                or_(
+                    tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
+                    tableclause1.c.mime_type == FILE_MIME_TYPE_PDF,
+                ),
+                tableclause1.c.annotations != '[]',
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 15):
         files_to_update = []
         for fid, annotations_json in chunk:
             try:
-                annotations = annotations_json['documents'][0]['passages'][0]['annotations']
+                annotations = annotations_json['documents'][0]['passages'][0][
+                    'annotations'
+                ]
             except Exception:
                 # for keyerrors and
                 # some reason still getting annotations_json == '[]'
@@ -89,10 +92,14 @@ def data_upgrades():
                     else:
                         link = anno['meta']['idHyperlink']
                         label = urlparse(link).netloc.replace('www.', '')
-                        anno['meta']['idHyperlinks'] = [json.dumps({'label': label, 'url': link})]
+                        anno['meta']['idHyperlinks'] = [
+                            json.dumps({'label': label, 'url': link})
+                        ]
                     anno['meta'].pop('idHyperlink')
 
-                annotations_json['documents'][0]['passages'][0]['annotations'] = annotations
+                annotations_json['documents'][0]['passages'][0][
+                    'annotations'
+                ] = annotations
                 files_to_update.append({'id': fid, 'annotations': annotations_json})
         try:
             session.bulk_update_mappings(Files, files_to_update)
@@ -102,15 +109,14 @@ def data_upgrades():
 
     # custom annotations
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id,
-        tableclause1.c.custom_annotations
-    ]).where(
-        and_(
-            tableclause1.c.mime_type == FILE_MIME_TYPE_PDF,
-            tableclause1.c.custom_annotations != '[]'
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause1.c.id, tableclause1.c.custom_annotations]).where(
+            and_(
+                tableclause1.c.mime_type == FILE_MIME_TYPE_PDF,
+                tableclause1.c.custom_annotations != '[]',
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 15):
         files_to_update = []
@@ -123,12 +129,16 @@ def data_upgrades():
                         custom['meta']['idType'] = ''
                     link = custom['meta']['idHyperlink']
                     label = urlparse(link).netloc.replace('www.', '')
-                    custom['meta']['idHyperlinks'] = [json.dumps({'label': label, 'url': link})]
+                    custom['meta']['idHyperlinks'] = [
+                        json.dumps({'label': label, 'url': link})
+                    ]
                 try:
                     custom['meta'].pop('idHyperlink')
                 except KeyError:
                     pass
-            files_to_update.append({'id': fid, 'custom_annotations': custom_annotations})
+            files_to_update.append(
+                {'id': fid, 'custom_annotations': custom_annotations}
+            )
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.commit()
@@ -137,15 +147,14 @@ def data_upgrades():
 
     # excluded annotations
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id,
-        tableclause1.c.excluded_annotations
-    ]).where(
-        and_(
-            tableclause1.c.mime_type == FILE_MIME_TYPE_PDF,
-            tableclause1.c.excluded_annotations != '[]'
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause1.c.id, tableclause1.c.excluded_annotations]).where(
+            and_(
+                tableclause1.c.mime_type == FILE_MIME_TYPE_PDF,
+                tableclause1.c.excluded_annotations != '[]',
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 15):
         files_to_update = []
@@ -156,13 +165,17 @@ def data_upgrades():
                 else:
                     link = excluded['idHyperlink']
                     label = urlparse(link).netloc.replace('www.', '')
-                    excluded['idHyperlinks'] = [json.dumps({'label': label, 'url': link})]
+                    excluded['idHyperlinks'] = [
+                        json.dumps({'label': label, 'url': link})
+                    ]
 
                 try:
                     excluded.pop('idHyperlink')
                 except KeyError:
                     pass
-            files_to_update.append({'id': fid, 'excluded_annotations': excluded_annotations})
+            files_to_update.append(
+                {'id': fid, 'excluded_annotations': excluded_annotations}
+            )
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.commit()

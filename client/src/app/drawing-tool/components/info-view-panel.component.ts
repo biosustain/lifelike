@@ -3,18 +3,22 @@ import { Component, Input } from '@angular/core';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
 
-import { GraphEntity, GraphEntityType, UniversalGraphEdge, UniversalGraphGroup, UniversalGraphNode } from '../services/interfaces';
+import {
+  GraphEntity,
+  GraphEntityType,
+  UniversalGraphEdge,
+  UniversalGraphGroup,
+  UniversalGraphNode,
+} from '../services/interfaces';
 
 @Component({
   selector: 'app-info-view-panel',
   templateUrl: './info-view-panel.component.html',
 })
 export class InfoViewPanelComponent {
-
   @Input() selected: GraphEntity | undefined;
 
-  constructor(protected readonly internalSearch: InternalSearchService) {
-  }
+  constructor(protected readonly internalSearch: InternalSearchService) {}
 
   get isNode() {
     return this.selected.type === GraphEntityType.Node;
@@ -50,11 +54,11 @@ export class InfoViewPanelComponent {
 
   searchMapNodeInVisualizer(node) {
     return this.internalSearch.visualizer_tmp_fix(node.display_name, {
-      entities: [node.label]
+      entities: [node.label],
     });
   }
 
   searchMapNodeInContent(node, type: SearchType | string) {
-    return this.internalSearch.fileContents(node.display_name, {types: [type]});
+    return this.internalSearch.fileContents(node.display_name, { types: [type] });
   }
 }

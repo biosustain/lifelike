@@ -4,5 +4,4 @@ import { Component } from '@angular/core';
   selector: 'app-modal-footer',
   templateUrl: './modal-footer.component.html',
 })
-export class ModalFooterComponent {
-}
+export class ModalFooterComponent {}

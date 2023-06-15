@@ -1,4 +1,4 @@
-<ng-container *ngIf="(loadTask.status$ | async) as status">
+<ng-container *ngIf="loadTask.status$ | async as status">
   <ng-container *ngIf="status.failedErrorShown; else noError">
     <div class="module-section">
       <div class="module-section-header">
@@ -19,8 +19,12 @@
         <div class="module-section-header d-flex align-items-center">
           <h2 class="module-section-header-title mr-2">
             Associated Maps
-            <span ngbTooltip="Maps that have a link to this file will appear here."
-                  container="body">
+            <span
+              ngbTooltip="Maps that have a link to this file will appear here."
+              container="body"
+              #tooltipRef="ngbTooltip"
+              [appAutoCloseTooltipOutOfView]="tooltipRef"
+            >
               <i class="fa fa-question-circle text-muted"></i>
             </span>
           </h2>
@@ -30,11 +34,15 @@
               <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
             </button>
 
-            <button class="btn btn-secondary ml-2"
-                    ngbTooltip="Reload List"
-                    container="body"
-                    placement="bottom top left right"
-                    (click)="refresh()">
+            <button
+              class="btn btn-secondary ml-2"
+              ngbTooltip="Reload List"
+              container="body"
+              #tooltipRef="ngbTooltip"
+              [appAutoCloseTooltipOutOfView]="tooltipRef"
+              placement="bottom top left right"
+              (click)="refresh()"
+            >
               <i class="fa fa-fw fa-sync"></i>
             </button>
           </div>
@@ -42,14 +50,15 @@
 
         <div class="module-section-body">
           <ng-container *ngIf="list.results.length; else noMapResults">
-            <app-object-tile-deck [objects]="list.results" [forEditing]="false"
-                                  [newTabObject]="true"></app-object-tile-deck>
+            <app-object-tile-deck
+              [objects]="list.results"
+              [forEditing]="false"
+              [newTabObject]="true"
+            ></app-object-tile-deck>
           </ng-container>
 
           <ng-template #noMapResults>
-            <div class="my-4">
-              There are no maps associated with this file.
-            </div>
+            <div class="my-4">There are no maps associated with this file.</div>
           </ng-template>
         </div>
       </div>
