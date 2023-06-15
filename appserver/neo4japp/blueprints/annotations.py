@@ -90,6 +90,7 @@ from ..services.annotations.utils.graph_queries import (
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
+from ..utils.string import sub_whitespace
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
@@ -261,10 +262,10 @@ class FileAnnotationCountsView(FilesystemBaseView):
             else:
                 text = annotation['meta']['allText'].strip()
             yield [
-                meta['id'],
+                sub_whitespace(meta['id']),
                 meta['type'],
-                text,
-                annotation.get('primaryName', '').strip(),
+                sub_whitespace(text),
+                sub_whitespace(annotation.get('primaryName', '').strip()),
                 counts[key]['count']
             ]
 
@@ -322,10 +323,10 @@ class FileAnnotationSortedView(FilesystemBaseView):
             else:
                 text = annotation['meta']['allText'].strip()
             yield [
-                meta['id'],
+                sub_whitespace(meta['id']),
                 meta['type'],
-                text,
-                annotation.get('primaryName', '').strip(),
+                sub_whitespace(text),
+                sub_whitespace(annotation.get('primaryName', '').strip()),
                 values[key]['value']
             ]
 
