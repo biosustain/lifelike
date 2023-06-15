@@ -13,10 +13,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.dialects import postgresql
 
-from migrations.utils import (
-    update_annotations,
-    update_annotations_add_primary_name
-)
+from migrations.utils import update_annotations, update_annotations_add_primary_name
 
 
 # revision identifiers, used by Alembic.
@@ -51,18 +48,17 @@ def data_upgrades():
     session = Session(conn)
 
     tableclause = table(
-        'files',
-        column('id', sa.Integer),
-        column('annotations', postgresql.JSONB))
+        'files', column('id', sa.Integer), column('annotations', postgresql.JSONB)
+    )
 
-    results = conn.execution_options(stream_results=True).execute(sa.select([
-            tableclause.c.id,
-            tableclause.c.annotations
-        ]).where(tableclause.c.annotations != '[]'))
+    results = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.annotations]).where(
+            tableclause.c.annotations != '[]'
+        )
+    )
 
     try:
-        update_annotations(
-            results, session, update_annotations_add_primary_name)
+        update_annotations(results, session, update_annotations_add_primary_name)
     except Exception:
         raise Exception('Migration failed.')
 

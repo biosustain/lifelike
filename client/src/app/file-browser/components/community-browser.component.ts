@@ -27,13 +27,15 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
     page: 1,
     sort: '-creationDate',
   };
-  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, FilesystemObjectList> = new BackgroundTask(
-    (locator: PaginatedRequestOptions) => this.filesystemService.search({
-      type: 'public',
-      sort: '-modificationDate',
-      ...locator,
-    }), // TODO
-  );
+  public readonly loadTask: BackgroundTask<PaginatedRequestOptions, FilesystemObjectList> =
+    new BackgroundTask(
+      (locator: PaginatedRequestOptions) =>
+        this.filesystemService.search({
+          type: 'public',
+          sort: '-modificationDate',
+          ...locator,
+        }) // TODO
+    );
 
   public locator: StandardRequestOptions = {
     ...this.defaultLocator,
@@ -49,32 +51,39 @@ export class CommunityBrowserComponent implements OnInit, OnDestroy {
   private routerParamSubscription: Subscription;
   private loadTaskSubscription: Subscription;
 
-  constructor(private readonly workspaceManager: WorkspaceManager,
-              private readonly filesystemService: FilesystemService,
-              private readonly progressDialog: ProgressDialog,
-              private readonly ngbModal: NgbModal,
-              private readonly route: ActivatedRoute,
-              private readonly router: Router) {
-  }
+  constructor(
+    private readonly workspaceManager: WorkspaceManager,
+    private readonly filesystemService: FilesystemService,
+    private readonly progressDialog: ProgressDialog,
+    private readonly ngbModal: NgbModal,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
+  ) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 
-    this.routerParamSubscription = this.route.queryParams.pipe(
-      tap((params) => {
-        this.locator = {
-          ...this.defaultLocator,
-          ...params,
-          // Cast to integer
-          page: params.hasOwnProperty('page') ? parseInt(params.page, 10) : this.defaultLocator.page,
-          limit: params.hasOwnProperty('limit') ? parseInt(params.limit, 10) : this.defaultLocator.limit,
-        };
-        this.filterForm.patchValue(this.locator);
-        this.refresh();
-      }),
-    ).subscribe();
+    this.routerParamSubscription = this.route.queryParams
+      .pipe(
+        tap((params) => {
+          this.locator = {
+            ...this.defaultLocator,
+            ...params,
+            // Cast to integer
+            page: params.hasOwnProperty('page')
+              ? parseInt(params.page, 10)
+              : this.defaultLocator.page,
+            limit: params.hasOwnProperty('limit')
+              ? parseInt(params.limit, 10)
+              : this.defaultLocator.limit,
+          };
+          this.filterForm.patchValue(this.locator);
+          this.refresh();
+        })
+      )
+      .subscribe();
   }
 
   ngOnDestroy() {

@@ -15,15 +15,15 @@ import { ObjectCreateRequest } from '../../schema';
 
 @Component({
   selector: 'app-object-upload-dialog',
-  templateUrl: './object-upload-dialog.component.html'
+  templateUrl: './object-upload-dialog.component.html',
 })
 export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
-
   @Input() request = {};
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
-  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP).filter(
-    key => NLPANNOTATIONMODELS.has(key)).map(hasKey => hasKey);
+  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP)
+    .filter((key) => NLPANNOTATIONMODELS.has(key))
+    .map((hasKey) => hasKey);
 
   // TODO: We can think about removing this after we add task queue for annotations
   readonly maxFileCount = 5;
@@ -36,19 +36,19 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
   readonly extensionsToCutRegex = /.map$/;
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly search: SharedSearchService,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly search: SharedSearchService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog, modalService);
   }
 
   // Empty overwrite prevents attempt of returned value to update dialog form
-  applyValue(value: any) {
-
-  }
+  applyValue(value: any) {}
 
   // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.
   // @ts-ignore
@@ -71,19 +71,21 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       return uploadRequests;
     }
 
-    return [{
-      ...this.createObjectRequest(value),
-      ...(value.contentSource === 'contentUrl') && {contentUrl: value.contentUrl},
-      ...this.request,
-    } as ObjectCreateRequest];
+    return [
+      {
+        ...this.createObjectRequest(value),
+        ...(value.contentSource === 'contentUrl' && { contentUrl: value.contentUrl }),
+        ...this.request,
+      } as ObjectCreateRequest,
+    ];
   }
 
   async fileChanged(event: { target: HTMLInputElement }) {
     const uploadLimit = this.maxFileCount - this.fileList.length;
-    for (let i = 0; (i < event.target.files.length) && (i < uploadLimit); i++) {
+    for (let i = 0; i < event.target.files.length && i < uploadLimit; i++) {
       const targetFile = event.target.files[i];
       const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
-      await extractDescriptionFromFile(targetFile).then(description => {
+      await extractDescriptionFromFile(targetFile).then((description) => {
         const fileEntry: FileInput<any> = {
           formState: {
             contentValue: targetFile,
@@ -93,8 +95,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
             organism: null,
             annotationsConfigs: {
               annotationMethods: this.defaultAnnotationMethods,
-              excludeReferences: true
-            }
+              excludeReferences: true,
+            },
           },
           filename,
           hasErrors: false,
@@ -107,7 +109,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   }
 
   activeTabChanged(event: NgbNavChangeEvent) {
-    if (this.fileList.length ||  this.form.get('contentUrl').value.length) {
+    if (this.fileList.length || this.form.get('contentUrl').value.length) {
       if (!confirm('Are you sure? Your progress will be lost!')) {
         event.preventDefault();
         return;
@@ -139,7 +141,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       this.form.get('description').setValue('');
       return;
     }
-    if (newIndex >= fileCount ) {
+    if (newIndex >= fileCount) {
       newIndex = this.fileList.length - 1;
     }
     if (this.selectedFile) {

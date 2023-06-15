@@ -25,7 +25,7 @@ export class AnnotationExcludeDialogComponent extends CommonFormDialogComponent<
     if (type === AnnotationType.Gene || type === AnnotationType.Protein) {
       this.isGeneOrProtein = true;
       this.form.patchValue({
-        isCaseInsensitive: false
+        isCaseInsensitive: false,
       });
     }
   }

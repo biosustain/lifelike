@@ -14,7 +14,16 @@ class OboParser(BaseParser):
     """
     Base parser to parse obo format files.
     """
-    def __init__(self, data_source:str, obo_file:str, attributes_map: dict, relationships_map: dict, node_label, node_attrs=[]):
+
+    def __init__(
+        self,
+        data_source: str,
+        obo_file: str,
+        attributes_map: dict,
+        relationships_map: dict,
+        node_label,
+        node_attrs=[],
+    ):
         """
         datasource: node data source, e.g. GO, CHEBI.
         """
@@ -66,7 +75,10 @@ class OboParser(BaseParser):
         return nodes
 
     def _process_property(self, node: NodeData, attr_name: str, attr_val: str):
-        if not attr_name in self.attributes_map and not attr_name in self.relationships_map:
+        if (
+            not attr_name in self.attributes_map
+            and not attr_name in self.relationships_map
+        ):
             return
         if attr_name == 'property_value':
             prop_identifier, value, _ = attr_val.split(' ')
@@ -127,22 +139,15 @@ class OboParser(BaseParser):
             gzfile = True
         nodes = self.parse_obo_file(self.data_file, gzfile)
         outfiles = list()
-        outfiles.append(self.write_node_file(nodes, self.attrs, self.get_node_out_file()))
+        outfiles.append(
+            self.write_node_file(nodes, self.attrs, self.get_node_out_file())
+        )
         synfile = self.write_synonyms_file(nodes, self.get_node_synonym_file())
         if synfile:
             outfiles.append(synfile)
-        relfile = self.write_internal_relationships_file(nodes, self.get_node_rel_file())
+        relfile = self.write_internal_relationships_file(
+            nodes, self.get_node_rel_file()
+        )
         if relfile:
             outfiles.append(relfile)
         self.zip_output_files(outfiles, output_zip_file)
-
-
-
-
-
-
-
-
-
-
-

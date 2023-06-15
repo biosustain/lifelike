@@ -1,7 +1,7 @@
 export type Many<T> = T | Array<T>;
 
 export type RecursivePartial<T> = {
-    [P in keyof T]?: RecursivePartial<T[P]>;
+  [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
 export interface TreeNode<T> {
@@ -67,16 +67,13 @@ export interface MessageResponse {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface InformationResponse extends MessageResponse {
-}
+export interface InformationResponse extends MessageResponse {}
 
 // tslint:disable-next-line:no-empty-interface
-export interface WarningResponse extends MessageResponse {
-}
+export interface WarningResponse extends MessageResponse {}
 
 // tslint:disable-next-line:no-empty-interface
-export interface ErrorResponse extends MessageResponse {
-}
+export interface ErrorResponse extends MessageResponse {}
 
 export interface StatusSchema {
   info?: InformationResponse[];

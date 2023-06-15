@@ -4,5 +4,4 @@ import { Component } from '@angular/core';
   selector: 'app-browser-context',
   templateUrl: './browser-context.component.html',
 })
-export class BrowserContextComponent {
-}
+export class BrowserContextComponent {}

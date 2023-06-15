@@ -47,6 +47,7 @@ Once the scripts have been reviewed, they need to be checked in and pushed.
 When adding new non nullable columns, adding a default value via the SQLAlchemy models will not add default values to the database. To add default values to existing tables with data, use the `server_default` from alembic.
 
 E.g
+
 ```python
 class ClassA(Mixin):
     id = db.Column(db.BigInteger, primary_key=True)

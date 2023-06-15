@@ -26,4 +26,4 @@ export const appUserLoadingMock: () => AppUser = () => ({
 });
 
 export const collaboratorLoadingMock: () => Collaborator = () =>
-  new Collaborator().update({user: appUserLoadingMock(), roleName: LOADING});
+  new Collaborator().update({ user: appUserLoadingMock(), roleName: LOADING });

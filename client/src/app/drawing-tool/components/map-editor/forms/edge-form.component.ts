@@ -17,9 +17,12 @@ import { EntityForm } from './entity-form';
 })
 export class EdgeFormComponent extends EntityForm {
   lineHeadTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
+    [
+      null,
+      {
+        name: '(Default)',
+      },
+    ],
     ...LINE_HEAD_TYPES.entries(),
   ];
 
@@ -27,12 +30,14 @@ export class EdgeFormComponent extends EntityForm {
   updatedEdge: UniversalGraphEdge;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphEdge>,
-    updatedData: RecursivePartial<UniversalGraphEdge>
+    originalData: RecursivePartial<UniversalGraphEdge>;
+    updatedData: RecursivePartial<UniversalGraphEdge>;
   }>();
 
-  constructor(protected readonly workspaceManager: WorkspaceManager,
-              protected readonly internalSearch: InternalSearchService) {
+  constructor(
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly internalSearch: InternalSearchService
+  ) {
     super(workspaceManager);
   }
 
@@ -109,7 +114,7 @@ export class EdgeFormComponent extends EntityForm {
     }
 
     const [domain, url] = ['', ''];
-    this.edge.data.hyperlinks.push({url, domain});
+    this.edge.data.hyperlinks.push({ url, domain });
   }
 
   /**

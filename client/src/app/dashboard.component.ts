@@ -11,9 +11,9 @@ import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent {
-  readonly buildInfoWithStatus$: Observable<PipeStatus<BuildInfo>> = this.metadataService.getBuildInfo().pipe(
-    addStatus({} as BuildInfo)
-  );
+  readonly buildInfoWithStatus$: Observable<PipeStatus<BuildInfo>> = this.metadataService
+    .getBuildInfo()
+    .pipe(addStatus({} as BuildInfo));
 
   constructor(private readonly metadataService: MetaDataService) {}
 }

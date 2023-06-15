@@ -211,28 +211,3 @@ set_detail_property:
   description: change description property to detail since description is used by sankey for other purpose
   query: >
     match(n) where exists(n.description) set n.detail = n.description remove n.description;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

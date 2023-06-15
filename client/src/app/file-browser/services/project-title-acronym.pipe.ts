@@ -3,12 +3,13 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { isNil } from 'lodash-es';
 
 @Pipe({
-  name: 'projectTitleAcronym'
+  name: 'projectTitleAcronym',
 })
 export class ProjectTitleAcronymPipe implements PipeTransform {
-
   transform(value: string, ...args: any[]): any {
-    if (isNil(value)) { return ''; }
+    if (isNil(value)) {
+      return '';
+    }
 
     const acronymLength = args.length ? args[0] : 2;
 
@@ -18,7 +19,9 @@ export class ProjectTitleAcronymPipe implements PipeTransform {
     tokens = tokens.splice(0, acronymLength);
 
     // Get first letter of each of token, fuse, and uperrcase
-    return tokens.map(t => t.charAt(0)).join('').toUpperCase();
+    return tokens
+      .map((t) => t.charAt(0))
+      .join('')
+      .toUpperCase();
   }
-
 }

@@ -10,16 +10,17 @@ export class EdgeCreation implements GraphAction {
     public description: string,
     public edge: UniversalGraphEdge,
     public readonly select = false
-  ) {
-  }
+  ) {}
 
   apply(component: GraphActionReceiver) {
     component.addEdge(this.edge);
     if (this.select) {
-      component.selection.add([{
-        type: GraphEntityType.Edge,
-        entity: this.edge,
-      }]);
+      component.selection.add([
+        {
+          type: GraphEntityType.Edge,
+          entity: this.edge,
+        },
+      ]);
     }
   }
 
@@ -32,9 +33,7 @@ export class EdgeCreation implements GraphAction {
  * Represents the deletion of a edge.
  */
 export class EdgeDeletion implements GraphAction {
-  constructor(public description: string,
-              public edge: UniversalGraphEdge) {
-  }
+  constructor(public description: string, public edge: UniversalGraphEdge) {}
 
   apply(component: GraphActionReceiver) {
     component.removeEdge(this.edge);

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, Validators, AbstractControl } from '@angular/forms';
 
 import { isInteger } from 'lodash-es';
@@ -15,11 +15,9 @@ import { SankeyState, SankeyOptions } from '../../interfaces';
 })
 export class SankeyAdvancedPanelComponent
   extends SankeyAbstractAdvancedPanelComponent<SankeyOptions, SankeyState>
-  implements OnInit, OnDestroy {
-  constructor(
-    protected common: ControllerService,
-    protected formBuilder: FormBuilder
-  ) {
+  implements OnInit, OnDestroy
+{
+  constructor(protected common: ControllerService, protected formBuilder: FormBuilder) {
     super(common, formBuilder);
   }
 
@@ -43,15 +41,15 @@ export class SankeyAdvancedPanelComponent
   ngOnInit() {
     super.ngOnInit();
 
-    this.maximumShortestPathPlusN$.subscribe(maximumShortestPathPlusN => {
+    this.maximumShortestPathPlusN$.subscribe((maximumShortestPathPlusN) => {
       this.form.get('shortestPathPlusN').setValidators([
-        ({value}: AbstractControl) => {
+        ({ value }: AbstractControl) => {
           if (!isInteger(value)) {
             return {
               step: {
                 value,
-                fraction: value % 1
-              }
+                fraction: value % 1,
+              },
             };
           }
         },

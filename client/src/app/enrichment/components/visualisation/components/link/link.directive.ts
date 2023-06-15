@@ -7,21 +7,14 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { LinkWithoutHrefDirective } from 'app/shared/directives/link.directive';
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 
-export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
-  appLink: [
-    '/projects',
-    encodeURIComponent(project_name),
-    'enrichment-table',
-    file_id
-  ],
-  matchExistingTab: '^/+projects/[^/]+/enrichment-table/' +
-    file_id +
-    '([?#].*)?'
+export const paramsToEnrichmentTableLink = ({ project_name, file_id }) => ({
+  appLink: ['/projects', encodeURIComponent(project_name), 'enrichment-table', file_id],
+  matchExistingTab: '^/+projects/[^/]+/enrichment-table/' + file_id + '([?#].*)?',
 });
 
 // just coping the patter how it has been implemented for file navigator...
 export function triggerSearchOnShouldReplaceTab(text) {
-  return component => {
+  return (component) => {
     const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
     enrichmentTableViewerComponent.startTextFind(text);
     return false;
@@ -33,18 +26,16 @@ export function triggerSearchOnShouldReplaceTab(text) {
  * enrichment table.
  */
 @Directive({
-  selector: ':not(a):not(area)[appSELink]'
+  selector: ':not(a):not(area)[appSELink]',
 })
 export class SELinkDirective extends LinkWithoutHrefDirective {
   @HostBinding('style.cursor') cursor = 'pointer';
 
   constructor(workspaceManager: WorkspaceManager, router: Router, route: ActivatedRoute) {
     super(workspaceManager, router, route);
-    route.params.pipe(
-      map(paramsToEnrichmentTableLink)
-    ).subscribe(
-      link => Object.assign(this, link)
-    );
+    route.params
+      .pipe(map(paramsToEnrichmentTableLink))
+      .subscribe((link) => Object.assign(this, link));
   }
 
   @Input() appSELink;

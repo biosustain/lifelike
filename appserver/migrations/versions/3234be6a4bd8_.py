@@ -19,7 +19,8 @@ depends_on = None
 
 def upgrade():
     op.add_column(
-        'files', sa.Column('pinned', sa.Boolean(), nullable=False, server_default='False')
+        'files',
+        sa.Column('pinned', sa.Boolean(), nullable=False, server_default='False'),
     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):

@@ -11,7 +11,7 @@ import {
 const PLACEHOLDER_CONTEXT = new InjectionToken<ShowPlaceholderDirective>('show_placeholders');
 
 @Directive({
-  selector: '[appHasPlaceholder]:not(button):not(input)'
+  selector: '[appHasPlaceholder]:not(button):not(input)',
 })
 export class HasPlaceholderDirective {
   constructor(@Inject(PLACEHOLDER_CONTEXT) public placeholderContext: ShowPlaceholderDirective) {}
@@ -19,10 +19,12 @@ export class HasPlaceholderDirective {
 }
 
 @Directive({
-  selector: 'input[appHasPlaceholder],button[appHasPlaceholder]'
+  selector: 'input[appHasPlaceholder],button[appHasPlaceholder]',
 })
 export class InteractiveInterfaceHasPlaceholderDirective {
-  constructor(@Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective) {}
+  constructor(
+    @Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective
+  ) {}
   @HostBinding('attr.disabled') get disabled() {
     return this.placeholderContext?.showPlaceholders;
   }
@@ -30,7 +32,9 @@ export class InteractiveInterfaceHasPlaceholderDirective {
 
 @Directive({
   selector: '[appShowPlaceholders]',
-  providers:  [{ provide: PLACEHOLDER_CONTEXT, useExisting: forwardRef(() => ShowPlaceholderDirective) }]
+  providers: [
+    { provide: PLACEHOLDER_CONTEXT, useExisting: forwardRef(() => ShowPlaceholderDirective) },
+  ],
 })
 export class ShowPlaceholderDirective {
   @HostBinding('class.show-placeholders') @Input('appShowPlaceholders') showPlaceholders = true;

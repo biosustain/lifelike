@@ -41,8 +41,14 @@ export class GraphSearchFormComponent {
       this.organismChoice = params.organism;
       this.form.patchValue({
         query: params.query,
-        domains: params.domains != null ? this.getValidValuesFromListParams(this.domainChoices, params.domains) : [],
-        entities: params.entities != null ? this.getValidValuesFromListParams(this.entityChoices, params.entities) : [],
+        domains:
+          params.domains != null
+            ? this.getValidValuesFromListParams(this.domainChoices, params.domains)
+            : [],
+        entities:
+          params.entities != null
+            ? this.getValidValuesFromListParams(this.entityChoices, params.entities)
+            : [],
         organism: params.organism,
       });
     }
@@ -53,13 +59,13 @@ export class GraphSearchFormComponent {
    * @param paramList a list of domain strings; individual values may or may not match our hard-coded list
    */
   getValidValuesFromListParams(choices: string[], paramList: string[]): string[] {
-    const normalizedParamList = paramList.map(val => val.toLowerCase());
-    return choices.filter(choice => normalizedParamList.includes(choice.toLowerCase()));
+    const normalizedParamList = paramList.map((val) => val.toLowerCase());
+    return choices.filter((choice) => normalizedParamList.includes(choice.toLowerCase()));
   }
 
   submit() {
     if (!this.form.invalid) {
-      this.search.emit({...this.form.value});
+      this.search.emit({ ...this.form.value });
     } else {
       this.form.markAsDirty();
 

@@ -9,7 +9,7 @@ import { AppVersionInterceptor } from './version-interceptor';
  * will be handled before the next.
  */
 export const httpInterceptorProviders = [
-  {provide: HTTP_INTERCEPTORS, useClass: AppVersionInterceptor, multi: true},
-  {provide: HTTP_INTERCEPTORS, useClass: AuthenticationInterceptor, multi: true},
-  {provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true},
+  { provide: HTTP_INTERCEPTORS, useClass: AppVersionInterceptor, multi: true },
+  { provide: HTTP_INTERCEPTORS, useClass: AuthenticationInterceptor, multi: true },
+  { provide: HTTP_INTERCEPTORS, useClass: HttpErrorInterceptor, multi: true },
 ];

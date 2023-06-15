@@ -20,7 +20,7 @@ from .utils.lmdb import (
     create_ner_type_entity,
     create_ner_type_lab_sample,
     create_ner_type_lab_strain,
-    EntityIdStr
+    EntityIdStr,
 )
 from .utils.graph_queries import (
     get_gene_to_organism_query,
@@ -38,17 +38,20 @@ from neo4japp.constants import LogEventType
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
 from neo4japp.services.arangodb import execute_arango_query, get_db
+from ...exceptions import ServerWarning
 from ...utils.globals import warn
-from ...warnings import ServerWarning
 
 
 class AnnotationGraphService(GraphConnection):
     def __init__(self, conn):
         super().__init__(conn)
 
-    def get_nodes_from_node_ids(self, entity_type: str, node_ids: List[str]) -> Dict[str, str]:
+    def get_nodes_from_node_ids(
+        self, entity_type: str, node_ids: List[str]
+    ) -> Dict[str, str]:
         result = self.exec_read_query_with_params(
-            get_nodes_by_ids(entity_type), {'ids': node_ids})
+            get_nodes_by_ids(entity_type), {'ids': node_ids}
+        )
         return {row['entity_id']: row['entity_name'] for row in result}
 
     # NOTE DEPRECATED: just used in old migration
@@ -71,30 +74,37 @@ class AnnotationGraphService(GraphConnection):
             EntityType.COMPANY.value: create_ner_type_company,
             EntityType.ENTITY.value: create_ner_type_entity,
             EntityType.LAB_SAMPLE.value: create_ner_type_lab_sample,
-            EntityType.LAB_STRAIN.value: create_ner_type_lab_strain
+            EntityType.LAB_STRAIN.value: create_ner_type_lab_strain,
         }
 
         # TODO: can we just do get_global_inclusions_by_type_query once?
         # get all nodes that a Synonym points to and filter on labels in python?
         # or would that be too much data to retrieve all at once?
-        global_inclusions = self.exec_read_query(get_global_inclusions_by_type_query(entity_type))
+        global_inclusions = self.exec_read_query(
+            get_global_inclusions_by_type_query(entity_type)
+        )
         # need to append here because an inclusion
         # might've not been matched to an existing entity
         # so look for it in Lifelike
         global_inclusions += self.exec_read_query(
-            get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type))
+            get_***ARANGO_DB_NAME***_global_inclusions_by_type_query(entity_type)
+        )
 
         for inclusion in global_inclusions:
             normalized_synonym = normalize_str(inclusion['synonym'])
-            if entity_type != EntityType.GENE.value and entity_type != EntityType.PROTEIN.value:
+            if (
+                entity_type != EntityType.GENE.value
+                and entity_type != EntityType.PROTEIN.value
+            ):
                 entity = createfuncs[entity_type](
                     id=inclusion['entity_id'],
                     name=inclusion['entity_name'],
-                    synonym=inclusion['synonym']
+                    synonym=inclusion['synonym'],
                 )  # type: ignore
             else:
                 entity = createfuncs[entity_type](
-                    name=inclusion['entity_name'], synonym=inclusion['synonym'])  # type: ignore
+                    name=inclusion['entity_name'], synonym=inclusion['synonym']
+                )  # type: ignore
 
                 # for proteins, we use the name as the id in the LMDB data, but we don't
                 # want to do this if the user provided an id or left it blank
@@ -129,7 +139,7 @@ class AnnotationGraphService(GraphConnection):
             EntityType.COMPANY.value: defaultdict(list),
             EntityType.ENTITY.value: defaultdict(list),
             EntityType.LAB_SAMPLE.value: defaultdict(list),
-            EntityType.LAB_STRAIN.value: defaultdict(list)
+            EntityType.LAB_STRAIN.value: defaultdict(list),
         }
 
         local_inclusion_dicts: Dict[str, dict] = {
@@ -140,9 +150,12 @@ class AnnotationGraphService(GraphConnection):
             self._create_entity_inclusion(k, v)
 
         local_species_inclusions = [
-            local for local in inclusions if local.get(
-                'meta', {}).get('type') == EntityType.SPECIES.value and not local.get(
-                    'meta', {}).get('includeGlobally', False)  # safe to default to False?
+            local
+            for local in inclusions
+            if local.get('meta', {}).get('type') == EntityType.SPECIES.value
+            and not local.get('meta', {}).get(
+                'includeGlobally', False
+            )  # safe to default to False?
         ]
 
         for local_inclusion in local_species_inclusions:
@@ -156,12 +169,9 @@ class AnnotationGraphService(GraphConnection):
                 message = f'Error creating local inclusion {local_inclusion} for {entity_type}'
                 current_app.logger.error(
                     message,
-                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
                 )
-                warn(
-                    ServerWarning(message=message),
-                    cause=e
-                )
+                warn(ServerWarning(message=message), cause=e)
             else:
                 # entity_name could be empty strings
                 # probably a result of testing
@@ -175,16 +185,16 @@ class AnnotationGraphService(GraphConnection):
                         entity_id = synonym
 
                     entity = create_ner_type_species(
-                        id=entity_id,
-                        name=synonym,
-                        synonym=synonym
+                        id=entity_id, name=synonym, synonym=synonym
                     )
 
                     # override the default data source
                     # e.g gene default is NCBI, but globals can be BioCyc
                     entity['id_type'] = entity_id_type
                     entity['id_hyperlinks'] = entity_id_hyperlinks
-                    local_inclusion_dicts[entity_type][normalized_synonym].append(entity)
+                    local_inclusion_dicts[entity_type][normalized_synonym].append(
+                        entity
+                    )
 
         return GlobalInclusions(
             included_anatomy=inclusion_dicts[EntityType.ANATOMY.value],
@@ -201,7 +211,7 @@ class AnnotationGraphService(GraphConnection):
             included_companies=inclusion_dicts[EntityType.COMPANY.value],
             included_entities=inclusion_dicts[EntityType.ENTITY.value],
             included_lab_samples=inclusion_dicts[EntityType.LAB_SAMPLE.value],
-            included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value]
+            included_lab_strains=inclusion_dicts[EntityType.LAB_STRAIN.value],
         )
 
     def get_genes_to_organisms(
@@ -214,7 +224,8 @@ class AnnotationGraphService(GraphConnection):
         primary_names: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
-            get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms})
+            get_gene_to_organism_query(), {'genes': genes, 'organisms': organisms}
+        )
 
         for row in result:
             gene_name = row['gene_name']
@@ -231,7 +242,9 @@ class AnnotationGraphService(GraphConnection):
                 if gene_to_organism_map[gene_synonym].get(gene_name, None):
                     gene_to_organism_map[gene_synonym][gene_name][organism_id] = gene_id
                 else:
-                    gene_to_organism_map[gene_synonym][gene_name] = {organism_id: gene_id}
+                    gene_to_organism_map[gene_synonym][gene_name] = {
+                        organism_id: gene_id
+                    }
             else:
                 gene_to_organism_map[gene_synonym] = {gene_name: {organism_id: gene_id}}
 
@@ -244,7 +257,7 @@ class AnnotationGraphService(GraphConnection):
         return GeneOrProteinToOrganism(
             matches=gene_to_organism_map,
             data_sources=data_sources,
-            primary_names=primary_names
+            primary_names=primary_names,
         )
 
     def get_proteins_to_organisms(
@@ -256,7 +269,9 @@ class AnnotationGraphService(GraphConnection):
         primary_names: Dict[str, str] = {}
 
         result = self.exec_read_query_with_params(
-            get_protein_to_organism_query(), {'proteins': proteins, 'organisms': organisms})
+            get_protein_to_organism_query(),
+            {'proteins': proteins, 'organisms': organisms},
+        )
 
         for row in result:
             protein_name: str = row['protein']
@@ -272,12 +287,14 @@ class AnnotationGraphService(GraphConnection):
             else:
                 protein_to_organism_map[protein_name] = {organism_id: protein_id}
 
-        return GeneOrProteinToOrganism(matches=protein_to_organism_map, primary_names=primary_names)
+        return GeneOrProteinToOrganism(
+            matches=protein_to_organism_map, primary_names=primary_names
+        )
 
 
 def get_organisms_from_gene_ids(arango_client, gene_ids: Dict[Any, int]):
     return execute_arango_query(
         db=get_db(arango_client),
         query=get_organisms_from_gene_ids_query(),
-        gene_ids=list(gene_ids.keys())
+        gene_ids=list(gene_ids.keys()),
     )

@@ -1,7 +1,7 @@
 import itertools
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, List, Optional, Tuple, TypeVar, Callable, Iterable, Iterator, Union
+from typing import Generic, List, Tuple, TypeVar, Callable, Iterable, Iterator, Union
 
 from neo4japp.message import ServerMessage
 
@@ -15,7 +15,6 @@ T = TypeVar('T')
 
 
 class ContentValidationGroupedMessageFactory(ABC, Generic[T]):
-
     @property
     @abstractmethod
     def entity_type(self) -> T:
@@ -57,6 +56,7 @@ class ContentValidationGroupedMessageFactory(ABC, Generic[T]):
         :return: None
         """
         return self.entities.append(__object)
+
     # endregion
 
     # Default behaviour
@@ -71,7 +71,11 @@ class ContentValidationGroupedMessageFactory(ABC, Generic[T]):
         """
         return len(self.entities) > 1 if self.entities else None
 
-    def compose(self, singular_factory: Callable[[T], str], multiple_factory: Callable[[int], str]):
+    def compose(
+        self,
+        singular_factory: Callable[[T], str],
+        multiple_factory: Callable[[int], str],
+    ):
         """
         Show different text based on number of entities in the group
         :param singular_factory: given entity return str
@@ -92,8 +96,10 @@ class ContentValidationGroupedMessageFactory(ABC, Generic[T]):
         :return: "Path: <JSONPath>"
         """
         segments = (
-            str(list(arg)) if isinstance(arg, Iterable) and not isinstance(arg, str)
-            else f'.{arg}' for arg in args
+            str(list(arg))
+            if isinstance(arg, Iterable) and not isinstance(arg, str)
+            else f'.{arg}'
+            for arg in args
         )
         path = ''.join(segments).lstrip('.')
         return 'Path: ' + path
@@ -111,7 +117,9 @@ class ContentValidationGroupedMessageFactory(ABC, Generic[T]):
         Flatmap list of list of string for entities message into interable of strings
         :return:
         """
-        return itertools.chain.from_iterable(map(lambda e: self.entity_messages(e), self.entities))
+        return itertools.chain.from_iterable(
+            map(lambda e: self.entity_messages(e), self.entities)
+        )
 
     @abstractmethod
     def to_message(self) -> ContentValidationMessage:

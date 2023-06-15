@@ -35,7 +35,7 @@ function walk(ctx: Lint.WalkContext) {
       const remainingPart = [];
       // imports always use '/'
       for (const part of name.text.split('/')) {
-        if (part !== '.' && part !== '..' || relativeEndFlag) {
+        if ((part !== '.' && part !== '..') || relativeEndFlag) {
           relativeEndFlag = true;
           remainingPart.push(part);
         } else {
@@ -47,13 +47,12 @@ function walk(ctx: Lint.WalkContext) {
       const relative = path.relative('.', relativeRoot).split(path.sep);
       if (relative.length === 2 && relative[1] === 'app') {
         // create a fixer for this failure
-        const fix = new Lint.Replacement(name.getStart(), name.getWidth(), `'${['app', ...remainingPart].join('/')}'`);
-        ctx.addFailure(
-          name.getStart(ctx.sourceFile) + 1,
-          name.end - 1,
-          Rule.FAILURE_STRING,
-          fix
+        const fix = new Lint.Replacement(
+          name.getStart(),
+          name.getWidth(),
+          `'${['app', ...remainingPart].join('/')}'`
         );
+        ctx.addFailure(name.getStart(ctx.sourceFile) + 1, name.end - 1, Rule.FAILURE_STRING, fix);
       }
     }
   }

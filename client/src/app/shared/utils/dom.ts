@@ -28,7 +28,10 @@ function createDOMRect(x: number, y: number, width: number, height: number): DOM
  * @param element the element
  * @param rect a rect to use (otherwise the element's rect is used)
  */
-export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | undefined = null): DOMRect | ClientRect {
+export function getAbsoluteBoundingClientRect(
+  element: Element,
+  rect: DOMRect | undefined = null
+): DOMRect | ClientRect {
   if (rect == null) {
     rect = element.getBoundingClientRect() as DOMRect;
   }
@@ -58,13 +61,16 @@ export function getAbsoluteBoundingClientRect(element: Element, rect: DOMRect | 
  * @param rect the rect to make relative
  * @param container the container (may be scrollable)
  */
-export function getBoundingClientRectRelativeToContainer(rect: (DOMRect | ClientRect), container: Element): DOMRect {
+export function getBoundingClientRectRelativeToContainer(
+  rect: DOMRect | ClientRect,
+  container: Element
+): DOMRect {
   const containerRect = getAbsoluteBoundingClientRect(container);
   return createDOMRect(
     rect.left - containerRect.left + container.scrollLeft,
     rect.top - containerRect.top + container.scrollTop,
     rect.width,
-    rect.height,
+    rect.height
   );
 }
 
@@ -77,9 +83,11 @@ export function getBoundingClientRectRelativeToContainer(rect: (DOMRect | Client
  * @param predicate the test element
  * @param continueAfterFail true to continue walking the whole hierarchy even after predicate failure
  */
-export function* walkParentElements(start: Element,
-                                    predicate: (element: Element) => boolean,
-                                    continueAfterFail = true): Iterable<Element | undefined> {
+export function* walkParentElements(
+  start: Element,
+  predicate: (element: Element) => boolean,
+  continueAfterFail = true
+): Iterable<Element | undefined> {
   let current: Element = start;
   while (current) {
     if (predicate(current)) {

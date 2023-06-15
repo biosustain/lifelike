@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 import json
 
@@ -8,13 +10,16 @@ import json
 def test_expand(client, gas_gangrene):
     response = client.post(
         '/visualizer/expand',
-        data=json.dumps({
-            'node_id': 1,
-            'filter_labels': ['Chemical', 'Disease', 'Gene'],
-        }), content_type='application/json'
+        data=json.dumps(
+            {
+                'node_id': 1,
+                'filter_labels': ['Chemical', 'Disease', 'Gene'],
+            }
+        ),
+        content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def generate_headers(jwt_token):
@@ -30,41 +35,43 @@ def test_get_reference_table_data(
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/visualizer/get-reference-table-data',
-        data=json.dumps({
-            'node_edge_pairs': [
-                {
-                    'node': {
-                        'id': f'duplicateNode:1',
-                        'label': 'Chemical',
-                        'data': {},
-                        'sub_labels': [],
-                        'display_name': 'penicillins',
-                        'primary_label': 'Chemical',
-                        'color': {},
-                        'expanded': False,
-                        'duplicate_of': 1,
+        data=json.dumps(
+            {
+                'node_edge_pairs': [
+                    {
+                        'node': {
+                            'id': f'duplicateNode:1',
+                            'label': 'Chemical',
+                            'data': {},
+                            'sub_labels': [],
+                            'display_name': 'penicillins',
+                            'primary_label': 'Chemical',
+                            'color': {},
+                            'expanded': False,
+                            'duplicate_of': 1,
+                        },
+                        'edge': {
+                            'id': 'duplicateEdge:1',
+                            'label': 'ASSOCIATED',
+                            'data': {},
+                            'to': 'duplicateNode:1',
+                            'from_': 'duplicateNode:2',
+                            'to_label': 'Disease',
+                            'from_label': 'Chemical',
+                            'arrows': 'to',
+                            'duplicate_of': 1,
+                            'original_from': 2,
+                            'original_to': 1,
+                        },
                     },
-                    'edge': {
-                        'id': 'duplicateEdge:1',
-                        'label': 'ASSOCIATED',
-                        'data': {},
-                        'to': 'duplicateNode:1',
-                        'from_': 'duplicateNode:2',
-                        'to_label': 'Disease',
-                        'from_label': 'Chemical',
-                        'arrows': 'to',
-                        'duplicate_of': 1,
-                        'original_from': 2,
-                        'original_to': 1,
-                    },
-                },
-            ],
-        }),
+                ],
+            }
+        ),
         headers=headers,
-        content_type='application/json'
+        content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_snippets_for_edge(
@@ -75,22 +82,24 @@ def test_get_snippets_for_edge(
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/visualizer/get-snippets-for-edge',
-        data=json.dumps({
-            'page': 1,
-            'limit': 25,
-            'edge': {
-                'to': 1,
-                'from': 2,
-                'fromLabel': 'Chemical',
-                'toLabel': 'Disease',
-                'label': 'ASSOCIATED',
+        data=json.dumps(
+            {
+                'page': 1,
+                'limit': 25,
+                'edge': {
+                    'to': 1,
+                    'from': 2,
+                    'fromLabel': 'Chemical',
+                    'toLabel': 'Disease',
+                    'label': 'ASSOCIATED',
+                },
             }
-        }),
+        ),
         headers=headers,
-        content_type='application/json'
+        content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
 
 def test_get_snippets_for_cluster(
@@ -101,23 +110,25 @@ def test_get_snippets_for_cluster(
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/visualizer/get-snippets-for-cluster',
-        data=json.dumps({
-            'page': 1,
-            'limit': 25,
-            'edges': [
-                {
-                    'to': 'duplicateNode:1',
-                    'from': 'duplicateNode:2',
-                    'originalFrom': 2,
-                    'originalTo': 1,
-                    'fromLabel': 'Chemical',
-                    'toLabel': 'Disease',
-                    'label': 'ASSOCIATED',
-                }
-            ]
-        }),
+        data=json.dumps(
+            {
+                'page': 1,
+                'limit': 25,
+                'edges': [
+                    {
+                        'to': 'duplicateNode:1',
+                        'from': 'duplicateNode:2',
+                        'originalFrom': 2,
+                        'originalTo': 1,
+                        'fromLabel': 'Chemical',
+                        'toLabel': 'Disease',
+                        'label': 'ASSOCIATED',
+                    }
+                ],
+            }
+        ),
         headers=headers,
-        content_type='application/json'
+        content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK

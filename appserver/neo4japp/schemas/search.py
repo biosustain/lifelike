@@ -27,6 +27,7 @@ class SynonymSearchSchema(CamelCaseSchema):
     organisms = fields.String(default='', required=False)
     types = fields.String(default='', required=False)
 
+
 # Response
 # ----------------------------------------
 
@@ -54,13 +55,16 @@ class SynonymSearchResponseSchema(CamelCaseSchema):
 
 
 class AnnotateRequestSchema(ma.Schema):
-    texts = fields.List(fields.String(validate=validate.Length(min=1, max=1500)),
-                        validate=validate.Length(min=1, max=40))
+    texts = fields.List(
+        fields.String(validate=validate.Length(min=1, max=1500)),
+        validate=validate.Length(min=1, max=40),
+    )
 
 
 # ========================================
 # Organisms
 # ========================================
+
 
 class OrganismSearchSchema(ma.Schema):
     query = ma.String(required=True)
@@ -70,6 +74,7 @@ class OrganismSearchSchema(ma.Schema):
 # ========================================
 # Visualizer
 # ========================================
+
 
 class VizSearchSchema(ma.Schema):
     query = ma.String(required=True)

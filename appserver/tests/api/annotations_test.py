@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from arango.database import StandardDatabase
 import json
 import pytest
@@ -10,12 +12,12 @@ def generate_headers(jwt_token):
 
 
 def test_user_can_get_gene_annotations_from_pdf(
-        client,
-        test_user_with_pdf: Files,
-        fix_admin_user: AppUser,
-        test_arango_db: StandardDatabase,
-        mock_get_combined_annotations_result,
-        mock_get_organisms_from_gene_ids_result,
+    client,
+    test_user_with_pdf: Files,
+    fix_admin_user: AppUser,
+    test_arango_db: StandardDatabase,
+    mock_get_combined_annotations_result,
+    mock_get_organisms_from_gene_ids_result,
 ):
     # Create the necessary collections in arango before calling the API. These are empty of course.
     test_arango_db.create_collection('ncbi')
@@ -30,17 +32,18 @@ def test_user_can_get_gene_annotations_from_pdf(
         headers=headers,
         content_type='application/json',
     )
-    assert response.status_code == 200
-    assert response.get_data() == b'gene_id\tgene_name\torganism_id\torganism_name\t' \
-                                  b'gene_annotation_count\r\n' + \
-                                  b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
+    assert response.status_code == HTTPStatus.OK
+    assert (
+        response.get_data() == b'gene_id\tgene_name\torganism_id\torganism_name\t'
+        b'gene_annotation_count\r\n' + b'59272\tACE2\t9606\tHomo sapiens\t1\r\n'
+    )
 
 
 def test_user_can_get_all_annotations_from_pdf(
-        client,
-        test_user_with_pdf: Files,
-        fix_admin_user: AppUser,
-        mock_get_combined_annotations_result,
+    client,
+    test_user_with_pdf: Files,
+    fix_admin_user: AppUser,
+    mock_get_combined_annotations_result,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -51,17 +54,20 @@ def test_user_can_get_all_annotations_from_pdf(
         headers=headers,
         content_type='application/json',
     )
-    assert response.status_code == 200
-    assert response.get_data() == b'entity_id\ttype\ttext\tprimary_name\tcount\r\n' + \
-                                  b'59272\tGene\tace2\tACE2\t1\r\n' + \
-                                  b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
+    assert response.status_code == HTTPStatus.OK
+    assert (
+        response.get_data()
+        == b'entity_id\ttype\ttext\tprimary_name\tcount\r\n'
+        + b'59272\tGene\tace2\tACE2\t1\r\n'
+        + b'9606\tSpecies\thuman\tHomo Sapiens\t1\r\n'
+    )
 
 
 def test_user_can_get_global_inclusions(
-        client,
-        fix_project,
-        fix_admin_user,
-        mock_global_compound_inclusion,
+    client,
+    fix_project,
+    fix_admin_user,
+    mock_global_compound_inclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -72,15 +78,15 @@ def test_user_can_get_global_inclusions(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() is not None
 
 
 def test_user_can_get_global_exclusions(
-        client,
-        fix_project,
-        fix_admin_user,
-        mock_global_gene_exclusion,
+    client,
+    fix_project,
+    fix_admin_user,
+    mock_global_gene_exclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -91,16 +97,16 @@ def test_user_can_get_global_exclusions(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.get_data() is not None
 
 
 @pytest.mark.skip('Skipping for now to get code merged')
 def test_user_can_get_global_list(
-        client,
-        fix_project,
-        fix_admin_user,
-        mock_global_list,
+    client,
+    fix_project,
+    fix_admin_user,
+    mock_global_list,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
@@ -111,7 +117,7 @@ def test_user_can_get_global_list(
         content_type='application/json',
     )
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
 
     data = json.loads(response.get_data().decode('utf-8'))
     assert data['total'] == 2

@@ -32,8 +32,20 @@ def downgrade():
         sa.Column('asset_id', sa.Integer(), nullable=True),
         sa.Column('principal_type', sa.String(length=50), nullable=False),
         sa.Column('principal_id', sa.Integer(), nullable=True),
-        sa.Column('rule_type', sa.Enum('ALLOW', 'DENY', name='accessruletype'), nullable=False),
-        sa.PrimaryKeyConstraint('id')
+        sa.Column(
+            'rule_type', sa.Enum('ALLOW', 'DENY', name='accessruletype'), nullable=False
+        ),
+        sa.PrimaryKeyConstraint('id'),
     )
-    op.create_index('ix_acp_asset_key', 'access_control_policy', ['asset_type', 'asset_id'], unique=False)  # noqa
-    op.create_index('ix_acp_principal_key', 'access_control_policy', ['principal_type', 'principal_id'], unique=False)  # noqa
+    op.create_index(
+        'ix_acp_asset_key',
+        'access_control_policy',
+        ['asset_type', 'asset_id'],
+        unique=False,
+    )  # noqa
+    op.create_index(
+        'ix_acp_principal_key',
+        'access_control_policy',
+        ['principal_type', 'principal_id'],
+        unique=False,
+    )  # noqa

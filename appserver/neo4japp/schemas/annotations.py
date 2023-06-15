@@ -9,12 +9,15 @@ from neo4japp.schemas.common import ResultListSchema
 
 
 class FallbackOrganismSchema(Schema):  # Not camel case!
-    organism_name = fields.String(required=True,
-                                  validate=marshmallow.validate.Length(min=1, max=200))
-    synonym = fields.String(required=True,
-                            validate=marshmallow.validate.Length(min=1, max=200))
-    tax_id = fields.String(required=True,
-                           validate=marshmallow.validate.Length(min=1, max=200))
+    organism_name = fields.String(
+        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    synonym = fields.String(
+        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    tax_id = fields.String(
+        required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
 
 
 class AnnotationMethod(CamelCaseSchema):
@@ -24,8 +27,7 @@ class AnnotationMethod(CamelCaseSchema):
 
 class AnnotationConfigurations(CamelCaseSchema):
     annotation_methods = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(AnnotationMethod)
+        keys=fields.String(), values=fields.Nested(AnnotationMethod)
     )
     exclude_references = fields.Boolean(required=False)
 
@@ -37,14 +39,17 @@ class AnnotationConfigurations(CamelCaseSchema):
 # Requests
 # ----------------------------------------
 
+
 class AnnotationGenerationRequestSchema(CamelCaseSchema):
     """Request for initial annotation or re-annotation."""
+
     organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations, allow_none=True)
 
 
 # Responses
 # ----------------------------------------
+
 
 class AnnotationGenerationResultSchema(CamelCaseSchema):
     attempted = fields.Boolean()
@@ -53,14 +58,16 @@ class AnnotationGenerationResultSchema(CamelCaseSchema):
 
 
 class MultipleAnnotationGenerationResponseSchema(CamelCaseSchema):
-    mapping = fields.Dict(keys=fields.String(),
-                          values=fields.Nested(AnnotationGenerationResultSchema))
+    mapping = fields.Dict(
+        keys=fields.String(), values=fields.Nested(AnnotationGenerationResultSchema)
+    )
     missing = fields.List(fields.String)
 
 
 # ========================================
 # Annotations Base
 # ========================================
+
 
 class AnnotationLinksSchema(Schema):
     # These fields are camel case even in Python
@@ -98,6 +105,7 @@ class BaseAnnotationSchema(Schema):
 # System Annotations
 # ========================================
 
+
 class SystemAnnotationMetaSchema(BaseAnnotationMetaSchema):
     isExcluded = fields.Boolean(allow_none=True)
     exclusionReason = fields.String(allow_none=True)
@@ -117,6 +125,7 @@ class SystemAnnotationSchema(BaseAnnotationSchema):
 
 # Responses
 # ----------------------------------------
+
 
 class SystemAnnotationListSchema(ResultListSchema):
     results = fields.List(fields.Nested(SystemAnnotationSchema))
@@ -150,6 +159,7 @@ class GlobalAnnotationListSchema(ResultListSchema):
 # Custom Annotations
 # ========================================
 
+
 class CustomAnnotationMetaSchema(BaseAnnotationMetaSchema):
     includeGlobally = fields.Boolean(required=True)
     isCaseInsensitive = fields.Boolean(required=True)
@@ -161,6 +171,7 @@ class CustomAnnotationSchema(BaseAnnotationSchema):
 
 # Requests
 # ----------------------------------------
+
 
 class CustomAnnotationCreateSchema(CamelCaseSchema):
     annotation = fields.Nested(CustomAnnotationSchema, required=True)
@@ -179,6 +190,7 @@ class GlobalAnnotationTableType(CamelCaseSchema):
 # Responses
 # ----------------------------------------
 
+
 class CustomAnnotationListSchema(ResultListSchema):
     results = fields.List(fields.Nested(CustomAnnotationSchema))
 
@@ -187,7 +199,10 @@ class CustomAnnotationListSchema(ResultListSchema):
 # Combined Annotations
 # ========================================
 
-class CombinedAnnotationMetaSchema(SystemAnnotationMetaSchema, CustomAnnotationMetaSchema):
+
+class CombinedAnnotationMetaSchema(
+    SystemAnnotationMetaSchema, CustomAnnotationMetaSchema
+):
     isExcluded = fields.Boolean()
     exclusionReason = fields.String()
     exclusionComment = fields.String()
@@ -200,6 +215,7 @@ class CombinedAnnotationSchema(SystemAnnotationSchema, CustomAnnotationSchema):
 # Responses
 # ----------------------------------------
 
+
 class CombinedAnnotationListSchema(ResultListSchema):
     results = fields.List(fields.Nested(CombinedAnnotationSchema))
 
@@ -207,6 +223,7 @@ class CombinedAnnotationListSchema(ResultListSchema):
 # ========================================
 # Annotation Exclusions
 # ========================================
+
 
 class AnnotationExclusionSchema(Schema):  # Camel case in Python
     id = fields.String(required=True)
@@ -224,6 +241,7 @@ class AnnotationExclusionSchema(Schema):  # Camel case in Python
 # Requests
 # ----------------------------------------
 
+
 class AnnotationExclusionCreateSchema(CamelCaseSchema):
     exclusion = fields.Nested(AnnotationExclusionSchema, required=True)
 
@@ -236,6 +254,7 @@ class AnnotationExclusionDeleteSchema(CamelCaseSchema):
 # ========================================
 # History
 # ========================================
+
 
 class AnnotationChangeExclusionMetaSchema(CamelCaseSchema):
     id = fields.String(required=True)
@@ -270,6 +289,7 @@ class FileAnnotationChangeSchema(CamelCaseSchema):
 # Responses
 # ----------------------------------------
 
+
 class FileAnnotationHistoryResponseSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileAnnotationChangeSchema))
 
@@ -280,6 +300,7 @@ class FileAnnotationHistoryResponseSchema(ResultListSchema):
 
 # Requests
 # ----------------------------------------
+
 
 class GlobalAnnotationsDeleteSchema(Schema):
     pids = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))

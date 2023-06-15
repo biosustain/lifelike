@@ -5,14 +5,12 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-rejected-options-dialog',
   templateUrl: './rejected-options-dialog.component.html',
-  styleUrls: ['./rejected-options-dialog.component.scss']
+  styleUrls: ['./rejected-options-dialog.component.scss'],
 })
 export class RejectedOptionsDialogComponent {
   @Input() rejectedFolders: string[] = [];
 
-  constructor(
-    private readonly modal: NgbActiveModal,
-  ) { }
+  constructor(private readonly modal: NgbActiveModal) {}
 
   dismiss() {
     this.modal.dismiss();
@@ -21,5 +19,4 @@ export class RejectedOptionsDialogComponent {
   close() {
     this.modal.close();
   }
-
 }

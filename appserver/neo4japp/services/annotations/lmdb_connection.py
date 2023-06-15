@@ -6,7 +6,7 @@ from flask import current_app
 from lmdb import Environment
 
 from neo4japp.constants import LogEventType
-from neo4japp.exceptions import LMDBError
+from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.utils.logger import EventLog
 from ..common import DatabaseConnection, TransactionContext
 
@@ -29,6 +29,7 @@ class LMDBConnection(DatabaseConnection):
         def __exit__(self, exc_type, exc_val, exc_traceback):
             self.env.close()
 
+    @wrap_exceptions(ServerException, title='Cannot Connect to LMDB')
     def begin(self, **kwargs):
         dbname = kwargs.get('dbname', '')
         create = kwargs.get('create', False)
@@ -37,23 +38,23 @@ class LMDBConnection(DatabaseConnection):
         if not dbname:
             current_app.logger.error(
                 f'LMDB database name is invalid, cannot connect to {dbname}.',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
+            raise ServerException(
                 message='Unable to connect to LMDB, database name is invalid.'
             )
 
         dbpath = path.join(self.dirpath, self.configs[dbname])
         try:
-            env: Environment = lmdb.open(path=dbpath, create=create, readonly=readonly, max_dbs=2)
+            env: Environment = lmdb.open(
+                path=dbpath, create=create, readonly=readonly, max_dbs=2
+            )
         except Exception as e:
             current_app.logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
+            raise ServerException(
                 message=f'Encountered unexpected error connecting to LMDB.'
             ) from e
 
@@ -70,7 +71,9 @@ class LMDBConnection(DatabaseConnection):
             memory and retrieve whatever is there.
             """
             if dbname not in self.dbs:
-                db = env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
+                db = env.open_db(
+                    key=dbname.encode('utf-8'), create=create, dupsort=True
+                )
                 self.dbs[dbname] = db
             else:
                 db = self.dbs[dbname]
@@ -78,9 +81,8 @@ class LMDBConnection(DatabaseConnection):
         except Exception as e:
             current_app.logger.error(
                 f'Failed to open LMDB database named {dbname}.',
-                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
             )
-            raise LMDBError(
-                title='Cannot Connect to LMDB',
+            raise ServerException(
                 message=f'Encountered unexpected error connecting to LMDB.'
             ) from e

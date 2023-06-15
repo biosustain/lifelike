@@ -27,4 +27,3 @@ runs:
           --restore-instance="${{ inputs.cloud_sql_restore_instance }}" \
           ${{ inputs.cloud_sql_backup_id }}
       shell: bash
-

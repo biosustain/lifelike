@@ -17,15 +17,13 @@ export class ObjectPathComponent implements OnChanges {
   @Output() refreshRequest = new EventEmitter<any>();
   @Input() wrap: boolean;
 
-  constructor(protected readonly workspaceManager: WorkspaceManager) {
-  }
+  constructor(protected readonly workspaceManager: WorkspaceManager) {}
 
-  ngOnChanges({object}: SimpleChanges) {
+  ngOnChanges({ object }: SimpleChanges) {
     if (object) {
       this.path = getPath(object.currentValue);
     }
   }
-
 
   openObject(target: FilesystemObject) {
     this.workspaceManager.navigate(target.getCommands(false), {

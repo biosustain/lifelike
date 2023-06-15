@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, request, jsonify
 
 from neo4japp.database import get_enrichment_table_service
@@ -17,6 +19,8 @@ def match_ncbi_nodes():
     if organism is not None and gene_names is not None:
         enrichment_table = get_enrichment_table_service()
         # list(dict...) is to drop duplicates, but want to keep order
-        nodes = enrichment_table.match_ncbi_genes(list(dict.fromkeys(gene_names)), organism)
+        nodes = enrichment_table.match_ncbi_genes(
+            list(dict.fromkeys(gene_names)), organism
+        )
 
-    return jsonify({'result': nodes}), 200
+    return jsonify({'result': nodes}), HTTPStatus.OK

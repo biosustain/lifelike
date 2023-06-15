@@ -12,7 +12,7 @@ import { getClientOS } from './utils';
  * @param saveAs - the filename to save the file as (must include extension)
  */
 export function downloader(blobData: any, mimeType: string, saveAs: string) {
-  const newBlob = new Blob([blobData], {type: mimeType});
+  const newBlob = new Blob([blobData], { type: mimeType });
   // IE doesn't allow using a blob object directly as link href
   // instead it is necessary to use msSaveOrOpenBlob
   if (window.navigator && window.navigator.msSaveOrOpenBlob) {
@@ -27,11 +27,13 @@ export function downloader(blobData: any, mimeType: string, saveAs: string) {
   link.href = data;
   link.download = saveAs;
   // this is necessary as link.click() does not work on the latest firefox
-  link.dispatchEvent(new MouseEvent('click', {
-    bubbles: true,
-    cancelable: true,
-    view: window,
-  }));
+  link.dispatchEvent(
+    new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+    })
+  );
 
   setTimeout(() => {
     // For Firefox it is necessary to delay revoking the ObjectURL
@@ -80,11 +82,8 @@ export function isCtrlOrMetaPressed(event: KeyboardEvent | MouseEvent) {
 export const closePopups = (target: EventTarget = document, options?: MouseEventInit) =>
   // events used to trigger popups closing might be consumed by libs like d3_zoom
   // this funciton triggers synthetic mouse down/up on document to close possible popups
-  (
-    target.dispatchEvent(new MouseEvent('mousedown', options))
-    &&
-    target.dispatchEvent(new MouseEvent('mouseup', options))
-  );
+  target.dispatchEvent(new MouseEvent('mousedown', options)) &&
+  target.dispatchEvent(new MouseEvent('mouseup', options));
 
 const relativeRect = _assignInWith((fromProp, toProp) => toProp - fromProp);
 export const relativePosition = (from: Element) => {
@@ -95,8 +94,12 @@ export const relativePosition = (from: Element) => {
   };
 };
 
-export const isScrollable = (element: Element) =>
-  element.scrollHeight > element.clientHeight;
+export const isScrollable = (element: Element) => {
+  if (element.scrollHeight > element.clientHeight) {
+    const overflowProp = getComputedStyle(element).getPropertyValue('overflow-y');
+    return overflowProp === 'auto' || overflowProp === 'scroll';
+  }
+};
 
 export const enclosingScrollableView = (element: Element) => {
   if (!element) {
@@ -114,30 +117,27 @@ export const isWithinScrollableView = (element: Element, container?: Element) =>
   const elementBBox = element.getBoundingClientRect();
 
   if (
-    (elementBBox.top >= containerBBox.top)
-    &&
-    (elementBBox.bottom <= containerBBox.bottom)
-    &&
-    (elementBBox.left >= containerBBox.left)
-    &&
-    (elementBBox.right <= containerBBox.right)
-  ) { // enclosed
+    elementBBox.top >= containerBBox.top &&
+    elementBBox.bottom <= containerBBox.bottom &&
+    elementBBox.left >= containerBBox.left &&
+    elementBBox.right <= containerBBox.right
+  ) {
+    // enclosed
     return true;
   }
 
   if (
-    (elementBBox.top > containerBBox.bottom)
-    ||
-    (elementBBox.bottom < containerBBox.top)
-    ||
-    (elementBBox.left > containerBBox.right)
-    ||
-    (elementBBox.right < containerBBox.left)
-  ) { // out
+    elementBBox.top > containerBBox.bottom ||
+    elementBBox.bottom < containerBBox.top ||
+    elementBBox.left > containerBBox.right ||
+    elementBBox.right < containerBBox.left
+  ) {
+    // out
     return false;
   }
 
-  return { // partial
+  return {
+    // partial
     top: elementBBox.top - containerBBox.top,
     bottom: elementBBox.bottom - containerBBox.bottom,
     left: elementBBox.left - containerBBox.left,

@@ -14,9 +14,11 @@ import { AppUser } from 'app/interfaces';
         appHasPlaceholder
       >
         <ng-container *ngIf="highlightTerms && highlightTerms.length; else noHighlight">
-          <app-term-highlight [text]="user.firstName + ' ' + user.lastName"
-                              [highlightTerms]="highlightTerms"
-                              [highlightOptions]="{wholeWord: true}"></app-term-highlight>
+          <app-term-highlight
+            [text]="user.firstName + ' ' + user.lastName"
+            [highlightTerms]="highlightTerms"
+            [highlightOptions]="{ wholeWord: true }"
+          ></app-term-highlight>
         </ng-container>
         <ng-template #noHighlight>{{ user.firstName }} {{ user.lastName }}</ng-template>
       </span>
@@ -24,14 +26,10 @@ import { AppUser } from 'app/interfaces';
     <ng-template #noUser>
       <em>Unknown</em>
     </ng-template>
-    <ng-template #infoPopover>
-      <strong>Username:</strong> {{ user.username }}
-    </ng-template>
+    <ng-template #infoPopover> <strong>Username:</strong> {{ user.username }} </ng-template>
   `,
 })
 export class UserComponent {
-
   @Input() user: AppUser;
   @Input() highlightTerms: string[] = [];
-
 }

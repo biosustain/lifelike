@@ -1,8 +1,8 @@
 ## All PDF Annotations in a Folder/File
 
-* Includes all subfolders all the way down
-* Enrichment table annotations are stored slightly differently and are not included in this query
-* If you have circular folder parents (which isn't allowed but can occur due to a bug or manual database editing), this query will throw an infinite stack error (probably)
+-   Includes all subfolders all the way down
+-   Enrichment table annotations are stored slightly differently and are not included in this query
+-   If you have circular folder parents (which isn't allowed but can occur due to a bug or manual database editing), this query will throw an infinite stack error (probably)
 
 ```sql
 WITH RECURSIVE _parents AS (

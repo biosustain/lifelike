@@ -24,7 +24,6 @@ import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
 
-
 @NgModule({
   declarations: [
     MapEditorComponent,
@@ -38,7 +37,7 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     InfoViewPanelComponent,
     LinkEditDialogComponent,
     GroupFormComponent,
-    GraphViewDirective
+    GraphViewDirective,
   ],
   entryComponents: [
     ConfirmDialogComponent,
@@ -47,10 +46,7 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     InfoViewPanelComponent,
     LinkEditDialogComponent,
   ],
-  imports: [
-    SharedModule,
-    FileBrowserModule,
-  ],
+  imports: [SharedModule, FileBrowserModule],
   providers: [
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
@@ -70,10 +66,6 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     MapImageProviderService,
     GraphActionsService,
   ],
-  exports: [
-    RouterModule,
-    MapComponent,
-  ],
+  exports: [RouterModule, MapComponent],
 })
-export class DrawingToolModule {
-}
+export class DrawingToolModule {}

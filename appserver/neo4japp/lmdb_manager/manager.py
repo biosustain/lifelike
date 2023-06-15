@@ -15,6 +15,7 @@ from sqlalchemy.types import TIMESTAMP
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 
+from neo4japp.utils.globals import config
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -23,8 +24,8 @@ logging.getLogger('azure').setLevel(logging.WARNING)
 
 
 class BaseCloudStorageProvider:
-    """ Used to provide methods for interacting with cloud
-    storages. (e.g. Azure, GCP, AWS) """
+    """Used to provide methods for interacting with cloud
+    storages. (e.g. Azure, GCP, AWS)"""
 
     def upload(self, storage_object: str, remote_object_path: str, source_path: str):
         """Uploads from local destination to remote source.
@@ -56,11 +57,11 @@ class BaseCloudStorageProvider:
         raise NotImplementedError()
 
     def get_file_date(self, storage_object: str, remote_object_path: str) -> str:
-        """ Returns the date of a remote object. """
+        """Returns the date of a remote object."""
         raise NotImplementedError()
 
     def get_remote_hash(self, storage_object: str, remote_object_path: str) -> str:
-        """ Returns the file hash on the remote store """
+        """Returns the file hash on the remote store"""
         raise NotImplementedError()
 
     def get_hash(self, local_path: str, hashlib_fn) -> str:
@@ -83,10 +84,9 @@ class BaseCloudStorageProvider:
 
 
 class AzureStorageProvider(BaseCloudStorageProvider):
-
     def __init__(self):
-        account_name = os.environ.get('AZURE_ACCOUNT_STORAGE_NAME')
-        account_key = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
+        account_name = config.get('AZURE_ACCOUNT_STORAGE_NAME')
+        account_key = config.get('AZURE_ACCOUNT_STORAGE_KEY')
         self.client = FileService(account_name=account_name, account_key=account_key)
         super().__init__()
 
@@ -103,7 +103,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
             return remote_fi.properties.content_settings.content_md5
 
     def create_remote_dir(self, storage_name: str, remote_object_dir: str) -> str:
-        """ Creates the directories in azure storage if they do not exist """
+        """Creates the directories in azure storage if they do not exist"""
         if self.client.exists(storage_name, remote_object_dir):
             return remote_object_dir
         else:
@@ -111,7 +111,9 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 self.client.create_directory(storage_name, remote_object_dir)
             except AzureMissingResourceHttpError as err:
                 if err.error_code == 'ParentNotFound':
-                    return self.create_remote_dir(storage_name, os.path.dirname(remote_object_dir))
+                    return self.create_remote_dir(
+                        storage_name, os.path.dirname(remote_object_dir)
+                    )
                 else:
                     raise
             finally:
@@ -129,7 +131,7 @@ class AzureStorageProvider(BaseCloudStorageProvider):
             content_settings=ContentSettings(content_md5=local_src_hash),
             progress_callback=lambda c, t: log.debug(
                 f'Uploading {os.path.dirname(source_path)} - {c/t * 100}'
-            )
+            ),
         )
 
     def download(self, storage_name: str, remote_object_path: str, dest_path: str):
@@ -150,7 +152,8 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 os.path.basename(remote_object_path),
                 dest_path,
                 progress_callback=lambda c, t: log.debug(
-                    f'Downloading {os.path.dirname(dest_path)} - {c/t * 100}')
+                    f'Downloading {os.path.dirname(dest_path)} - {c/t * 100}'
+                ),
             )
             log.debug(f'Saving file "{remote_object_path}" to "{dest_path}"')
 
@@ -165,7 +168,8 @@ class AzureStorageProvider(BaseCloudStorageProvider):
 
 @dataclass
 class LMDBFile:
-    """ Represents a LMDB file on a cloud storage """
+    """Represents a LMDB file on a cloud storage"""
+
     category: str
     version: str
     data_mdb_path: str
@@ -188,7 +192,7 @@ class LMDB(Base):
 
 
 class LMDBManager:
-    """ LMDB manager is used to help manage the LMDB versions/lifecycle amongst other
+    """LMDB manager is used to help manage the LMDB versions/lifecycle amongst other
     (1) Allows us to download from cloud to local
     (2) Allows us to update our RDBMS database with the correct upload timestamp
     (3) Allows us to change the LMDB file versions for different app versions
@@ -203,10 +207,11 @@ class LMDBManager:
     """
 
     def __init__(
-            self,
-            cloud_provider: BaseCloudStorageProvider,
-            storage_object_name: str,
-            config: Optional[Dict] = None):
+        self,
+        cloud_provider: BaseCloudStorageProvider,
+        storage_object_name: str,
+        config: Optional[Dict] = None,
+    ):
         self.cloud_provider = cloud_provider
         self.storage_object = storage_object_name
         self.db = self.init_db_connection()
@@ -221,20 +226,20 @@ class LMDBManager:
                 self.lmdb_versions = config_fi
 
     def init_db_connection(self):
-        POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-        POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-        POSTGRES_USER = os.environ.get('POSTGRES_USER')
-        POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
-        POSTGRES_DB = os.environ.get('POSTGRES_DB')
+        POSTGRES_HOST = config.get('POSTGRES_HOST')
+        POSTGRES_PORT = config.get('POSTGRES_PORT')
+        POSTGRES_USER = config.get('POSTGRES_USER')
+        POSTGRES_PASSWORD = config.get('POSTGRES_PASSWORD')
+        POSTGRES_DB = config.get('POSTGRES_DB')
         engine = sqlalchemy.create_engine(
             sqlalchemy.engine.url.URL(
-                        drivername='postgres+psycopg2',
-                        username=POSTGRES_USER,
-                        password=POSTGRES_PASSWORD,
-                        host=POSTGRES_HOST,
-                        port=POSTGRES_PORT,
-                        database=POSTGRES_DB,
-                    )
+                drivername='postgres+psycopg2',
+                username=POSTGRES_USER,
+                password=POSTGRES_PASSWORD,
+                host=POSTGRES_HOST,
+                port=POSTGRES_PORT,
+                database=POSTGRES_DB,
+            )
         )
         Session = sessionmaker(bind=engine)
         session = Session()
@@ -244,17 +249,16 @@ class LMDBManager:
         return f'{version}/{category}/{filename}'
 
     def generate_path(self, lmdb_category: str, path_fn=None) -> LMDBFile:
-        """ Generates a representation of a LMDB file within a cloud storage """
+        """Generates a representation of a LMDB file within a cloud storage"""
         if path_fn is None:
             path_fn = self.path_generator
         version = self.lmdb_versions[lmdb_category]
         return LMDBFile(
-            lmdb_category,
-            version,
-            path_fn(lmdb_category, version, 'data.mdb'))
+            lmdb_category, version, path_fn(lmdb_category, version, 'data.mdb')
+        )
 
     def generate_paths(self) -> List[LMDBFile]:
-        """ Generates paths for all categories from the config """
+        """Generates paths for all categories from the config"""
         return [self.generate_path(category) for category in self.lmdb_versions.keys()]
 
     def upload_all(self, source_dir):
@@ -265,22 +269,31 @@ class LMDBManager:
             data_mdb_md5 = self.cloud_provider.get_hash(data_mdb_path, hashlib.md5)
             try:
                 self.cloud_provider.create_remote_dir(
-                    'lmdb', os.path.dirname(lmdb_file.data_mdb_path))
+                    'lmdb', os.path.dirname(lmdb_file.data_mdb_path)
+                )
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
-                    'lmdb', lmdb_file.data_mdb_path)
+                    'lmdb', lmdb_file.data_mdb_path
+                )
             except RecordNotFound as e:
-                log.debug(f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}')
+                log.debug(
+                    f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}'
+                )
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:
                     upload_file = False
             finally:
                 if upload_file:
                     log.debug(f'Uploading {lmdb_file.category}...')
-                    src_data_mdb = os.path.join(source_dir, lmdb_file.category, 'data.mdb')
+                    src_data_mdb = os.path.join(
+                        source_dir, lmdb_file.category, 'data.mdb'
+                    )
                     self.cloud_provider.upload(
-                        self.storage_object, lmdb_file.data_mdb_path, src_data_mdb)
+                        self.storage_object, lmdb_file.data_mdb_path, src_data_mdb
+                    )
                 else:
-                    log.debug(f'{lmdb_file.category} already up to date. Skipping upload...')
+                    log.debug(
+                        f'{lmdb_file.category} already up to date. Skipping upload...'
+                    )
 
     def download_all(self, save_dir):
         paths = self.generate_paths()
@@ -288,11 +301,11 @@ class LMDBManager:
             self.cloud_provider.download(
                 self.storage_object,
                 lmdb_file.data_mdb_path,
-                f'{save_dir}/{lmdb_file.category}/data.mdb'
+                f'{save_dir}/{lmdb_file.category}/data.mdb',
             )
 
     def download(self, remote_path, save_path):
-        """ Downloads lmdb files from a remote path to a specified local path """
+        """Downloads lmdb files from a remote path to a specified local path"""
         self.cloud_provider.download(self.storage_object, remote_path, save_path)
 
     def update_all_dates(self, file_dir):
@@ -300,7 +313,7 @@ class LMDBManager:
             self.update_date(category, file_dir)
 
     def update_date(self, lmdb_category, file_dir):
-        """ Updates RDBMS database to contain the file upload date from the cloud storage """
+        """Updates RDBMS database to contain the file upload date from the cloud storage"""
         lmdb_metadata = self.generate_path(lmdb_category)
         data_mdb_path = lmdb_metadata.data_mdb_path
 
@@ -310,27 +323,27 @@ class LMDBManager:
                 hash_fn.update(chunk)
             checksum = hash_fn.hexdigest()
 
-        lmdb_db = self.db.query(LMDB) \
-                         .filter_by(name=lmdb_category) \
-                         .one_or_none()
+        lmdb_db = self.db.query(LMDB).filter_by(name=lmdb_category).one_or_none()
         if lmdb_db is None:
             lmdb_db = LMDB(
                 name=lmdb_category,
                 modified_date=datetime.utcnow(),
-                checksum_md5=checksum
+                checksum_md5=checksum,
             )
             self.db.add(lmdb_db)
             self.db.commit()
 
-        cloud_file_date = self.cloud_provider.get_file_date(self.storage_object, data_mdb_path)
+        cloud_file_date = self.cloud_provider.get_file_date(
+            self.storage_object, data_mdb_path
+        )
 
         if lmdb_db.modified_date != cloud_file_date:
             # if date is different, then most likely hash is also different
             # don't need to check hash because we're using
             # files that were just downloaded
-            self.db.query(LMDB) \
-                   .filter_by(name=lmdb_category) \
-                   .update({LMDB.modified_date: cloud_file_date, LMDB.checksum_md5: checksum})
+            self.db.query(LMDB).filter_by(name=lmdb_category).update(
+                {LMDB.modified_date: cloud_file_date, LMDB.checksum_md5: checksum}
+            )
             self.db.commit()
             log.debug(f'LMDB Database {lmdb_category} timestamp has been updated.')
         else:

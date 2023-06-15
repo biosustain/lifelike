@@ -7,13 +7,7 @@ import { AnnotationConfigurations } from 'app/file-browser/schema';
 
 import { CollectionModel, ObservableObject } from '../../utils/collection-model';
 import { FAClass } from '../../constants';
-import {
-  DATE,
-  FA_ICON,
-  LOADING,
-  loadingText,
-  timestampLoadingMock,
-} from './utils';
+import { DATE, FA_ICON, LOADING, loadingText, timestampLoadingMock } from './utils';
 import { appUserLoadingMock } from './user';
 
 const changed$ = new Subject();
@@ -24,9 +18,13 @@ export const filePrivilegesLoadingMock: FilePrivileges = {
   commentable: true,
 };
 
-export const filesystemObjectLoadingMock:
-  (children?: FilesystemObject[], project?: ProjectImpl) => FilesystemObject
-  = (children: FilesystemObject[] = [], project: ProjectImpl = projectImplLoadingMock()) => {
+export const filesystemObjectLoadingMock: (
+  children?: FilesystemObject[],
+  project?: ProjectImpl
+) => FilesystemObject = (
+  children: FilesystemObject[] = [],
+  project: ProjectImpl = projectImplLoadingMock()
+) => {
   const mock = {
     privileges: filePrivilegesLoadingMock,
     children: new CollectionModel(children),
@@ -53,12 +51,10 @@ export const filesystemObjectLoadingMock:
     annotationsTooltipContent: loadingText(),
     project,
     parent: project.***ARANGO_USERNAME***,
-    getCommands() {
-
-    },
+    getCommands() {},
     changed$,
   } as any as FilesystemObject;
-  children.forEach(child => child.parent = mock);
+  children.forEach((child) => (child.parent = mock));
   return mock;
 };
 
@@ -79,8 +75,7 @@ export const projectImplLoadingMock: () => ProjectImpl = () => {
     modifiedDate: DATE,
     privileges: projectPrivilegesLoadingMock,
     fontAwesomeIcon: `fa-4x ${FA_ICON}`,
-    getCommands() {
-    },
+    getCommands() {},
     changed$,
   } as any;
   mock.***ARANGO_USERNAME*** = filesystemObjectLoadingMock([], mock);

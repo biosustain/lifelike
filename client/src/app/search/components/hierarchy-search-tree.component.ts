@@ -7,7 +7,7 @@ import { FlatNode } from 'app/shared/schemas/common';
 @Component({
   selector: 'app-hierarchy-search-tree',
   templateUrl: './hierarchy-search-tree.component.html',
-  styleUrls: ['./hierarchy-search-tree.component.scss']
+  styleUrls: ['./hierarchy-search-tree.component.scss'],
 })
 export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<FilesystemObject> {
   @Output() folderSelectionChanged = new EventEmitter<string[]>();
@@ -43,13 +43,13 @@ export class HierarchySearchTreeComponent extends ChecklistFlatTreeComponent<Fil
    * Generates a list of filepaths based on the currently selected items. If all children of a ***ARANGO_USERNAME*** are selected, and the ***ARANGO_USERNAME*** is selected,
    * only the ***ARANGO_USERNAME*** path is returned.
    */
-   selectionChanged() {
+  selectionChanged() {
     // Sort the list so that leaves appear before non-leaves. This allows us to
     // easily return only ***ARANGO_USERNAME*** paths if all children in the path are also selected.
     const selectedFolders = new Set<string>();
     this.checklistSelection.sort((a, b) => b.level - a.level);
 
-    this.checklistSelection.selected.forEach(selectedNode => {
+    this.checklistSelection.selected.forEach((selectedNode) => {
       const parentNode = this.getParentNode(selectedNode);
       if (parentNode !== null && this.checklistSelection.isSelected(parentNode)) {
         // If the parent is selected, then we can safely add its path to the list. We can also remove this node from the list, since it and

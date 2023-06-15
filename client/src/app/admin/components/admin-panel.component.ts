@@ -13,6 +13,5 @@ export class AdminPanelComponent {
    */
   activeTab: 'users';
 
-  constructor() {
-  }
+  constructor() {}
 }

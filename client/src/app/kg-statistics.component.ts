@@ -11,7 +11,7 @@ import { environment } from '../environments/environment';
 
 interface StatisticsDataResponse {
   [domain: string]: {
-    [entity: string]: number
+    [entity: string]: number;
   };
 }
 
@@ -50,7 +50,7 @@ const DOMAIN_COLORS = [
 @Component({
   selector: 'app-kg-statistics',
   templateUrl: './kg-statistics.component.html',
-  styleUrls: ['./kg-statistics.component.scss']
+  styleUrls: ['./kg-statistics.component.scss'],
 })
 export class KgStatisticsComponent {
   loadTask: BackgroundTask<void, StatisticsDataResponse>;
@@ -64,7 +64,7 @@ export class KgStatisticsComponent {
   } = {};
   chartColorsEntitiesByDomain: {
     [domain: string]: {
-      backgroundColor: string[]
+      backgroundColor: string[];
     }[];
   } = {};
   chartColorsDomains: {
@@ -74,18 +74,22 @@ export class KgStatisticsComponent {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: true,
-          callback: (value, index, values) => this.addThousandSeparator(value.toString())
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+            callback: (value, index, values) => this.addThousandSeparator(value.toString()),
+          },
         },
-      }],
-      xAxes: [{
-        ticks: {
-          beginAtZero: true,
-          callback: (value, index, values) => this.addThousandSeparator(value.toString())
-        }
-      }]
+      ],
+      xAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+            callback: (value, index, values) => this.addThousandSeparator(value.toString()),
+          },
+        },
+      ],
     },
     plugins: {
       datalabels: {
@@ -94,31 +98,31 @@ export class KgStatisticsComponent {
         offset: 0,
         align: 'end',
         font: {
-          size: 14
-        }
-      }
+          size: 14,
+        },
+      },
     },
     layout: {
       padding: {
         top: 25,
-        right: 50
-      }
+        right: 50,
+      },
     },
     tooltips: {
       callbacks: {
-        label: (tooltipItem, data) => this.addThousandSeparator(tooltipItem.value)
-      }
-    }
+        label: (tooltipItem, data) => this.addThousandSeparator(tooltipItem.value),
+      },
+    },
   };
   chartPlugins = [pluginDataLabels];
   totalCount: any = 0;
 
   constructor(private http: HttpClient, private snackBar: MatSnackBar) {
-    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(
-      () => this.http.get<StatisticsDataResponse>('/api/kg-statistics')
+    this.loadTask = new BackgroundTask<void, StatisticsDataResponse>(() =>
+      this.http.get<StatisticsDataResponse>('/api/kg-statistics')
     );
 
-    this.loadTask.results$.subscribe(({result, value}) => {
+    this.loadTask.results$.subscribe(({ result, value }) => {
       if (!environment.keggEnabled) {
         delete result.KEGG;
       }
@@ -138,7 +142,7 @@ export class KgStatisticsComponent {
     const entityToColor = {};
     let i = 0;
     for (const domainData of Object.values(statisticsData)) {
-      Object.keys(domainData).forEach(entity => {
+      Object.keys(domainData).forEach((entity) => {
         if (!entityToColor.hasOwnProperty(entity)) {
           entityToColor[entity] = ENTITY_COLORS[i % ENTITY_COLORS.length];
           i += 1;
@@ -158,8 +162,8 @@ export class KgStatisticsComponent {
         colors.backgroundColor.push(entityToColor[entity]);
         this.chartLabelsEntitiesByDomain[domain].push(entity);
       }
-      this.chartColorsEntitiesByDomain[domain] = [ colors ];
-      this.chartDataEntitiesByDomain[domain] = [ dataset ];
+      this.chartColorsEntitiesByDomain[domain] = [colors];
+      this.chartDataEntitiesByDomain[domain] = [dataset];
     }
   }
 
@@ -178,5 +182,4 @@ export class KgStatisticsComponent {
   addThousandSeparator(value) {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
-
 }

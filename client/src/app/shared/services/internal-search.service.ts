@@ -10,8 +10,7 @@ export class InternalSearchService {
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly router: Router
-  ) {
-  }
+  ) {}
 
   private readonly WORKSPACE_ARGUMENTS: WorkspaceNavigationExtras = {
     sideBySide: true,
@@ -34,10 +33,10 @@ export class InternalSearchService {
           limit: 20,
           page: 1,
           ...params,
-          q: query
+          q: query,
         }),
-        ...this.WORKSPACE_ARGUMENTS
-      }
+        ...this.WORKSPACE_ARGUMENTS,
+      },
     ];
   }
 
@@ -47,10 +46,10 @@ export class InternalSearchService {
       {
         queryParams: getGraphQueryParams({
           ...params,
-          query
+          query,
         }),
-        ...this.WORKSPACE_ARGUMENTS
-      }
+        ...this.WORKSPACE_ARGUMENTS,
+      },
     ];
   }
 
@@ -63,18 +62,20 @@ export class InternalSearchService {
   }
 
   // region Tmp fix for search
-  private tmp_visualiser_search_params_fix({entities: [entity] = []}: Partial<GraphSearchParameters>) {
+  private tmp_visualiser_search_params_fix({
+    entities: [entity] = [],
+  }: Partial<GraphSearchParameters>) {
     // TODO: This is a temp fix to make searching compoounds/species easier. Sometime in the future it's expected that these types will be
     // squashed down into a single type.
     switch (entity) {
       case 'compound':
-        return {entities: ['chemical']};
+        return { entities: ['chemical'] };
       case 'species':
-        return {entities: ['taxonomy']};
+        return { entities: ['taxonomy'] };
       case 'gene':
         // TODO: Temp change to allow users to quickly find genes. We will likely remove this once entity IDs are included in the node
         // metadata.
-        return {organism: '9606'};
+        return { organism: '9606' };
       default:
         return {};
     }
@@ -85,7 +86,7 @@ export class InternalSearchService {
     // squashed down into a single type.
     return this.visualizer(query, {
       ...params,
-      ...this.tmp_visualiser_search_params_fix(params)
+      ...this.tmp_visualiser_search_params_fix(params),
     });
   }
 

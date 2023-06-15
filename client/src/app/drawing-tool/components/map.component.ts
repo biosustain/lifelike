@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
-  Component, ContentChild,
+  Component,
+  ContentChild,
   EventEmitter,
   Input,
   NgZone,
@@ -27,11 +28,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import {
-  mapBufferToJson,
-  mapJsonToGraph,
-  mapBlobToBuffer,
-} from 'app/shared/utils/files';
+import { mapBufferToJson, mapJsonToGraph, mapBlobToBuffer } from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -51,23 +48,22 @@ import { GraphViewDirective } from '../directives/graph-view.directive';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: [
-    './map.component.scss',
-  ],
+  styleUrls: ['./map.component.scss'],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild(GraphViewDirective, {static: true}) graphCanvas!: GraphViewDirective;
+  @ViewChild(GraphViewDirective, { static: true }) graphCanvas!: GraphViewDirective;
 
   loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]> = new BackgroundTask(
-    (hashId) => combineLatest([
-      this.filesystemService.open(hashId),
-      this.filesystemService.getContent(hashId),
-      this.getBackupBlob(),
-    ]),
+    (hashId) =>
+      combineLatest([
+        this.filesystemService.open(hashId),
+        this.filesystemService.getContent(hashId),
+        this.getBackupBlob(),
+      ])
   );
   loadSubscription: Subscription;
 
@@ -100,24 +96,29 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly dataTransferDataService: DataTransferDataService,
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
-    readonly graphActionsService: GraphActionsService,
+    readonly graphActionsService: GraphActionsService
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
-    this.loadSubscription = this.loadTask.results$.subscribe(({
-                                                                result: [mapFile, mapBlob, backupBlob],
-                                                                value,
-                                                              }) => {
-      this.map = mapFile;
+    this.loadSubscription = this.loadTask.results$.subscribe(
+      ({ result: [mapFile, mapBlob, backupBlob], value }) => {
+        this.map = mapFile;
 
-      if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
-        this.workspaceManager.navigate(['/projects', encodeURIComponent(this.map.project.name), 'maps', this.map.hashId, 'edit']);
+        if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
+          this.workspaceManager.navigate([
+            '/projects',
+            encodeURIComponent(this.map.project.name),
+            'maps',
+            this.map.hashId,
+            'edit',
+          ]);
+        }
+
+        this.contentValue = mapBlob;
+        this.initializeMap();
+        this.handleBackupBlob(backupBlob);
       }
-
-      this.contentValue = mapBlob;
-      this.initializeMap();
-      this.handleBackupBlob(backupBlob);
-    });
+    );
   }
 
   @Input()
@@ -132,15 +133,13 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return this._locator;
   }
 
-
   dragTitleData$ = defer(() => of(this.map.getTransferData()));
 
   getBackupBlob(): Observable<ExtraResult> {
     return new BehaviorSubject(null);
   }
 
-  handleBackupBlob(data: ExtraResult) {
-  }
+  handleBackupBlob(data: ExtraResult) {}
 
   // ========================================
   // Angular events
@@ -158,7 +157,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.search();
     });
 
-    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe(value => {
+    this.unsavedChangesSubscription = this.unsavedChanges$.subscribe((value) => {
       this.emitModuleProperties();
     });
 
@@ -172,7 +171,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   private isInEditMode() {
-    const {path = ''} = this.route.snapshot.url[4] || {};
+    const { path = '' } = this.route.snapshot.url[4] || {};
     return path === 'edit';
   }
 
@@ -187,45 +186,48 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     this.emitModuleProperties();
-    this.providerSubscription$ = this.openMap(this.contentValue, this.map).subscribe(
-      graph => {
-        this.graphCanvas.initializeGraph(graph);
-        this.graphCanvas.zoomToFit(0);
+    this.providerSubscription$ = this.openMap(this.contentValue, this.map).subscribe((graph) => {
+      this.graphCanvas.initializeGraph(graph);
+      this.graphCanvas.zoomToFit(0);
 
-        if (this.highlightTerms != null && this.highlightTerms.length) {
-          this.graphCanvas.highlighting.replace(
-            this.graphCanvas.findMatching(this.highlightTerms, {
-              keepSearchSpecialChars: true,
-              wholeWord: true,
-            }),
-          );
-        }
-      });
+      if (this.highlightTerms != null && this.highlightTerms.length) {
+        this.graphCanvas.highlighting.replace(
+          this.graphCanvas.findMatching(this.highlightTerms, {
+            keepSearchSpecialChars: true,
+            wholeWord: true,
+          })
+        );
+      }
+    });
   }
 
   openMap(mapBlob: Blob, mapFile: FilesystemObject): Observable<KnowledgeMapGraph> {
     return this.objectTypeService.get(mapFile).pipe(
-      switchMap(typeProvider => typeProvider.unzipContent(mapBlob)),
-      map(graphRepr => new Blob([graphRepr], {type: MimeTypes.Map})),
+      switchMap((typeProvider) => typeProvider.unzipContent(mapBlob)),
+      map((graphRepr) => new Blob([graphRepr], { type: MimeTypes.Map })),
       mapBlobToBuffer(),
       mapBufferToJson<KnowledgeMapGraph>(),
       mapJsonToGraph(),
-      this.errorHandler.create({label: 'Parse map data'}),
-      catchError(e => {
+      this.errorHandler.create({ label: 'Parse map data' }),
+      catchError((e) => {
         // Data is corrupt
         // TODO: Prevent the user from editing or something so the user doesnt lose data?
         throw e;
-      }),
+      })
     );
   }
 
   registerGraphBehaviors() {
     this.graphCanvas.behaviors.add('selection', new SelectableEntityBehavior(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('copy-keyboard-shortcut', new CopyKeyboardShortcutBehavior(this.graphCanvas, this.snackBar), -100);
+    this.graphCanvas.behaviors.add(
+      'copy-keyboard-shortcut',
+      new CopyKeyboardShortcutBehavior(this.graphCanvas, this.snackBar),
+      -100
+    );
   }
 
   ngOnDestroy() {
-    const {historyChangesSubscription, unsavedChangesSubscription} = this;
+    const { historyChangesSubscription, unsavedChangesSubscription } = this;
     if (historyChangesSubscription) {
       historyChangesSubscription.unsubscribe();
     }
@@ -270,15 +272,16 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
       this.entitySearchList = this.graphCanvas.findMatching(
         tokenizeQuery(this.entitySearchTerm, {
           singleTerm: true,
-        }), {
+        }),
+        {
           wholeWord: false,
-        });
+        }
+      );
       this.entitySearchListIdx = -1;
 
       this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
       this.graphCanvas.searchFocus.replace([]);
       this.graphCanvas.requestRender();
-
     } else {
       this.entitySearchList = [];
       this.entitySearchListIdx = -1;
@@ -300,9 +303,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (this.entitySearchListIdx >= this.entitySearchList.length) {
       this.entitySearchListIdx = 0;
     }
-    this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
-    );
+    this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
   }
 
   previous() {
@@ -311,8 +312,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (this.entitySearchListIdx <= -1) {
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
-    this.graphCanvas.panToEntity(
-      this.entitySearchList[this.entitySearchListIdx] as GraphEntity,
-    );
+    this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
   }
 }

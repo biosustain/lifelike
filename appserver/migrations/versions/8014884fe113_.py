@@ -35,7 +35,9 @@ depends_on = None
 
 
 directory = path.realpath(path.dirname(__file__))
-schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v5.json')
+schema_file = path.join(
+    directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v5.json'
+)
 
 
 # copied from neo4japp.schemas.enrichment
@@ -55,8 +57,10 @@ class EnrichedGene(CamelCaseSchema):
     annotated_full_name = fields.String(allow_none=True)
     link = fields.String(allow_none=True)
     domains = fields.Dict(
-        keys=fields.String(), values=fields.Dict(
-            keys=fields.String(), values=fields.Nested(EnrichmentValue)), allow_none=True)
+        keys=fields.String(),
+        values=fields.Dict(keys=fields.String(), values=fields.Nested(EnrichmentValue)),
+        allow_none=True,
+    )
 
 
 class DomainInfo(CamelCaseSchema):
@@ -66,7 +70,8 @@ class DomainInfo(CamelCaseSchema):
 class EnrichmentResult(CamelCaseSchema):
     version = fields.String(required=True)
     domain_info = fields.Dict(
-        keys=fields.String(), values=fields.Nested(DomainInfo), required=True)
+        keys=fields.String(), values=fields.Nested(DomainInfo), required=True
+    )
     genes = fields.List(fields.Nested(EnrichedGene), required=True)
 
 
@@ -110,25 +115,29 @@ def data_upgrades():
         column('id', sa.Integer),
         column('content_id', sa.Integer),
         column('mime_type', sa.String),
-        column('enrichment_annotations', postgresql.JSONB))
+        column('enrichment_annotations', postgresql.JSONB),
+    )
 
     tableclause2 = table(
-        'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary))
+        'files_content', column('id', sa.Integer), column('raw_file', sa.LargeBinary)
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id.label('file_id'),
-        tableclause1.c.enrichment_annotations,
-        tableclause2.c.id.label('file_content_id'),
-        tableclause2.c.raw_file
-    ]).where(
-        and_(
-            tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
-            tableclause1.c.enrichment_annotations.isnot(None),
-            tableclause1.c.content_id == tableclause2.c.id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select(
+            [
+                tableclause1.c.id.label('file_id'),
+                tableclause1.c.enrichment_annotations,
+                tableclause2.c.id.label('file_content_id'),
+                tableclause2.c.raw_file,
+            ]
+        ).where(
+            and_(
+                tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
+                tableclause1.c.enrichment_annotations.isnot(None),
+                tableclause1.c.content_id == tableclause2.c.id,
+            )
         )
-    ))
+    )
 
     with open(schema_file, 'rb') as f:
         validate_enrichment_table = fastjsonschema.compile(json.load(f))
@@ -164,9 +173,17 @@ def data_upgrades():
                                 # can potentially result in an existing JSON
                                 if new_hash not in file_content_hashes:
                                     file_content_hashes[new_hash] = fcid
-                                    raws_to_update.append({'id': fcid, 'raw_file': current, 'checksum_sha256': new_hash})  # noqa
+                                    raws_to_update.append(
+                                        {
+                                            'id': fcid,
+                                            'raw_file': current,
+                                            'checksum_sha256': new_hash,
+                                        }
+                                    )  # noqa
                                 else:
-                                    file_obj['content_id'] = file_content_hashes[new_hash]
+                                    file_obj['content_id'] = file_content_hashes[
+                                        new_hash
+                                    ]
 
                             if annos:
                                 if 'domainInfo' not in annos['result']:
@@ -192,7 +209,10 @@ def data_upgrades():
                             found_err = True
                             err = str(e)
 
-                            if err == "data.result must not contain {'version'} properties":
+                            if (
+                                err
+                                == "data.result must not contain {'version'} properties"
+                            ):
                                 enriched_table['result'].pop('version')
 
                             if err == 'data.data must be object':
@@ -201,7 +221,9 @@ def data_upgrades():
                                     'genes': data_split[0],
                                     'taxId': data_split[1],
                                     'organism': data_split[2],
-                                    'sources': [d for d in data_split[-1].split(',')] if data_split[-1] else []  # noqa
+                                    'sources': [d for d in data_split[-1].split(',')]
+                                    if data_split[-1]
+                                    else [],  # noqa
                                 }
 
                             if 'data.data.sources' in err and 'must be one of' in err:
@@ -223,7 +245,14 @@ def data_upgrades():
                                 enriched_table['data']['sources'] = new_sources
 
                             if 'domains must not contain' in err:
-                                acceptable_domains = {'GO', 'BioCyc', 'String', 'Regulon', 'UniProt', 'KEGG'}  # noqa
+                                acceptable_domains = {
+                                    'GO',
+                                    'BioCyc',
+                                    'String',
+                                    'Regulon',
+                                    'UniProt',
+                                    'KEGG',
+                                }  # noqa
                                 for gene in enriched_table['result']['genes']:
                                     if 'domains' not in gene:
                                         # valid not an error
@@ -255,7 +284,14 @@ def data_upgrades():
 
                             if 'domainInfo must not contain' in err:
                                 domain_info = enriched_table['result']['domainInfo']
-                                acceptable_domains = {'GO', 'BioCyc', 'String', 'Regulon', 'UniProt', 'KEGG'}  # noqa
+                                acceptable_domains = {
+                                    'GO',
+                                    'BioCyc',
+                                    'String',
+                                    'Regulon',
+                                    'UniProt',
+                                    'KEGG',
+                                }  # noqa
 
                                 keys = [k for k in domain_info]
                                 for key in keys:
@@ -281,7 +317,11 @@ def data_upgrades():
                                             domain_info['UniProt'] = domain_info[key]
                                             domain_info.pop(key)
 
-                            current = json.dumps(enriched_table, separators=(',', ':')).encode('utf-8')  # noqa
+                            current = json.dumps(
+                                enriched_table, separators=(',', ':')
+                            ).encode(
+                                'utf-8'
+                            )  # noqa
             try:
                 session.bulk_update_mappings(Files, files_to_update)
                 session.bulk_update_mappings(FileContent, raws_to_update)

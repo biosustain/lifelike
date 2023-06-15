@@ -13,21 +13,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { cloneDeep } from 'lodash-es';
 import { forkJoin, from, Observable, of, Subscription } from 'rxjs';
-import {
-  auditTime,
-  defaultIfEmpty,
-  map,
-  switchMap,
-  tap,
-} from 'rxjs/operators';
+import { auditTime, defaultIfEmpty, map, switchMap, tap } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { InteractiveEdgeCreationBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/interactive-edge-creation.behavior';
 import { HandleResizableBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/handle-resizable.behavior';
-import {
-  GraphAction,
-  GraphActionReceiver,
-} from 'app/graph-viewer/actions/actions';
+import { GraphAction, GraphActionReceiver } from 'app/graph-viewer/actions/actions';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -68,20 +59,15 @@ import { LockService } from './lock.service';
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
-  styleUrls: [
-    '../map.component.scss',
-    './map-editor.component.scss',
-  ],
-  providers: [
-    ModuleContext,
-    LockService,
-  ],
+  styleUrls: ['../map.component.scss', './map-editor.component.scss'],
+  providers: [ModuleContext, LockService],
 })
 export class MapEditorComponent
   extends MapViewComponent<Blob | undefined>
-  implements OnInit, OnDestroy, AfterViewInit, ShouldConfirmUnload {
-  @ViewChild('infoPanelSidebar', {static: false}) infoPanelSidebarElementRef: ElementRef;
-  @ViewChild('modalContainer', {static: false}) modalContainer: ElementRef;
+  implements OnInit, OnDestroy, AfterViewInit, ShouldConfirmUnload
+{
+  @ViewChild('infoPanelSidebar', { static: false }) infoPanelSidebarElementRef: ElementRef;
+  @ViewChild('modalContainer', { static: false }) modalContainer: ElementRef;
 
   constructor(
     filesystemService: FilesystemService,
@@ -99,7 +85,7 @@ export class MapEditorComponent
     graphActionsService: GraphActionsService,
     progressDialog: ProgressDialog,
     moduleContext: ModuleContext,
-    readonly lockService: LockService,
+    readonly lockService: LockService
   ) {
     super(
       filesystemService,
@@ -116,7 +102,7 @@ export class MapEditorComponent
       mapImageProviderService,
       graphActionsService,
       progressDialog,
-      moduleContext,
+      moduleContext
     );
     // Set it after parent constructor finished
     this.lockService.locator = this.locator;
@@ -146,11 +132,13 @@ export class MapEditorComponent
   }
 
   ngOnInit() {
-    this.autoSaveSubscription = this.unsavedChanges$.pipe(auditTime(this.autoSaveDelay)).subscribe(changed => {
-      if (changed) {
-        this.saveBackup().subscribe();
-      }
-    });
+    this.autoSaveSubscription = this.unsavedChanges$
+      .pipe(auditTime(this.autoSaveDelay))
+      .subscribe((changed) => {
+        if (changed) {
+          this.saveBackup().subscribe();
+        }
+      });
 
     this.lockService.startLockInterval();
   }
@@ -158,9 +146,11 @@ export class MapEditorComponent
   ngAfterViewInit() {
     super.ngAfterViewInit();
 
-    this.subscriptions.add(this.graphCanvas.historyChanges$.subscribe(() => {
-      this.unsavedChanges$.next(true);
-    }));
+    this.subscriptions.add(
+      this.graphCanvas.historyChanges$.subscribe(() => {
+        this.unsavedChanges$.next(true);
+      })
+    );
   }
 
   ngOnDestroy() {
@@ -170,34 +160,39 @@ export class MapEditorComponent
   }
 
   getBackupBlob(): Observable<Blob | null> {
-    return from([this.locator]).pipe(switchMap(
-      locator => this.filesystemService.getBackupContent(locator)
-        .pipe(
-          switchMap(blob => blob
-            ? of(blob)
-            : of(null)),
-          this.errorHandler.create({label: 'Load map backup'}),
-        ),
-    ));
+    return from([this.locator]).pipe(
+      switchMap((locator) =>
+        this.filesystemService.getBackupContent(locator).pipe(
+          switchMap((blob) => (blob ? of(blob) : of(null))),
+          this.errorHandler.create({ label: 'Load map backup' })
+        )
+      )
+    );
   }
 
   handleBackupBlob(backup: Blob | null) {
     if (backup != null) {
-      this.modalService.open(MapRestoreDialogComponent, {
-        container: this.modalContainer.nativeElement,
-      }).result.then(async () => {
-        this.openMap(backup, this.map).subscribe(graph => {
-          this.graphCanvas.execute(new KnowledgeMapRestore(
-            `Restore map to backup`,
-            this.graphCanvas,
-            graph,
-            cloneDeep(this.graphCanvas.getGraph()),
-          ));
-        });
-      }, () => {
-        this.filesystemService.deleteBackup(this.locator)
-          .subscribe(); // Need to subscribe so it actually runs
-      });
+      this.modalService
+        .open(MapRestoreDialogComponent, {
+          container: this.modalContainer.nativeElement,
+        })
+        .result.then(
+          async () => {
+            this.openMap(backup, this.map).subscribe((graph) => {
+              this.graphCanvas.execute(
+                new KnowledgeMapRestore(
+                  `Restore map to backup`,
+                  this.graphCanvas,
+                  graph,
+                  cloneDeep(this.graphCanvas.getGraph())
+                )
+              );
+            });
+          },
+          () => {
+            this.filesystemService.deleteBackup(this.locator).subscribe(); // Need to subscribe so it actually runs
+          }
+        );
     }
 
     this.lockService.acquireLock();
@@ -205,20 +200,42 @@ export class MapEditorComponent
 
   registerGraphBehaviors() {
     super.registerGraphBehaviors();
-    this.graphCanvas.behaviors.add('delete-keyboard-shortcut',
-      new DeleteKeyboardShortcutBehavior(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('duplicate-keyboard-shortcut',
-      new DuplicateKeyboardShortcutBehavior(this.graphCanvas), -100);
-    this.graphCanvas.behaviors.add('paste-keyboard-shortcut',
-      new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService), -100);
-    this.graphCanvas.behaviors.add('image-upload',
-      new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar), -100);
-    this.graphCanvas.behaviors.add('history-keyboard-shortcut',
-      new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar), -100);
+    this.graphCanvas.behaviors.add(
+      'delete-keyboard-shortcut',
+      new DeleteKeyboardShortcutBehavior(this.graphCanvas),
+      -100
+    );
+    this.graphCanvas.behaviors.add(
+      'duplicate-keyboard-shortcut',
+      new DuplicateKeyboardShortcutBehavior(this.graphCanvas),
+      -100
+    );
+    this.graphCanvas.behaviors.add(
+      'paste-keyboard-shortcut',
+      new PasteKeyboardShortcutBehavior(this.graphCanvas, this.dataTransferDataService),
+      -100
+    );
+    this.graphCanvas.behaviors.add(
+      'image-upload',
+      new ImageUploadBehavior(this.graphCanvas, this.mapImageProviderService, this.snackBar),
+      -100
+    );
+    this.graphCanvas.behaviors.add(
+      'history-keyboard-shortcut',
+      new HistoryKeyboardShortcutsBehavior(this.graphCanvas, this.snackBar),
+      -100
+    );
     this.graphCanvas.behaviors.add('moving', new MovableEntity(this.graphCanvas), -10); // from below
-    this.graphCanvas.behaviors.add('resize-handles', new HandleResizableBehavior(this.graphCanvas), 0);
-    this.graphCanvas.behaviors.add('edge-creation',
-      new InteractiveEdgeCreationBehavior(this.graphCanvas), 1);
+    this.graphCanvas.behaviors.add(
+      'resize-handles',
+      new HandleResizableBehavior(this.graphCanvas),
+      0
+    );
+    this.graphCanvas.behaviors.add(
+      'edge-creation',
+      new InteractiveEdgeCreationBehavior(this.graphCanvas),
+      1
+    );
     // Disabling this for now, since this is redundant with the canvasChild event listeners setup above. Those callbacks seem to be the
     // preferred ones for drag-and-drop.
     // this.graphCanvas.behaviors.add('drag-drop-entity', new DragDropEntityBehavior(this.graphCanvas), 1);
@@ -226,22 +243,21 @@ export class MapEditorComponent
 
   save() {
     super.save();
-    this.filesystemService.deleteBackup(this.locator)
-      .subscribe(); // Need to subscribe so it actually runs
+    this.filesystemService.deleteBackup(this.locator).subscribe(); // Need to subscribe so it actually runs
   }
 
   saveBackup(): Observable<{}> {
     if (this.map) {
       return forkJoin(
-        this.graphCanvas?.getImageChanges().newImageHashes.map(hash =>
+        this.graphCanvas?.getImageChanges().newImageHashes.map((hash) =>
           this.mapImageProviderService.getBlob(hash).pipe(
-            map(blob => ({
+            map((blob) => ({
               blob,
               filename: hash,
             })),
-            tap(imageHash => console.log(imageHash)),
-          ),
-        ),
+            tap((imageHash) => console.log(imageHash))
+          )
+        )
       ).pipe(
         defaultIfEmpty([]),
         switchMap((newImages: ImageBlob[]) =>
@@ -251,20 +267,25 @@ export class MapEditorComponent
               type: MimeTypes.Map,
             }),
             newImages,
-          }),
-        ),
+          })
+        )
       );
     }
   }
 
   restore(version: ObjectVersion) {
-    this.providerSubscription$ = this.openMap(version.contentValue, version.originalObject).subscribe(graph => {
-      this.graphCanvas.execute(new KnowledgeMapRestore(
-        `Restore map to '${version.hashId}'`,
-        this.graphCanvas,
-        graph,
-        cloneDeep(this.graphCanvas.getGraph()),
-      ));
+    this.providerSubscription$ = this.openMap(
+      version.contentValue,
+      version.originalObject
+    ).subscribe((graph) => {
+      this.graphCanvas.execute(
+        new KnowledgeMapRestore(
+          `Restore map to '${version.hashId}'`,
+          this.graphCanvas,
+          graph,
+          cloneDeep(this.graphCanvas.getGraph())
+        )
+      );
     });
   }
 
@@ -275,8 +296,8 @@ export class MapEditorComponent
     const selection = this.graphCanvas?.selection.get();
     if (selection) {
       return (
-        selection.filter(entity => entity.type === GraphEntityType.Node).length > 1 &&
-        !selection.find(entity => entity.type === GraphEntityType.Group)
+        selection.filter((entity) => entity.type === GraphEntityType.Node).length > 1 &&
+        !selection.find((entity) => entity.type === GraphEntityType.Group)
       );
     }
     return false;
@@ -285,15 +306,17 @@ export class MapEditorComponent
   canExtendsGroupFromSelection() {
     const selection = this.graphCanvas?.selection.get();
     if (selection) {
-      return selection.filter(entity => entity.type === GraphEntityType.Node).length > 0 &&
-        selection.filter(entity => entity.type === GraphEntityType.Group).length === 1;
+      return (
+        selection.filter((entity) => entity.type === GraphEntityType.Node).length > 0 &&
+        selection.filter((entity) => entity.type === GraphEntityType.Group).length === 1
+      );
     }
     return false;
   }
 
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event: BeforeUnloadEvent) {
-    return Promise.resolve(this.shouldConfirmUnload).then(shouldConfirmUnload => {
+    return Promise.resolve(this.shouldConfirmUnload).then((shouldConfirmUnload) => {
       if (shouldConfirmUnload) {
         event.returnValue = 'Leave page? Changes you made may not be saved';
       }
@@ -328,16 +351,15 @@ export class MapEditorComponent
   }
 
   createGroup() {
-    const {graphCanvas} = this;
+    const { graphCanvas } = this;
     if (graphCanvas) {
-      const {selection} = graphCanvas;
-      const members = selection.get().reduce(
-        (r, {type, entity}) =>
-          type === GraphEntityType.Node ?
-            r.concat(entity) :
-            r,
-        [] as UniversalGraphNode[],
-      );
+      const { selection } = graphCanvas;
+      const members = selection
+        .get()
+        .reduce(
+          (r, { type, entity }) => (type === GraphEntityType.Node ? r.concat(entity) : r),
+          [] as UniversalGraphNode[]
+        );
       selection.replace([]);
       graphCanvas.execute(
         new GroupCreation(
@@ -345,8 +367,8 @@ export class MapEditorComponent
           createGroupNode({
             members,
           }),
-          true,
-        ),
+          true
+        )
       );
     }
   }
@@ -354,27 +376,25 @@ export class MapEditorComponent
   addToGroup() {
     const selection = this.graphCanvas?.selection.get();
     // TODO: Error on 0 or 2?
-    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop().entity as UniversalGraphGroup;
+    const group = selection.filter((entity) => entity.type === GraphEntityType.Group).pop()
+      .entity as UniversalGraphGroup;
 
-    const potentialMembers = selection.flatMap(entity => entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []);
+    const potentialMembers = selection.flatMap((entity) =>
+      entity.type === GraphEntityType.Node ? [entity.entity as UniversalGraphNode] : []
+    );
     // No duplicates
-    const newMembers = potentialMembers.filter(node => !group.members.includes(node));
-    this.graphCanvas?.execute(new GroupExtension(
-      'Add new members to group',
-      group,
-      newMembers,
-    ));
+    const newMembers = potentialMembers.filter((node) => !group.members.includes(node));
+    this.graphCanvas?.execute(new GroupExtension('Add new members to group', group, newMembers));
   }
-
 }
 
-
 class KnowledgeMapRestore implements GraphAction {
-  constructor(public description: string,
-              public graphCanvas: CanvasGraphView,
-              public updatedData: KnowledgeMapGraph,
-              public originalData: KnowledgeMapGraph) {
-  }
+  constructor(
+    public description: string,
+    public graphCanvas: CanvasGraphView,
+    public updatedData: KnowledgeMapGraph,
+    public originalData: KnowledgeMapGraph
+  ) {}
 
   apply(component: GraphActionReceiver) {
     this.graphCanvas.setGraph(cloneDeep(this.updatedData));
