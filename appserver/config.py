@@ -96,11 +96,24 @@ class Base:
 
     ASSETS_PATH = os.environ.get('ASSETS_FOLDER') or '/home/n4j/assets/'
 
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    REDIS_PORT = port = os.environ.get('REDIS_PORT', '6379')
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
+    REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower() == 'true'
+    CACHE_REDIS_DB = os.environ.get('CACHE_REDIS_DB', '0')
+    CACHE_REDIS_URL = '{protocol}://:{password}@{host}:{port}/{db}'.format(
+        protocol='rediss' if REDIS_SSL else 'redis',
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        db=CACHE_REDIS_DB
+    )
+    RQ_REDIS_DB = os.environ.get('RQ_REDIS_DB', '1')
     RQ_REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
-        host=os.environ.get('REDIS_HOST', 'localhost'),
-        port=os.environ.get('REDIS_PORT', '6379'),
-        password=os.environ.get('REDIS_PASSWORD', ''),
-        db=os.environ.get('REDIS_DB', '1'),
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        db=RQ_REDIS_DB
     )
 
     FORWARD_STACKTRACE = False

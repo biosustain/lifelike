@@ -13,7 +13,7 @@ import {
   thru as _thru,
 } from 'lodash/fp';
 import { Observable, ReplaySubject } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import { SearchType } from 'app/search/shared';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
@@ -53,6 +53,8 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
             this.selected
           )
         )
+      ).pipe(
+        startWith(undefined)
       )
     )
   );

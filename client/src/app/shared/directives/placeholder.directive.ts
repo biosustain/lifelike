@@ -14,7 +14,7 @@ const PLACEHOLDER_CONTEXT = new InjectionToken<ShowPlaceholderDirective>('show_p
   selector: '[appHasPlaceholder]:not(button):not(input)',
 })
 export class HasPlaceholderDirective {
-  constructor(@Inject(PLACEHOLDER_CONTEXT) public placeholderContext: ShowPlaceholderDirective) {}
+  constructor(@Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective) {}
   @HostBinding('class.placeholder-slot') placeholderSlotClass = true;
 }
 

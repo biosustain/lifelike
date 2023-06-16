@@ -13,7 +13,7 @@ import {
 
 import { cloneDeep, isNil } from 'lodash-es';
 import { Observable, ReplaySubject } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { filter, map, switchMap, startWith } from 'rxjs/operators';
 import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 
 import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
@@ -64,6 +64,8 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
             this.edge
           ),
         ])
+      ).pipe(
+        startWith(undefined)
       )
     )
   );

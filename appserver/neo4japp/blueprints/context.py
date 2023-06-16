@@ -3,6 +3,7 @@ from webargs.flaskparser import use_args
 
 from neo4japp.schemas.context import ContextRelationshipRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
+from neo4japp.utils.globals import current_username
 
 bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 
@@ -18,10 +19,13 @@ def relationship(params):
             'What is the relationship between '
             + ', '.join(entities)
             + (f' in {_in}' if _in else '')
-            + '?\nPlease provide URL sources for your answer.'
+            + '?'
+            # + '\nPlease provide URL sources for your answer.'
         ),
         temperature=0,
-        max_tokens=500,
+        max_tokens=200,
+        user=str(hash(current_username)),
+        timeout=60
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}

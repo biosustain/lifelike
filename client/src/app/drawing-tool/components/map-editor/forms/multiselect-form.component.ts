@@ -16,7 +16,7 @@ import {
   get as _get,
   thru as _thru,
 } from 'lodash/fp';
-import { filter, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map, shareReplay, startWith, switchMap, takeUntil } from 'rxjs/operators';
 
 import {
   GraphEntity,
@@ -54,6 +54,8 @@ export class MultiselectFormComponent implements OnChanges, OnDestroy {
             this.selected
           )
         )
+      ).pipe(
+        startWith(undefined)
       )
     )
   );
