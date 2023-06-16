@@ -110,7 +110,10 @@ class Base:
     )
     RQ_REDIS_DB = os.environ.get('RQ_REDIS_DB', '1')
     RQ_REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
-        host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=RQ_REDIS_DB
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        db=RQ_REDIS_DB
     )
 
     FORWARD_STACKTRACE = False
