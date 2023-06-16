@@ -101,16 +101,6 @@ export class EnrichmentVisualisationService {
 
   enrichWithContext(term): Observable<string> {
     const { organism } = this.enrichmentDocument;
-    return this.http
-      .post<SingleResult<string>>(`/api/enrichment-visualisation/enrich-with-context`, {
-        organism,
-        term,
-      })
-      .pipe(map(({ result }) => result));
-  }
-
-  enrichWithContext(term): Observable<string> {
-    const { organism } = this.enrichmentDocument;
     return this.explainService.relationship([organism, term]);
   }
 }
