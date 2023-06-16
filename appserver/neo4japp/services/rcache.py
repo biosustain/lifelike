@@ -1,6 +1,6 @@
 """ Redis Cache """
 import json
-from typing import TypeVar, Generic, Callable, Tuple
+from typing import TypeVar, Generic, Callable, Tuple, Optional
 
 import redis
 from cachetools import Cache
@@ -9,24 +9,14 @@ from neo4japp.utils.globals import config
 
 DEFAULT_CACHE_SETTINGS = {'ex': 3600 * 24}
 
-_redis_server: redis.Redis
+_redis_server: Optional[redis.Redis] = None
 
 
-def get_redis_server():
+def get_redis_cache_server():
     global _redis_server
     if _redis_server is None:
-        REDIS_HOST = config.get('REDIS_HOST')
-        REDIS_PORT = config.get('REDIS_PORT')
-        REDIS_PASSWORD = config.get('REDIS_PASSWORD')
-        REDIS_SSL = config.get('REDIS_SSL', 'false').lower()
-
-        connection_prefix = 'rediss' if REDIS_SSL == 'true' else 'redis'
-        connection_url = (
-            f'{connection_prefix}://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
-        )
-
         _redis_server = redis.Redis(
-            connection_pool=redis.BlockingConnectionPool.from_url(connection_url)
+            connection_pool=redis.BlockingConnectionPool.from_url(config.get('CACHE_REDIS_URL'))
         )
     return _redis_server
 
@@ -44,7 +34,7 @@ class RedisCache(Generic[Key, Value], Cache):
 
     @property
     def _redis(self) -> redis.Redis:
-        return get_redis_server()
+        return get_redis_cache_server()
 
     def __init__(
         self,

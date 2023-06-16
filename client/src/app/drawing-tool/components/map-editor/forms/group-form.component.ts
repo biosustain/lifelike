@@ -10,7 +10,7 @@ import {
 
 import { cloneDeep } from 'lodash-es';
 import { Observable, ReplaySubject } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { filter, map, startWith, switchMap } from 'rxjs/operators';
 import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -74,6 +74,8 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
             this.group
           )
         )
+      ).pipe(
+        startWith(undefined)
       )
     )
   );

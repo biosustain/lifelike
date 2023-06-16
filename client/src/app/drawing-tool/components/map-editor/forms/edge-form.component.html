@@ -59,7 +59,6 @@
     <li ngbNavItem="explanation">
       <a ngbNavLink>Explanation</a>
       <ng-template ngbNavContent>
-        <div class="module-body">
           <div
             *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
             class="flex-fill overflow-auto"
@@ -70,7 +69,6 @@
           <ng-template #loading>
             <i class="fa fa-spinner fa-spin"></i>
           </ng-template>
-        </div>
       </ng-template>
     </li>
     <li ngbNavItem="style">
