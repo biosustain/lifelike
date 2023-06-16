@@ -33,6 +33,26 @@
           </div>
 
           <ng-content></ng-content>
+
+          <div class="mb-4">
+            <app-links-panel
+              title="Sources"
+              singularTitle="Source"
+              fontAwesomeIcon="far fa-book"
+              [(ngModel)]="edge.data.sources"
+              (ngModelChange)="doSave()"
+            ></app-links-panel>
+          </div>
+
+          <div class="mb-4">
+            <app-links-panel
+              title="Hyperlinks"
+              singularTitle="Hyperlink"
+              [(ngModel)]="edge.data.hyperlinks"
+              (ngModelChange)="doSave()"
+            ></app-links-panel>
+          </div>
+          <ng-container [ngTemplateOutlet]="delete"></ng-container>
         </div>
       </ng-template>
     </li>
@@ -51,26 +71,6 @@
             <i class="fa fa-spinner fa-spin"></i>
           </ng-template>
         </div>
-
-        <div class="mb-4">
-          <app-links-panel
-            title="Sources"
-            singularTitle="Source"
-            fontAwesomeIcon="far fa-book"
-            [(ngModel)]="edge.data.sources"
-            (ngModelChange)="doSave()"
-          ></app-links-panel>
-        </div>
-
-        <div class="mb-4">
-          <app-links-panel
-            title="Hyperlinks"
-            singularTitle="Hyperlink"
-            [(ngModel)]="edge.data.hyperlinks"
-            (ngModelChange)="doSave()"
-          ></app-links-panel>
-        </div>
-        <ng-container [ngTemplateOutlet]="delete"></ng-container>
       </ng-template>
     </li>
     <li ngbNavItem="style">
