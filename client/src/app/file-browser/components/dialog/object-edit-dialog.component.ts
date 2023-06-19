@@ -1,15 +1,15 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { filenameValidator } from 'app/shared/validators';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
+
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { filenameValidator } from 'app/shared/validators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectCreateRequest } from '../../schema';
@@ -26,7 +26,7 @@ interface CreateObjectRequest
   templateUrl: './object-edit-dialog.component.html',
 })
 export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
-  @ViewChild('fileInput', { static: false })
+  @ViewChild('fileInput', {static: false})
   protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';
@@ -51,7 +51,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         rulesBased: new FormControl(true),
       }),
     }),
-    {}
+    {},
   );
 
   readonly form: FormGroup = new FormGroup(
@@ -63,12 +63,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: new FormControl('', [Validators.required, filenameValidator]),
       description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
       public: new FormControl(false),
+      contexts: new FormArray([]),
       annotationConfigs: new FormGroup(
         {
           excludeReferences: new FormControl(false),
           annotationMethods: new FormGroup(this.defaultAnnotationMethods),
         },
-        [Validators.required]
+        [Validators.required],
       ),
       organism: new FormControl(null),
       mimeType: new FormControl(null),
@@ -105,13 +106,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
 
       return null;
-    }
+    },
   );
 
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal
+    protected readonly modalService: NgbModal,
   ) {
     super(modal, messageDialog);
   }
@@ -140,7 +141,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const annotationConfigs = value.annotationConfigs;
     if (annotationConfigs != null) {
       let ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-        'annotationMethods'
+        'annotationMethods',
       ) as FormControl;
       if (annotationConfigs.annotationMethods != null) {
         for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
@@ -152,16 +153,29 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
       if (annotationConfigs.excludeReferences != null) {
         ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-          'excludeReferences'
+          'excludeReferences',
         ) as FormControl;
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
     }
+
+    this.setContexts(value.contexts);
   }
 
   get possiblyAnnotatable(): boolean {
     return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
+
+  protected setContexts(contexts) {
+    const formArray: FormArray = this.form.get('contexts') as FormArray;
+    contexts?.forEach(context => formArray.push(this.contextFormControlFactory(context)));
+  }
+
+  get contexts() {
+    return this.form.get('contexts') as FormArray;
+  }
+
+  contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   applyValue(value: ObjectEditDialogValue) {
     Object.assign(this.object, value.objectChanges);
@@ -188,6 +202,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       request,
       annotationConfigs: value.annotationConfigs,
       organism: value.organism,
+      contexts: value.contexts,
     };
   }
 
@@ -240,8 +255,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           parent: destinations[0],
         });
       },
-      () => {}
+      () => {
+      },
     );
+  }
+
+  setValueFromEvent(control, $event) {
+    return control.setValue($event.target.value);
   }
 }
 
@@ -251,4 +271,5 @@ export interface ObjectEditDialogValue {
   request: ObjectCreateRequest;
   annotationConfigs: AnnotationConfigurations;
   organism: OrganismAutocomplete;
+  contexts: string[];
 }

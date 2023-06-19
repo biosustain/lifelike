@@ -30,7 +30,6 @@ export class BaseEnrichmentDocument {
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
   fileId = '';
-  contexts: string[] = [];
 
   parseParameters({ importGenes, taxID, organism, domains, ...rest }: EnrichmentParsedData) {
     // parse the file content to get gene list and organism tax id and name
@@ -101,8 +100,7 @@ export class BaseEnrichmentDocument {
               genes: split[0],
               taxId: split[1],
               organism: split[2],
-              sources: split[3].split(','),
-              contexts: [],
+              sources: split[3].split(',')
             },
           };
         }
@@ -112,14 +110,13 @@ export class BaseEnrichmentDocument {
     );
   }
 
-  encode({importGenes, taxID, organism, domains, contexts, result}): EnrichmentData {
+  encode({importGenes, taxID, organism, domains, result}): EnrichmentData {
     return {
       data: {
         genes: importGenes.join(','),
         taxId: taxID,
         organism,
-        sources: domains,
-        contexts
+        sources: domains
       },
       result,
     };
@@ -136,13 +133,11 @@ export class BaseEnrichmentDocument {
     const values = new Map<string, string>(
       result.genes.map((gene) => [gene.imported, gene.value || ''])
     );
-    const contexts = data.contexts;
     return {
       importGenes,
       taxID,
       organism,
       domains,
-      contexts,
       values,
       result,
       ...rest,
@@ -197,8 +192,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         const taxID = this.taxID;
         const organism = this.organism;
         const domains = this.domains;
-        const contexts = this.contexts;
-        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, contexts, result});
+        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, result});
         return of(new Blob([JSON.stringify(data)]));
       })
     );
@@ -525,7 +519,6 @@ export interface EnrichmentData {
     taxId: string;
     organism: string;
     sources: string[];
-    contexts: string[];
   };
   result?: EnrichmentResult;
 }
@@ -539,7 +532,6 @@ export interface EnrichmentParsedData {
   taxID: string;
   organism: string;
   domains: string[];
-  contexts: string[];
   values?: Map<string, string>;
   result?: EnrichmentResult;
 }

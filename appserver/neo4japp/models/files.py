@@ -293,6 +293,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     deletion_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     recycling_date = db.Column(TIMESTAMP(timezone=True), nullable=True)
     path = db.Column(db.Text, nullable=False)
+    contexts = db.Column(postgresql.JSONB, nullable=False, default=[], server_default='[]')
 
     """
     Annotations related columns

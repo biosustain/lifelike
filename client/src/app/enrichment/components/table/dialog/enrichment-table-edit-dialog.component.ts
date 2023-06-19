@@ -51,7 +51,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
-    this.form.addControl('contexts', new FormArray([]));
     this.form.get('organism').setValidators([Validators.required]);
   }
 
@@ -89,17 +88,11 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         .join('\n')
     );
     this.setDomains();
-    this.setContexts(value.contexts);
   }
 
   private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
-  }
-
-  private setContexts(contexts) {
-    const formArray: FormArray = this.form.get('contexts') as FormArray;
-    contexts?.forEach(context => formArray.push(this.contextFormControlFactory(context)));
   }
 
   getValue(): EnrichmentTableEditDialogValue {
@@ -124,8 +117,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       values,
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,
-      domains: value.domainsList,
-      contexts: value.contexts,
+      domains: value.domainsList
     });
 
     return {
@@ -157,10 +149,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     }
   }
 
-  get contexts() {
-    return this.form.get('contexts') as FormArray;
-  }
-
   contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   removeControl(controlList: FormArray, control: AbstractControl) {
@@ -170,10 +158,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   addControl(controlList: FormArray, control: AbstractControl) {
     controlList.push(control);
-  }
-
-  setValueFromEvent(control, $event) {
-    return control.setValue($event.target.value);
   }
 }
 
