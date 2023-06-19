@@ -24,7 +24,7 @@ export const getTermsFromNode = (node: UniversalGraphNode): string | null => nod
 export function getTermsFromEdge(this: GraphView<any>, edge: UniversalGraphEdge): string {
   return _compact([
     getTermsFromNode(this.getNodelikeByHash(edge.from)),
-    edge.label,
+    // edge.label,
     getTermsFromNode(this.getNodelikeByHash(edge.to)),
   ]).join(' ');
 }
