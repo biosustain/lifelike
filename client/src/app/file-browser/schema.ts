@@ -170,6 +170,7 @@ export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
   pinned?: boolean;
   fallbackOrganism?: OrganismAutocomplete;
   annotationConfigs?: AnnotationConfigurations;
+  contexts?: string[];
 }
 
 /**

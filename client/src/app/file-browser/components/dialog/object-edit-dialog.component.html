@@ -45,6 +45,34 @@
       ></textarea>
     </app-form-row>
 
+    <app-form-row for="contexts" label="Contexts" [control]="contexts">
+      <ng-container *ngFor="let context of contexts.controls">
+        <div class="input-group input-border rounded mb-2">
+          <input
+            type="text"
+            class="form-control border-0"
+            [formControl]="context"
+            [value]="context.value"
+            (change)="setValueFromEvent(context, $event)"
+          >
+          <div class="input-group-append">
+            <button class="form-control border-0" type="button"
+                    (click)="removeControl(contexts, context)">
+              <i class="fa fa-fw fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <app-form-input-feedback *ngIf="context != null"
+                                 [control]="context"
+        ></app-form-input-feedback>
+      </ng-container>
+      <button class="btn btn-secondary" type="button"
+              (click)="addControl(contexts, contextFormControlFactory())">
+        <i class="fa fa-fw fa-plus"></i>
+        Add context
+      </button>
+    </app-form-row>
+
     <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
       <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />

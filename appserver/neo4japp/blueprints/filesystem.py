@@ -527,6 +527,9 @@ class FilesystemBaseView(MethodView):
                 if 'pinned' in params:
                     file.pinned = params['pinned']
 
+                if 'contexts' in params:
+                    file.contexts = params['contexts']
+
                 if 'fallback_organism' in params:
                     if params['fallback_organism'] is None:
                         file.organism_name = None
@@ -968,6 +971,9 @@ class FileListView(FilesystemBaseView):
             file.organism_name = params['fallback_organism']['organism_name']
             file.organism_synonym = params['fallback_organism']['synonym']
             file.organism_taxonomy_id = params['fallback_organism']['tax_id']
+
+        if 'contexts' in params:
+            file.contexts = params['contexts']
 
         if params.get('annotation_configs'):
             file.annotation_configs = params['annotation_configs']

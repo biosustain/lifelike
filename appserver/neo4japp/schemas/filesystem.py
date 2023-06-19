@@ -146,6 +146,13 @@ class MultipleProjectResponseSchema(ResultMappingSchema):
 
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 
+ContextsSchema = fields.List(
+    fields.Nested(
+        fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
+    ),
+    required=False
+)
+
 
 class FileSchema(StarredFileSchema):
     hash_id = fields.String()
@@ -174,6 +181,7 @@ class FileSchema(StarredFileSchema):
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     true_filename = fields.String()
+    contexts = ContextsSchema
     annotation_configs = fields.Nested(AnnotationConfigurations)
 
     def get_user_privilege_filter(self):
@@ -288,6 +296,7 @@ class BulkFileUpdateRequestSchema(CamelCaseSchema):
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)
+    contexts = ContextsSchema
     public = fields.Boolean(default=False)
     pinned = fields.Boolean(default=False)
     content_value = fields.Field(required=False)
