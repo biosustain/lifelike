@@ -86,7 +86,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         .join('\n')
     );
     this.setDomains();
-    this.setContexts(value.contexts);
   }
 
   applyValue(value: ObjectEditDialogValue) {}
