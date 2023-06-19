@@ -52,8 +52,6 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
     moduleContext.register(this);
   }
 
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
   object$: Observable<FilesystemObject> = this.enrichmentService.object$;
   @Output() modulePropertiesChange = this.object$.pipe(
     map(object => ({

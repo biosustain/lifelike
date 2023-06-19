@@ -827,8 +827,9 @@ class FileListView(FilesystemBaseView):
             ) from e
 
         if parent.mime_type != DirectoryTypeProvider.MIME_TYPE:
-            raise ValidationError(f"The specified parent ({params['parent_hash_id']}) is "
-                                  f"not a folder. It is a file, and you cannot make files "
+            raise ValidationError(
+                f"The specified parent ({params['parent_hash_id']}) is "
+                f"not a folder. It is a file, and you cannot make files "
                 f"become a child of another file.",
                 "parent_hash_id",
             )
