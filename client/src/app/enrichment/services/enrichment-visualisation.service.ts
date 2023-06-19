@@ -13,6 +13,7 @@ import { ExplainService } from 'app/shared/services/explain.service';
 
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
+import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
   goTerm: string;

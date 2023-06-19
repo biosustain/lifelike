@@ -301,8 +301,7 @@ export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   }
 
   objectUpdate() {
-    this.emitModuleProperties();
-    this.load();
+    this.enrichmentService.update(this.fileId);
   }
 
   switchToTextFind() {

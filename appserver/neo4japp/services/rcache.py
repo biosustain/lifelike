@@ -20,6 +20,7 @@ def get_redis_cache_server():
         )
     return _redis_server
 
+
 Key = TypeVar('Key')
 Value = TypeVar('Value')
 
