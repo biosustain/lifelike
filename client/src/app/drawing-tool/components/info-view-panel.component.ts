@@ -12,7 +12,7 @@ import {
   get as _get,
   thru as _thru,
 } from 'lodash/fp';
-import { Observable, ReplaySubject } from 'rxjs';
+import { combineLatest, Observable, ReplaySubject } from 'rxjs';
 import { filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import { SearchType } from 'app/search/shared';
@@ -40,24 +40,22 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   ) {}
 
   change$ = new ReplaySubject<SimpleChanges>(1);
-  possibleExplanation$: Observable<string> = this.change$.pipe(
+  private entities$: Observable<Set<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    switchMap(() =>
-      this.explainService.relationship(
-        new Set<string>(
-          getTermsFromGraphEntityArray.call(
-            // We might run into situation when only one of them is beeing changed
-            // therefore it is safe to address them this way
-            this.graphView,
-            this.selected
-          )
-        )
-      ).pipe(
-        startWith(undefined)
-      )
-    )
+    map(() =>
+      new Set<string>(
+        getTermsFromGraphEntityArray.call(
+          // We might run into situation when only one of them is beeing changed
+          // therefore it is safe to address them this way
+          this.graphView,
+          this.selected,
+        ),
+      ),
+    ),
   );
+  private tempertaure$: ReplaySubject<number> = new ReplaySubject(1);
+
   groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
     this.change$.pipe(
       map(_get('selected')),

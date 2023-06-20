@@ -44,6 +44,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 import {
   GraphEntityType,
@@ -60,7 +61,7 @@ import { LockService } from './lock.service';
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
   styleUrls: ['../map.component.scss', './map-editor.component.scss'],
-  providers: [ModuleContext, LockService],
+  providers: [ModuleContext, LockService, OpenFileProvider],
 })
 export class MapEditorComponent
   extends MapViewComponent<Blob | undefined>
@@ -84,6 +85,7 @@ export class MapEditorComponent
     mapImageProviderService: MapImageProviderService,
     graphActionsService: GraphActionsService,
     progressDialog: ProgressDialog,
+    openFileProvider: OpenFileProvider,
     moduleContext: ModuleContext,
     readonly lockService: LockService
   ) {
@@ -102,6 +104,7 @@ export class MapEditorComponent
       mapImageProviderService,
       graphActionsService,
       progressDialog,
+      openFileProvider,
       moduleContext
     );
     // Set it after parent constructor finished

@@ -18,7 +18,6 @@ import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotatio
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
-
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { filenameValidator } from 'app/shared/validators';
 
@@ -246,6 +245,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: value.filename,
       parentHashId: value.parent?.hashId ?? null,
       description: value.description,
+      contexts: value.contexts,
       public: value.public,
       mimeType: value.mimeType,
     };
@@ -296,6 +296,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   setValueFromEvent(control, $event) {
     return control.setValue($event.target.value);
+  }
+
+  addControl(controlList: FormArray, control: AbstractControl) {
+    controlList.push(control);
   }
 }
 

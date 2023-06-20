@@ -210,7 +210,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   path: string;
   size: string;
 
-  contexts?: string[];
+  contexts: string[];
   highlight?: string[];
   highlightAnnotated?: boolean[];
   annotationsTooltipContent: string;
@@ -626,6 +626,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
         'mimeType',
         'doi',
         'public',
+        'contexts',
         'pinned',
         'annotationsDate',
         'uploadUrl',

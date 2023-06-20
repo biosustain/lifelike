@@ -6,17 +6,27 @@ import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
 
-@Injectable({ providedIn: '***ARANGO_USERNAME***' })
+interface ExplainRelationshipOptions {
+  temperature?: number;
+}
+
+@Injectable({providedIn: '***ARANGO_USERNAME***'})
 export class ExplainService {
   endpoint = '/api/explain/';
 
-  constructor(protected readonly http: HttpClient) {}
+  constructor(protected readonly http: HttpClient) {
+  }
 
-  relationship(entities: Iterable<string>): Observable<string> {
+  relationship(entities: Iterable<string>, context?: string, options: ExplainRelationshipOptions = {}): Observable<string> {
     return this.http
-      .post<SingleResult<string>>(this.endpoint + 'relationship', {
-        entities: Array.from(entities),
-      })
-      .pipe(map(({ result }) => result));
+      .post<SingleResult<string>>(
+        this.endpoint + 'relationship',
+        {
+          entities: Array.from(entities),
+          in: context,
+          options,
+        },
+      )
+      .pipe(map(({result}) => result));
   }
 }

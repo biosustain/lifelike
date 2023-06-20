@@ -59,16 +59,10 @@
     <li ngbNavItem="explanation">
       <a ngbNavLink>Explanation</a>
       <ng-template ngbNavContent>
-          <div
-            *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
-            class="flex-fill overflow-auto"
-            style="white-space: pre-wrap"
-          >
-            {{ possibleExplanation }}
-          </div>
-          <ng-template #loading>
-            <i class="fa fa-spinner fa-spin"></i>
-          </ng-template>
+        <app-prompt
+          [entities]="entities$ | async"
+          [contexts]=""
+        ></app-prompt>
       </ng-template>
     </li>
     <li ngbNavItem="style">

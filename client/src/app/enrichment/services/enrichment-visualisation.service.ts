@@ -110,7 +110,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
       takeUntil(this.destroy$),
       publishReplay(1), // tasks executes eagerly
     ) as ConnectableObservable<FilesystemObject>;
-  public readonly contexts$ = this.enrichmentDocument$.pipe(
+  public readonly contexts$ = this.object$.pipe(
     map(({contexts}) => contexts),
   );
 
@@ -123,7 +123,6 @@ export class EnrichmentVisualisationService implements OnDestroy {
       result: {genes},
       taxID,
       organism,
-      contexts,
     }: BaseEnrichmentDocument,
     analysis = 'fisher',
   ): Observable<EnrichWithGOTermsResult[]> {

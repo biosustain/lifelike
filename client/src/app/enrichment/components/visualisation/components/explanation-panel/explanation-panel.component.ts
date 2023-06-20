@@ -1,55 +1,25 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Component } from '@angular/core';
 
-import {
-  distinctUntilChanged,
-  filter,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-  takeUntil,
-} from 'rxjs/operators';
+import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 import {
   filter as _filter,
   flatMap as _flatMap,
   flow as _flow,
-  has as _has,
-  isEmpty,
   map as _map,
   uniq as _uniq,
 } from 'lodash/fp';
-import { BehaviorSubject, combineLatest, defer, EMPTY, Observable, Subject } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 
 import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
+import {
+  DropdownController,
+  dropdownControllerFactory,
+} from 'app/shared/utils/dropdown.controller.factory';
+
 import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
-import { ExtendedMap } from '../../../../../shared/utils/types';
-
-interface DropdownController<T> {
-  entities: ReadonlyArray<T>;
-  currentIdx$?: BehaviorSubject<number>;
-  current$: Observable<T>;
-}
-
-const dropdownControllerFactory = <T>(entities: T[]): DropdownController<T> => {
-  if (isEmpty(entities)) {
-    return {
-      entities: [],
-      currentIdx$: new BehaviorSubject(-1),
-      current$: EMPTY,
-    };
-  }
-  const currentIdx$ = new BehaviorSubject(-1);
-  return ({
-    entities,
-    currentIdx$,
-    current$: currentIdx$.pipe(
-      map(idx => entities[idx]),
-    ),
-  });
-};
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
