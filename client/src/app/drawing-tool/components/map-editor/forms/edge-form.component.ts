@@ -51,11 +51,10 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
   updatedEdge: UniversalGraphEdge;
 
   change$ = new ReplaySubject<SimpleChanges>(1);
-  possibleExplanation$: Observable<string> = this.change$.pipe(
+  entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['edge', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    switchMap(() =>
-      this.explainService.relationship(
+    map(() =>
         new Set<string>([
           getTermsFromEdge.call(
             // We might run into situation when only one of them is beeing changed
@@ -64,9 +63,6 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
             this.edge
           ),
         ])
-      ).pipe(
-        startWith(undefined)
-      )
     )
   );
 

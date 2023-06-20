@@ -1,34 +1,22 @@
 import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 
-import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import {
-  flatMap as _flatMap,
+  flow as _flow,
+  get as _get,
   groupBy as _groupBy,
   map as _map,
-  flow as _flow,
-  identity as _identity,
   mapValues as _mapValues,
-  keys as _keys,
-  includes as _includes,
-  some as _some,
   pick as _pick,
-  values as _values,
-  get as _get,
+  some as _some,
   thru as _thru,
+  values as _values,
 } from 'lodash/fp';
-import { filter, map, shareReplay, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
 
-import {
-  GraphEntity,
-  GraphEntityType,
-  UniversalGraphEdge,
-  UniversalGraphEntity,
-  UniversalGraphGroup,
-  UniversalGraphNode,
-} from 'app/drawing-tool/services/interfaces';
+import { GraphEntity, GraphEntityType } from 'app/drawing-tool/services/interfaces';
 import { ExplainService } from 'app/shared/services/explain.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { GraphView } from 'app/graph-viewer/renderers/graph-view';
 
 import { InfoPanel } from '../../../models/info-panel';
 import { getTermsFromGraphEntityArray } from '../../../utils/terms';
@@ -39,25 +27,23 @@ import { getTermsFromGraphEntityArray } from '../../../utils/terms';
   templateUrl: './multiselect-form.component.html',
 })
 export class MultiselectFormComponent implements OnChanges, OnDestroy {
-  constructor(protected readonly explainService: ExplainService) {}
+  constructor(protected readonly explainService: ExplainService) {
+  }
+
   change$ = new ReplaySubject<SimpleChanges>(1);
-  possibleExplanation$: Observable<string> = this.change$.pipe(
+  entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    switchMap(() =>
-      this.explainService.relationship(
-        new Set<string>(
-          getTermsFromGraphEntityArray.call(
-            // We might run into situation when only one of them is beeing changed
-            // therefore it is safe to address them this way
-            this.graphView,
-            this.selected
-          )
-        )
-      ).pipe(
-        startWith(undefined)
-      )
-    )
+    map(() =>
+      new Set<string>(
+        getTermsFromGraphEntityArray.call(
+          // We might run into situation when only one of them is beeing changed
+          // therefore it is safe to address them this way
+          this.graphView,
+          this.selected,
+        ),
+      ),
+    ),
   );
   groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
     this.change$.pipe(
@@ -65,11 +51,11 @@ export class MultiselectFormComponent implements OnChanges, OnDestroy {
       filter(Boolean),
       map(
         _flow(
-          _thru(({ currentValue }) => currentValue),
-          _groupBy(({ type }: GraphEntity) => type),
-          _mapValues(_map(({ entity }) => entity))
-        )
-      )
+          _thru(({currentValue}) => currentValue),
+          _groupBy(({type}: GraphEntity) => type),
+          _mapValues(_map(({entity}) => entity)),
+        ),
+      ),
     );
   @Input() infoPanel: InfoPanel;
   @Input() graphView: CanvasGraphView;

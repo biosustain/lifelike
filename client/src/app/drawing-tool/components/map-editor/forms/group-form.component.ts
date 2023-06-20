@@ -7,21 +7,21 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-
-import { cloneDeep } from 'lodash-es';
-import { Observable, ReplaySubject } from 'rxjs';
-import { filter, map, startWith, switchMap } from 'rxjs/operators';
-import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
+import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ExplainService } from 'app/shared/services/explain.service';
+import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { RecursivePartial } from 'app/shared/utils/types';
 
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
-import { RecursivePartial } from 'app/shared/utils/types';
-import { ExplainService } from 'app/shared/services/explain.service';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+
+import { cloneDeep } from 'lodash-es';
+import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { getTermsFromGroup } from '../../../utils/terms';
 
 import { EntityForm } from './entity-form';
-import { getTermsFromGraphEntityArray, getTermsFromGroup } from '../../../utils/terms';
 
 @Component({
   selector: 'app-group-form',
@@ -32,7 +32,7 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly internalSearch: InternalSearchService,
-    protected readonly explainService: ExplainService
+    protected readonly explainService: ExplainService,
   ) {
     super(workspaceManager);
   }
@@ -60,24 +60,21 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
       this.focus();
     }
   }
+
   change$ = new ReplaySubject<SimpleChanges>(1);
-  possibleExplanation$: Observable<string> = this.change$.pipe(
+  entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['group', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    switchMap(({ selected, graphView }) =>
-      this.explainService.relationship(
-        new Set<string>(
-          getTermsFromGroup().call(
-            // We might run into situation when only one of them is beeing changed
-            // therefore it is safe to address them this way
-            this.graphView,
-            this.group
-          )
-        )
-      ).pipe(
-        startWith(undefined)
-      )
-    )
+    map(({selected, graphView}) =>
+      new Set<string>(
+        getTermsFromGroup().call(
+          // We might run into situation when only one of them is beeing changed
+          // therefore it is safe to address them this way
+          this.graphView,
+          this.group,
+        ),
+      ),
+    ),
   );
 
   originalGroup: UniversalGraphGroup;

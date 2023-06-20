@@ -1,13 +1,20 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
-
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { filenameValidator } from 'app/shared/validators';
 
@@ -192,6 +199,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       mimeType: value.mimeType,
       fallbackOrganism: value.organism,
       annotationConfigs: value.annotationConfigs,
+      contexts: value.contexts,
     };
 
     const request: ObjectCreateRequest = this.createObjectRequest(value);
@@ -211,6 +219,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: value.filename,
       parentHashId: value.parent?.hashId ?? null,
       description: value.description,
+      contexts: value.contexts,
       public: value.public,
       mimeType: value.mimeType,
     };
@@ -262,6 +271,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   setValueFromEvent(control, $event) {
     return control.setValue($event.target.value);
+  }
+
+  addControl(controlList: FormArray, control: AbstractControl) {
+    controlList.push(control);
   }
 }
 

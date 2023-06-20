@@ -13,6 +13,7 @@ bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 def relationship(params):
     entities = params.get('entities', [])
     _in = params.get('_in')
+    options = params.get('options', {})
     response = ChatGPT.Completion.create(
         model="text-davinci-003",
         prompt=(
@@ -22,7 +23,7 @@ def relationship(params):
             + '?'
             # + '\nPlease provide URL sources for your answer.'
         ),
-        temperature=0,
+        temperature=options.get('temperature', 0),
         max_tokens=200,
         user=str(hash(current_username)),
         timeout=60
