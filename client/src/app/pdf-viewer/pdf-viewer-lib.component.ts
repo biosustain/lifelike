@@ -394,11 +394,12 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
    * @param node - to use as drag image
    * @param event - event to decorate
    */
-  setDragImage(node, event) {
+  setDragImage(node, event: DragEvent) {
     const draggedElementRef = IS_MAC ? this.selectionDragContainer :
       this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
 
     draggedElementRef.classList.add('dragged');
+    event.dataTransfer.setDragImage(draggedElementRef, 0, 0);
     // event.dataTransfer.setDragImage runs in async after dragstart but does not return the handle
     // styling needs to be reversed after current async stack is emptied
     defer(() => draggedElementRef.classList.remove('dragged'));
@@ -407,7 +408,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
     const {selection, ranges} = this;
-    this.setDragImage(this.selectionDragContainer, event);
     const currentPage = this.detectPageFromRanges(ranges);
     if (ranges.length && currentPage != null) {
       this.annotationDragStart.emit({
@@ -424,6 +424,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
 
       event.stopPropagation();
     }
+    // this.setDragImage(this.selectionDragContainer, event);
   }
 
   @HostListener('dragend', ['$event'])

@@ -38,6 +38,7 @@
 
       .selection {
         color: transparent;
+        display: inline;
 
         > * {
           //for debugging
@@ -50,7 +51,7 @@
         }
 
         &.dragged > span {
-          color: black;
+          //color: black;
         }
       }
 
