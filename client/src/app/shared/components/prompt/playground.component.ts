@@ -36,8 +36,7 @@ import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
 export class PromptComponent implements OnDestroy, OnChanges {
   constructor(
     private readonly explainService: ExplainService,
-    private readonly openFileProvider: OpenFileProvider,
-    private readonly modalService: MatDialogRef<PromptComponent>,ca
+    private readonly openFileProvider: OpenFileProvider
   ) {}
   @Input() entities!: Iterable<string>;
   private destroy$: Subject<void> = new Subject();
@@ -89,17 +88,5 @@ export class PromptComponent implements OnDestroy, OnChanges {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  openPlayground(): void {
-    return this.modalService.open(PlaygroundComponent, {
-      width: '100%',
-      height: '100%',
-      maxWidth: '100%',
-      maxHeight: '100%',
-      data: {
-
-      }
-    });
   }
 }
