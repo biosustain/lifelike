@@ -38,6 +38,7 @@ import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GraphViewDirective } from '../directives/graph-view.directive';
+import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
 
 @Component({
   selector: 'app-map',
@@ -96,7 +97,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService,
-    readonly openFileProvider: OpenFileProvider
+    readonly openFileProvider: OpenFileProvider,
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
