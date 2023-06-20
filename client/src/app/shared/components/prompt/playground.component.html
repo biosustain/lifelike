@@ -1,0 +1,13 @@
+<label>
+  Temperature:
+  <input
+    class="w-100"
+    ngbButton
+    type="range"
+    min="0"
+    max="1"
+    step="any"
+    [ngModel]="tempertaure$ | async"
+    (ngModelChange)="tempertaure$.next($event)"
+  />
+</label>
