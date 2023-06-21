@@ -1,4 +1,4 @@
-name: GCP Staging Deployment
+name: GCP Public Deployment
 
 on:
   workflow_dispatch:
