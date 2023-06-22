@@ -21,10 +21,10 @@
     </div>
   </div>
   <div ngbDropdown class="d-inline-block flex-grow-0" placement="bottom-right">
-    <button class="btn btn-sm" ngbDropdownToggle>
+    <button class="btn btn" ngbDropdownToggle>
       <i class="fas fa-cog fa-fw"></i>
     </button>
-    <div ngbDropdownMenu class="w-100 p-2">
+    <div ngbDropdownMenu class="w-100 p-4">
       <label>
         Temperature:
         <input
@@ -40,6 +40,9 @@
       </label>
     </div>
   </div>
+  <button class="d-inline-block btn btn-sm flex-grow-0" (click)="openPlayground()">
+      <i class="fas fa-flask"></i>
+  </button>
 </div>
 <ng-content></ng-content>
 <div

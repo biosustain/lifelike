@@ -59,10 +59,7 @@
     <li ngbNavItem="explanation">
       <a ngbNavLink>Explanation</a>
       <ng-template ngbNavContent>
-        <app-prompt
-          [entities]="entities$ | async"
-          [contexts]=""
-        ></app-prompt>
+        <app-prompt [entities]="entities$ | async"></app-prompt>
       </ng-template>
     </li>
     <li ngbNavItem="style">
