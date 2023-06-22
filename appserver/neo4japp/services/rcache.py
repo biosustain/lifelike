@@ -73,7 +73,9 @@ class RedisCache(Generic[Key, Value], Cache):
         self._redis.delete(self.compose_key(key))
 
     def __contains__(self, key):
-        return self._redis.exists(key)
+        return self._redis.exists(
+            self.compose_key(key)
+        )
 
     def __iter__(self):
         return self._redis.scan_iter()

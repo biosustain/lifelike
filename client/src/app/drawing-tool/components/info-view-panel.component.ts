@@ -12,7 +12,7 @@ import {
   get as _get,
   thru as _thru,
 } from 'lodash/fp';
-import { combineLatest, Observable, ReplaySubject } from 'rxjs';
+import { combineLatest, defer, Observable, ReplaySubject } from 'rxjs';
 import { filter, map, startWith, switchMap } from 'rxjs/operators';
 
 import { SearchType } from 'app/search/shared';
@@ -43,6 +43,7 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   private entities$: Observable<Set<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
+    startWith({}),
     map(() =>
       new Set<string>(
         getTermsFromGraphEntityArray.call(

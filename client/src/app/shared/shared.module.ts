@@ -72,10 +72,7 @@ import {
   DataTransferDataService,
 } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-} from './services/highlight-text.service';
+import { HIGHLIGHT_TEXT_TAG_HANDLER } from './services/highlight-text.service';
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
 import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
@@ -98,6 +95,7 @@ import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotatio
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
+import { PlaygroundComponent } from './components/prompt/playground.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -183,17 +181,18 @@ const components = [
     TextFieldModule,
     NgbModule,
   ], declarations: [
-        ...components,
-        TruncatePipe,
-        FriendlyDateStrPipe,
-        NodeTextStylePipe,
-        ScrubHtmlPipe,
-        AddStatusPipe,
-        ModuleHeaderComponent,
-        PasswordInputComponent,
-        XMLAnnotationComponent,
-        PromptComponent,
-    ],
+    ...components,
+    TruncatePipe,
+    FriendlyDateStrPipe,
+    NodeTextStylePipe,
+    ScrubHtmlPipe,
+    AddStatusPipe,
+    ModuleHeaderComponent,
+    PasswordInputComponent,
+    XMLAnnotationComponent,
+    PromptComponent,
+    PlaygroundComponent,
+  ],
   providers: [
     TruncatePipe,
     SharedNgrxEffects,
@@ -237,29 +236,31 @@ const components = [
     },
   ],
   // exported modules are visible to modules that import this one
-    exports: [
-        // Modules
-        CommonModule,
-        HttpClientModule,
-        AngularMaterialModule,
-        FlexLayoutModule,
-        FormsModule,
-        ReactiveFormsModule,
-        RouterModule,
-        SharedDirectivesModule,
-        AngularSplitModule,
-        DragDropModule,
-        TextFieldModule,
-        // Components
-        ...components,
-        TruncatePipe,
-        ScrubHtmlPipe,
-        FriendlyDateStrPipe,
-        NodeTextStylePipe,
-        NgbModule,
-        AddStatusPipe,
-        ModuleHeaderComponent,
-        PromptComponent,
-    ],
+  exports: [
+    // Modules
+    CommonModule,
+    HttpClientModule,
+    AngularMaterialModule,
+    FlexLayoutModule,
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SharedDirectivesModule,
+    AngularSplitModule,
+    DragDropModule,
+    TextFieldModule,
+    // Components
+    ...components,
+    TruncatePipe,
+    ScrubHtmlPipe,
+    FriendlyDateStrPipe,
+    NodeTextStylePipe,
+    NgbModule,
+    AddStatusPipe,
+    ModuleHeaderComponent,
+    PromptComponent,
+    PlaygroundComponent,
+  ],
 })
-export class SharedModule {}
+export class SharedModule {
+}

@@ -29,4 +29,12 @@ export class ExplainService {
       )
       .pipe(map(({result}) => result));
   }
+
+  playground(options) {
+    return this.http
+      .post(
+        this.endpoint + 'playground',
+        options
+      );
+  } 
 }
