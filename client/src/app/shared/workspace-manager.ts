@@ -8,21 +8,31 @@ import {
   Type,
   ViewContainerRef,
 } from '@angular/core';
-import { ActivatedRoute, ActivatedRouteSnapshot, NavigationExtras, Router, RoutesRecognized, UrlTree, } from '@angular/router';
+import {
+  ActivatedRoute,
+  ActivatedRouteSnapshot,
+  NavigationExtras,
+  Router,
+  RoutesRecognized,
+  UrlTree,
+} from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
 import { filter, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
-import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
+import { BehaviorSubject, merge, Subject, Subscription } from 'rxjs';
+import { assign, cloneDeep, escape, escapeRegExp, flatMap, merge as _merge } from 'lodash-es';
 
 import { timeoutPromise } from 'app/shared/utils/promise';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
-import { TabData, WorkspaceSessionLoader, WorkspaceSessionService, } from './services/workspace-session.service';
+import {
+  TabData,
+  WorkspaceSessionLoader,
+  WorkspaceSessionService,
+} from './services/workspace-session.service';
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
 import { ErrorHandler } from './services/error-handler.service';
-import { UserError } from './exceptions';
 
 export interface TabDefaults {
   title: string;
@@ -123,7 +133,8 @@ export class Container<T> {
  */
 export class Tab {
   workspaceManager: WorkspaceManager;
-  url: string;
+  private _url: string;
+  private _absoluteUrl: string;
   defaultsSet = false;
   title = 'New Tab';
   fontAwesomeIcon: string = null;
@@ -133,6 +144,19 @@ export class Tab {
   container: Container<ModuleAwareComponent>;
 
   pendingProperties: ModuleProperties | undefined;
+
+  get url(): string {
+    return this._url;
+  }
+
+  set url(url: string) {
+    this._url = url;
+    this._absoluteUrl = this.getAbsoluteUrl(url);
+  }
+
+  get absoluteUrl(): string {
+    return this._absoluteUrl;
+  }
 
   constructor(
     private readonly injector: Injector,
@@ -145,8 +169,8 @@ export class Tab {
     this.workspaceManager = this.injector.get<WorkspaceManager>(WorkspaceManager);
   }
 
-  get absoluteUrl(): string {
-    return new URL(this.url.replace(/^\/+/, '/'), new URL(window.location.href)).href;
+  getAbsoluteUrl(url): string {
+    return new URL(url.replace(/^\/+/, '/'), new URL(window.location.href)).href;
   }
 
   queuePropertyChange(properties: ModuleProperties) {
@@ -456,7 +480,7 @@ export class PaneManager {
   /**
    * Get all the tabs within all the panes.
    */
-  *allTabs(): IterableIterator<{ pane: Pane, tab: Tab }> {
+  * allTabs(): IterableIterator<{ pane: Pane, tab: Tab }> {
     for (const pane of this.panes) {
       for (const tab of pane.tabs) {
         yield {
@@ -499,8 +523,8 @@ export class WorkspaceManager {
         category: TRACKING_CATEGORIES.workbench,
         action: TRACKING_ACTIONS.activeTabChanged,
         label: activeTabChange.title,
-        url: activeTabChange.url
-      }))
+        url: activeTabChange.url,
+      })),
     ).subscribe(activeTabChange => {
     });
     (document as any).navigateByUrl = this.navigateByUrl.bind(this);
@@ -589,7 +613,7 @@ export class WorkspaceManager {
   closeTab(pane: Pane, tab: Tab): Promise<boolean> {
     return this.shouldConfirmTabUnload(tab)
       .then(needConfirmation =>
-        !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.'))
+        !needConfirmation || (needConfirmation && confirm('Close tab? Changes you made may not be saved.')),
       )
       // In case call to shouldConfirmTabUnload fails we want to delete tab
       .catch(error => true)
@@ -606,16 +630,16 @@ export class WorkspaceManager {
   closeTabs(pane: Pane, tabs: Tab[]) {
     return Promise.all(
       tabs.map(tab =>
-        this.closeTab(pane, tab)
-      )
+        this.closeTab(pane, tab),
+      ),
     );
   }
 
   clearWorkbench() {
     return Promise.all(
       this.paneManager.panes.map(pane =>
-        this.closeTabs(pane, pane.tabs.slice())
-      )
+        this.closeTabs(pane, pane.tabs.slice()),
+      ),
     );
   }
 
@@ -642,7 +666,7 @@ export class WorkspaceManager {
 
           if (sideBySidePane == null) {
             targetPane = this.paneManager.create(
-              targetPane.id === PaneIDs.LEFT ? PaneIDs.RIGHT : PaneIDs.LEFT
+              targetPane.id === PaneIDs.LEFT ? PaneIDs.RIGHT : PaneIDs.LEFT,
             );
           } else {
             targetPane = sideBySidePane;
@@ -711,12 +735,12 @@ export class WorkspaceManager {
               openParentFirst: false,
               preferPane: PaneIDs.LEFT,
               matchExistingTab: extras.parentAddress.toString(),
-              shouldReplaceTab: true
+              shouldReplaceTab: true,
             };
             extras = {
               ...extras,
               openParentFirst: false,
-              preferPane: PaneIDs.RIGHT
+              preferPane: PaneIDs.RIGHT,
             };
             navigationArray.push({url: extras.parentAddress, extras: parentExtras});
           }
@@ -764,7 +788,7 @@ export class WorkspaceManager {
 
       loadTab(id: string, data: TabData): void {
         tasks.push(() => {
-          parent.navigateByUrl({url: data.url, extras: { newTab: true, preferPane: id}});
+          parent.navigateByUrl({url: data.url, extras: {newTab: true, preferPane: id}});
         });
       }
 
@@ -786,7 +810,7 @@ export class WorkspaceManager {
     } else {
       const leftPane = this.paneManager.create(PaneIDs.LEFT);
       this.paneManager.create(PaneIDs.RIGHT);
-      parent.navigateByUrl({url: '/projects', extras: { newTab: true, preferPane: leftPane.id}});
+      parent.navigateByUrl({url: '/projects', extras: {newTab: true, preferPane: leftPane.id}});
     }
   }
 
@@ -837,12 +861,12 @@ export function composeInternalLink(text, url, navigationData?: NavigationData) 
         sideBySide: true,
         newTab: true,
         keepFocus: true,
-        matchExistingTab: `${escapeRegExp(urlStr)}$`
-      }
+        matchExistingTab: `${escapeRegExp(urlStr)}$`,
+      },
     },
-    navigationData
+    navigationData,
   );
-  return `<a href='javascript:void(0)' onclick='navigateByUrl(${JSON.stringify(navigationDataWithDefaults)})'>${escape(text)}</a>`;
+  return `<a href="javascript:void(0)" onclick="navigateByUrl(${JSON.stringify(navigationDataWithDefaults)})">${escape(text)}</a>`;
 }
 
 export interface WorkspaceNavigationExtras extends NavigationExtras {

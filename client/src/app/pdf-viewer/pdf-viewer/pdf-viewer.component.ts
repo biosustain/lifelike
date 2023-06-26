@@ -323,13 +323,16 @@ export class PdfViewerComponent
     if (src) {
       this.loadPDF();
     } else if (this.internalPdf) {
+      let updated = false;
       if (renderText) {
         this.getCurrentViewer().textLayerMode = this.internalRenderText
           ? this.internalRenderTextMode
           : RenderTextMode.DISABLED;
         this.resetPdfDocument();
+        updated = true;
       } else if (showAll) {
         this.resetPdfDocument();
+        updated = true;
       }
       if (page) {
         if (page.currentValue === this.internalLatestScrolledPage) {
@@ -339,9 +342,12 @@ export class PdfViewerComponent
         // New form of page changing: The viewer will now jump to the specified page when it is changed.
         // This behavior is introducedby using the PDFSinglePageViewer
         this.getCurrentViewer().scrollPageIntoView({pageNumber: this.internalPage});
+        updated = true;
       }
 
-      this.update();
+      if (updated) {
+        this.update();
+      }
     }
     if (search) {
       this.search$.next(search.currentValue);
@@ -713,18 +719,20 @@ export class PdfViewerComponent
   }
 
   private resetPdfDocument() {
-    if (this.internalShowAll) {
-      this.pdfSinglePageViewer.setDocument(null);
-      this.pdfSinglePageLinkService.setDocument(null);
+    this.ngZone.runOutsideAngular(() => {
+      if (this.internalShowAll) {
+        this.pdfSinglePageViewer.setDocument(null);
+        this.pdfSinglePageLinkService.setDocument(null);
 
-      this.pdfMultiPageViewer.setDocument(this.internalPdf);
-      this.pdfMultiPageLinkService.setDocument(this.internalPdf, null);
-    } else {
-      this.pdfMultiPageViewer.setDocument(null);
-      this.pdfMultiPageLinkService.setDocument(null);
+        this.pdfMultiPageViewer.setDocument(this.internalPdf);
+        this.pdfMultiPageLinkService.setDocument(this.internalPdf, null);
+      } else {
+        this.pdfMultiPageViewer.setDocument(null);
+        this.pdfMultiPageLinkService.setDocument(null);
 
-      this.pdfSinglePageViewer.setDocument(this.internalPdf);
-      this.pdfSinglePageLinkService.setDocument(this.internalPdf, null);
-    }
+        this.pdfSinglePageViewer.setDocument(this.internalPdf);
+        this.pdfSinglePageLinkService.setDocument(this.internalPdf, null);
+      }
+    });
   }
 }
