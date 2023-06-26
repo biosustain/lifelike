@@ -4,7 +4,7 @@ export const LOADING = 'Loading';
 
 export const INDEX = -1;
 
-export const DATE = '0/01/92, 7:00 PM';
+export const DATE = new Date();
 
 export const FA_ICON = 'fas fa-circle-notch fa-spin text-muted';
 
