@@ -1,6 +1,8 @@
 <ol class="breadcrumb" [style.flex-wrap]="wrap ? 'wrap' : 'nowrap'">
   <li class="breadcrumb-item">
-    <a [appLink]="['/projects']" [newTab]="newTab"> File Browser </a>
+    <a
+      appHasPlaceholder
+      [appLink]="['/projects']" [newTab]="newTab"> File Browser </a>
   </li>
   <li class="breadcrumb-item" *ngFor="let item of path" appContextMenu>
     <a
