@@ -1,0 +1,12 @@
+@import 'src/scss/variables';
+
+:host {
+  overflow: auto;
+  position: relative; // so the highlight attach properly
+
+  .table-container {
+    display: inline-block;
+    min-width: calc(100% - 2 * #{module-body-padding-x});
+    margin: $module-body-padding-x;
+  }
+}

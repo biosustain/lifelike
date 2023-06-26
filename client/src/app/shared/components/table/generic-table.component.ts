@@ -7,6 +7,7 @@ import {
   OnInit,
   OnChanges,
   SimpleChanges,
+  ViewChild,
 } from '@angular/core';
 
 import { Subscription } from 'rxjs';
@@ -24,6 +25,9 @@ import { HighlightTextService } from '../../services/highlight-text.service';
 })
 export class GenericTableComponent implements OnChanges {
   HEADER: TableHeader[][];
+
+  @ViewChild('head', {read: ElementRef}) public head: ElementRef;
+  @ViewChild('body', {read: ElementRef}) public body: ElementRef;
 
   // Number of columns can be inferred from the headers
   numColumns: number[];

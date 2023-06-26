@@ -85,7 +85,7 @@
                 </button>
             </div>
 
-            <div class="ml-auto">
+            <div class="ml-auto" *ngIf="findController$ | async as findController">
                 <ng-container *ngIf="annotation.id; else textSearchControl">
                     <app-result-control [value]="annotation.text"
                                         [annotationColor]="annotation.color"
@@ -124,19 +124,16 @@
             Loading data...
         </app-module-progress>
 
-        <div *ngIf="result.table.value" class="flex-fill overflow-auto position-relative"
-             (scroll)="onTableScroll($event)"
-             [scrollTop]="scrollTopAmount" #tableScroll>
-            <div class="table-container" #findTarget>
-                <app-generic-table [header]="result.table.value.tableHeader"
-                                   [entries]="result.table.value.tableCells"
-                                   [object]="result.object.value">
-                </app-generic-table>
-            </div>
-        </div>
+        <ng-container *ngIf="result.table.value">
+          <app-enrichment-table
+            class="flex-fill"
+            [data]="result.table.value"
+            [object]="result.object.value"
+          ></app-enrichment-table>
 
-        <button class="btn btn-secondary top-button" (click)="scrollTop()">
+          <button class="btn btn-secondary top-button" (click)="scrollTop()">
             <i class="fa fa-arrow-up"></i> Top
-        </button>
+          </button>
+        </ng-container>
     </ng-container>
 </div>
