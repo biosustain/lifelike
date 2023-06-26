@@ -42,7 +42,9 @@ from neo4japp.utils.logger import ErrorLog
 
 app_config = os.getenv('FLASK_APP_CONFIG', 'Development')
 
-apm = ElasticAPM()
+# Disabling this and the related code below since we aren't actively using it, and it only serves
+# to pollute the container logs.
+# apm = ElasticAPM()
 
 # Set the following modules to have a minimum of log level 'WARNING'
 module_logs = [
@@ -205,11 +207,11 @@ def create_app(name='neo4japp', config='config.Development'):
     app.register_error_handler(Exception, partial(handle_generic_error, 500))
 
     # Initialize Elastic APM if configured
-    if os.getenv('ELASTIC_APM_SERVER_URL'):
-        apm.init_app(
-            app,
-            service_name='***ARANGO_DB_NAME***-appserver',
-            environment=app_config)
+    # if os.getenv('ELASTIC_APM_SERVER_URL'):
+    #     apm.init_app(
+    #         app,
+    #         service_name='***ARANGO_DB_NAME***-appserver',
+    #         environment=app_config)
 
     return app
 

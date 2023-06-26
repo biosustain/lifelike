@@ -11,11 +11,11 @@ def create_app():
     Marshmallow().init_app(app)
 
     # Initialize Elastic APM if configured
-    if os.getenv('ELASTIC_APM_SERVER_URL'):
-        from elasticapm.contrib.flask import ElasticAPM
-        apm = ElasticAPM(
-            app,
-            service_name='***ARANGO_DB_NAME***-statistical-enrichment',
-            environment=os.getenv('FLASK_APP_CONFIG'))
+    # if os.getenv('ELASTIC_APM_SERVER_URL'):
+    #     from elasticapm.contrib.flask import ElasticAPM
+    #     apm = ElasticAPM(
+    #         app,
+    #         service_name='***ARANGO_DB_NAME***-statistical-enrichment',
+    #         environment=os.getenv('FLASK_APP_CONFIG'))
 
     return app
