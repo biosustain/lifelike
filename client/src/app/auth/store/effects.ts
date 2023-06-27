@@ -256,6 +256,7 @@ export class AuthEffects {
   oauthLogin$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.oauthLogin),
     exhaustMap(({oauthLoginData}) => {
+      console.log('Calling getUserBySubject in oauthLogin effect');
       return this.accountService.getUserBySubject(oauthLoginData.subject).pipe(
         map(user => AuthActions.oauthLoginSuccess({***ARANGO_DB_NAME***User: user, oauthUser: oauthLoginData})),
         catchError((err: HttpErrorResponse) => {
@@ -286,6 +287,7 @@ export class AuthEffects {
 
   oauthLoginSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.oauthLoginSuccess),
+    tap(_ => { console.log('oauthLoginSuccess action dispatched successfully'); })
   ), {dispatch: false});
 
   loginRedirect$ = createEffect(() => this.actions$.pipe(
