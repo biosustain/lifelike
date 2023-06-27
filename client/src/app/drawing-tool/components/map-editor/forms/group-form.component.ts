@@ -65,18 +65,18 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
     map(_pick(['group', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     switchMap(({ selected, graphView }) =>
-      this.explainService.relationship(
-        new Set<string>(
-          getTermsFromGroup().call(
-            // We might run into situation when only one of them is beeing changed
-            // therefore it is safe to address them this way
-            this.graphView,
-            this.group
+      this.explainService
+        .relationship(
+          new Set<string>(
+            getTermsFromGroup().call(
+              // We might run into situation when only one of them is beeing changed
+              // therefore it is safe to address them this way
+              this.graphView,
+              this.group
+            )
           )
         )
-      ).pipe(
-        startWith(undefined)
-      )
+        .pipe(startWith(undefined))
     )
   );
 

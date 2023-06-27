@@ -25,7 +25,7 @@ def relationship(params):
         temperature=0,
         max_tokens=200,
         user=str(hash(current_username)),
-        timeout=60
+        timeout=60,
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}

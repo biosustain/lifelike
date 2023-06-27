@@ -45,18 +45,18 @@ export class MultiselectFormComponent implements OnChanges, OnDestroy {
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     switchMap(() =>
-      this.explainService.relationship(
-        new Set<string>(
-          getTermsFromGraphEntityArray.call(
-            // We might run into situation when only one of them is beeing changed
-            // therefore it is safe to address them this way
-            this.graphView,
-            this.selected
+      this.explainService
+        .relationship(
+          new Set<string>(
+            getTermsFromGraphEntityArray.call(
+              // We might run into situation when only one of them is beeing changed
+              // therefore it is safe to address them this way
+              this.graphView,
+              this.selected
+            )
           )
         )
-      ).pipe(
-        startWith(undefined)
-      )
+        .pipe(startWith(undefined))
     )
   );
   groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
