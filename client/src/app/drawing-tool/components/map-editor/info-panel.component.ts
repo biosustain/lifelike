@@ -51,7 +51,7 @@ export class InfoPanelComponent {
 
   save({ originalData, updatedData }: { originalData: object; updatedData: object }) {
     this.actionCreated.emit(
-      new GraphEntityUpdate('Update properties', this.one, updatedData, originalData),
+      new GraphEntityUpdate('Update properties', this.one, updatedData, originalData)
     );
   }
 

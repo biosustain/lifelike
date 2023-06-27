@@ -29,68 +29,74 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService
-  ) {
-  }
+  ) {}
 
-  contextsController$: Observable<DropdownController<string>> = this.enrichmentService.contexts$.pipe(
-    map(dropdownControllerFactory),
-    shareReplay({bufferSize: 1, refCount: true}),
-  );
+  contextsController$: Observable<DropdownController<string>> =
+    this.enrichmentService.contexts$.pipe(
+      map(dropdownControllerFactory),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
-  goTermController$: Observable<DropdownController<string>> = this.enrichmentService.enrichedWithGOTerms$.pipe(
-    map(_flow(
-      _map(({goTerm}) => goTerm),
-      _uniq,
-    )),
-    map(entities => {
-      const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.goTerm$.pipe(
-        map(goTerm => entities.indexOf(goTerm)),
-      ).subscribe(controller.currentIdx$);
-      return controller;
-    }),
-    shareReplay({bufferSize: 1, refCount: true}),
-  );
-
-  geneNameController$: Observable<DropdownController<string>> = this.enrichmentService.enrichedWithGOTerms$.pipe(
-    switchMap(entities => this.goTermController$.pipe(
-        switchMap(goTermController => goTermController.current$),
-        map(goTerm => _flow(
-            _filter(goTerm ? ((r: EnrichWithGOTermsResult) => r.goTerm === goTerm) : () => true),
-            _flatMap('geneNames'),
-            _uniq,
-          )(entities),
-        ),
+  goTermController$: Observable<DropdownController<string>> =
+    this.enrichmentService.enrichedWithGOTerms$.pipe(
+      map(
+        _flow(
+          _map(({ goTerm }) => goTerm),
+          _uniq
+        )
       ),
-    ),
-    map(entities => {
-      const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.geneName$.pipe(
-        map(geneName => entities.indexOf(geneName)),
-      ).subscribe(controller.currentIdx$);
-      return controller;
-    }),
-    shareReplay({bufferSize: 1, refCount: true}),
-  );
+      map((entities) => {
+        const controller = dropdownControllerFactory(entities);
+        this.enrichmentVisualisationSelectService.goTerm$
+          .pipe(map((goTerm) => entities.indexOf(goTerm)))
+          .subscribe(controller.currentIdx$);
+        return controller;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+  geneNameController$: Observable<DropdownController<string>> =
+    this.enrichmentService.enrichedWithGOTerms$.pipe(
+      switchMap((entities) =>
+        this.goTermController$.pipe(
+          switchMap((goTermController) => goTermController.current$),
+          map((goTerm) =>
+            _flow(
+              _filter(goTerm ? (r: EnrichWithGOTermsResult) => r.goTerm === goTerm : () => true),
+              _flatMap('geneNames'),
+              _uniq
+            )(entities)
+          )
+        )
+      ),
+      map((entities) => {
+        const controller = dropdownControllerFactory(entities);
+        this.enrichmentVisualisationSelectService.geneName$
+          .pipe(map((geneName) => entities.indexOf(geneName)))
+          .subscribe(controller.currentIdx$);
+        return controller;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
   explanation$: Observable<string> = combineLatest([
     this.contextsController$.pipe(
-      switchMap(({current$}) => current$),
-      startWith(undefined),
+      switchMap(({ current$ }) => current$),
+      startWith(undefined)
     ),
     this.goTermController$.pipe(
-      switchMap(({current$}) => current$),
-      startWith(undefined),
+      switchMap(({ current$ }) => current$),
+      startWith(undefined)
     ),
     this.geneNameController$.pipe(
-      switchMap(({current$}) => current$),
-      startWith(undefined),
-    )
+      switchMap(({ current$ }) => current$),
+      startWith(undefined)
+    ),
   ]).pipe(
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(
-        startWith('Loading...')
-      )
-    ),
+      this.enrichmentService
+        .enrichTermWithContext(goTerm, context, geneName)
+        .pipe(startWith('Loading...'))
+    )
   );
 }

@@ -54,7 +54,8 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
   entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['edge', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    map(() =>
+    map(
+      () =>
         new Set<string>([
           getTermsFromEdge.call(
             // We might run into situation when only one of them is beeing changed

@@ -32,7 +32,7 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly internalSearch: InternalSearchService,
-    protected readonly explainService: ExplainService,
+    protected readonly explainService: ExplainService
   ) {
     super(workspaceManager);
   }
@@ -65,16 +65,17 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
   entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['group', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
-    map(({selected, graphView}) =>
-      new Set<string>(
-        getTermsFromGroup().call(
-          // We might run into situation when only one of them is beeing changed
-          // therefore it is safe to address them this way
-          this.graphView,
-          this.group,
-        ),
-      ),
-    ),
+    map(
+      ({ selected, graphView }) =>
+        new Set<string>(
+          getTermsFromGroup().call(
+            // We might run into situation when only one of them is beeing changed
+            // therefore it is safe to address them this way
+            this.graphView,
+            this.group
+          )
+        )
+    )
   );
 
   originalGroup: UniversalGraphGroup;

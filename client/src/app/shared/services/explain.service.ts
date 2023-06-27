@@ -10,31 +10,27 @@ interface ExplainRelationshipOptions {
   temperature?: number;
 }
 
-@Injectable({providedIn: '***ARANGO_USERNAME***'})
+@Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class ExplainService {
   endpoint = '/api/explain/';
 
-  constructor(protected readonly http: HttpClient) {
-  }
+  constructor(protected readonly http: HttpClient) {}
 
-  relationship(entities: Iterable<string>, context?: string, options: ExplainRelationshipOptions = {}): Observable<string> {
+  relationship(
+    entities: Iterable<string>,
+    context?: string,
+    options: ExplainRelationshipOptions = {}
+  ): Observable<string> {
     return this.http
-      .post<SingleResult<string>>(
-        this.endpoint + 'relationship',
-        {
-          entities: Array.from(entities),
-          in: context,
-          options,
-        },
-      )
-      .pipe(map(({result}) => result));
+      .post<SingleResult<string>>(this.endpoint + 'relationship', {
+        entities: Array.from(entities),
+        in: context,
+        options,
+      })
+      .pipe(map(({ result }) => result));
   }
 
   playground(options) {
-    return this.http
-      .post(
-        this.endpoint + 'playground',
-        options
-      );
-  } 
+    return this.http.post(this.endpoint + 'playground', options);
+  }
 }

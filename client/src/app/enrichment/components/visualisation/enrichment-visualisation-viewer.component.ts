@@ -7,7 +7,8 @@ import {
   EMPTY,
   Observable,
   of,
-  ReplaySubject, Subject,
+  ReplaySubject,
+  Subject,
   Subscription,
   throwError,
 } from 'rxjs';
@@ -35,15 +36,18 @@ import { ModuleContext } from 'app/shared/services/module-context.service';
 import { EnrichmentService } from '../../services/enrichment.service';
 import { EnrichmentVisualisationSelectService } from '../../services/enrichment-visualisation-select.service';
 
-
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
   templateUrl: './enrichment-visualisation-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
-  providers: [EnrichmentVisualisationService, EnrichmentService, ModuleContext, EnrichmentVisualisationSelectService]
+  providers: [
+    EnrichmentVisualisationService,
+    EnrichmentService,
+    ModuleContext,
+    EnrichmentVisualisationSelectService,
+  ],
 })
 export class EnrichmentVisualisationViewerComponent implements ModuleAwareComponent {
-
   constructor(
     protected readonly route: ActivatedRoute,
     readonly enrichmentService: EnrichmentVisualisationService,
@@ -54,7 +58,7 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
 
   object$: Observable<FilesystemObject> = this.enrichmentService.object$;
   @Output() modulePropertiesChange = this.object$.pipe(
-    map(object => ({
+    map((object) => ({
       title: object?.filename ?? 'Statistical Enrichment',
       fontAwesomeIcon: 'chart-bar',
     }))
@@ -63,28 +67,29 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
   readonly grouping = {
     'Biological Process': 'BiologicalProcess',
     'Molecular Function': 'MolecularFunction',
-    'Cellular Component': 'CellularComponent'
+    'Cellular Component': 'CellularComponent',
   };
 
   data$ = this.enrichmentService.enrichedWithGOTerms$.pipe(
     map(
       _flow(
         _sortBy<EnrichWithGOTermsResult>('p-value'),
-        _thru(result =>
+        _thru((result) =>
           _flow(
             _toPairs,
-            _map(([group, goLabel]) => [group, result.filter(({goLabel: labels}) => labels.includes(goLabel))]),
-            _fromPairs,
-          )(this.grouping),
-        ),
-      ),
+            _map(([group, goLabel]) => [
+              group,
+              result.filter(({ goLabel: labels }) => labels.includes(goLabel)),
+            ]),
+            _fromPairs
+          )(this.grouping)
+        )
+      )
     ),
-    shareReplay({bufferSize: 1, refCount: true})
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  sourceData$ = this.object$.pipe(
-    map(object => object.getGraphEntitySources())
-  );
+  sourceData$ = this.object$.pipe(map((object) => object.getGraphEntitySources()));
 
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {

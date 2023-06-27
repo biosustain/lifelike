@@ -100,7 +100,7 @@ export class BaseEnrichmentDocument {
               genes: split[0],
               taxId: split[1],
               organism: split[2],
-              sources: split[3].split(',')
+              sources: split[3].split(','),
             },
           };
         }
@@ -110,13 +110,13 @@ export class BaseEnrichmentDocument {
     );
   }
 
-  encode({importGenes, taxID, organism, domains, result}): EnrichmentData {
+  encode({ importGenes, taxID, organism, domains, result }): EnrichmentData {
     return {
       data: {
         genes: importGenes.join(','),
         taxId: taxID,
         organism,
-        sources: domains
+        sources: domains,
       },
       result,
     };
@@ -192,7 +192,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         const taxID = this.taxID;
         const organism = this.organism;
         const domains = this.domains;
-        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, result});
+        const data: EnrichmentData = this.encode({ importGenes, taxID, organism, domains, result });
         return of(new Blob([JSON.stringify(data)]));
       })
     );

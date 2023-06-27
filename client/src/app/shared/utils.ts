@@ -247,7 +247,7 @@ type IterableType<T> = T extends Iterable<infer U> ? U : never;
 export const mapIterable = <
   InputType extends Iterable<Value>,
   Mapping extends (v: Value, k: number) => Result,
-  MappedTypeConstructor extends (new (args: ReturnType<Mapping>[]) => any),
+  MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => any,
   Value,
   Result
 >(
@@ -255,16 +255,13 @@ export const mapIterable = <
   mapping: (v: Value, k: number) => ReturnType<Mapping>,
   mappedObjectConstructor?: MappedTypeConstructor
 ) =>
-  new (
-    mappedObjectConstructor ?? (itrable.constructor as any)
-  )(Array.from<Value, ReturnType<Mapping>>(itrable, mapping)) as
-  MappedTypeConstructor extends (new (args: ReturnType<Mapping>[]) => infer ResultType) ?
-    ResultType :
-    (
-      InputType extends (new (args: ReturnType<Mapping>[]) => infer ResultType) ?
-        ResultType :
-        never
-    );
+  new (mappedObjectConstructor ?? (itrable.constructor as any))(
+    Array.from<Value, ReturnType<Mapping>>(itrable, mapping)
+  ) as MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : InputType extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : never;
 
 /** Unique Symbol to be used as defualt value of parameter.
  * We want to use it so we are not running into issue of differentiate between

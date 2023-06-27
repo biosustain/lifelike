@@ -117,7 +117,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       values,
       taxID: value.organism.tax_id,
       organism: value.organism.organism_name,
-      domains: value.domainsList
+      domains: value.domainsList,
     });
 
     return {
@@ -149,7 +149,8 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     }
   }
 
-  contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
+  contextFormControlFactory = (context = '') =>
+    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   removeControl(controlList: FormArray, control: AbstractControl) {
     const index = controlList.controls.indexOf(control);
