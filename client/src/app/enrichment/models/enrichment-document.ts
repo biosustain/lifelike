@@ -116,7 +116,7 @@ export class BaseEnrichmentDocument {
               genes: split[0],
               taxId: split[1],
               organism: split[2],
-              sources: split[3].split(',')
+              sources: split[3].split(','),
             },
           };
         }
@@ -127,7 +127,7 @@ export class BaseEnrichmentDocument {
     );
   }
 
-  encode({importGenes, taxID, organism, domains, result}): EnrichmentData {
+  encode({ importGenes, taxID, organism, domains, result }): EnrichmentData {
     return {
       data: {
         genes: importGenes.join(','),

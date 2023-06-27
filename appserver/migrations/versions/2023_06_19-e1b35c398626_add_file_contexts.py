@@ -22,12 +22,7 @@ directory = path.realpath(path.dirname(__file__))
 def upgrade():
     op.add_column(
         'files',
-        sa.Column(
-            'contexts',
-            postgresql.JSONB,
-            nullable=False,
-            server_default='[]'
-        )
+        sa.Column('contexts', postgresql.JSONB, nullable=False, server_default='[]'),
     )
 
 

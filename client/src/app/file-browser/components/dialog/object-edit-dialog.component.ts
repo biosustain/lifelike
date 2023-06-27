@@ -36,7 +36,7 @@ interface CreateObjectRequest
   templateUrl: './object-edit-dialog.component.html',
 })
 export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
-  @ViewChild('fileInput', {static: false})
+  @ViewChild('fileInput', { static: false })
   protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';
@@ -61,7 +61,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         rulesBased: new FormControl(true),
       }),
     }),
-    {},
+    {}
   );
 
   readonly form: FormGroup = new FormGroup(
@@ -79,7 +79,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           excludeReferences: new FormControl(false),
           annotationMethods: new FormGroup(this.defaultAnnotationMethods),
         },
-        [Validators.required],
+        [Validators.required]
       ),
       fallbackOrganism: new FormControl(null),
       mimeType: new FormControl(null),
@@ -116,13 +116,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
 
       return null;
-    },
+    }
   );
 
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal,
+    protected readonly modalService: NgbModal
   ) {
     super(modal, messageDialog);
   }
@@ -151,7 +151,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const annotationConfigs = value.annotationConfigs;
     if (annotationConfigs != null) {
       let ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-        'annotationMethods',
+        'annotationMethods'
       ) as FormControl;
       if (annotationConfigs.annotationMethods != null) {
         for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
@@ -163,7 +163,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
       if (annotationConfigs.excludeReferences != null) {
         ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-          'excludeReferences',
+          'excludeReferences'
         ) as FormControl;
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
@@ -178,14 +178,15 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
   protected setContexts(contexts) {
     const formArray: FormArray = this.form.get('contexts') as FormArray;
-    contexts?.forEach(context => formArray.push(this.contextFormControlFactory(context)));
+    contexts?.forEach((context) => formArray.push(this.contextFormControlFactory(context)));
   }
 
   get contexts() {
     return this.form.get('contexts') as FormArray;
   }
 
-  contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
+  contextFormControlFactory = (context = '') =>
+    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   applyValue(value: ObjectEditDialogValue) {
     Object.assign(this.object, value.objectChanges);
@@ -289,8 +290,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           parent: destinations[0],
         });
       },
-      () => {
-      },
+      () => {}
     );
   }
 

@@ -6,9 +6,7 @@ from neo4japp.schemas.base import CamelCaseSchema
 
 
 class ContextRelationshipRequestOptionsSchema(CamelCaseSchema):
-    temperature = fields.Float(
-        validate=marshmallow.validate.Range(min=0, max=1)
-    )
+    temperature = fields.Float(validate=marshmallow.validate.Range(min=0, max=1))
 
 
 class ContextRelationshipRequestSchema(CamelCaseSchema):

@@ -55,11 +55,8 @@ export class TableCompleteComponent implements OnChanges {
   }
 
   getTermContextExplanation(term: string) {
-    return this.termContextExplanations.getSetLazily(
-      term,
-      key => this.enrichmentService.enrichTermWithContext(key).pipe(
-        shareReplay(1)
-      )
+    return this.termContextExplanations.getSetLazily(term, (key) =>
+      this.enrichmentService.enrichTermWithContext(key).pipe(shareReplay(1))
     );
   }
 

@@ -44,16 +44,17 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     startWith({}),
-    map(() =>
-      new Set<string>(
-        getTermsFromGraphEntityArray.call(
-          // We might run into situation when only one of them is beeing changed
-          // therefore it is safe to address them this way
-          this.graphView,
-          this.selected,
-        ),
-      ),
-    ),
+    map(
+      () =>
+        new Set<string>(
+          getTermsFromGraphEntityArray.call(
+            // We might run into situation when only one of them is beeing changed
+            // therefore it is safe to address them this way
+            this.graphView,
+            this.selected
+          )
+        )
+    )
   );
   private tempertaure$: ReplaySubject<number> = new ReplaySubject(1);
 

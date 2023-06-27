@@ -180,7 +180,8 @@ const components = [
     EffectsModule.forFeature([SharedNgrxEffects]),
     TextFieldModule,
     NgbModule,
-  ], declarations: [
+  ],
+  declarations: [
     ...components,
     TruncatePipe,
     FriendlyDateStrPipe,
@@ -262,5 +263,4 @@ const components = [
     PlaygroundComponent,
   ],
 })
-export class SharedModule {
-}
+export class SharedModule {}

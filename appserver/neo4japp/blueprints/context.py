@@ -19,16 +19,16 @@ def relationship(params):
     response = ChatGPT.Completion.create(
         model="text-davinci-003",
         prompt=(
-                'What is the relationship between '
-                + ', '.join(entities)
-                + (f' in {_in}' if _in else '')
-                + '?'
+            'What is the relationship between '
+            + ', '.join(entities)
+            + (f' in {_in}' if _in else '')
+            + '?'
             # + '\nPlease provide URL sources for your answer.'
         ),
         temperature=options.get('temperature', 0),
         max_tokens=200,
         user=str(hash(current_username)),
-        timeout=60
+        timeout=60,
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}
@@ -37,10 +37,7 @@ def relationship(params):
 @bp.route('/playground', methods=['POST'])
 @use_args(ContextPlaygroundRequestSchema)
 def playground(params):
-    wrapped_params = {
-        **params,
-        'user': str(hash(current_username))
-    }
+    wrapped_params = {**params, 'user': str(hash(current_username))}
     if params.get('stream'):
         response = ChatGPT.Completion.create_stream(**wrapped_params)
         return Response(response, mimetype='text/plain')

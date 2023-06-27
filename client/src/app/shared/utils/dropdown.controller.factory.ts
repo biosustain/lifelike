@@ -11,11 +11,9 @@ export interface DropdownController<T> {
 export const dropdownControllerFactory = <T>(entities: T[]): DropdownController<T> => {
   entities = entities ?? [];
   const currentIdx$ = new BehaviorSubject(-1);
-  return ({
+  return {
     entities,
     currentIdx$,
-    current$: currentIdx$.pipe(
-      map(idx => entities[idx]),
-    ),
-  });
+    current$: currentIdx$.pipe(map((idx) => entities[idx])),
+  };
 };

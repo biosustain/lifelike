@@ -164,7 +164,8 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     }
   }
 
-  contextFormControlFactory = (context = '') => new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
+  contextFormControlFactory = (context = '') =>
+    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   removeControl(controlList: FormArray, control: AbstractControl) {
     const index = controlList.controls.indexOf(control);

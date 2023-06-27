@@ -1,55 +1,63 @@
-<app-modal-header (cancel)="this.close()">
-  ChatGPT Playground
-</app-modal-header>
+<app-modal-header (cancel)="this.close()"> ChatGPT Playground </app-modal-header>
 
 <app-modal-body>
   <as-split class="align-items-stretch">
     <as-split-area>
       <form [formGroup]="formInput" (ngSubmit)="onSubmitPropmptComposer()">
         <h6 class="mb-4"><strong>Input data</strong></h6>
-        <div class="form-group d-flex justify-content-between flex-wrap align-items-center"
-             *ngIf="formInput.controls.entities as entitiesControl">
+        <div
+          class="form-group d-flex justify-content-between flex-wrap align-items-center"
+          *ngIf="formInput.controls.entities as entitiesControl"
+        >
           <label>Entities</label>
           <ng-container *ngFor="let control of entitiesControl.controls; let i = index">
             <div class="input-group input-border rounded mb-2 w-100 flex-shrink-0">
-              <input
-                type="text"
-                class="form-control border-0"
-                [formControl]="control"
-              >
+              <input type="text" class="form-control border-0" [formControl]="control" />
               <div class="input-group-append">
-                <button class="form-control border-0" type="button"
-                        (click)="entitiesControl.removeAt(i)">
+                <button
+                  class="form-control border-0"
+                  type="button"
+                  (click)="entitiesControl.removeAt(i)"
+                >
                   <i class="fa fa-fw fa-times"></i>
                 </button>
               </div>
             </div>
           </ng-container>
-          <button class="btn btn-secondary" type="button"
-                  (click)="entitiesControl.add()">
+          <button class="btn btn-secondary" type="button" (click)="entitiesControl.add()">
             <i class="fa fa-fw fa-plus"></i>
             Add entity
           </button>
         </div>
         <div class="form-group">
           <label>Context</label>
-          <div ngbDropdown class="input-group input-border rounded" placement="bottom-left"
-               container="body" *ngIf="formInput.controls.context as contextControl">
-            <input #contextDropdown="uid"
-                   appUid
-                   autocomplete="off"
-                   class="form-control border-0"
-                   type="text"
-                   container="body"
-                   ngbDropdownToggle
-                   formControlName="context"
-                   appAutoGrow
+          <div
+            ngbDropdown
+            class="input-group input-border rounded"
+            placement="bottom-left"
+            container="body"
+            *ngIf="formInput.controls.context as contextControl"
+          >
+            <input
+              #contextDropdown="uid"
+              appUid
+              autocomplete="off"
+              class="form-control border-0"
+              type="text"
+              container="body"
+              ngbDropdownToggle
+              formControlName="context"
+              appAutoGrow
             />
 
             <div ngbDropdownMenu [attr.aria-labelledby]="contextDropdown" class="w-100">
               <ng-container *ngFor="let context of contexts$ | async">
-                <button class="dropdown-item" type="button" placement="right"
-                        (click)="contextControl.setValue(context)">
+                <button
+                  class="dropdown-item"
+                  type="button"
+                  placement="right"
+                  (click)="contextControl.setValue(context)"
+                >
                   <ngb-highlight [result]="context" [term]="contextControl.value"></ngb-highlight>
                 </button>
               </ng-container>
@@ -78,143 +86,180 @@
           </div>
         </div>
         <div class="form-group">
-          <label [for]="input.uid">
-            Prompt
-          </label>
+          <label [for]="input.uid"> Prompt </label>
           <textarea class="form-control" formControlName="prompt" appUid #input="uid"></textarea>
         </div>
         <div class="form-row">
           <div class="form-group col-auto">
             <label [for]="input.uid"> Timeout </label>
-            <input class="form-control" type="number" formControlName="timeout" appUid #input="uid">
+            <input
+              class="form-control"
+              type="number"
+              formControlName="timeout"
+              appUid
+              #input="uid"
+            />
           </div>
           <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Max Tokens
-            </label>
-            <input class="form-control" type="number" formControlName="max_tokens" appUid
-                   #input="uid">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Temperature
-            </label>
-            <input class="form-control" type="number" formControlName="temperature" appUid
-                   #input="uid">
-          </div>
-          <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Top P
-            </label>
-            <input class="form-control" type="number" formControlName="top_p" appUid #input="uid">
+            <label [for]="input.uid"> Max Tokens </label>
+            <input
+              class="form-control"
+              type="number"
+              formControlName="max_tokens"
+              appUid
+              #input="uid"
+            />
           </div>
         </div>
         <div class="form-row">
           <div class="form-group col-auto">
-            <label [for]="input.uid">
-              N
-            </label>
-            <input class="form-control" type="number" formControlName="n" appUid #input="uid">
+            <label [for]="input.uid"> Temperature </label>
+            <input
+              class="form-control"
+              type="number"
+              formControlName="temperature"
+              appUid
+              #input="uid"
+            />
           </div>
           <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Best Of
-            </label>
-            <input class="form-control" type="number" formControlName="best_of" appUid #input="uid">
+            <label [for]="input.uid"> Top P </label>
+            <input class="form-control" type="number" formControlName="top_p" appUid #input="uid" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-auto">
+            <label [for]="input.uid"> N </label>
+            <input class="form-control" type="number" formControlName="n" appUid #input="uid" />
+          </div>
+          <div class="form-group col-auto">
+            <label [for]="input.uid"> Best Of </label>
+            <input
+              class="form-control"
+              type="number"
+              formControlName="best_of"
+              appUid
+              #input="uid"
+            />
           </div>
         </div>
         <div class="form-row">
           <div class="col-auto">
             <div class="form-group form-check">
-              <input class="form-check-input" type="checkbox" formControlName="echo" appUid
-                     #input="uid">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                formControlName="echo"
+                appUid
+                #input="uid"
+              />
               <label class="form-check-label" [for]="input.uid">Echo</label>
             </div>
           </div>
           <div class="col-auto">
             <div class="form-group form-check">
-              <input class="form-check-input" type="checkbox" formControlName="stream" appUid
-                     #input="uid">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                formControlName="stream"
+                appUid
+                #input="uid"
+              />
               <label class="form-check-label" [for]="input.uid">Stream</label>
             </div>
           </div>
         </div>
         <div class="form-group">
-          <label [for]="input.uid">
-            Logprobs</label>
-          <input class="form-control" type="number" formControlName="logprobs" appUid #input="uid">
+          <label [for]="input.uid"> Logprobs</label>
+          <input
+            class="form-control"
+            type="number"
+            formControlName="logprobs"
+            appUid
+            #input="uid"
+          />
         </div>
-        <div class="form-group d-flex justify-content-between flex-wrap align-items-center"
-             *ngIf="form.controls.stop as stopControl">
+        <div
+          class="form-group d-flex justify-content-between flex-wrap align-items-center"
+          *ngIf="form.controls.stop as stopControl"
+        >
           <label>Stop Sequences</label>
           <ng-container *ngFor="let control of stopControl.controls; let i = index">
             <div class="input-group input-border rounded mb-2 flex-shrink-0">
-              <input
-                type="text"
-                class="form-control border-0"
-                [formControl]="control"
-              >
+              <input type="text" class="form-control border-0" [formControl]="control" />
               <div class="input-group-append">
-                <button class="form-control border-0" type="button"
-                        (click)="stopControl.removeAt(i)">
+                <button
+                  class="form-control border-0"
+                  type="button"
+                  (click)="stopControl.removeAt(i)"
+                >
                   <i class="fa fa-fw fa-times"></i>
                 </button>
               </div>
             </div>
           </ng-container>
-          <button class="btn btn-secondary" type="button"
-                  (click)="stopControl.add()">
+          <button class="btn btn-secondary" type="button" (click)="stopControl.add()">
             <i class="fa fa-fw fa-plus"></i>
             Add stop sequence
           </button>
         </div>
         <div class="form-row">
           <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Presence Penalty
-            </label>
-            <input class="form-control" type="number" formControlName="presence_penalty" appUid
-                   #input="uid">
+            <label [for]="input.uid"> Presence Penalty </label>
+            <input
+              class="form-control"
+              type="number"
+              formControlName="presence_penalty"
+              appUid
+              #input="uid"
+            />
           </div>
           <div class="form-group col-auto">
-            <label [for]="input.uid">
-              Frequency Penalty
-            </label>
-            <input class="form-control" type="number" formControlName="frequency_penalty" appUid
-                   #input="uid">
+            <label [for]="input.uid"> Frequency Penalty </label>
+            <input
+              class="form-control"
+              type="number"
+              formControlName="frequency_penalty"
+              appUid
+              #input="uid"
+            />
           </div>
         </div>
-        <div class="form-group" *ngIf="form.controls.logit_bias as logitBiasControl"
-             [formGroup]="logitBiasControl">
+        <div
+          class="form-group"
+          *ngIf="form.controls.logit_bias as logitBiasControl"
+          [formGroup]="logitBiasControl"
+        >
           <label>Logit Bias</label>
           <div class="form-group">
             <ng-container *ngFor="let record of logitBiasControl.controls | keyvalue">
               <div class="form-row mb-2">
-                <label [for]="input.uid" class="col-auto">
-                  {{ record.key }} :
-                </label>
-                <input type="text"
-                       class="form-control col-auto"
-                       [formControl]="record.value"
-                       appUid #input="uid"
-                       appAutoGrow
+                <label [for]="input.uid" class="col-auto"> {{ record.key }} : </label>
+                <input
+                  type="text"
+                  class="form-control col-auto"
+                  [formControl]="record.value"
+                  appUid
+                  #input="uid"
+                  appAutoGrow
+                />
+                <button
+                  class="form-control col-auto border-0"
+                  type="button"
+                  (click)="logitBiasControl.removeControl(record.key)"
                 >
-                <button class="form-control col-auto border-0" type="button"
-                        (click)="logitBiasControl.removeControl(record.key)">
                   <i class="fa fa-fw fa-times"></i>
                 </button>
               </div>
             </ng-container>
             <div class="input-group input-border rounded mb-2">
-              <input type="text"
-                     class="form-control border-0"
-                     #newKeyInput
-              >
+              <input type="text" class="form-control border-0" #newKeyInput />
               <div class="input-group-append">
-                <button class="btn btn-secondary" type="button"
-                        (click)="logitBiasControl.add(newKeyInput.value)">
+                <button
+                  class="btn btn-secondary"
+                  type="button"
+                  (click)="logitBiasControl.add(newKeyInput.value)"
+                >
                   <i class="fa fa-fw fa-plus"></i>
                   Add Token Id
                 </button>
@@ -224,20 +269,34 @@
         </div>
         <button class="btn btn-primary" type="submit">Request</button>
         <small *ngIf="estimatedCost$ | async as estimatedCost">
-          Estimated cost {{estimatedCost[0] | currency: 'USD': '': '1.2-7' }}-{{estimatedCost[1] | currency: 'USD': 'symbol': '1.2-7' }}
+          Estimated cost {{ estimatedCost[0] | currency : 'USD' : '' : '1.2-7' }}-{{
+            estimatedCost[1] | currency : 'USD' : 'symbol' : '1.2-7'
+          }}
         </small>
-
       </form>
     </as-split-area>
     <as-split-area class="d-flex h-100 flex-column">
       <h6 class="mb-4"><strong>Output</strong></h6>
       <label [for]="raw.uid">Raw response</label>
-      <samp appUid #raw="uid" class="card bg-light overflow-auto flex-grow-1 mb-2" [style.whiteSpace]="'pre-wrap'">
+      <samp
+        appUid
+        #raw="uid"
+        class="card bg-light overflow-auto flex-grow-1 mb-2"
+        [style.whiteSpace]="'pre-wrap'"
+      >
         {{ resultJSON$ | async }}
       </samp>
-      <div class="mb-2">Estimated cost {{requestCost$ | async | currency: 'USD': 'symbol': '1.2-7' }} <ng-container *ngIf="cached$ | async">(cached)</ng-container></div>
+      <div class="mb-2">
+        Estimated cost {{ requestCost$ | async | currency : 'USD' : 'symbol' : '1.2-7' }}
+        <ng-container *ngIf="cached$ | async">(cached)</ng-container>
+      </div>
       <label [for]="text.uid">Text response</label>
-      <samp appUid #text="uid" class="card bg-light overflow-auto flex-grow-1 mb-2" [style.whiteSpace]="'pre-wrap'">
+      <samp
+        appUid
+        #text="uid"
+        class="card bg-light overflow-auto flex-grow-1 mb-2"
+        [style.whiteSpace]="'pre-wrap'"
+      >
         {{ resultText$ | async }}
       </samp>
     </as-split-area>

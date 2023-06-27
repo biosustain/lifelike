@@ -1,69 +1,93 @@
-<div ngbDropdown
-     class="d-block"
-     placement="bottom end"
-     *ngIf="contextsController$ | async as controller"
+<div
+  ngbDropdown
+  class="d-block"
+  placement="bottom end"
+  *ngIf="contextsController$ | async as controller"
 >
-  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
-          [disabled]="!controller.entities.length">
+  <button
+    class="btn btn-secondary w-100 text-truncate"
+    ngbDropdownToggle
+    [disabled]="!controller.entities.length"
+  >
     Context
-    <ng-container *ngIf="controller.current$ | async as current">
-      : {{ current }}
-    </ng-container>
+    <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate"
-            (click)="controller.currentIdx$.next(-1)">Empty</button>
-    <button ngbDropdownItem class="text-truncate"
-            *ngFor="let context of controller.entities; let i = index"
-            (click)="controller.currentIdx$.next(i)">{{ context }}</button>
+    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+      Empty
+    </button>
+    <button
+      ngbDropdownItem
+      class="text-truncate"
+      *ngFor="let context of controller.entities; let i = index"
+      (click)="controller.currentIdx$.next(i)"
+    >
+      {{ context }}
+    </button>
   </div>
 </div>
-<div ngbDropdown
-     class="d-block mt-1"
-     placement="bottom end"
-     *ngIf="goTermController$ | async as controller"
+<div
+  ngbDropdown
+  class="d-block mt-1"
+  placement="bottom end"
+  *ngIf="goTermController$ | async as controller"
 >
-  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
-          [disabled]="!controller.entities.length">
+  <button
+    class="btn btn-secondary w-100 text-truncate"
+    ngbDropdownToggle
+    [disabled]="!controller.entities.length"
+  >
     GO Term
-    <ng-container *ngIf="controller.current$ | async as current">
-      : {{ current }}
-    </ng-container>
+    <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate"
-            (click)="controller.currentIdx$.next(-1)">Empty</button>
-    <button ngbDropdownItem class="text-truncate"
-            *ngFor="let entity of controller.entities; let i = index"
-            (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
+    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+      Empty
+    </button>
+    <button
+      ngbDropdownItem
+      class="text-truncate"
+      *ngFor="let entity of controller.entities; let i = index"
+      (click)="controller.currentIdx$.next(i)"
+    >
+      {{ entity }}
+    </button>
   </div>
 </div>
-<div ngbDropdown
-     class="d-block mt-1"
-     placement="bottom end"
-     *ngIf="geneNameController$ | async as controller"
+<div
+  ngbDropdown
+  class="d-block mt-1"
+  placement="bottom end"
+  *ngIf="geneNameController$ | async as controller"
 >
-  <button class="btn btn-secondary w-100 text-truncate" ngbDropdownToggle
-          [disabled]="!controller.entities.length">
+  <button
+    class="btn btn-secondary w-100 text-truncate"
+    ngbDropdownToggle
+    [disabled]="!controller.entities.length"
+  >
     Gene
-    <ng-container *ngIf="controller.current$ | async as current">
-      : {{ current }}
-    </ng-container>
+    <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate"
-            (click)="controller.currentIdx$.next(-1)">Empty</button>
-    <button ngbDropdownItem class="text-truncate"
-            *ngFor="let entity of controller.entities; let i = index"
-            (click)="controller.currentIdx$.next(i)">{{ entity }}</button>
+    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+      Empty
+    </button>
+    <button
+      ngbDropdownItem
+      class="text-truncate"
+      *ngFor="let entity of controller.entities; let i = index"
+      (click)="controller.currentIdx$.next(i)"
+    >
+      {{ entity }}
+    </button>
   </div>
 </div>
-<br>
+<br />
 <ng-template #loading>
   <i class="fa fa-spinner fa-spin"></i>
 </ng-template>
-<ng-container *ngIf="explanation$ | async as explanation else loading">
-  <ng-container *ngIf="explanation !== 'Loading...' else loading">
-    {{explanation}}
+<ng-container *ngIf="explanation$ | async as explanation; else loading">
+  <ng-container *ngIf="explanation !== 'Loading...'; else loading">
+    {{ explanation }}
   </ng-container>
 </ng-container>

@@ -16,7 +16,7 @@ class ChatGPT:
             'gpt-3.5-turbo-16k-0613',
             'text-davinci-003',
             'text-davinci-002',
-            "text-davinci-003"
+            "text-davinci-003",
         ]
 
         @staticmethod

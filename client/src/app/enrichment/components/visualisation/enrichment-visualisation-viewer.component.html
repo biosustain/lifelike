@@ -1,6 +1,5 @@
-<div class="module" *ngIf="(enrichmentService.status$ | async) as status">
-  <app-module-error *ngFor="let error of status.errors" [error]="error">
-  </app-module-error>
+<div class="module" *ngIf="enrichmentService.status$ | async as status">
+  <app-module-error *ngFor="let error of status.errors" [error]="error"> </app-module-error>
   <app-module-progress *ngIf="status.running">
     Loading Statistical Enrichment... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
   </app-module-progress>
@@ -11,7 +10,7 @@
       [titleTemplate]="tabTitle"
       [showObjectMenu]="false"
     >
-      <ng-template #tabTitle> {{object.filename}} - Statistical Enrichment</ng-template>
+      <ng-template #tabTitle> {{ object.filename }} - Statistical Enrichment</ng-template>
       <!--      <div ngbDropdown class="d-inline-block"-->
       <!--           *ngIf="enrichmentService.enrichmentDocument.contexts as contexts">-->
       <!--        <button class="btn btn-primary" ngbDropdownToggle>-->
@@ -22,14 +21,12 @@
       <!--        </div>-->
       <!--      </div>-->
     </app-module-header>
-    <as-split unit="pixel"
-              direction="horizontal"
-              [gutterSize]="2">
+    <as-split unit="pixel" direction="horizontal" [gutterSize]="2">
       <as-split-area [order]="0">
         <div class="module-body flex-fill overflow-auto h-100">
           <div class="space-cards">
             <app-group
-              *ngFor="let d of data$ | async | keyvalue: originalOrder; let i = index"
+              *ngFor="let d of data$ | async | keyvalue : originalOrder; let i = index"
               [title]="d.key"
               [data]="d.value"
             >
