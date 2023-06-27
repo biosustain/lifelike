@@ -158,8 +158,8 @@
           [appAutoCloseTooltipOutOfView]="tooltipRef"
         >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="fallbackOrganism"
+            [organismTaxId]="form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null"
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>

@@ -1,7 +1,14 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy } from 'lodash/fp';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -18,7 +25,7 @@ import { ObjectSelectionDialogComponent } from './object-selection-dialog.compon
 interface CreateObjectRequest
   extends Omit<ObjectCreateRequest, 'parentHashId' | 'fallbackOrganism'> {
   parent?: FilesystemObject;
-  organism?: OrganismAutocomplete;
+  fallbackOrganism?: OrganismAutocomplete;
 }
 
 @Component({
@@ -26,7 +33,7 @@ interface CreateObjectRequest
   templateUrl: './object-edit-dialog.component.html',
 })
 export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
-  @ViewChild('fileInput', { static: false })
+  @ViewChild('fileInput', {static: false})
   protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';
@@ -51,7 +58,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         rulesBased: new FormControl(true),
       }),
     }),
-    {}
+    {},
   );
 
   readonly form: FormGroup = new FormGroup(
@@ -60,7 +67,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       contentValue: new FormControl(null),
       contentUrl: new FormControl(''),
       parent: new FormControl(null),
-      filename: new FormControl('', [Validators.required, filenameValidator]),
+      filename: new FormControl('', [() => ({invalid: 123}), Validators.required, filenameValidator]),
       description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
       public: new FormControl(false),
       annotationConfigs: new FormGroup(
@@ -68,9 +75,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           excludeReferences: new FormControl(false),
           annotationMethods: new FormGroup(this.defaultAnnotationMethods),
         },
-        [Validators.required]
+        [Validators.required],
       ),
-      organism: new FormControl(null),
+      fallbackOrganism: new FormControl(null),
       mimeType: new FormControl(null),
     },
     (group: FormGroup): ValidationErrors | null => {
@@ -105,13 +112,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
 
       return null;
-    }
+    },
   );
 
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal
+    protected readonly modalService: NgbModal,
   ) {
     super(modal, messageDialog);
   }
@@ -129,9 +136,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description || '',
       public: value.public || false,
       mimeType: value.mimeType,
-      organism: value.fallbackOrganism,
+      fallbackOrganism: value.fallbackOrganism,
     });
-    this.form.get('filename').markAsDirty();
+    this.form.get('filename').updateValueAndValidity();
 
     if (!value.parent) {
       this.promptParent = true;
@@ -140,7 +147,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const annotationConfigs = value.annotationConfigs;
     if (annotationConfigs != null) {
       let ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-        'annotationMethods'
+        'annotationMethods',
       ) as FormControl;
       if (annotationConfigs.annotationMethods != null) {
         for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
@@ -152,7 +159,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
       if (annotationConfigs.excludeReferences != null) {
         ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-          'excludeReferences'
+          'excludeReferences',
         ) as FormControl;
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
@@ -170,15 +177,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value as CreateObjectRequest;
 
-    const objectChanges: Partial<FilesystemObject> = {
-      parent: value.parent,
-      filename: value.filename,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs,
-    };
+    const objectChanges: Partial<FilesystemObject> = _flow(
+      // Return only changed values
+      _pickBy(({pristine}: AbstractControl) => !pristine),
+      _mapValues((control: AbstractControl) => control.value),
+    )(this.form.controls);
 
     const request: ObjectCreateRequest = this.createObjectRequest(value);
 
@@ -187,7 +190,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       objectChanges,
       request,
       annotationConfigs: value.annotationConfigs,
-      organism: value.organism,
+      fallbackOrganism: value.fallbackOrganism,
     };
   }
 
@@ -203,7 +206,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (this.possiblyAnnotatable) {
       return {
         ...object,
-        fallbackOrganism: value?.organism,
+        fallbackOrganism: value?.fallbackOrganism,
         annotationConfigs: value?.annotationConfigs,
       };
     }
@@ -211,7 +214,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   organismChanged(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? organism : null);
+    this.form.get('fallbackOrganism').setValue(organism ? organism : null);
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
@@ -240,7 +243,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           parent: destinations[0],
         });
       },
-      () => {}
+      () => {
+      },
     );
   }
 }
@@ -250,5 +254,5 @@ export interface ObjectEditDialogValue {
   objectChanges: Partial<FilesystemObject>;
   request: ObjectCreateRequest;
   annotationConfigs: AnnotationConfigurations;
-  organism: OrganismAutocomplete;
+  fallbackOrganism: OrganismAutocomplete;
 }
