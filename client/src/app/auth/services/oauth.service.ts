@@ -173,16 +173,16 @@ export class LifelikeOAuthService {
 
         // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case someone
         // ever calls initImplicitFlow(undefined | null) this could happen.
-        if (this.oauthService.state && this.oauthService.state !== 'undefined' && this.oauthService.state !== 'null') {
-          console.log('Conditional on line 176 was true');
-          let stateUrl = this.oauthService.state;
-          if (stateUrl.startsWith('/') === false) {
-            console.log('Conditional on line 179 was true')
-            stateUrl = decodeURIComponent(stateUrl);
-          }
-          console.log(`Calling navigateByUrl on line 184 with ${stateUrl}`)
-          this.router.navigateByUrl(stateUrl);
-        }
+        // if (this.oauthService.state && this.oauthService.state !== 'undefined' && this.oauthService.state !== 'null') {
+        //   console.log('Conditional on line 176 was true');
+        //   let stateUrl = this.oauthService.state;
+        //   if (stateUrl.startsWith('/') === false) {
+        //     console.log('Conditional on line 179 was true')
+        //     stateUrl = decodeURIComponent(stateUrl);
+        //   }
+        //   console.log(`Calling navigateByUrl on line 184 with ${stateUrl}`)
+        //   this.router.navigateByUrl(stateUrl);
+        // }
       })
       .catch(() => this.isDoneLoadingSubject$.next(true));
   }

@@ -49,6 +49,8 @@ export class AppComponent {
     private storage: StorageService,
     private authService: AuthenticationService,
   ) {
+    console.log('constructor for app component');
+
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
 
