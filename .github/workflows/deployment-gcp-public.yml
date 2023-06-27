@@ -11,7 +11,7 @@ jobs:
     uses: ./.github/workflows/deployment-gcp.yml
     with:
       environment_name: public
-      client_config: production
+      client_config: staging
       cloud_sql_instance_name: ***ARANGO_DB_NAME***-public
     secrets:
       VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}

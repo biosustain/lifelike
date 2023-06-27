@@ -193,7 +193,7 @@ export class LifelikeOAuthService {
   }
 
   logout(revokeAll: boolean = false, redirectUrl: string = '') {
-    console.log(`Called login, calling initLoginFlow with ${revokeAll} or ${redirectUrl}`)
+    console.log(`Called logout, calling logOut with ${revokeAll} or ${redirectUrl}`)
     this.oauthService.logOut(revokeAll, redirectUrl);
   }
   refresh() { this.oauthService.silentRefresh(); }
