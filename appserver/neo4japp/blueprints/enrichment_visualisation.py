@@ -1,11 +1,12 @@
 import json
 from http import HTTPStatus
+
 import requests
 from flask import Blueprint, Response, current_app, request
 
-from neo4japp.utils.globals import config
 from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 from neo4japp.services.chat_gpt import ChatGPT
+from neo4japp.utils.globals import config
 
 bp = Blueprint(
     'enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation'
@@ -87,15 +88,26 @@ def enrich_go():
 
 def composePrompt(organism, term, context, geneName):
     if organism and term and context and geneName:
-        return f'For {organism}, what function does {geneName} have in {term}, in context of {context}?'
+        return (
+            f'For {organism}, what function does {geneName} have in {term}, in context of {context}?'
+        )
     if organism and term and geneName:
-        return f'For {organism}, what function does {geneName} have in {term}?'
+        return (
+            f'For {organism}, what function does {geneName} have in {term}?'
+        )
     elif organism and term and context:
-        return f'For {organism}, what is the relationship between {term} and {context}?'
+        return (
+            f'For {organism}, what is the relationship between {term} and {context}?'
+        )
     elif organism and term:
-        return f'What is the ralationship between {organism} and {term}?'
+        return (
+            f'What is the ralationship between {organism} and {term}?'
+        )
     else:
-        return f'What is the ralationship between {", ".join(filter(lambda a: a, (context, organism, term, geneName)))}?'
+        list_str = ", ".join(filter(lambda a: a, (organism, term, context, geneName)))
+        return (
+            f'What is the ralationship between {list_str}?'
+        )
 
 
 @bp.route('/enrich-with-context', methods=['POST'])
