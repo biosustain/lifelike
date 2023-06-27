@@ -53,7 +53,7 @@ export class MapViewComponent<ExtraResult = void>
     graphActionsService: GraphActionsService,
     public readonly progressDialog: ProgressDialog,
     openFileProvider: OpenFileProvider,
-    protected readonly moduleContext: ModuleContext,
+    protected readonly moduleContext: ModuleContext
   ) {
     super(
       filesystemService,

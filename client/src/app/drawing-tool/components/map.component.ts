@@ -97,7 +97,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService,
-    readonly openFileProvider: OpenFileProvider,
+    readonly openFileProvider: OpenFileProvider
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
