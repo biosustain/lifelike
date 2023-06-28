@@ -289,8 +289,8 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   }
 
   queueChange(change: Partial<ObjectUpdateRequest>) {
-    this.queuedChanges$.next({
-      ...(this.queuedChanges$.value || {}),
+      this.queuedChanges$.next({
+        ...(this.queuedChanges$.value || {}),
       ...change,
     });
   }
