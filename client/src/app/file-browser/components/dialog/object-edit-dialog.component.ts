@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy } from 'lodash/fp';
+import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has } from 'lodash/fp';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -33,7 +33,7 @@ interface CreateObjectRequest
   templateUrl: './object-edit-dialog.component.html',
 })
 export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
-  @ViewChild('fileInput', {static: false})
+  @ViewChild('fileInput', { static: false })
   protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';
@@ -58,7 +58,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         rulesBased: new FormControl(true),
       }),
     }),
-    {},
+    {}
   );
 
   readonly form: FormGroup = new FormGroup(
@@ -67,7 +67,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       contentValue: new FormControl(null),
       contentUrl: new FormControl(''),
       parent: new FormControl(null),
-      filename: new FormControl('', [() => ({invalid: 123}), Validators.required, filenameValidator]),
+      filename: new FormControl('', [Validators.required, filenameValidator]),
       description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
       public: new FormControl(false),
       annotationConfigs: new FormGroup(
@@ -75,7 +75,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           excludeReferences: new FormControl(false),
           annotationMethods: new FormGroup(this.defaultAnnotationMethods),
         },
-        [Validators.required],
+        [Validators.required]
       ),
       fallbackOrganism: new FormControl(null),
       mimeType: new FormControl(null),
@@ -112,13 +112,13 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       }
 
       return null;
-    },
+    }
   );
 
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal,
+    protected readonly modalService: NgbModal
   ) {
     super(modal, messageDialog);
   }
@@ -147,7 +147,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     const annotationConfigs = value.annotationConfigs;
     if (annotationConfigs != null) {
       let ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-        'annotationMethods',
+        'annotationMethods'
       ) as FormControl;
       if (annotationConfigs.annotationMethods != null) {
         for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
@@ -159,7 +159,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
       if (annotationConfigs.excludeReferences != null) {
         ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-          'excludeReferences',
+          'excludeReferences'
         ) as FormControl;
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
@@ -179,11 +179,11 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 
     const objectChanges: Partial<FilesystemObject> = _flow(
       // Return only changed values
-      _pickBy(({pristine}: AbstractControl) => !pristine),
-      _mapValues((control: AbstractControl) => control.value),
+      _pickBy(({ pristine }: AbstractControl) => !pristine),
+      _mapValues((control: AbstractControl) => control.value)
     )(this.form.controls);
 
-    const request: ObjectCreateRequest = this.createObjectRequest(value);
+    const request: Partial<ObjectCreateRequest> = this.patchObjectRequest(objectChanges);
 
     return {
       object: this.object,
@@ -192,6 +192,35 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       annotationConfigs: value.annotationConfigs,
       fallbackOrganism: value.fallbackOrganism,
     };
+  }
+
+  patchObjectRequest(value: Partial<CreateObjectRequest>): Partial<ObjectCreateRequest> {
+    const patch = {} as Partial<ObjectCreateRequest>;
+    if (_has('filename', value)) {
+      patch.filename = value.filename;
+    }
+    if (_has('parent.hashId', value)) {
+      patch.parentHashId = value.parent?.hashId ?? null;
+    }
+    if (_has('description', value)) {
+      patch.description = value.description;
+    }
+    if (_has('public', value)) {
+      patch.public = value.public;
+    }
+    if (_has('mimeType', value)) {
+      patch.mimeType = value.mimeType;
+    }
+    // Add annotation-relevant parameters only when needed
+    if (this.possiblyAnnotatable) {
+      if (_has('fallbackOrganism', value)) {
+        patch.fallbackOrganism = value.fallbackOrganism;
+      }
+      if (_has('annotationConfigs', value)) {
+        patch.annotationConfigs = value.annotationConfigs;
+      }
+    }
+    return patch;
   }
 
   createObjectRequest(value: CreateObjectRequest): ObjectCreateRequest {
@@ -243,8 +272,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
           parent: destinations[0],
         });
       },
-      () => {
-      },
+      () => {}
     );
   }
 }
@@ -252,7 +280,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
-  request: ObjectCreateRequest;
+  request: Partial<ObjectCreateRequest>;
   annotationConfigs: AnnotationConfigurations;
   fallbackOrganism: OrganismAutocomplete;
 }

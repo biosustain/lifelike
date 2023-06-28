@@ -1,18 +1,26 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { finalize, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, from, Observable, of, throwError } from 'rxjs';
-import { first } from 'lodash-es';
+import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/operators';
 
-import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
-import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
-import { EnrichmentTable } from 'app/enrichment/models/enrichment-table';
-import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
 } from 'app/enrichment/components/table/dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
+import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
+import { EnrichmentTable } from 'app/enrichment/models/enrichment-table';
+import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import {
+  BulkObjectUpdateRequest,
+  ObjectContentSource,
+  ObjectCreateRequest,
+} from 'app/file-browser/schema';
+import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
@@ -21,21 +29,13 @@ import {
   Exporter,
   PreviewOptions,
 } from 'app/file-types/providers/base-object.type-provider';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  CreateResultMapping,
-  ObjectCreationService,
-} from 'app/file-browser/services/object-creation.service';
-import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { ObjectContentSource, ObjectCreateRequest } from 'app/file-browser/schema';
-import { AnnotationsService } from 'app/file-browser/services/annotations.service';
+import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
+import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
@@ -172,8 +172,9 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     return this.filesystemService
       .getContent(target.hashId)
       .pipe(
-        mergeMap((blob: Blob) =>
-          new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, target.hashId)
+        mergeScan(
+          (document, blob: Blob) => document.loadResult(blob, target.hashId),
+          new EnrichmentDocument(this.worksheetViewerService)
         ),
         tap(() => progressDialogRef.close()),
         mergeMap((document) => {
@@ -193,29 +194,38 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               ],
             });
 
+            const changes$: Observable<Partial<BulkObjectUpdateRequest>> = value.document
+              .markForRegeneration
+              ? value.document.updateParameters().pipe(
+                  map((blob) => ({
+                    contentValue: blob,
+                    ...value.request,
+                  })),
+                  take(1)
+                )
+              : of(value.request);
+
             // old files can have outdated or corrupted data/schema
             // so instead of refreshing, update and save
             // this will trigger recreating the enrichment JSON
-            return value.document
-              .updateParameters()
+            return changes$
               .pipe(
-                mergeMap((newBlob) =>
-                  this.filesystemService.save([target.hashId], {
-                    contentValue: newBlob,
-                    ...value.request,
-                  })
+                mergeMap((changes) =>
+                  this.filesystemService.save([target.hashId], changes, { [target.hashId]: target })
                 ),
-                mergeMap((o) => document.refreshData().pipe(map(() => o))),
+                mergeMap((o) => document.refreshData()),
                 map(() => value),
                 // Errors are lost below with the catch() so we need to handle errors here too
                 this.errorHandler.create(),
-                finalize(() => progressDialog2Ref.close())
+                finalize(() => {
+                  progressDialog2Ref.close();
+                })
               )
               .toPromise();
           };
 
           return from(
-            dialogRef.result.catch(() => {
+            dialogRef.result.catch((e) => {
               // A cancel should not be converted to an error
             })
           );

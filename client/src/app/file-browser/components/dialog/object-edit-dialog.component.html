@@ -64,7 +64,9 @@
         >
           <app-organism-autocomplete
             formId="fallbackOrganism"
-            [organismTaxId]="form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null"
+            [organismTaxId]="
+              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
+            "
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>
