@@ -88,7 +88,8 @@ def enrich_go():
 def composePrompt(organism, term, context, geneName):
     if organism and term and context and geneName:
         return (
-            f'For {organism}, what function does {geneName} have in {term}, in context of {context}?'
+            f'For {organism}, what function does {geneName} have in {term},'
+            f' in context of {context}?'
         )
     if organism and term and geneName:
         return f'For {organism}, what function does {geneName} have in {term}?'
@@ -97,7 +98,9 @@ def composePrompt(organism, term, context, geneName):
     elif organism and term:
         return f'What is the ralationship between {organism} and {term}?'
     else:
-        joined_list = ", ".join(filter(lambda a: a, (organism, term, context, geneName)))
+        joined_list = ", ".join(
+            filter(lambda a: a, (organism, term, context, geneName))
+        )
         return f'What is the ralationship between {joined_list}?'
 
 
