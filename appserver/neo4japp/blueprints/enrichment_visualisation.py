@@ -88,7 +88,10 @@ def enrich_go():
 
 def composePrompt(organism, term, context, geneName):
     if organism and term and context and geneName:
-        return f'For {organism}, what function does {geneName} have in {term}, in context of {context}?'
+        return (
+            f'For {organism}, what function does {geneName} have in {term},'
+            f' in context of {context}?'
+        )
     if organism and term and geneName:
         return f'For {organism}, what function does {geneName} have in {term}?'
     elif organism and term and context:
