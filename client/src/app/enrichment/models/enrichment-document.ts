@@ -1,6 +1,12 @@
 import { Observable, of } from 'rxjs';
-import { map, mergeMap, shareReplay } from 'rxjs/operators';
-import { compact, omitBy, isEmpty } from 'lodash-es';
+import { map, mergeMap, tap } from 'rxjs/operators';
+import {
+  compact as _compact,
+  has as _has,
+  isEmpty as _isEmpty,
+  omitBy as _omitBy,
+  pick as _pick,
+} from 'lodash/fp';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
@@ -19,7 +25,7 @@ export class BaseEnrichmentDocument {
   organism = '';
   values = new Map<string, string>();
   importGenes: string[] = [];
-  domains: string[] = compact([
+  domains: string[] = _compact([
     'Regulon',
     'UniProt',
     'String',
@@ -31,37 +37,47 @@ export class BaseEnrichmentDocument {
   duplicateGenes: string[] = [];
   fileId = '';
   contexts: string[] = [];
+  markForRegeneration = false;
 
-  parseParameters({ importGenes, taxID, organism, domains, ...rest }: EnrichmentParsedData) {
+  private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {
     // parse the file content to get gene list and organism tax id and name
-    const rawImportGenes = importGenes.map((gene) => gene.trim()).filter((gene) => gene !== '');
-    if (taxID === '562' || taxID === '83333') {
-      taxID = '511145';
-    } else if (taxID === '4932') {
-      taxID = '559292';
+    const parsedParams = {} as EnrichmentParsedData;
+    if (_has('importGenes', params)) {
+      const { importGenes } = params;
+      const rawImportGenes = importGenes.map((gene) => gene.trim()).filter((gene) => gene !== '');
+      const duplicateGenes = this.getDuplicates(rawImportGenes);
+      parsedParams.importGenes = rawImportGenes;
+      parsedParams.duplicateGenes = duplicateGenes;
     }
-
-    // parse for column order/domain input
-    if (domains == null) {
-      domains = this.domains;
+    if (_has('taxID', params)) {
+      const { taxID } = params;
+      if (taxID === '562' || taxID === '83333') {
+        parsedParams.taxID = '511145';
+      } else if (taxID === '4932') {
+        parsedParams.taxID = '559292';
+      }
     }
-
-    const duplicateGenes = this.getDuplicates(rawImportGenes);
+    if (_has('domains', params)) {
+      const { domains } = params;
+      // parse for column order/domain input
+      if (domains == null) {
+        parsedParams.domains = this.domains;
+      }
+    }
 
     // We set these all at the end to be thread/async-safe
-    return {
-      importGenes: rawImportGenes,
-      taxID,
-      organism,
-      domains,
-      duplicateGenes,
-      ...rest,
-    };
+    return _omitBy((value, key) => this[key] === value)({
+      ...params,
+      ...parsedParams,
+    });
   }
 
   setParameters(params) {
     // We set these all at the end to be thread/async-safe
     const parsedParams = this.parseParameters(params);
+    if (!_isEmpty(_pick(['importGenes', 'taxID', 'domains'], parsedParams))) {
+      this.markForRegeneration = true;
+    }
     Object.assign(this, parsedParams);
     return parsedParams;
   }
@@ -107,19 +123,20 @@ export class BaseEnrichmentDocument {
           };
         }
       }),
-      map(this.decode.bind(this)),
-      map(this.setParameters.bind(this))
+      map((data) => this.decode(data)),
+      tap((params) => this.setParameters(params)),
+      tap(() => (this.markForRegeneration = false))
     );
   }
 
-  encode({importGenes, taxID, organism, domains, contexts, result}): EnrichmentData {
+  encode({ importGenes, taxID, organism, domains, contexts, result }): EnrichmentData {
     return {
       data: {
         genes: importGenes.join(','),
         taxId: taxID,
         organism,
         sources: domains,
-        contexts
+        contexts,
       },
       result,
     };
@@ -174,8 +191,9 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   refreshData(): Observable<this> {
-    this.result = null;
     if (this.fileId === '') {
+      this.result = null;
+      this.result = null;
       // file was just created
       return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
         map((result: EnrichmentResult) => {
@@ -184,6 +202,10 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         })
       );
     } else {
+      if (!this.markForRegeneration) {
+        return of(null);
+      }
+      this.result = null;
       return this.worksheetViewerService
         .refreshEnrichmentAnnotations([this.fileId])
         .pipe(mergeMap((_) => this.annotate()));
@@ -191,6 +213,9 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   updateParameters(): Observable<Blob> {
+    if (!this.markForRegeneration) {
+      return of(new Blob([JSON.stringify(this.encode(this))]));
+    }
     return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
       mergeMap((result: EnrichmentResult) => {
         const importGenes = this.importGenes;
@@ -198,7 +223,14 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         const organism = this.organism;
         const domains = this.domains;
         const contexts = this.contexts;
-        const data: EnrichmentData = this.encode({importGenes, taxID, organism, domains, contexts, result});
+        const data: EnrichmentData = this.encode({
+          importGenes,
+          taxID,
+          organism,
+          domains,
+          contexts,
+          result,
+        });
         return of(new Blob([JSON.stringify(data)]));
       })
     );
@@ -328,19 +360,16 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
             }
 
             return {
-              domainInfo: omitBy(
-                {
-                  Regulon: {
-                    labels: ['Regulator Family', 'Activated By', 'Repressed By'],
-                  },
-                  UniProt: { labels: ['Function'] },
-                  String: { labels: ['Annotation'] },
-                  GO: { labels: ['Annotation'] },
-                  BioCyc: { labels: ['Pathways'] },
-                  KEGG: environment.keggEnabled && { labels: ['Pathways'] },
+              domainInfo: _omitBy(_isEmpty)({
+                Regulon: {
+                  labels: ['Regulator Family', 'Activated By', 'Repressed By'],
                 },
-                isEmpty
-              ),
+                UniProt: { labels: ['Function'] },
+                String: { labels: ['Annotation'] },
+                GO: { labels: ['Annotation'] },
+                BioCyc: { labels: ['Pathways'] },
+                KEGG: environment.keggEnabled && { labels: ['Pathways'] },
+              }),
               genes: genesList,
             };
           })
@@ -536,6 +565,7 @@ export interface EnrichmentParsedData {
    */
   name?: string;
   importGenes: string[];
+  duplicateGenes?: string[];
   taxID: string;
   organism: string;
   domains: string[];

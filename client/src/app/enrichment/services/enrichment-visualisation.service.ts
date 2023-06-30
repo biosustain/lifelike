@@ -33,23 +33,22 @@ const addressPrecisionMistake = (d) => {
 
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
-
   constructor(
     protected readonly http: HttpClient,
     protected readonly errorHandler: ErrorHandler,
     protected readonly route: ActivatedRoute,
     protected readonly snackBar: MatSnackBar,
     protected readonly enrichmentService: EnrichmentService,
-    protected readonly explainService: ExplainService,
+    protected readonly explainService: ExplainService
   ) {
     this.enrichmentDocument$.connect();
     this.enrichedWithGOTerms$.connect();
     this.object$.connect();
-    this.fileId$.subscribe(fileId => {
+    this.fileId$.subscribe((fileId) => {
       this.loadFileMetaDataTask.update(fileId);
       this.loadEnrichmentDocumentTask.update(fileId);
     });
-    this.enrichmentDocument$.subscribe(enrichmentDocument => {
+    this.enrichmentDocument$.subscribe((enrichmentDocument) => {
       this.enrichWithGOTermsTask.update(enrichmentDocument);
     });
   }
@@ -57,100 +56,93 @@ export class EnrichmentVisualisationService implements OnDestroy {
   private destroy$ = new Subject<void>();
 
   private fileId$: Observable<string> = this.route.params.pipe(
-    map(({file_id}) => file_id),
-    filter(fileId => Boolean(fileId)),
-    shareReplay({bufferSize: 1, refCount: true}),
+    map(({ file_id }) => file_id),
+    filter((fileId) => Boolean(fileId)),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
   private loadFileMetaDataTask: BackgroundTask<string, FilesystemObject> = new BackgroundTask(
-    fileId => this.enrichmentService.get(fileId).pipe(
-      this.errorHandler.create({label: 'Load Statistical Enrichment'}),
-    ),
+    (fileId) =>
+      this.enrichmentService
+        .get(fileId)
+        .pipe(this.errorHandler.create({ label: 'Load Statistical Enrichment' }))
   );
-  private loadEnrichmentDocumentTask: BackgroundTask<string, BaseEnrichmentDocument> = new BackgroundTask(
-    fileId => this.enrichmentService.getContent(
-      fileId,
-    ).pipe(
-      this.errorHandler.create({label: 'Load Statistical Enrichment Content'}),
-      switchMap(data => {
-        const enrichmentDocument = new BaseEnrichmentDocument();
-        return enrichmentDocument.load(data).pipe(
-          map(() => enrichmentDocument),
-        );
-      }),
-      shareReplay({bufferSize: 1, refCount: true}),
-    ),
-  );
-  private enrichWithGOTermsTask: BackgroundTask<BaseEnrichmentDocument, EnrichWithGOTermsResult[]> = new BackgroundTask(
-    enrichmentDocument => this._enrichWithGOTerms(enrichmentDocument).pipe(
-      this.errorHandler.create({label: 'Enrich with GO Terms'}),
-    ),
-  );
+  private loadEnrichmentDocumentTask: BackgroundTask<string, BaseEnrichmentDocument> =
+    new BackgroundTask((fileId) =>
+      this.enrichmentService.getContent(fileId).pipe(
+        this.errorHandler.create({ label: 'Load Statistical Enrichment Content' }),
+        switchMap((data) => {
+          const enrichmentDocument = new BaseEnrichmentDocument();
+          return enrichmentDocument.load(data).pipe(map(() => enrichmentDocument));
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      )
+    );
+  private enrichWithGOTermsTask: BackgroundTask<BaseEnrichmentDocument, EnrichWithGOTermsResult[]> =
+    new BackgroundTask((enrichmentDocument) =>
+      this._enrichWithGOTerms(enrichmentDocument).pipe(
+        this.errorHandler.create({ label: 'Enrich with GO Terms' })
+      )
+    );
   public readonly status$: Observable<MultiTaskStatus> = combineLatest([
     this.loadFileMetaDataTask.status$,
     this.loadEnrichmentDocumentTask.status$,
     this.enrichWithGOTermsTask.status$,
-  ]).pipe(
-    map(mergeStatuses),
-  );
+  ]).pipe(map(mergeStatuses));
   public readonly enrichmentDocument$: ConnectableObservable<BaseEnrichmentDocument> =
     this.loadEnrichmentDocumentTask.results$.pipe(
-      map(({result}) => result),
+      map(({ result }) => result),
       takeUntil(this.destroy$),
-      publishReplay(1), // tasks executes eagerly
+      publishReplay(1) // tasks executes eagerly
     ) as ConnectableObservable<BaseEnrichmentDocument>;
   public readonly enrichedWithGOTerms$: ConnectableObservable<EnrichWithGOTermsResult[]> =
     this.enrichWithGOTermsTask.results$.pipe(
-      map(({result}) => result),
+      map(({ result }) => result),
       takeUntil(this.destroy$),
-      publishReplay(1), // tasks executes eagerly
+      publishReplay(1) // tasks executes eagerly
     ) as ConnectableObservable<EnrichWithGOTermsResult[]>;
   public readonly object$: ConnectableObservable<FilesystemObject> =
     this.loadFileMetaDataTask.results$.pipe(
-      map(({result}) => result),
+      map(({ result }) => result),
       takeUntil(this.destroy$),
-      publishReplay(1), // tasks executes eagerly
+      publishReplay(1) // tasks executes eagerly
     ) as ConnectableObservable<FilesystemObject>;
-  public readonly contexts$ = this.enrichmentDocument$.pipe(
-    map(({contexts}) => contexts),
-  );
+  public readonly contexts$ = this.enrichmentDocument$.pipe(map(({ contexts }) => contexts));
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
    * @param analysis - analysis ID to be used
    */
   private _enrichWithGOTerms(
-    {
-      result: {genes},
-      taxID,
-      organism,
-      contexts,
-    }: BaseEnrichmentDocument,
-    analysis = 'fisher',
+    { result: { genes }, taxID, organism, contexts }: BaseEnrichmentDocument,
+    analysis = 'fisher'
   ): Observable<EnrichWithGOTermsResult[]> {
-    const geneNames = genes.reduce((o, {matched}) => {
+    const geneNames = genes.reduce((o, { matched }) => {
       if (matched) {
         o.push(matched);
       }
       return o;
     }, []);
-    return this.http.post<{ result: [] }>(
-      `/api/enrichment-visualisation/enrich-with-go-terms`,
-      {geneNames, organism: `${taxID}/${organism}`, analysis: 'fisher'},
-    ).pipe(
-      map((data: any) => data.map(addressPrecisionMistake)),
-    );
+    return this.http
+      .post<{ result: [] }>(`/api/enrichment-visualisation/enrich-with-go-terms`, {
+        geneNames,
+        organism: `${taxID}/${organism}`,
+        analysis: 'fisher',
+      })
+      .pipe(map((data: any) => data.map(addressPrecisionMistake)));
   }
 
   public enrichTermWithContext(term, context?, geneName?): Observable<string> {
     return this.enrichmentDocument$.pipe(
-      switchMap(({organism}) =>
-        this.http.post<SingleResult<string>>(
-          `/api/enrichment-visualisation/enrich-with-context`,
-          {organism, term, context, geneName},
-        ).pipe(
-          map(({result}) => result),
-        ),
-      ),
+      switchMap(({ organism }) =>
+        this.http
+          .post<SingleResult<string>>(`/api/enrichment-visualisation/enrich-with-context`, {
+            organism,
+            term,
+            context,
+            geneName,
+          })
+          .pipe(map(({ result }) => result))
+      )
     );
   }
 

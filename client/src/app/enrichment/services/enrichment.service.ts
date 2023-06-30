@@ -11,8 +11,7 @@ const openEnrichmentFiles = new Map();
 
 @Injectable()
 export class EnrichmentService implements OnDestroy {
-  constructor(protected readonly filesystemService: FilesystemService) {
-  }
+  constructor(protected readonly filesystemService: FilesystemService) {}
 
   getFileRef(hashId: string) {
     let openFile = openEnrichmentFiles.get(hashId);
@@ -22,15 +21,16 @@ export class EnrichmentService implements OnDestroy {
       openFile = {
         // metadata can be mutated (example params edit)
         get: initialUpdate.pipe(
-          switchMap(() => this.filesystemService.open(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1))),
+          switchMap(() =>
+            this.filesystemService.open(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1))
+          )
         ),
         // data is not mutable
         getContent: initialUpdate.pipe(
           switchMap(() =>
-            this.filesystemService
-              .getContent(hashId)
-              .pipe(map(Object.freeze), shareReplay(1)),
-          )),
+            this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1))
+          )
+        ),
         update,
         ref: new Set(),
       };
@@ -54,21 +54,21 @@ export class EnrichmentService implements OnDestroy {
 
   ngOnDestroy() {
     openEnrichmentFiles.forEach(
-      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId),
+      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
     );
   }
 
   save(
     hashIds: string[],
     changes: Partial<BulkObjectUpdateRequest>,
-    updateWithLatest?: { [hashId: string]: FilesystemObject },
+    updateWithLatest?: { [hashId: string]: FilesystemObject }
   ): Observable<{ [hashId: string]: FilesystemObject }> {
     return this.filesystemService.save(hashIds, changes, updateWithLatest).pipe(
       tap((ret) =>
         // dump keep track of file upon save so it reloaded
         // todo: implement optimistic update
-        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId)),
-      ),
+        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId))
+      )
     );
   }
 }

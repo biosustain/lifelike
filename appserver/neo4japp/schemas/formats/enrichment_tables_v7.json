@@ -3,9 +3,7 @@
   "$id": "https://***ARANGO_DB_NAME***.bio/schemas/enrichment-table/v7.0.0/schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "data"
-  ],
+  "required": ["data"],
   "definitions": {
     "safeUrl": {
       "type": "string",
@@ -16,7 +14,7 @@
     }
   },
   "properties": {
-    "version": {"ref$": "#/$id"},
+    "version": { "ref$": "#/$id" },
     "data": {
       "type": "object",
       "properties": {
@@ -55,10 +53,7 @@
     "result": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "domainInfo",
-        "genes"
-      ],
+      "required": ["domainInfo", "genes"],
       "properties": {
         "domainInfo": {
           "type": "object",
@@ -67,9 +62,7 @@
             "^GO$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -84,9 +77,7 @@
             "^BioCyc$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -101,9 +92,7 @@
             "^String$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -118,9 +107,7 @@
             "^Regulon$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -135,9 +122,7 @@
             "^UniProt$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -152,9 +137,7 @@
             "^KEGG$": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "labels"
-              ],
+              "required": ["labels"],
               "properties": {
                 "labels": {
                   "type": "array",
@@ -173,9 +156,7 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "imported"
-            ],
+            "required": ["imported"],
             "properties": {
               "imported": {
                 "type": "string",
@@ -223,10 +204,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -253,10 +231,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -283,10 +258,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -313,10 +285,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -338,10 +307,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -363,10 +329,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -393,10 +356,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",
@@ -423,10 +383,7 @@
                         "additionalProperties": {
                           "type": "string",
                           "additionalProperties": false,
-                          "required": [
-                            "text",
-                            "link"
-                          ],
+                          "required": ["text", "link"],
                           "properties": {
                             "text": {
                               "type": "string",

@@ -23,7 +23,7 @@
               <i class="fa fa-fw fa-folder text-icon"></i>
               {{ form.get('parent').value.effectiveName }}
             </div>
-            <ng-template #noParentChosen> </ng-template>
+            <ng-template #noParentChosen></ng-template>
           </div>
         </app-form-row>
 
@@ -33,6 +33,7 @@
             formControlName="filename"
             id="filename"
             [appFormInput]="form.get('filename')"
+            [pristineInvalid]="true"
             appAutoFocus
             [autoSelect]="true"
           />
@@ -43,7 +44,7 @@
             formControlName="description"
             id="description"
             [appFormInput]="form.get('description')"
-            rows="5"
+            rows="10"
           ></textarea>
         </app-form-row>
 
@@ -73,10 +74,16 @@
           ></textarea>
         </app-form-row>
 
-        <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
+        <app-form-row
+          for="fallbackOrganism"
+          label="Organism"
+          [control]="form.get('fallbackOrganism')"
+        >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="fallbackOrganism"
+            [organismTaxId]="
+              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
+            "
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>
@@ -96,31 +103,38 @@
         </app-form-row>
 
         <app-form-row for="contexts" label="Contexts" [control]="contexts">
-            <ng-container *ngFor="let context of contexts.controls">
-              <div class="input-group input-border rounded mb-2">
-                <input
-                  type="text"
+          <ng-container *ngFor="let context of contexts.controls">
+            <div class="input-group input-border rounded mb-2">
+              <input
+                type="text"
+                class="form-control border-0"
+                [formControl]="context"
+                [value]="context.value"
+                (change)="setValueFromEvent(context, $event)"
+              />
+              <div class="input-group-append">
+                <button
                   class="form-control border-0"
-                  [formControl]="context"
-                  [value]="context.value"
-                  (change)="setValueFromEvent(context, $event)"
+                  type="button"
+                  (click)="removeControl(contexts, context)"
                 >
-                <div class="input-group-append">
-                  <button class="form-control border-0" type="button"
-                          (click)="removeControl(contexts, context)">
-                    <i class="fa fa-fw fa-times"></i>
-                  </button>
-                </div>
+                  <i class="fa fa-fw fa-times"></i>
+                </button>
               </div>
-              <app-form-input-feedback *ngIf="context != null"
-                                       [control]="context"
-              ></app-form-input-feedback>
-            </ng-container>
-            <button class="btn btn-secondary" type="button"
-                    (click)="addControl(contexts, contextFormControlFactory())">
-              <i class="fa fa-fw fa-plus"></i>
-              Add context
-            </button>
+            </div>
+            <app-form-input-feedback
+              *ngIf="context != null"
+              [control]="context"
+            ></app-form-input-feedback>
+          </ng-container>
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="addControl(contexts, contextFormControlFactory())"
+          >
+            <i class="fa fa-fw fa-plus"></i>
+            Add context
+          </button>
         </app-form-row>
       </ng-template>
 

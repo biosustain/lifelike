@@ -16,7 +16,9 @@ def get_redis_cache_server():
     global _redis_server
     if _redis_server is None:
         _redis_server = redis.Redis(
-            connection_pool=redis.BlockingConnectionPool.from_url(config.get('CACHE_REDIS_URL'))
+            connection_pool=redis.BlockingConnectionPool.from_url(
+                config.get('CACHE_REDIS_URL')
+            )
         )
     return _redis_server
 
@@ -57,9 +59,7 @@ class RedisCache(Generic[Key, Value], Cache):
         )
 
     def __getitem__(self, key: Key):
-        item = self._redis.get(
-            self.compose_key(key)
-        )
+        item = self._redis.get(self.compose_key(key))
         if item is None:
             return self.__missing__(key)
         return self._loads(item)
