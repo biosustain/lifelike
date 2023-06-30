@@ -306,6 +306,12 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   addControl(controlList: FormArray, control: AbstractControl) {
     controlList.push(control);
   }
+
+  removeControl(controlList: FormArray, control: AbstractControl) {
+    const index = controlList.controls.indexOf(control);
+    controlList.markAsDirty();
+    return index >= 0 && controlList.removeAt(index);
+  }
 }
 
 export interface ObjectEditDialogValue {

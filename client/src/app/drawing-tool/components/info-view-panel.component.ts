@@ -31,6 +31,7 @@ import { getTermsFromGraphEntityArray } from '../utils/terms';
 
 @Component({
   selector: 'app-info-view-panel',
+  styleUrls: ['./map-editor/forms/entity-form.component.scss'],
   templateUrl: './info-view-panel.component.html',
 })
 export class InfoViewPanelComponent implements OnChanges, OnDestroy {
@@ -40,7 +41,7 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   ) {}
 
   change$ = new ReplaySubject<SimpleChanges>(1);
-  private entities$: Observable<Set<string>> = this.change$.pipe(
+  entities$: Observable<Set<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     startWith({}),

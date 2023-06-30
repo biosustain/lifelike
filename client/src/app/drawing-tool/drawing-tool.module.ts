@@ -13,6 +13,7 @@ import { MapViewComponent } from './components/map-view.component';
 import { NodeFormComponent } from './components/map-editor/forms/node-form.component';
 import { EdgeFormComponent } from './components/map-editor/forms/edge-form.component';
 import { GroupFormComponent } from './components/map-editor/forms/group-form.component';
+import { MultiselectFormComponent } from './components/map-editor/forms/multiselect-form.component';
 import { MapRestoreDialogComponent } from './components/map-restore-dialog.component';
 import { MapComponent } from './components/map.component';
 import { InfoViewPanelComponent } from './components/info-view-panel.component';
@@ -23,7 +24,6 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
-import { MultiselectFormComponent } from './components/map-editor/forms/multiselect-form.component';
 
 @NgModule({
   declarations: [
@@ -34,12 +34,12 @@ import { MultiselectFormComponent } from './components/map-editor/forms/multisel
     MapViewComponent,
     NodeFormComponent,
     EdgeFormComponent,
+    GroupFormComponent,
+    MultiselectFormComponent,
     MapRestoreDialogComponent,
     InfoViewPanelComponent,
     LinkEditDialogComponent,
-    GroupFormComponent,
     GraphViewDirective,
-    MultiselectFormComponent,
   ],
   entryComponents: [
     ConfirmDialogComponent,

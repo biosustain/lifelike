@@ -186,7 +186,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     context: new FormControl(''),
   });
   private destroy$: Subject<void> = new Subject();
-  private contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
+  contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
     map(({ contexts }) => contexts),
     startWith([]),
     distinctUntilChanged(),

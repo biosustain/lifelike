@@ -37,7 +37,7 @@ export class PromptComponent implements OnDestroy, OnChanges {
   @Input() entities!: Iterable<string>;
   private destroy$: Subject<void> = new Subject();
   private change$: Subject<SimpleChanges> = new Subject();
-  private tempertaure$: Subject<number> = new BehaviorSubject(0);
+  tempertaure$: Subject<number> = new BehaviorSubject(0);
   private entities$: Observable<PromptComponent['entities']> = defer(() =>
     this.change$.pipe(
       filter(({ entities }) => Boolean(entities)),
