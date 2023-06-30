@@ -391,6 +391,13 @@ mark_implicit_primaries:
     WHERE isEmpty((r)-[:IN_PATHWAY]->(:Pathway))
     SET l.PRIMARY = "Set implicitly";
 
+delete_primary_of:
+  type: GDS
+  description: Delete primary_of relationships to not interfere with analysis
+  query: |
+    MATCH (c:Compound)-[l:PRIMARY_OF]->(p:Pathway)
+    DELETE l;
+
 
 
 
