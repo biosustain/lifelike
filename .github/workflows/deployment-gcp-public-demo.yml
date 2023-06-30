@@ -1,10 +1,10 @@
-name: GCP Public Deployment
+name: GCP Public Demo Deployment
 
 on:
   workflow_dispatch:
   push:
-    tags: [public]
-    branches: [public/**]
+    tags: [public-demo]
+    branches: [public-demo/**]
 
 jobs:
   call-deployment-gcp:
