@@ -764,10 +764,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     this.canvas.focus();
   }
 
-  focusEditorPanel() {
-    this.editorPanelFocus$.next();
-  }
-
   protected testAssetsLoaded() {
     const dummyText = '\uf279\uf1c1';
     const ctx = this.canvas.getContext('2d');
@@ -1309,7 +1305,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     };
 
     this.behaviors.apply(behavior => behavior.dragEnd(behaviorEvent));
-    this.nodePositionOverrideMap.clear();
     this.mouseDown = false;
     this.touchPosition = null;
     this.requestRender();

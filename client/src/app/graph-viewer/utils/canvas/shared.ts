@@ -1,3 +1,5 @@
+import { assign } from 'lodash-es';
+
 import { TextElement } from './text-element';
 import { Line } from './lines/lines';
 
@@ -95,6 +97,21 @@ export interface BoundingBox {
 export interface Point {
   x: number;
   y: number;
+}
+
+const CANVAS_FONT_REGEX = /^(?<size>\d+)(?<rest>.*)$/;
+
+export class CanvasFont {
+  size: string | number;
+  rest: string;
+
+  constructor(cssFont: string, options = {}) {
+    assign(this, cssFont.match(CANVAS_FONT_REGEX).groups, options);
+  }
+
+  toString() {
+    return `${this.size}${this.rest}`;
+  }
 }
 
 /**

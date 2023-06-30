@@ -3,6 +3,7 @@ from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
+from neo4japp.utils.globals import get_warnings, get_info
 from neo4japp.utils.request import Pagination
 
 
@@ -52,8 +53,8 @@ class ResultMappingSchema(CamelCaseSchema):
 # (i.e. ResultList + ResultMapping in the same response)
 
 
-class ErrorResponseSchema(CamelCaseSchema):
-    """All errors are emitted with this schema."""
+class BaseResponseSchema(CamelCaseSchema):
+    """All status responses are emitted with this schema."""
     title = fields.String()
     type = fields.String()
     message = fields.String()
@@ -61,7 +62,43 @@ class ErrorResponseSchema(CamelCaseSchema):
     stacktrace = fields.String()
     code = fields.Integer()
     version = fields.String()
+    transaction_id = fields.String()
     fields_ = fields.Dict(
         keys=fields.String(),
         values=fields.Raw(),  # raw means can be anything
-        attribute='fields', allow_none=True)
+        attribute='fields', allow_none=True
+    )
+    cause = fields.Method('get_cause')
+
+    def get_cause(self, e):
+        if hasattr(e, '__cause__') and isinstance(e.__cause__, BaseResponseSchema):
+            return BaseResponseSchema().dump(e.__cause__)
+
+
+class ErrorResponseSchema(BaseResponseSchema):
+    """All errors are emitted with this schema."""
+    pass
+
+
+class WarningResponseSchema(ErrorResponseSchema):
+    """All warnings are emitted with this schema."""
+    pass
+
+
+class InformationResponseSchema(BaseResponseSchema):
+    """All information messages are emitted with this schema."""
+    pass
+
+
+class WarningSchema(CamelCaseSchema):
+    warnings = fields.Method('get_warnings')
+
+    def get_warnings(self, obj):
+        return [WarningResponseSchema().dump(w) for w in get_warnings()]
+
+
+class InformationSchema(CamelCaseSchema):
+    info = fields.Method('get_info')
+
+    def get_info(self, obj):
+        return [InformationResponseSchema().dump(i) for i in get_info()]

@@ -1,0 +1,22 @@
+:host {
+  z-index: 1000;
+  position: absolute;
+
+  .excluded {
+    display: var(--show-excluded);
+  }
+
+  .system-annotation {
+    position: absolute;
+    cursor: move;
+    opacity: 0.3;
+
+    .isCustom {
+      transform: translateY(2px);
+    }
+
+    :not(.isCustom) {
+      transform: translateY(-2px);
+    }
+  }
+}

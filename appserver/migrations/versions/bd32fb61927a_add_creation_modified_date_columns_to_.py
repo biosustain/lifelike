@@ -12,6 +12,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.types import TIMESTAMP
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.database import db
 
 

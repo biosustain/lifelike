@@ -15,7 +15,7 @@
         <div class="btn-group ml-1 mr-auto">
             <button *ngIf="map?.privileges.writable"
                     type="button" class="btn btn-secondary"
-                    [appLink]="['/projects', map?.project.name, 'maps', map?.hashId, 'edit']">
+                    [appLink]="['/projects', encodeURIComponent(map?.project.name), 'maps', map?.hashId, 'edit']">
                 <i class="fa fa-fw fa-pencil-alt"></i> Edit
             </button>
         </div>
@@ -45,7 +45,7 @@
                                 By {{map?.user.firstName}}
                             </div>
                             <div class="text-truncate">
-                                Modified {{map?.modificationDate | friendlyDateStr}}
+                                Modified {{map?.modifiedDate | friendlyDateStr}}
                             </div>
                         </div>
                         <div class="detail-overlay-description mt-2">
@@ -61,7 +61,7 @@
                   [gutterSize]="2">
             <as-split-area [order]="0" class="overflow-hidden">
                 <div class="graph-container">
-                    <canvas #canvas class="graph-view"></canvas>
+                    <canvas appGraphView></canvas>
                 </div>
             </as-split-area>
             <as-split-area size="250"

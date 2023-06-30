@@ -1,8 +1,9 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { finalize, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, of, throwError } from 'rxjs';
+import { first } from 'lodash-es';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
@@ -21,7 +22,10 @@ import {
   PreviewOptions,
 } from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
+import {
+  CreateResultMapping,
+  ObjectCreationService,
+} from 'app/file-browser/services/object-creation.service';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
@@ -104,20 +108,25 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             return document.refreshData().pipe(
               mergeMap(newDocument => newDocument.save()),
               tap(() => progressDialogRef.close()),
-              mergeMap(blob =>
-                from(this.objectCreationService.executePutWithProgressDialog([{
-                    ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
-                    contentValue: blob,
-                  }], [{
+              map(blob => ({
+                ...(value.request as Omit<ObjectCreateRequest, keyof ObjectContentSource>),
+                contentValue: blob
+              } as ObjectCreateRequest)),
+              switchMap(request =>
+                this.objectCreationService.executePutWithProgressDialog(
+                  [request],
+                  [{
                     organism: {
                       organism_name: document.organism,
                       synonym: document.organism,
-                      tax_id: document.taxID
-                    }
-                  }])
-                )),
+                      tax_id: document.taxID,
+                    },
+                  }],
+                )
+              ),
+              map(resultMapping => resultMapping.values().next().value.creation.result),
               finalize(() => progressDialogRef.close()),
-            ).toPromise().then(results => results.pop());
+            ).toPromise();
           });
         },
       },

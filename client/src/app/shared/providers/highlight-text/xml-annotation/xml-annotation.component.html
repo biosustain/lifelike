@@ -1,0 +1,61 @@
+<span #annotation
+      [ngbTooltip]="tooltipContent"
+      placement="bottom-left bottom top-left top right left"
+      triggers="click:blur"
+      autoClose="outside"
+      tooltipClass="tooltip"
+      [draggable]="true"
+      (dragstart)="dragStart($event)"
+      [style.background]="backgroundColor"
+      [attr.data-annotation-meta]="parsedMeta"
+><ng-content></ng-content></span>
+
+<ng-template #tooltipContent>
+  <h3 class="popover-header">{{ textContent }}</h3>
+  <div class="popover-body">
+    Type: {{ parsedMeta.type }}<br>
+    Id: <a *ngIf="idLink; else noAnnotationLink" [href]="idLink"
+           target="_blank">{{annoId || 'None'}}</a><br>
+    <ng-template #noAnnotationLink>{{annoId || 'None'}}</ng-template>
+    Data Source: {{ parsedMeta.idType }}<br>
+    <ng-container *ngIf="parsedMeta.isCustom">User generated annotation<br></ng-container>
+    <div>
+      <div *ngIf="idHyperlinks?.length">
+        Source Links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
+      </div>
+      <div>
+        <ng-container *ngFor="let idHyperlink of idHyperlinks">
+          <a target="_blank"
+             [href]="idHyperlink.url">
+            {{ idHyperlink.label }}
+          </a><br>
+        </ng-container>
+      </div>
+      <!-- search links -->
+      <!-- TODO: collapsing -->
+      <div *ngIf="searchLinks?.length">
+        Search links <i class="fas fa-external-link-alt ml-1 text-muted"></i>
+      </div>
+      <div>
+        <ng-container *ngFor="let searchLink of searchLinks">
+          <a target="_blank"
+             [href]="searchLink.url">
+            {{ searchLink.label }}
+          </a><br>
+        </ng-container>
+      </div>
+      <!-- search internal links -->
+      <!-- TODO: collapsing -->
+      <div *ngIf="searchInternalLinks?.length">
+        Search internal links
+      </div>
+      <div>
+        <ng-container *ngFor="let searchInternalLink of searchInternalLinks">
+          <a href (click)="navigate($event, searchInternalLink.navigate)">
+            {{ searchInternalLink.label }}
+          </a><br>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</ng-template>

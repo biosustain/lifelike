@@ -1,3 +1,4 @@
+@use 'src/app/shared/styles/mixins/table';
 @import 'src/scss/variables';
 
 .error {
@@ -13,42 +14,19 @@ ul {
   padding-inline-start: 20px;
 }
 
+$border: 1px solid $gray-500;
+
 .table {
-  border: 1px solid $gray-500;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin: 0;
+  @include table.border($border, $border);
 
-  th, td {
-    border: 0;
-    border-bottom: 1px solid $gray-500;
-    border-right: 1px solid $gray-500;
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 
-    &:last-child {
-      border-right: 0;
+    th {
+      background-color: $gray-200;
+      color: $black;
     }
   }
-
-  tr:last-child {
-    td {
-      border-bottom: 0;
-    }
-  }
-}
-
-.table thead th {
-  background-color: $gray-200;
-  color: $black;
-}
-
-thead tr:nth-child(1) th, thead tr:nth-child(2) th {
-  position: sticky;
-}
-
-thead tr:nth-child(1) th {
-  top: 0;
-}
-
-thead tr:nth-child(2) th {
-  top: 34px;
 }

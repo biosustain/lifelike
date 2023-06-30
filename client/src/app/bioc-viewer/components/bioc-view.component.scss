@@ -15,6 +15,7 @@ mat-sidenav {
   flex-direction: column;
   font-family: Georgia,Cambria,"Times New Roman",Times,serif;
   font-size: 18px;
+  position: relative;
 
   & > * {
     margin-bottom: 10px;

@@ -1,4 +1,12 @@
-import { mapValues, groupBy, map, chain } from 'lodash-es';
+import {
+  mapValues as _mapValues,
+  groupBy as _groupBy,
+  map as _map,
+  flow as _flow,
+  filter as _filter,
+  flatMap as _flatMap,
+  reduce as _reduce
+} from 'lodash/fp';
 
 import { NodeCreation } from 'app/graph-viewer/actions/nodes';
 import {
@@ -9,8 +17,8 @@ import {
   UniversalGraphEdge,
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { uuidv4 } from 'app/shared/utils/identifiers';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
+import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';
 import { CanvasGraphView } from '../canvas-graph-view';
@@ -31,14 +39,41 @@ export interface GraphClipboardData {
  * Implements the paste key.
  */
 export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
+  private readonly CASCADE_OFFSET = 50;
+  private burstPosition: { x: number, y: number };
+  private burstIteration = 0;
+
   // TODO: fix boundPaste if not coming in next patch
   constructor(private readonly graphView: CanvasGraphView,
               protected readonly dataTransferDataService: DataTransferDataService) {
     super();
   }
 
+
+  calculatePosition() {
+    const {burstPosition, CASCADE_OFFSET} = this;
+    const cursorPosition = this.graphView.currentHoverPosition;
+    if (cursorPosition) {
+      let nextPastePosition = cursorPosition;
+      const manhattanDistanceFromLastPasteBurst = (
+        Math.abs(cursorPosition.x - burstPosition?.x) + Math.abs(cursorPosition.y - burstPosition?.y)
+      );
+      if (manhattanDistanceFromLastPasteBurst <= CASCADE_OFFSET) {
+        this.burstIteration++;
+        nextPastePosition = {
+          x: burstPosition.x + this.burstIteration * CASCADE_OFFSET,
+          y: burstPosition.y + this.burstIteration * CASCADE_OFFSET,
+        };
+      } else {
+        this.burstPosition = nextPastePosition;
+        this.burstIteration = 0;
+      }
+      return nextPastePosition;
+    }
+  }
+
   paste(event: BehaviorEvent<ClipboardEvent>): BehaviorResult {
-    const position = this.graphView.currentHoverPosition;
+    const position = this.calculatePosition();
     if (position) {
       const content = event.event.clipboardData.getData('text/plain');
       if (content) {
@@ -63,58 +98,57 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
 
       // First try to read the data as JSON
       if (type === TYPE_STRING) {
-        const centerOfMass = chain(selection)
-          .filter(s => s.type !== GraphEntityType.Edge)
-          .flatMap(({entity}) => ((entity as UniversalGraphGroup).members ?? [entity]) as UniversalGraphNode[])
-          .reduce(
+        const centerOfMass = _flow(
+          _filter((e: GraphEntity) => e.type !== GraphEntityType.Edge),
+          _flatMap(({entity}) => ((entity as UniversalGraphGroup).members ?? [entity]) as UniversalGraphNode[]),
+          _reduce(
             (prev, {data: {x = 0, y = 0}}) => ({
                 x: prev.x + x,
                 y: prev.y + y,
                 s: prev.s + 1
             }),
             {x: 0, y: 0, s: 0}
-          )
-          .thru(({x, y, s}) => ({x: x / s, y: y / s}))
-          .value();
+          ),
+          ({x, y, s}) => ({x: x / s, y: y / s})
+        )(selection);
         const {
           [GraphEntityType.Edge]: edges = [] as UniversalGraphEdge[],
           [GraphEntityType.Node]: nodes = [] as UniversalGraphNode[],
           [GraphEntityType.Group]: groups = [] as UniversalGraphGroup[]
-        } = mapValues(groupBy(selection, 'type'), g => map(g, 'entity'));
+        } = _flow(
+          _groupBy('type'),
+          _mapValues(_map('entity'))
+        )(selection);
         const hashMap = new Map<string, string>();
-        const isSingularNode = nodes.length === 1;
-        const isSingularEdge = edges.length === 1;
-        const isSingularGroup = groups.length === 1;
         this.graphView.selection.replace([]);
 
-        const createAdjustedNode = <N extends Omit<UniversalGraphNode, 'hash'>>({data, ...rest}: N) => ({
+        const adjust = <N extends UniversalGraphNode>({data, ...rest}: N) => ({
             ...rest,
-            hash: uuidv4(),
             data: {
               ...data,
               x: data.x - centerOfMass.x + position.x,
               y: data.y - centerOfMass.y + position.y,
             }
-          });
+          } as N);
 
         const pasteNode = <N extends UniversalGraphNode>({hash, ...rest}: N) => {
-          const newNode = createAdjustedNode(rest);
+          const newNode = adjust(createNode(rest));
           hashMap.set(hash, newNode.hash);
           actions.push(
-            new NodeCreation('Paste node', newNode, true, isSingularNode)
+            new NodeCreation('Paste node', newNode, true)
           );
           return newNode;
         };
 
         for (const {hash, members, ...rest} of groups as UniversalGraphGroup[]) {
-          const newGroup = createAdjustedNode({
+          const newGroup = adjust(createGroupNode({
             ...rest,
             members: members.map(node => pasteNode(node))
-          } as UniversalGraphGroup);
+          }));
           // This works also for groups, as those inherit from the node
           hashMap.set(hash, newGroup.hash);
           actions.push(
-            new GroupCreation('Paste group', newGroup, true, isSingularGroup)
+            new GroupCreation('Paste group', newGroup, true)
           );
         }
         for (const node of nodes as UniversalGraphNode[]) {
@@ -128,7 +162,7 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
             actions.push(
               new EdgeCreation('Paste edge',
                 {...rest, to: hashMap.get(to), from: hashMap.get(from)} as UniversalGraphEdge,
-                true, isSingularEdge
+                true
               )
             );
           }
@@ -142,20 +176,20 @@ export class PasteKeyboardShortcutBehavior extends AbstractCanvasBehavior {
     }
 
     return new NodeCreation(
-      `Paste content from clipboard`, {
+      `Paste content from clipboard`,
+      createNode({
         display_name: 'Note',
-        hash: uuidv4(),
         label: 'note',
-        sub_labels: [],
         data: {
           x: position.x,
           y: position.y,
           detail: content,
         },
         style: {
-          showDetail: true
-        }
-      }, true, true
+          showDetail: true,
+        },
+      }),
+      true,
     );
   }
 }

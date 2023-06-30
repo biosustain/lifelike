@@ -97,8 +97,8 @@ class AzureStorageProvider(BaseCloudStorageProvider):
                 os.path.dirname(remote_object_path),
                 os.path.basename(remote_object_path),
             )
-        except AzureMissingResourceHttpError:
-            raise RecordNotFound('Missing Resource', 'File not found.')
+        except AzureMissingResourceHttpError as e:
+            raise RecordNotFound('Missing Resource', 'File not found.') from e
         else:
             return remote_fi.properties.content_settings.content_md5
 
@@ -268,9 +268,8 @@ class LMDBManager:
                     'lmdb', os.path.dirname(lmdb_file.data_mdb_path))
                 remote_data_mdb_md5 = self.cloud_provider.get_remote_hash(
                     'lmdb', lmdb_file.data_mdb_path)
-            except RecordNotFound:
-                log.debug(
-                    f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}')
+            except RecordNotFound as e:
+                log.debug(f'No hash found. Uploading new file to {lmdb_file.data_mdb_path}')
             else:
                 if data_mdb_md5 == remote_data_mdb_md5:
                     upload_file = False

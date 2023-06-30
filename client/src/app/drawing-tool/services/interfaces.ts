@@ -1,4 +1,5 @@
 import { ReferenceType } from 'app/shared/references';
+import { WithOptional, WithRequired } from 'app/shared/utils/types';
 
 export interface UniversalGraphRelationship {
   node1: UniversalGraphNode;
@@ -54,9 +55,17 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate =
-  Pick<UniversalGraphNode, 'display_name' | 'label' | 'sub_labels'>
-  & { data?: Partial<UniversalEntityData>, style?: Partial<UniversalNodeStyle> };
+export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, 'data' | 'style' | 'hash'> &
+  {
+    data?: Partial<UniversalGraphNode['data']>,
+    style?: Partial<UniversalGraphNode['style']>,
+    hash?: Partial<UniversalGraphNode['hash']>
+  };
+
+export type UniversalGraphImageNodeTemplate = WithRequired<UniversalGraphNodeTemplate, 'image_id'>;
+
+export type UniversalGraphGroupTemplate = UniversalGraphNodeTemplate &
+  WithOptional<UniversalGraphGroup, 'margin'>;
 
 export interface UniversalEdgeStyle {
   fontSizeScale?: number;
@@ -126,28 +135,6 @@ export interface LaunchApp {
     // page of the pdf that the annotation is located on
     pageNumber?: number
   };
-}
-
-/**
- * Map schema definition
- */
-export interface KnowledgeMap {
-  id?: string | number;
-  author?: string;
-  label: string;
-  description: string;
-  /** JSON representation of graph */
-  graph: KnowledgeMapGraph;
-  /** ISO-8601 timestamp of when project was last updated */
-  modified_date?: string;
-  /** Whether or not project is public to userbase */
-  public?: boolean;
-  /** URI for project */
-  hash_id?: string;
-  /** ID of the user who made the project */
-  user_id?: number;
-  /** Name of the project this map is found in */
-  project_name?: string;
 }
 
 export const DETAIL_NODE_LABELS = new Set(['note', 'link', 'image']);

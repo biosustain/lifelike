@@ -20,7 +20,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.types import TIMESTAMP
 
-
 from migrations.constants import LIFELIKE_SUPERUSER
 
 # revision identifiers, used by Alembic.

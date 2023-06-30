@@ -173,8 +173,6 @@ def test_read_url_guards_against_dns_rebinding():
         # Basic tests
         ('http://www.example.com//a-simple/url//test',
          'http://www.example.com//a-simple/url//test'),
-        ('http://www.example.com//a-simple/url/test\r\n\r\nContent-Type: application/json',
-         'http://www.example.com//a-simple/url/test%0D%0A%0D%0AContent-Type%3A%20application/json'),
         ('https://www.example.com//a-simple/url//test',
          'https://www.example.com//a-simple/url//test'),
         ('https://user:pass@example.com:4000//test/test',

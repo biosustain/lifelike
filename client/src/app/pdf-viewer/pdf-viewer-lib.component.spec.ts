@@ -8,6 +8,8 @@ import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { PdfViewerLibModule } from './pdf-viewer-lib.module';
+import { PDFAnnotationService } from './services/pdf-annotation.service';
+import { PDFSearchService } from './services/pdf-search.service';
 
 describe('PdfViewerLibComponent', () => {
   beforeEach(async(() => {
@@ -19,6 +21,10 @@ describe('PdfViewerLibComponent', () => {
         SharedModule,
         MatSnackBarModule,
         RootStoreModule,
+      ],
+      providers: [
+        PDFAnnotationService,
+        PDFSearchService
       ]
     }).compileComponents();
   }));

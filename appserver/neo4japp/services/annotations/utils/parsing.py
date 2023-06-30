@@ -1,5 +1,5 @@
 from string import punctuation
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import requests
 
@@ -64,10 +64,11 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
         try:
             file_id = kwargs['file_id']
             exclude_references = kwargs['exclude_references']
-        except KeyError:
+        except KeyError as e:
             raise ServerException(
                 'Parsing Error',
-                'Cannot parse the PDF file, the file id is missing or data is corrupted.')
+                'Cannot parse the PDF file, the file id is missing or data is corrupted.'
+            ) from e
         data = {
             'fileUrl': f'{PARSER_RESOURCE_PULL_ENDPOINT}/{file_id}',
             'excludeReferences': exclude_references
@@ -75,21 +76,28 @@ def parse_content(content_type=FILE_MIME_TYPE_PDF, **kwargs) -> Tuple[str, List[
     else:
         data = {'text': kwargs['text']}
 
+    request_args: Dict[str, Any] = {'url': url, 'data': data, 'timeout': SERVICE_REQUEST_TIMEOUT}
     try:
-        req = requests.post(url, data=data, timeout=SERVICE_REQUEST_TIMEOUT)
+        req = requests.post(**request_args)
         resp = req.json()
         req.close()
-    except requests.exceptions.ConnectTimeout:
+    except requests.exceptions.ConnectTimeout as e:
         raise ServerException(
             'Parsing Error',
-            'The request timed out while trying to connect to the parsing service.')
-    except requests.exceptions.Timeout:
+            'The request timed out while trying to connect to the parsing service.',
+            fields=request_args
+        ) from e
+    except requests.exceptions.Timeout as e:
         raise ServerException(
             'Parsing Error',
-            'The request to the parsing service timed out.')
-    except (requests.exceptions.RequestException, Exception):
+            'The request to the parsing service timed out.',
+            fields=request_args
+        ) from e
+    except (requests.exceptions.RequestException, Exception) as e:
         raise ServerException(
             'Parsing Error',
-            'An unexpected error occurred with the parsing service.')
+            'An unexpected error occurred with the parsing service.',
+            fields=request_args
+        ) from e
 
     return process_parsed_content(resp)

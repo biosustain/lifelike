@@ -1,4 +1,5 @@
 from neo4japp.exceptions import InvalidArgument
+from neo4japp.utils.string import compose_lines
 
 from ..constants import EntityType
 
@@ -55,7 +56,7 @@ collection_labels = {
 
 
 def query_builder(parts):
-    return '\n'.join(parts)
+    return compose_lines(*parts)
 
 
 def get_organisms_from_gene_ids_query():

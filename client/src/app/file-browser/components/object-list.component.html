@@ -39,6 +39,7 @@
           <th *ngIf="showStars"></th>
           <th class="text-truncate">Name</th>
           <th class="text-truncate d-none d-cbp-sm-table-cell">Annotated</th>
+          <th class="text-truncate d-none d-cbp-sm-table-cell">Size</th>
           <th class="text-truncate d-none d-cbp-md-table-cell">Modified</th>
           <th class="text-truncate">User</th>
           <th></th>
@@ -49,49 +50,57 @@
       <tbody>
       <!-- Placeholders -->
         <ng-template #placeholders>
-          <tr>
-            <td class="align-middle text-nowrap overflow-hidden">
-              <span class="placeholder-box">Loading loading</span>
+          <tr *ngFor="let _ of [1,2]">
+            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'">
+              <div class="custom-control custom-checkbox overflow-hidden">
+                <input type="checkbox" disabled class="custom-control-input">
+              </div>
             </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap overflow-hidden text-truncate">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td>
-              <div class="d-flex align-items-end">
-                <div ngbDropdown class="d-inline-block ml-auto">
-                  <button class="btn btn-sm" ngbDropdownToggle>
-                    <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                  </button>
+
+            <td *ngIf="showStars" class="align-middle text-nowrap overflow-hidden">
+              <div class="d-flex align-items-center" container="body">
+                <div class="d-inline-block mr-1">
+                  <i class="fas fa-star text-secondary"></i>
                 </div>
               </div>
             </td>
-          </tr>
-          <tr>
-            <td class="align-middle text-nowrap overflow-hidden">
-              <span class="placeholder-box">Loading loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td class="align-middle text-nowrap overflow-hidden text-truncate">
-              <span class="placeholder-box">Loading loading</span>
-            </td>
-            <td>
-              <div class="d-flex align-items-end">
-                <div ngbDropdown class="d-inline-block ml-auto">
-                  <button class="btn btn-sm" ngbDropdownToggle>
-                    <span class="placeholder-box"><i class="fas fa-cog fa-fw"></i></span>
-                  </button>
+
+            <td class="align-middle text-nowrap overflow-hidden" [style.width]="'fit-content'">
+              <div class="d-flex align-items-center">
+                <div class="d-inline-block mr-1">
+                  <i class="fa-fw text-icon"></i>
                 </div>
+
+                <div class="d-inline-block text-truncate">
+                  <span class="placeholder-box">Loading loading</span>
+                </div>
+              </div>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
+              <div class="text-truncate">
+                <span class="placeholder-box">Loading</span>
+              </div>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell">
+              <span class="placeholder-box">Loading</span>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-md-table-cell text-truncate">
+              <span class="placeholder-box">Loading</span>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
+              <span class="placeholder-box">Loading</span>
+            </td>
+
+            <td>
+              <div class="d-flex align-items-end" *ngIf="objectControls">
+                <button class="btn btn-sm" disabled>
+                  <i class="fas fa-cog fa-fw"></i>
+                  <i class="fas fa-caret-down fa-fw"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -187,6 +196,12 @@
                   <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
                 </ng-container>
                 {{ (object.annotationsDate | date: 'short') || 'No annotations'}}
+              </div>
+            </td>
+
+            <td class="align-middle text-nowrap overflow-hidden d-none d-cbp-sm-table-cell" (click)="objects.toggle(object)">
+              <div *ngIf="object.size" class="text-truncate">
+                {{ object.size }}
               </div>
             </td>
 

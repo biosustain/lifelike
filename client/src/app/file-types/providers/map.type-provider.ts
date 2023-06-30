@@ -94,15 +94,13 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           // IMPORTANT: Zip date is set to the minimum allowed by the Python zipfile library so that all zips generate the same checksum
           // for the same input files
           zip.file('graph.json', JSON.stringify({edges: [], nodes: [], groups: []}), {date: new Date(Date.UTC(1980, 1, 1))});
-          return zip.generateAsync({ type: 'blob' }).then((content) => {
-            return this.objectCreationService.openCreateDialog(object, {
+          return zip.generateAsync({ type: 'blob' }).then((content) =>
+            this.objectCreationService.openCreateDialog(object, {
               title: 'New Map',
-              request: {
-                contentValue: content
-              },
+              request: {contentValue: content},
               ...(options.createDialog || {}),
-            }).then(results => results.pop());
-          });
+            })
+          );
         },
       },
     }];

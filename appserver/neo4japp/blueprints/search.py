@@ -350,7 +350,7 @@ class SynonymSearchView(FilesystemBaseView):
                 title='Unexpected error during synonym search',
                 message='A system error occurred while searching for synonyms, we are ' +
                         'working on a solution. Please try again later.'
-            )
+            ) from e
 
         return jsonify(SynonymSearchResponseSchema().dump({
             'data': results,

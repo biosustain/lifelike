@@ -1,11 +1,10 @@
 import json
-import logging
+import requests
+
+from flask import Blueprint, Response, current_app, request
 from http import HTTPStatus
 
-import requests
-from flask import Blueprint, Response, current_app, request
 from neo4japp.exceptions import StatisticalEnrichmentError
-from requests.exceptions import ConnectionError
 
 bp = Blueprint('enrichment-visualisation-api', __name__, url_prefix='/enrichment-visualisation')
 
@@ -15,20 +14,30 @@ def forward_request():
     host_port = f'{current_app.config["SE_HOST"]}:{current_app.config["SE_PORT"]}'
     url = f'{request.scheme}://{request.path.replace(bp.url_prefix, host_port)}'
     try:
-        resp = requests.request(
-            url=url,
-            method=request.method,
-            headers={key: value for (key, value) in request.headers if key != 'Host'},
-            data=request.get_data(),
-            cookies=request.cookies,
-            allow_redirects=False
-        )
-    except ConnectionError as e:
+        request_args = {
+            'method': request.method,
+            'url': url,
+            'headers': {key: value for (key, value) in request.headers if key != 'Host'},
+            'data': request.get_data(),
+            'cookies': request.cookies,
+            'allow_redirects': False
+        }
+        resp = requests.request(**request_args)
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [
+            (name, value) for (name, value) in resp.raw.headers.items()
+            if name.lower() not in excluded_headers
+        ]
+    except Exception as e:
         raise StatisticalEnrichmentError(
-            'Unable to process request',
-            'An unexpected connection error occurred to statistical enrichment service.',
-            code=HTTPStatus.BAD_GATEWAY
-        )
+            'Statistical Enrichment Error',
+            'An unexpected error occurred while connecting to statistical enrichment service.',
+            fields={
+                arg: request_args[arg]
+                for arg in request_args
+                if arg not in ['headers', 'cookies']
+            }
+        ) from e
 
     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
     headers = [
@@ -42,7 +51,10 @@ def forward_request():
             decoded_error_message = json.loads(resp.content)['message']
         except Exception as e:
             # log and proceed so general error can be raised
-            logging.exception(e)
+            current_app.logger.error(
+                f'Could not process 500 error response from forwarded request.',
+                exc_info=e,
+            )
         else:
             raise StatisticalEnrichmentError(
                 'Statistical enrichment error',

@@ -115,13 +115,9 @@ export class ErrorHandler {
     return Promise.allSettled([
       this.logError(error, logInfo),
       Promise.resolve(this.createUserError(error))
-        .then(({title, message, additionalMsgs, stacktrace, transactionId}) =>
+        .then(userError =>
           this.messageDialog.display({
-            title,
-            message,
-            additionalMsgs,
-            stacktrace,
-            transactionId,
+            ...userError,
             type: MessageType.Error,
           }),
         ),

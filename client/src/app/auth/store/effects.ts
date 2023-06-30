@@ -255,7 +255,6 @@ export class AuthEffects {
 
   oauthLoginSuccess$ = createEffect(() => this.actions$.pipe(
     ofType(AuthActions.oauthLoginSuccess),
-    tap(_ => { console.log('oauthLoginSuccess action dispatched successfully'); })
   ), {dispatch: false});
 
   loginRedirect$ = createEffect(() => this.actions$.pipe(

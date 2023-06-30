@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { isArray, isNil } from 'lodash-es';
-import { EMPTY as empty, merge, of, Subject, Subscription, forkJoin } from 'rxjs';
+import { EMPTY as empty, merge, of, Subject, Subscription, forkJoin, BehaviorSubject } from 'rxjs';
 import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { DataSet } from 'vis-data';
 
@@ -27,8 +27,14 @@ import {
   GraphQueryParameters,
 } from 'app/search/utils/search';
 import { GraphSearchParameters } from 'app/search/graph-search';
+import { TrackingService } from 'app/shared/services/tracking.service';
 
 import { VisualizationService } from '../../services/visualization.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { Progress } from 'app/interfaces/common-dialog.interface';
 
 @Component({
   selector: 'app-visualization',
@@ -59,6 +65,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   // data, biocyc, etc...
   legend: Map<string, string[]>;
 
+  loadingClustersDialogRef;
+
   // TODO: Will we need to add more of these?
   LITERATURE_LABELS = ['literaturedisease', 'literaturechemical', 'literaturegene'];
 
@@ -67,6 +75,9 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     private visService: VisualizationService,
     private legendService: LegendService,
     private workspaceManager: WorkspaceManager,
+    private readonly progressDialog: ProgressDialog,
+    private readonly messageDialog: MessageDialog,
+    private readonly tracking: TrackingService
   ) {
     this.legend = new Map<string, string[]>();
 
@@ -210,7 +221,37 @@ export class VisualizationComponent implements OnInit, OnDestroy {
    * @param query string to search for
    */
   search(query: string) {
-    this.workspaceManager.navigateByUrl({ url: `/search?q=${query}` });
+    this.tracking.register({
+      category: TRACKING_CATEGORIES.visualiser,
+      action: TRACKING_ACTIONS.search,
+      label: query,
+      url: this.tracking.toString()
+    });
+
+    this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
+  }
+
+  openNoResultsFromExpandDialog() {
+    this.messageDialog.display({
+      title: 'No Relationships',
+      message: 'Expanded node had no connected relationships.',
+      type: MessageType.Info,
+    } as MessageArguments);
+  }
+
+  openLoadingClustersDialog() {
+    this.loadingClustersDialogRef = this.progressDialog.display({
+      title: `Node Expansion`,
+      progressObservables: [new BehaviorSubject<Progress>(new Progress({
+        status: 'Loading clusters...',
+      }))],
+      onCancel: () => {},
+    });
+
+  }
+
+  finishedClustering(event: boolean) {
+    this.loadingClustersDialogRef.close();
   }
 
   /**

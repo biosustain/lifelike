@@ -23,13 +23,16 @@ from sqlalchemy import (
     CheckConstraint,
     Integer as sa_Integer,
     String as sa_String,
+    func,
+    BIGINT,
+    cast
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
-from sqlalchemy.orm import Mapper
+from sqlalchemy.orm import Mapper, column_property
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
-from typing import BinaryIO, Optional, List, Dict
+from typing import Optional, List, Dict
 
 from neo4japp.constants import (
     LogEventType,
@@ -46,7 +49,7 @@ from neo4japp.models.common import (
     FullTimestampMixin,
     HashIdMixin
 )
-from neo4japp.utils import EventLog
+from neo4japp.utils import EventLog, FileContentBuffer
 from neo4japp.utils.sqlalchemy import get_model_changes
 
 file_collaborator_role = db.Table(
@@ -93,6 +96,17 @@ class FileContent(RDBMSBase):
     checksum_sha256 = db.Column(db.Binary(32), nullable=False, index=True, unique=True)
     creation_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
 
+    size = column_property(
+        func.pg_size_pretty(
+            cast(
+                func.length(
+                    raw_file
+                ),
+                BIGINT
+            )
+        )
+    )
+
     @property
     def raw_file_utf8(self):
         return self.raw_file.decode('utf-8')
@@ -127,7 +141,7 @@ class FileContent(RDBMSBase):
         return int.from_bytes(h, byteorder='big', signed=True)
 
     @classmethod
-    def get_or_create(cls, file: BinaryIO, checksum_sha256: bytes = None) -> int:
+    def get_or_create(cls, file: FileContentBuffer, checksum_sha256: bytes = None) -> int:
         """Get the existing FileContent row for the given file or create a new row
         if needed.
 
@@ -142,13 +156,10 @@ class FileContent(RDBMSBase):
         :param checksum_sha256: the checksum of the file (computed if not provided)
         :return: the ID of the file
         """
-
-        content: Optional[bytes]
-
         if checksum_sha256 is None:
-            content = file.read()
-            file.seek(0)
-            checksum_sha256 = hashlib.sha256(content).digest()
+            with file as bufferView:
+                content = bufferView.read()
+                checksum_sha256 = hashlib.sha256(content).digest()
         else:
             content = None
 
@@ -342,13 +353,17 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             raise ServerException(
                 title=f'Cannot Get Project of File',
                 message=f'Could not find project of file {self.filename}.',
-            )
+            ) from e
 
     # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
     # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
     @property
     def true_filename(self):
         return Path(self.path).name
+
+    @property
+    def extension(self):
+        return Path(self.filename).suffix
 
     def generate_non_conflicting_filename(self):
         """Generate a new filename based of the current filename when there is a filename
@@ -560,12 +575,12 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_file_insert, target)
-    except Exception:
+    except Exception as e:
         raise ServerException(
             title='Failed to Create File',
             message='Something unexpected occurred while creating your file! Please try again ' +
                     'later.'
-        )
+        ) from e
 
 
 @event.listens_for(Files, 'before_update')
@@ -652,12 +667,12 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
             from neo4japp.services.redis.redis_queue_service import RedisQueueService
             rq_service = RedisQueueService()
             rq_service.enqueue(_after_file_update, target, get_model_changes(target))
-    except Exception:
+    except Exception as e:
         raise ServerException(
                 title='Failed to Update File',
                 message='Something unexpected occurred while updating your file! Please try ' +
                         'again later.'
-            )
+            ) from e
 
 
 def _after_file_delete(target: Files):
@@ -707,12 +722,12 @@ def after_file_delete(mapper: Mapper, connection: Connection, target: Files):
         from neo4japp.services.redis.redis_queue_service import RedisQueueService
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_file_delete, target)
-    except Exception:
+    except Exception as e:
         raise ServerException(
             title='Failed to Delete File',
             message='Something unexpected occurred while updating your file! Please try again ' +
                     'later.'
-        )
+        ) from e
 
 
 class AnnotationChangeCause(enum.Enum):

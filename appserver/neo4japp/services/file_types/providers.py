@@ -1,29 +1,36 @@
+import bioc
+import graphviz
 import io
 import json
+import numpy as np
 import os
 import re
+import requests
+import svg_stack
 import tempfile
 import textwrap
 import typing
 import zipfile
-from base64 import b64encode
-from io import BufferedIOBase
-from math import ceil
-from typing import Dict, List, Optional
 
-import bioc
-import graphviz
-import numpy as np
-import requests
-import svg_stack
+from base64 import b64encode
 from bioc.biocjson import fromJSON as biocFromJSON
 from bioc.biocjson import toJSON as biocToJSON
+from dataclasses import dataclass
 from flask import current_app
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader
 from jsonlines import Writer as BioCJsonIterWriter
 from lxml import etree
 from marshmallow import ValidationError
+from math import ceil, floor
+from typing import Dict, List, Optional
+from pdfminer import high_level
+from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from PyPDF4.generic import DictionaryObject
+from typing import Optional, List
+
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     ARROW_STYLE_DICT,
@@ -64,24 +71,30 @@ from neo4japp.constants import (
     WATERMARK_DISTANCE,
     WATERMARK_WIDTH,
     WATERMARK_ICON_SIZE,
-    COLOR_TO_REPLACE, DEFAULT_FONT_RATIO
+    COLOR_TO_REPLACE,
+    DEFAULT_FONT_RATIO,
+    NODE_LINE_HEIGHT,
+    MAX_NODE_HEIGHT,
+    NODE_INSET
 )
-from neo4japp.exceptions import FileUploadError
+from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
+from neo4japp.info import ContentValidationInfo
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph_content, validate_graph_format
+from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content, \
+    ContentValidationNotDefinedSourceTargetMessage
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
-from neo4japp.services.file_types.service import BaseFileTypeProvider
+from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
+from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.globals import warn, info
 from neo4japp.utils.logger import EventLog
+from neo4japp.utils.string import extract_text, compose_lines
+from neo4japp.warnings import ServerWarning, ContentValidationWarning
+
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
-from neo4japp.utils.string import extract_text
-from pdfminer import high_level
-from pdfminer.pdfdocument import PDFEncryptionError, PDFTextExtractionNotAllowed
-from PIL import Image, ImageColor
-from PyPDF4 import PdfFileReader, PdfFileWriter
-from PyPDF4.generic import DictionaryObject
+
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -107,6 +120,10 @@ def is_valid_doi(doi):
                             }
                             ).status_code not in [400, 404]
     except Exception as e:
+        current_app.logger.error(
+            f'An unexpected error occurred while requesting DOI: {doi}',
+            exc_info=e,
+        )
         return False
 
 
@@ -220,7 +237,7 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # yield 0 matches on test case
                 # # is it a DOI in common format?
                 # doi = (url + folderRegistrant + likelyDOIName)
-                # if self._is_valid_doi(doi):
+                # if is_valid_doi(doi):
                 #     print('match by common format xxx')
                 #     return doi
                 # in very rare cases there is \n in text containing doi
@@ -250,13 +267,20 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         # Figure out file size
-        buffer.seek(0, io.SEEK_END)
-        size = buffer.tell()
+        size = buffer.size
 
         if size > 0:
             raise ValueError("Directories can't have content")
+
+
+@dataclass
+class TextExtractionNotAllowedWarning(ServerWarning):
+    title: str = \
+        "Author of this PDF disallowed content extraction"
+    message: Optional[str] = \
+        "Content of this file will not be automatically annotated within ***ARANGO_DB_NAME***"
 
 
 class PDFTypeProvider(BaseFileTypeProvider):
@@ -264,69 +288,66 @@ class PDFTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'pdf'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
-        return [(0, self.MIME_TYPE)] if buffer.read(5) == b'%PDF-' else []
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
+        with buffer as bufferView:
+            return [(Certanity.match, self.MIME_TYPE)] if bufferView.read(5) == b'%PDF-' else []
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        data = buffer.read()
-        buffer.seek(0)
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
+        with buffer as bufferView:
+            # Check that the pdf is considered openable
+            try:
+                high_level.extract_text(bufferView, page_numbers=[0], caching=False)
+            except PDFTextExtractionNotAllowed as e:
+                if log_status_messages:
+                    # TODO once we migrate to python 3.11:
+                    #  add PDFTextExtractionNotAllowed as __cause__
+                    warn(TextExtractionNotAllowedWarning())
+                    raise HandledException(e) from e
+                else:
+                    raise
+            except PDFEncryptionError as e:
+                raise FileUploadError(
+                    title='Failed to Read PDF',
+                    message='This pdf is locked and cannot be loaded into Lifelike.'
+                ) from e
+            except Exception as e:
+                raise FileUploadError(
+                    title='Failed to Read PDF',
+                    message='An error occurred while reading this pdf.'
+                            ' Please check if the pdf is unlocked and openable.'
+                ) from e
 
-        # Check that the pdf is considered openable
-        fp = io.BytesIO(data)
-        try:
-            high_level.extract_text(fp, page_numbers=[0], caching=False)
-        except (PDFEncryptionError, PDFTextExtractionNotAllowed):
-            raise FileUploadError(
-                title='Failed to Read PDF',
-                message='This pdf is locked and cannot be loaded into Lifelike.')
-        except Exception:
-            raise FileUploadError(
-                title='Failed to Read PDF',
-                message='An error occurred while reading this pdf. Please check if the pdf is ' +
-                        'unlocked and openable.'
-            )
+    def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
+        with buffer as bufferView:
+            # Attempt 1: search through the first N bytes (most probably containing only metadata)
+            chunk = bufferView.read(2 ** 17)
+            doi = _search_doi_in(chunk)
+            if doi is not None:
+                return doi
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
-        data = buffer.read()
-        buffer.seek(0)
-
-        # Attempt 1: search through the first N bytes (most probably containing only metadata)
-        chunk = data[:2 ** 17]
-        doi = _search_doi_in(chunk)
-        if doi is not None:
-            return doi
-
-        # Attempt 2: search through the first two pages of text (no metadata)
-        fp = io.BytesIO(data)
-        try:
-            text = high_level.extract_text(fp, page_numbers=[0, 1], caching=False)
-        except Exception:
-            raise FileUploadError(
-                title='Failed to Read PDF',
-                message='An error occurred while reading this pdf. Please check if the pdf is ' +
-                        'unlocked and openable.'
-            )
-        doi = _search_doi_in(bytes(text, encoding='utf8'))
-
-        return doi
-
-    def _is_valid_doi(self, doi):
-        try:
-            # not [bad request, not found] but yes to 403 - no access
-            return requests.get(doi,
-                                headers={
-                                    # sometimes request is filtered if there is no user-agent header
-                                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
-                                                  "AppleWebKit/537.36 "
-                                                  "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                                  "Safari/537.36"
-                                }
-                                ).status_code not in [400, 404]
-        except Exception as e:
-            return False
+            bufferView.seek(0)
+            # Attempt 2: search through the first two pages of text (no metadata)
+            try:
+                text = high_level.extract_text(bufferView, page_numbers=[0, 1], caching=False)
+            except PDFTextExtractionNotAllowed as e:
+                # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
+                warn(TextExtractionNotAllowedWarning())
+                raise HandledException(e) from e
+            except Exception as e:
+                raise FileUploadError(
+                    title='Failed to Read PDF',
+                    message='An error occurred while reading this pdf.'
+                            ' Please check if the pdf is unlocked and openable.'
+                ) from e
+            else:
+                return _search_doi_in(bytes(text, encoding='utf8'))
 
     # ref: https://stackoverflow.com/a/10324802
     # Has a good breakdown of the DOI specifications,
@@ -353,7 +374,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
     common_escape_patterns_re = re.compile(rb'\\')
     dash_types_re = re.compile(bytes("[‐᠆﹣－⁃−¬]+", BYTE_ENCODING))
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
+    def to_indexable_content(self, buffer: FileContentBuffer):
         return buffer  # Elasticsearch can index PDF files directly
 
     def should_highlight_content_text_matches(self) -> bool:
@@ -366,15 +387,18 @@ class BiocTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
     ALLOWED_TYPES = ['.xml', '.bioc']
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
-        try:
-            # If it is xml file and bioc
-            self.check_xml_and_bioc(buffer)
-            return [(0, self.MIME_TYPE)]
-        except BaseException:
-            return []
-        finally:
-            buffer.seek(0)
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
+        with buffer as bufferView:
+            try:
+                # If it is xml file and bioc
+                self.check_xml_and_bioc(bufferView)
+                return [(Certanity.match, self.MIME_TYPE)]
+            except BaseException:
+                return []
 
     def handles(self, file: Files) -> bool:
         ext = os.path.splitext(file.filename)[1].lower()
@@ -383,29 +407,30 @@ class BiocTypeProvider(BaseFileTypeProvider):
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         with BioCJsonIterReader(buffer) as reader:
             for obj in reader:
                 passage = biocFromJSON(obj, level=bioc.DOCUMENT)
 
-    def extract_doi(self, buffer: BufferedIOBase) -> Optional[str]:
-        data = buffer.read()
-        buffer.seek(0)
+    def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
+        with buffer as bufferView:
+            data = bufferView.read()
 
-        chunk = data[:2 ** 17]
-        doi = _search_doi_in(chunk)
-        return doi
+            chunk = data[:2 ** 17]
+            doi = _search_doi_in(chunk)
+            return doi
 
     def convert(self, buffer):
         # assume it is xml
-        collection = bioc.load(buffer)
-        buffer.stream = io.BytesIO()
-        with BioCJsonIterWriter(buffer) as writer:
-            for doc in collection.documents:
-                writer.write(biocToJSON(doc))
-        buffer.seek(0)
+        with buffer as bufferView:
+            collection = bioc.load(bufferView)
+            # empty buffer
+            bufferView.truncate(0)
+            with BioCJsonIterWriter(bufferView) as writer:
+                for doc in collection.documents:
+                    writer.write(biocToJSON(doc))
 
-    def check_xml_and_bioc(self, buffer: BufferedIOBase):
+    def check_xml_and_bioc(self, buffer: FileContentBuffer):
         tree = etree.parse(buffer)
         system_url: str = tree.docinfo.system_url
         result = system_url.lower().find('bioc')
@@ -413,7 +438,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
             raise ValueError()
 
 
-def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfile.ZipFile,
+def substitute_svg_images(map_content: FileContentBuffer, images: list, zip_file: zipfile.ZipFile,
                           folder_name: str):
     """ Match every link inside SVG file and replace it with raw PNG data of icons or images from
     zip file. This has to be done after the graphviz call, as base64 PNG data is often longer than
@@ -426,13 +451,40 @@ def substitute_svg_images(map_content: io.BytesIO, images: list, zip_file: zipfi
     :returns: a modified svg file containing embedded images
     """
     icon_data = get_icons_data()
-    text_content = map_content.read().decode(BYTE_ENCODING)
-    text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
-    for image in images:
-        text_content = text_content.replace(
-            folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
-                zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
-    return io.BytesIO(bytes(text_content, BYTE_ENCODING))
+    with map_content as bufferView:
+        text_content = bufferView.read().decode(BYTE_ENCODING)
+        text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+        for image in images:
+            text_content = text_content.replace(
+                folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
+                    zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
+        return FileContentBuffer(bytes(text_content, BYTE_ENCODING))
+
+
+def get_fitting_lines(text, style, data):
+    if not text:
+        return []
+    fontsize = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
+    line_height = NODE_LINE_HEIGHT * fontsize
+    node_effective_height = data.get('height', MAX_NODE_HEIGHT - 2 * NODE_INSET)
+    max_lines = floor(node_effective_height / line_height)
+    if 'width' in data:
+        max_character_per_line = (data['width'] - 2 * NODE_INSET) / (fontsize * DEFAULT_FONT_RATIO)
+    else:
+        max_character_per_line = min(10 + len(text) // 4, MAX_LINE_WIDTH)
+    line_wrapper = textwrap.TextWrapper(
+        width=ceil(max_character_per_line),
+        replace_whitespace=False
+    )
+    # TextWrapper wrap is to be called per paragraf
+    # (https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.replace_whitespace)
+    lines = []
+    for paragraph in text.splitlines():
+        # Text wrapper of '' returns [] but we want [''] to not swallow empty lines
+        lines.extend(line_wrapper.wrap(paragraph) if paragraph else [''])
+        if len(lines) > max_lines:
+            lines = lines[:max_lines]
+    return lines
 
 
 icon_names = [
@@ -496,23 +548,19 @@ def create_group_node(group: dict):
         return params, None
 
     border_width = style.get('lineWidthScale', 1.0) if has_border else 0.0
-    # Try to match the front-end max width by assuming that average font width is equal to 50%%
-    # of the height - and adjusting the text to be roughly of the image width
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label = escape('\n'.join(textwrap.TextWrapper(
-        width=int(group['data']['width'] / (label_font_size * 0.5)),
-        replace_whitespace=False).wrap(display_name)))
+    label_lines = get_fitting_lines(display_name, style, params['data'])
     label_offset = -group['data']['height'] / 2.0 - LABEL_OFFSET - \
-        (label_font_size / 2.0 * (1 + label.count('\n'))) - border_width
+        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     label_params = {
         'name': group['hash'] + '_label',
-        'label': label,
+        'label': escape(compose_lines(*label_lines)),
         'href': href,
         'pos': (
             f"{group['data']['x'] / SCALING_FACTOR},"
             f"{(-group['data']['y'] - label_offset) / SCALING_FACTOR}!"
         ),
-        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
+        'fontsize': f"{label_font_size}",
         'penwidth': '0.0',
         'fontcolor': style.get('fillColor') or 'black',
     }
@@ -531,30 +579,21 @@ def create_default_node(node: dict):
     :return: baseline dict with Graphviz paramaters
     """
     style = node.get('style', {})
-    # Ensure that display name is of type string, as it can be None
-    display_name = node['display_name'] or ""
-    fontsize = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    if 'width' in node['data']:
-        width = node['data']['width']
-        max_character_per_line = width / (fontsize * DEFAULT_FONT_RATIO)
-    else:
-        width = DEFAULT_NODE_WIDTH
-        max_character_per_line = min(10 + len(display_name) // 4, MAX_LINE_WIDTH)
+    data = node['data']
+    label_lines = get_fitting_lines(node['display_name'], style, data)
     return {
         'name': node['hash'],
         # Graphviz offer no text break utility - it has to be done outside of it
-        'label': escape('\n'.join(textwrap.TextWrapper(
-            width=ceil(max_character_per_line),
-            replace_whitespace=False).wrap(display_name))),
+        'label': escape(compose_lines(*label_lines)),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
         'pos': (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{-node['data']['y'] / SCALING_FACTOR}!"
+            f"{data['x'] / SCALING_FACTOR},"
+            f"{-data['y'] / SCALING_FACTOR}!"
         ),
         # Resize the node base on font size, as otherwise the margin would be smaller than
         # in the Lifelike map editor
-        'width': f"{width / SCALING_FACTOR}",
-        'height': f"{node['data'].get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
+        'width': f"{data.get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
+        'height': f"{data.get('height', DEFAULT_NODE_HEIGHT) / SCALING_FACTOR}",
         'shape': 'box',
         'style': 'rounded,filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
@@ -563,7 +602,7 @@ def create_default_node(node: dict):
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fillcolor': style.get('bgColor') or 'white',
-        'fontsize': f"{fontsize}",
+        'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
         if style.get('lineType') != 'none' else '0.0'
@@ -578,22 +617,19 @@ def create_image_label(node: dict):
     :returns: label params
     """
     style = node.get('style', {})
-    height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
-    width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
+    data = node['data']
+    height = data.get('height', DEFAULT_IMAGE_NODE_HEIGHT)
+    # width = data.get('width', DEFAULT_IMAGE_NODE_WIDTH)
     border_width = style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
-    # Try to match the front-end max width by assuming that average font width is equal to 50%%
-    # of the height - and adjusting the text to be roughly of the image width
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label = escape('\n'.join(textwrap.TextWrapper(
-        width=int(width / (label_font_size * 0.5)),
-        replace_whitespace=False).wrap(node['display_name'] or "")))
-    label_offset = -height / 2.0 - LABEL_OFFSET - (label_font_size / 2.0 *
-                                                   (1 + label.count('\n'))) - border_width
+    label_lines = get_fitting_lines(node['display_name'], style, data)
+    label_offset = -height / 2.0 - LABEL_OFFSET - \
+        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
     return {
-        'label': label,
+        'label': escape(compose_lines(*label_lines)),
         'pos': (
-            f"{node['data']['x'] / SCALING_FACTOR},"
-            f"{(-node['data']['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
+            f"{data['x'] / SCALING_FACTOR},"
+            f"{(-data['y'] + label_offset) / SCALING_FACTOR + FILENAME_LABEL_MARGIN}!"
         ),
         'fontsize': f"{label_font_size}",
         'penwidth': '0.0',
@@ -640,26 +676,21 @@ def create_detail_node(node: dict, params: dict):
     :param node: dict containing the node data
     :param params: dict containing baseline parameters that have to be altered
     :returns: modified params dict
-    TODO: Mimic the text metric and text breaking from the drawing-tool
     """
+    style = node.get('style', {})
     detail_text = node['data'].get('detail', '')
-    if detail_text:
-        if node['data'].get('sources'):
-            # Check if the node was dragged from the pdf - if so, it will have a source link
-            if any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources')):
-                detail_text = detail_text[:DETAIL_TEXT_LIMIT]
-                detail_text = detail_text.rstrip('\\')
-        # Split lines to inspect their length and replace them with '\l' later
-        # Use regex to split, otherwise \n (text, not new lines) are matched as well
-        lines = re.split("\n", detail_text)
-        # Escape the characters and break lines longer than max line width
-        lines = list(map(lambda x: r' \l '.join(textwrap.TextWrapper(width=MAX_LINE_WIDTH
-                                                                     ).wrap(escape(x))), lines))
-        # '\l' is graphviz special new line, which placed at the end of the line will align it
-        # to the left - we use that instead of \n (and add one at the end to align last line)
-        detail_text = r"\l".join(lines) + r'\l'
-
-    params['label'] = detail_text
+    # Check if the node was dragged from the pdf - if so, it will have a source link
+    if (
+            detail_text
+            and (any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources', []))
+                 and len(detail_text) > DETAIL_TEXT_LIMIT)
+    ):
+        detail_text = detail_text[:DETAIL_TEXT_LIMIT]
+        detail_text = detail_text.rstrip('\\')
+    detail_lines = get_fitting_lines(detail_text, style, node['data'])
+    # '\l' is graphviz special new line, which placed at the end of the line will align it
+    # to the left - we use that instead of \n (and add one at the end to align last line)
+    params['label'] = '\l'.join(map(escape, detail_lines)).replace('\n', '\l') + '\l'  # noqa: W605
     if params['fillcolor'] == 'white':
         params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
                                                          {'bgcolor': 'black'}
@@ -669,9 +700,11 @@ def create_detail_node(node: dict, params: dict):
     if doi_src:
         node['link'] = doi_src
 
-    if not node.get('style', {}).get('strokeColor'):
+    if not style.get('strokeColor'):
         # No border by default
         params['penwidth'] = '0.0'
+
+    params['margin'] = "0.2,0.2"
     return params
 
 
@@ -999,71 +1032,73 @@ class MapTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'map'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+        self,
+        buffer: FileContentBuffer,
+        extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
-            self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            self.validate_content(buffer, log_status_messages=False)
+            return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
-        finally:
-            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
         """
         Validates whether the uploaded file is a Lifelike map - a zip containing graph.json file
         describing the map and optionally, folder with the images. If there are any images specified
         in the json graph, their presence and accordance to the png standard is verified.
+        :param log_status_messages:
         :params:
         :param buffer: buffer containing the bytes of the file that has to be tested
         :raises ValueError: if the file is not a proper map file
         """
-        zipped_map = buffer.read()
-        try:
-            with zipfile.ZipFile(io.BytesIO(zipped_map)) as zip_file:
-                # Test zip returns the name of the first invalid file inside the archive; if any
-                if zip_file.testzip():
-                    raise ValueError
-                json_graph = json.loads(zip_file.read('graph.json'))
-                validate_map(json_graph)
-                for node in json_graph['nodes']:
-                    if node.get('image_id'):
-                        zip_file.read("".join(['images/', node.get('image_id'), '.png']))
-        except (zipfile.BadZipFile, KeyError):
-            raise ValueError
+        with buffer as bufferView:
+            try:
+                with zipfile.ZipFile(bufferView) as zip_file:
+                    # Test zip returns the name of the first invalid file inside the archive; if any
+                    if zip_file.testzip():
+                        raise ValueError
+                    json_graph = json.loads(zip_file.read('graph.json'))
+                    validate_map(json_graph)
+                    for node in json_graph['nodes']:
+                        if node.get('image_id'):
+                            zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+            except (zipfile.BadZipFile, KeyError):
+                raise ValueError
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        # Do not catch exceptions here - there are handled in elastic_service.py
-        zip_file = zipfile.ZipFile(io.BytesIO(buffer.read()))
-        content_json = json.loads(zip_file.read('graph.json'))
+    def to_indexable_content(self, buffer: FileContentBuffer):
+        with buffer as bufferView:
+            # Do not catch exceptions here - there are handled in elastic_service.py
+            zip_file = zipfile.ZipFile(bufferView)
+            content_json = json.loads(zip_file.read('graph.json'))
 
-        content = io.StringIO()
-        string_list = []
+            string_list = []
 
-        nodes = content_json.get('nodes', [])
-        for group in content_json.get('groups', []):
-            nodes.append(group)
-            nodes += group.get('members', [])
+            nodes = content_json.get('nodes', [])
+            for group in content_json.get('groups', []):
+                nodes.append(group)
+                nodes += group.get('members', [])
 
-        for node in nodes:
-            node_data = node.get('data', {})
-            display_name = node.get('display_name', '')
-            detail = node_data.get('detail', '') if node_data else ''
-            string_list.append('' if display_name is None else display_name)
-            string_list.append('' if detail is None else detail)
+            for node in nodes:
+                node_data = node.get('data', {})
+                display_name = node.get('display_name', '')
+                detail = node_data.get('detail', '') if node_data else ''
+                string_list.append('' if display_name is None else display_name)
+                string_list.append('' if detail is None else detail)
 
-        for edge in content_json.get('edges', []):
-            edge_data = edge.get('data', {})
-            label = edge.get('label', '')
-            detail = edge_data.get('detail', '') if edge_data else ''
-            string_list.append('' if label is None else label)
-            string_list.append('' if detail is None else detail)
+            for edge in content_json.get('edges', []):
+                edge_data = edge.get('data', {})
+                label = edge.get('label', '')
+                detail = edge_data.get('detail', '') if edge_data else ''
+                string_list.append('' if label is None else label)
+                string_list.append('' if detail is None else detail)
 
-        content.write(' '.join(string_list))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+            return FileContentBuffer(' '.join(string_list).encode(BYTE_ENCODING))
 
     def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
         """
@@ -1079,22 +1114,27 @@ class MapTypeProvider(BaseFileTypeProvider):
         folder = tempfile.TemporaryDirectory()
 
         try:
-            zip_file = zipfile.ZipFile(io.BytesIO(file.content.raw_file))
-            json_graph = json.loads(zip_file.read('graph.json'))
-        except KeyError:
+            with FileContentBuffer(file.content.raw_file) as bufferView:
+                zip_file = zipfile.ZipFile(bufferView)
+                json_graph = json.loads(zip_file.read('graph.json'))
+        except KeyError as e:
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )
-            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
-        except zipfile.BadZipFile:
+            raise ValidationError(
+                'Cannot retrieve contents of the file - it might be corrupted'
+            ) from e
+        except zipfile.BadZipFile as e:
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} File is a bad zipfile.',
                 extra=EventLog(
                     event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
             )
-            raise ValidationError('Cannot retrieve contents of the file - it might be corrupted')
+            raise ValidationError(
+                'Cannot retrieve contents of the file - it might be corrupted'
+            ) from e
 
         graph = graphviz.Digraph(
             escape(file.filename),
@@ -1111,7 +1151,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
         if format == 'png':
-            graph.attr(dpi=100)
+            graph.attr(dpi="100")
 
         node_hash_type_dict = {}
         images = []
@@ -1164,7 +1204,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                         file_path = os.path.sep.join([folder.name, image_name])
                         im.save(file_path)
                     # Note: Add placeholder images instead?
-                    except KeyError:
+                    except KeyError as e:
                         name = node.get('image_id') + '.png'
                         current_app.logger.info(
                             f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
@@ -1172,7 +1212,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
                         )
                         raise ValidationError(
-                            f"Cannot retrieve image: {name} - file might be corrupted")
+                            f"Cannot retrieve image: {name} - file might be corrupted"
+                        ) from e
                     params = create_image_node(node, params)
                     if node['display_name']:
                         body.node(**create_image_label(node))
@@ -1221,18 +1262,13 @@ class MapTypeProvider(BaseFileTypeProvider):
         )
 
         ext = f".{format}"
-        content = io.BytesIO(graph.pipe())
+        content = FileContentBuffer(graph.pipe())
 
         if format == 'svg':
             content = substitute_svg_images(content, images, zip_file, folder.name)
 
         if format == 'pdf' and not self_contained_export:
-            reader = PdfFileReader(content, strict=False)
-            writer = PdfFileWriter()
-            writer.appendPagesFromReader(reader)
-            self.add_file_bookmark(writer, 0, file)
-            content = io.BytesIO()
-            writer.write(content)
+            content = self._add_file_bookmark_to_pdf_content(content, file)
 
         return FileExport(
             content=content,
@@ -1275,14 +1311,15 @@ class MapTypeProvider(BaseFileTypeProvider):
          :param file: map file to export
          :param format: wanted format
          :raises ValidationError: When provided format is invalid
-         :return: Exported map as BytesIO
+         :return: Exported map as FileContentBuffer
          """
         try:
-            return io.BytesIO(self.generate_export(file, format, self_contained_export=True)
-                              .content.getvalue())
-        except ExportFormatError:
+            return FileContentBuffer(
+                self.generate_export(file, format, self_contained_export=True).content.getvalue()
+            )
+        except ExportFormatError as e:
             raise ValidationError("Unknown or invalid export "
-                                  "format for the requested file.", format)
+                                  "format for the requested file.", format) from e
 
     def merge_pngs_vertically(self, files, _=None):
         """ Append pngs vertically.
@@ -1292,9 +1329,12 @@ class MapTypeProvider(BaseFileTypeProvider):
         :returns: maps concatenated vertically
         :raises SystemError: when one of the images exceeds PILLOW decompression bomb size limits
         """
-        final_bytes = io.BytesIO()
+        final_bytes = FileContentBuffer()
         try:
-            images = [Image.open(self.get_file_export(file, 'png')) for file in files]
+            def openImage(image):
+                with image as bufferView:
+                    return Image.open(bufferView)
+            images = [openImage(self.get_file_export(file, 'png')) for file in files]
         except Image.DecompressionBombError as e:
             raise SystemError('One of the files exceeds the maximum size - it cannot be exported'
                               'as part of the linked export')
@@ -1311,10 +1351,12 @@ class MapTypeProvider(BaseFileTypeProvider):
             x_offset = int((max_width - im.size[0]) / 2)
             new_im.paste(im, (x_offset, y_offset))
             y_offset += im.size[1]
-        new_im.save(final_bytes, format='PNG')
+        with final_bytes as bufferView:
+            new_im.save(bufferView, format='PNG')
         return final_bytes
 
-    def add_file_bookmark(self, writer, page_number, file):
+    @staticmethod
+    def _add_file_bookmark(writer, page_number, file):
         file_bookmark = writer.addBookmark(file.path, page_number, bold=True)
         for line in (
             f'Description:\t{file.description}',
@@ -1325,6 +1367,18 @@ class MapTypeProvider(BaseFileTypeProvider):
                 line, page_number, file_bookmark
             )
 
+    @classmethod
+    def _add_file_bookmark_to_pdf_content(cls, content: FileContentBuffer, file: Files):
+        with content as bufferView:
+            reader = PdfFileReader(bufferView, strict=False)
+            writer = PdfFileWriter()
+            writer.appendPagesFromReader(reader)
+            cls._add_file_bookmark(writer, 0, file)
+            new_content = FileContentBuffer()
+            with new_content as newBufferView:
+                writer.write(newBufferView)
+            return new_content
+
     def merge_pdfs(self, files: List[Files], link_to_page_map=None):
         """ Merge pdfs and add links to map.
         params:
@@ -1332,36 +1386,37 @@ class MapTypeProvider(BaseFileTypeProvider):
         :param link_to_page_map: dict mapping url to pdf page number
         """
         link_to_page_map = link_to_page_map or dict()
-        final_bytes = io.BytesIO()
+        final_bytes = FileContentBuffer()
         writer = PdfFileWriter()
         links = []
         for origin_page, file in enumerate(files):
             out_file = self.get_file_export(file, 'pdf')
-            reader = PdfFileReader(out_file, strict=False)
-            # region Find internal links in pdf
-            for page in map(reader.getPage, range(reader.getNumPages())):
-                for annot in filter(
-                    lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
-                    map(
-                        lambda o: reader.getObject(o),
-                        page.get('/Annots', [])
-                    )
-                ):
-                    annotation = annot.get('/A')
-                    if annotation:
-                        uri = annotation.get('/URI')
-                        rect = annot.get('/Rect')
-                        destination_page = link_to_page_map.get(uri)
-                        if destination_page is not None:
-                            links.append(dict(
-                                pagenum=origin_page,
-                                pagedest=destination_page,
-                                rect=rect
-                            ))
-            # endregion
-            num_of_pages = writer.getNumPages()  # index of first attached page since this point
-            writer.appendPagesFromReader(reader)
-            self.add_file_bookmark(writer, num_of_pages, file)
+            with out_file as bufferView:
+                reader = PdfFileReader(bufferView, strict=False)
+                # region Find internal links in pdf
+                for page in map(reader.getPage, range(reader.getNumPages())):
+                    for annot in filter(
+                        lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
+                        map(
+                            lambda o: reader.getObject(o),
+                            page.get('/Annots', [])
+                        )
+                    ):
+                        annotation = annot.get('/A')
+                        if annotation:
+                            uri = annotation.get('/URI')
+                            rect = annot.get('/Rect')
+                            destination_page = link_to_page_map.get(uri)
+                            if destination_page is not None:
+                                links.append(dict(
+                                    pagenum=origin_page,
+                                    pagedest=destination_page,
+                                    rect=rect
+                                ))
+                # endregion
+                num_of_pages = writer.getNumPages()  # index of first attached page since this point
+                writer.appendPagesFromReader(reader)
+                self._add_file_bookmark(writer, num_of_pages, file)
 
         # Need to reiterate cause we cannot add links to not yet existing pages
         for link in links:
@@ -1383,49 +1438,56 @@ class MapTypeProvider(BaseFileTypeProvider):
             layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
         doc.setLayout(layout2)
         doc.save(result_string)
-        return io.BytesIO(result_string.getvalue().encode(BYTE_ENCODING))
+        return FileContentBuffer(result_string.getvalue().encode(BYTE_ENCODING))
 
-    def update_map(self, params: dict, file_content, updater=lambda x: x):
-        try:
-            zip_file = zipfile.ZipFile(file_content)
-        except zipfile.BadZipfile:
-            raise ValidationError('Previous content of the map is corrupted!')
+    def update_map(self, params: dict, file_content: FileContentBuffer, updater=lambda x: x):
+        with file_content as bufferView:
+            try:
+                zip_file = zipfile.ZipFile(bufferView)
+            except zipfile.BadZipfile as e:
+                raise ValidationError('Previous content of the map is corrupted!') from e
 
         images_to_delete = params.get('deleted_images') or []
         new_images = params.get('new_images') or []
 
-        new_content = io.BytesIO()
-        new_zip = zipfile.ZipFile(new_content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False)
+        new_content = FileContentBuffer()
+        with new_content as bufferView:
+            new_zip = zipfile.ZipFile(
+                bufferView,
+                'w',
+                zipfile.ZIP_DEFLATED,
+                strict_timestamps=False
+            )
 
-        # Weirdly, zipfile will store both files rather than override on duplicate name, so we need
-        # to make sure that the graph.json is not copied as well.
-        images_to_delete.append('graph')
-        files_to_copy = [hash_id for hash_id in zip_file.namelist() if
-                         os.path.basename(hash_id).split('.')[0] not in images_to_delete]
-        for filename in files_to_copy:
-            new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
+            # Weirdly, zipfile will store both files rather than override on duplicate name,
+            # so we need to make sure that the graph.json is not copied as well.
+            images_to_delete.append('graph')
+            files_to_copy = [hash_id for hash_id in zip_file.namelist() if
+                             os.path.basename(hash_id).split('.')[0] not in images_to_delete]
+            for filename in files_to_copy:
+                new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
 
-        for image in new_images:
-            new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
-        if params.get('content_value') is not None:
-            new_graph = params['content_value'].read()
-        else:
-            graph_json = json.loads(zip_file.read('graph.json'))
-            new_graph_json = updater(graph_json)
-            validate_map(new_graph_json)
-            new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
+            for image in new_images:
+                new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
+            if params.get('content_value') is not None:
+                new_graph = params['content_value'].read()
+            else:
+                graph_json = json.loads(zip_file.read('graph.json'))
+                new_graph_json = updater(graph_json)
+                validate_map(new_graph_json)
+                new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
 
-        # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata! If
-        # the timestamp is included, otherwise identical zips will have different checksums. This
-        # is true for the two `writestr` calls above as well.
-        new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
-        new_zip.close()
+            # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata!
+            # If the timestamp is included, otherwise identical zips will have different checksums.
+            # This is true for the two `writestr` calls above as well.
+            new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
+            new_zip.close()
 
-        # Remember to always rewind when working with BufferedIOBase
-        new_content.seek(0)
-        return typing.cast(BufferedIOBase, new_content)
+        return new_content
 
-    def prepare_content(self, buffer: BufferedIOBase, params: dict, file: Files) -> BufferedIOBase:
+    def prepare_content(
+            self, buffer: FileContentBuffer, params: dict, file: Files
+    ) -> FileContentBuffer:
         """
         Evaluate the changes in the images and create a new blob to store in the content.
         Since we cannot delete files from an archive, we need to copy everything (except for
@@ -1437,46 +1499,69 @@ class MapTypeProvider(BaseFileTypeProvider):
         """
         previous_content = file.content.raw_file
 
-        return self.update_map(params, io.BytesIO(previous_content))
+        return self.update_map(params, FileContentBuffer(previous_content))
 
 
 class GraphTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_GRAPH
     SHORTHAND = 'Graph'
     mime_types = (MIME_TYPE,)
+    EXTENSIONS = {'.graph'}
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
+        certanity = None
+        if extension in self.EXTENSIONS:
+            certanity = Certanity.assumed
         try:
-            # If the data validates, I guess it's a map?
-            if os.path.splitext(str(
-                    # buffer in here is actually wrapper of BufferedIOBase and it contains
-                    # filename even if type check fails
-                    buffer.filename  # type: ignore[attr-defined]
-            ))[1] == '.graph':
-                return [(0, self.MIME_TYPE)]
-            else:
-                return []
-        except (ValueError, AttributeError):
+            self.validate_content(buffer, log_status_messages=False)
+            certanity = Certanity.match
+        except (ValueError, ContentValidationError):
+            pass
+        if certanity is not None:
+            return [(certanity, self.MIME_TYPE)]
+        else:
             return []
-        finally:
-            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        data = json.loads(buffer.read())
-        validate_graph_format(data)
-        if 'version' in data:
-            validate_graph_content(data)
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
+        with buffer as bufferView:
+            data = json.loads(bufferView.read())
+            validate_graph_format(data)
+        raise_content_errors = 'version' in data
+        for message in validate_graph_content(data):
+            if raise_content_errors:
+                raise ContentValidationError(**message.to_dict())
+            else:
+                if log_status_messages:
+                    if isinstance(message, ContentValidationNotDefinedSourceTargetMessage):
+                        info(
+                            ContentValidationInfo(**{  # type: ignore
+                                **message.to_dict(),
+                                'title': ContentValidationInfo.title
+                            })
+                        )
+                    else:
+                        warn(
+                            ContentValidationWarning(**{  # type: ignore
+                                **message.to_dict(),
+                                'title': ContentValidationWarning.title
+                            })
+                        )
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        content_json = json.load(buffer)
-        content = io.StringIO()
-        string_list = set(extract_text(content_json))
+    def to_indexable_content(self, buffer: FileContentBuffer):
+        with buffer as bufferView:
+            content_json = json.load(bufferView)
+            content = io.StringIO()
+            string_list = set(extract_text(content_json))
 
-        content.write(' '.join(list(string_list)))
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+            content.write(' '.join(list(string_list)))
+            return FileContentBuffer(content.getvalue().encode(BYTE_ENCODING))
 
 
 class EnrichmentTableTypeProvider(BaseFileTypeProvider):
@@ -1484,57 +1569,61 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     SHORTHAND = 'enrichment-table'
     mime_types = (MIME_TYPE,)
 
-    def detect_mime_type(self, buffer: BufferedIOBase) -> List[typing.Tuple[float, str]]:
+    def detect_mime_type(
+            self,
+            buffer: FileContentBuffer,
+            extension=None
+            ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
             # and will cause problems in the future
-            self.validate_content(buffer)
-            return [(0, self.MIME_TYPE)]
+            self.validate_content(buffer, log_status_messages=False)
+            return [(Certanity.match, self.MIME_TYPE)]
         except ValueError:
             return []
-        finally:
-            buffer.seek(0)
 
     def can_create(self) -> bool:
         return True
 
-    def validate_content(self, buffer: BufferedIOBase):
-        data = json.loads(buffer.read())
-        validate_enrichment_table(data)
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
+        with buffer as bufferView:
+            data = json.loads(bufferView.read())
+            validate_enrichment_table(data)
 
-    def to_indexable_content(self, buffer: BufferedIOBase):
-        data = json.load(buffer)
-        content = io.StringIO()
+    def to_indexable_content(self, buffer: FileContentBuffer):
+        with buffer as bufferView:
+            data = json.load(bufferView)
+            content = io.StringIO()
 
-        genes = data['data']['genes'].split(',')
-        organism = data['data']['organism']
-        content.write(', '.join(genes))
-        content.write('\r\n\r\n')
-        content.write(organism)
-        content.write('\r\n\r\n')
+            genes = data['data']['genes'].split(',')
+            organism = data['data']['organism']
+            content.write(', '.join(genes))
+            content.write('\r\n\r\n')
+            content.write(organism)
+            content.write('\r\n\r\n')
 
-        if 'result' in data:
-            genes = data['result']['genes']
-            for gene in genes:
-                content.write('\u2022 ')
-                content.write(gene['imported'])
-                if 'matched' in gene:
-                    content.write(': ')
-                    content.write(gene['matched'])
-                if 'fullName' in gene:
-                    content.write(' (')
-                    content.write(gene['fullName'])
-                    content.write(')')
-                if 'domains' in gene:
-                    for gene_domain in gene['domains'].values():
-                        for value in gene_domain.values():
-                            if len(value['text']):
-                                content.write('\n\u2192 ')
-                                content.write(value['text'])
-                content.write('.\r\n\r\n')
+            if 'result' in data:
+                genes = data['result']['genes']
+                for gene in genes:
+                    content.write('\u2022 ')
+                    content.write(gene['imported'])
+                    if 'matched' in gene:
+                        content.write(': ')
+                        content.write(gene['matched'])
+                    if 'fullName' in gene:
+                        content.write(' (')
+                        content.write(gene['fullName'])
+                        content.write(')')
+                    if 'domains' in gene:
+                        for gene_domain in gene['domains'].values():
+                            for value in gene_domain.values():
+                                if len(value['text']):
+                                    content.write('\n\u2192 ')
+                                    content.write(value['text'])
+                    content.write('.\r\n\r\n')
 
-        return typing.cast(BufferedIOBase, io.BytesIO(content.getvalue().encode(BYTE_ENCODING)))
+            return FileContentBuffer(content.getvalue().encode(BYTE_ENCODING))
 
     def should_highlight_content_text_matches(self) -> bool:
         return True

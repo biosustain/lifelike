@@ -1,27 +1,53 @@
-// TODO: Use a library
-function isObject(item) {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-}
+import { defaultsDeep, assign, merge, cloneDeep } from 'lodash-es';
 
-// todo: same as lodash merge?
-export function mergeDeep(target, ...sources) {
-  if (!sources.length) {
-    return target;
-  }
-  const source = sources.shift();
+import { makeid, uuidv4 } from 'app/shared/utils/identifiers';
+import {
+  UniversalGraphGroupTemplate,
+  UniversalGraphNodeTemplate,
+  UniversalGraphGroup, UniversalGraphImageNodeTemplate, UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) {
-          Object.assign(target, {[key]: {}});
-        }
-        mergeDeep(target[key], source[key]);
-      } else {
-        Object.assign(target, {[key]: source[key]});
-      }
-    }
-  }
+import { GROUP_DEFAULTS_FACTORY, IMAGE_DEFAULTS_FACTORY, NODE_DEFAULTS_FACTORY } from '../defaults';
 
-  return mergeDeep(target, ...sources);
-}
+/**
+ * Create new node object (with new hash and default values)
+ * @param partialNode - object to be transformed into node (it will mutate)
+ */
+export const createNode =
+  <N extends Partial<UniversalGraphNodeTemplate>>(partialNode: N) =>
+    merge(
+      NODE_DEFAULTS_FACTORY(),
+      cloneDeep(partialNode),
+      {hash: uuidv4()},
+    ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & N & Pick<UniversalGraphNode, 'hash'>;
+
+/**
+ * Create new group node object (with new hash and default values)
+ * @param partialGroup - object to be transformed into group node (it will mutate)
+ */
+export const createGroupNode =
+  <G extends Partial<UniversalGraphGroupTemplate>>({members = [], ...partialGroupRest}: G) =>
+    assign(
+      createNode(
+        merge(
+          GROUP_DEFAULTS_FACTORY(),
+          partialGroupRest,
+        ),
+      ),
+      {members},  // Members are passed by reference (cannot be cloned)
+    ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & ReturnType<typeof GROUP_DEFAULTS_FACTORY> & G & Pick<UniversalGraphNode, 'hash'>;
+
+/**
+ * Create new image node object (with new hash and default values)
+ * @param partialImage - object to be transformed into image node (it will mutate)
+ */
+export const createImageNode =
+  <IN extends Partial<UniversalGraphImageNodeTemplate>>(partialImage: IN) =>
+    createNode(
+      merge(
+        IMAGE_DEFAULTS_FACTORY(),
+        partialImage,
+        {image_id: makeid()},
+      )
+    ) as ReturnType<typeof NODE_DEFAULTS_FACTORY> & ReturnType<typeof IMAGE_DEFAULTS_FACTORY> & IN &
+      Pick<UniversalGraphNode, 'hash'> & Pick<UniversalGraphGroup, 'image_id'>;

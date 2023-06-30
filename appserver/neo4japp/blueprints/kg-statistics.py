@@ -15,5 +15,5 @@ def get_knowledge_graph_statistics():
         return statistics
     raise ServerException(
         title='Failed to get Statistics',
-        message='Knowledge Graph Statistics Not Available.',
-        code=HTTPStatus.SERVICE_UNAVAILABLE)
+        message='Knowledge Graph Statistics Not Available.'
+    )

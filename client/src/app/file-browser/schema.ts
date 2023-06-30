@@ -1,5 +1,14 @@
+import { HttpEvent } from '@angular/common/http';
+
+import { Observable } from 'rxjs';
+
 import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
-import { AddedAnnotationExclusion, Annotation, AnnotationChangeExclusionMeta, Meta, } from 'app/pdf-viewer/annotation-type';
+import {
+  AddedAnnotationExclusion,
+  Annotation,
+  AnnotationChangeExclusionMeta,
+  Meta,
+} from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
 
@@ -331,4 +340,9 @@ export interface FileAnnotationChangeData {
 }
 
 export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotationChangeData> {
+}
+
+export interface HttpObservableResponse<T> {
+  body$: Observable<T>;
+  progress$: Observable<HttpEvent<T>>;
 }

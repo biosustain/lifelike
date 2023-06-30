@@ -267,11 +267,11 @@ def after_project_update(mapper: Mapper, connection: Connection, target: Project
     try:
         rq_service = RedisQueueService()
         rq_service.enqueue(_after_project_update, target)
-    except Exception:
+    except Exception as e:
         raise ServerException(
             title='Failed to Update Project',
             message='Something unexpected occurred while updating your file! Please try again ' +
                     'later.'
-        )
+        ) from e
 
 # TODO: Need to implment some kind of deletion handler if we ever allow deletion of projects.

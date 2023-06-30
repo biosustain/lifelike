@@ -21,6 +21,21 @@ export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   nodeValueAccessors$ = this.common.nodeValueAccessors$;
   nodeValueAccessor$ = this.baseView.nodeValueAccessor$;
 
+  fixCircumstantialBiocycLink(link) {
+    // Manual parsing seems like only choice
+    if (link) {
+      const partedUrl = link.split('?');
+      if (partedUrl.length === 2) {
+        const [url, search] = partedUrl;
+        const params = search.split('&').map(e => {
+          const [k, v] = e.split('=');
+          return `${k}=${encodeURIComponent(v)}`;
+        });
+        return `${url}?${params.join('&')}`;
+      }
+    }
+  }
+
   biocycLink(biocycId) {
     return 'https://biocyc.org/ECOLI/NEW-IMAGE?object=' + encodeURIComponent(biocycId);
   }

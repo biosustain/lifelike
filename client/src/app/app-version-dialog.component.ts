@@ -12,14 +12,12 @@ import { BuildInfo } from 'app/interfaces';
 })
 export class AppVersionDialogComponent {
 
-  readonly buildInfo$: Observable<BuildInfo>;
+  readonly buildInfo$: Observable<BuildInfo> = this.metadataService.getBuildInfo();
 
   constructor(
     public readonly modal: NgbActiveModal,
     private readonly metadataService: MetaDataService,
-  ) {
-    this.buildInfo$ = this.metadataService.getBuildInfo();
-  }
+  ) {}
 
   close(): void {
     this.modal.close();

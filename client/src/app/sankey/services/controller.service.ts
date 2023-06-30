@@ -1,8 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer } from 'rxjs';
-import { merge, transform, clone, flatMap, pick, isEqual, uniq, isNil, omit, get, chain, keys } from 'lodash-es';
-import { switchMap, map, first, shareReplay, distinctUntilChanged, startWith, pairwise, tap } from 'rxjs/operators';
+import { of, Subject, iif, ReplaySubject, Observable, EMPTY, defer, from } from 'rxjs';
+import {
+  pick as _pick,
+  get as _get,
+  omit as _omit,
+  transform as _transform
+} from 'lodash-es';
+import {
+  merge as _merge,
+  mergeAll as _mergeAll,
+  clone as _clone,
+  flatMap as _flatMap,
+  isEqual as _isEqual,
+  uniq as _uniq,
+  isNil as _isNil,
+  keys as _keys,
+  isEmpty as _isEmpty,
+  flow as _flow,
+  map as _map
+} from 'lodash/fp';
+import {
+  switchMap,
+  map,
+  first,
+  shareReplay,
+  distinctUntilChanged,
+  startWith,
+  pairwise,
+  tap,
+  takeUntil,
+  filter
+} from 'rxjs/operators';
 import { max } from 'd3';
 
 import Graph from 'app/shared/providers/graph-type/interfaces';
@@ -20,6 +49,10 @@ import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { TrackingService } from 'app/shared/services/tracking.service';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { ModuleContext } from 'app/shared/services/module-context.service';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { prescalers } from '../constants/prescalers';
 import { aligns } from '../constants/aligns';
@@ -55,32 +88,57 @@ interface Utils<Nodes> {
  *  selected|hovered nodes|links|traces, zooming, panning etc.
  */
 @Injectable()
-export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> {
+export class ControllerService extends StateControlAbstractService<SankeyOptions, SankeyState> implements OnDestroy {
   constructor(
     readonly warningController: WarningControllerService,
-    private readonly messageDialog: MessageDialog
+    private readonly messageDialog: MessageDialog,
+    private readonly moduleContext: ModuleContext,
+    private readonly tracking: TrackingService
   ) {
     super();
+
+    this.delta$.pipe(
+      takeUntil(this.destroyed$),
+      map(({networkTraceIdx, viewName}) => ({networkTraceIdx, viewName})),
+      filter(isNotEmpty),
+      distinctUntilChanged(_isEqual),
+      switchMap(delta => from(this.moduleContext.appLink).pipe(
+        map(href => ({...delta, href}))
+      ))
+    ).subscribe(({networkTraceIdx, viewName, href}) => {
+      let label = `networkTraceIdx:\t${networkTraceIdx}`;
+      if (viewName) {
+        label += `\nviewName:\t${viewName}`;
+      }
+      this.tracking.register({
+          category: TRACKING_CATEGORIES.sankey,
+          action: TRACKING_ACTIONS.navigateWithin,
+          label,
+          url: href
+      });
+    });
   }
+
+  destroyed$ = new Subject();
 
   delta$ = new ReplaySubject<Partial<SankeyState>>(1);
   _data$ = new ReplaySubject<Graph.File>(1);
 
   state$ = this.delta$.pipe(
-    map(delta => merge(
+    map(delta => _mergeAll([
       {},
       { networkTraceIdx: 0 },
       delta
-    )),
+    ])),
     switchMap(delta =>
       iif(
-        () => !isNil(delta.viewName) && !isNil(delta.networkTraceIdx),
+        () => !_isNil(delta.viewName) && !_isNil(delta.networkTraceIdx),
         this.data$.pipe(
           map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
           map(({views}) => views[delta.viewName]),
           switchMap(view =>
             iif(
-              () => isNil(view),
+              () => _isNil(view),
               defer(() =>
                 this.messageDialog.display({
                   title: 'Trace network view does not exist',
@@ -94,12 +152,12 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
               defer(() => of(getCommonState((view as View).state)))
             )
           ),
-          map(state => merge({}, state, delta))
+          map(state => _mergeAll([{}, state, delta]))
         ),
         of(delta)
       )
     ),
-    map(delta => merge(
+    map(delta => _mergeAll([
       {},
       {
         networkTraceIdx: 0,
@@ -113,23 +171,24 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
         shortestPathPlusN: 0
       },
       delta
-    )),
+    ])),
     switchMap((delta: Partial<SankeyState>) =>
       iif(
-        () => !isNil(delta.networkTraceIdx),
+        () => !_isNil(delta.networkTraceIdx),
         this.data$.pipe(
           map(({graph: {traceNetworks}}) => traceNetworks[delta.networkTraceIdx]),
           map(({sources, targets, defaults}) => ({
             alignId: sources.length > targets.length ? ALIGN_ID.right : ALIGN_ID.left,
-            baseViewName: get(
-              defaults, 'baseViewName',
+            baseViewName: _get(
+              defaults,
+              'baseViewName',
               // Things are not set in stone yet, we might want to bring back this behaviour
               // (https://github.com/SBRG/kg-prototypes/pull/1927)
               // sources.length > 1 && targets.length > 1 ? ViewBase.sankeySingleLane : ViewBase.sankeyMultiLane
               ViewBase.sankeySingleLane
             )
           })),
-          map(state => merge({}, state, delta))
+          map(state => _mergeAll([{}, state, delta]))
         ),
         of(delta)
       )
@@ -158,11 +217,11 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
    * based on currently loaded data and choosen base view
    */
   options$ = this.data$.pipe(
-    map(data => merge(
+    map(data => _mergeAll([
       {},
       this.staticOptions,
       this.extractOptionsFromGraph(data)
-    )),
+    ])),
     debug('options$'),
     shareReplay<SankeyOptions>(1)
   );
@@ -252,19 +311,19 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   pathReports$ = this.data$.pipe(
     map(({nodes, getNodeById, links, graph: {traceNetworks}}) =>
-      transform(
+      _transform(
         traceNetworks,
         (pathReports, traceNetwork) => pathReports[traceNetwork.description] = traceNetwork.traces.map(trace => {
           const traceLinks = trace.edges.map(linkIdx => ({...links[linkIdx]}));
-          const traceNodes = this.getNetworkTraceNodes(traceLinks).map(clone);
+          const traceNodes = this.getNetworkTraceNodes(traceLinks).map(_clone);
           const traceNodesById = this.getNodeById(traceNodes);
 
           const source = traceNodesById.get(trace.source);
           const target = traceNodesById.get(trace.target);
-          if (isNil(source)) {
+          if (_isNil(source)) {
             this.warningController.warn(ErrorMessages.missingNode(trace.source));
           }
-          if (isNil(target)) {
+          if (_isNil(target)) {
             this.warningController.warn(ErrorMessages.missingNode(trace.target));
           }
 
@@ -363,7 +422,11 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   normalizeLinks$ = this.stateAccessor('normalizeLinks');
   fileUpdated$ = new Subject<Graph.File>();
 
-  pickPartialAccessors = obj => pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
+  ngOnDestroy() {
+    this.destroyed$.next();
+  }
+
+  pickPartialAccessors = obj => _pick(obj, ['nodeValueAccessorId', 'linkValueAccessorId']);
 
   getNetworkTraceBestFittingSizing$({effectiveName}) {
     const persumedValueAccessorRegex =
@@ -374,9 +437,9 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
           undefined;
     return this.predefinedValueAccessors$.pipe(
       switchMap(predefinedValueAccessors => {
-        const persumedValueAccessorId = keys(predefinedValueAccessors).find(pva => persumedValueAccessorRegex?.test(pva));
+        const persumedValueAccessorId = _keys(predefinedValueAccessors).find(pva => persumedValueAccessorRegex?.test(pva));
         return iif(
-          () => isNil(persumedValueAccessorId),
+          () => _isNil(persumedValueAccessorId),
           this.oneToMany$.pipe(
             map(oneToMany => oneToMany ? PREDEFINED_VALUE.input_count : PREDEFINED_VALUE.fixed_height)
           ),
@@ -388,8 +451,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   resolveNetworkTraceAndBaseView(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
     return delta$.pipe(
-      map(delta => pick(delta, ['networkTraceIdx', 'baseViewName'])),
-      distinctUntilChanged(isEqual),
+      map(delta => _pick(delta, ['networkTraceIdx', 'baseViewName'])),
+      distinctUntilChanged(_isEqual),
       switchMap(({networkTraceIdx = defaultNetworkTraceIdx, baseViewName}) =>
         iif(
           () => baseViewName,
@@ -411,8 +474,8 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
 
   resolveNodeAlign(delta$: Observable<Partial<SankeyState>>, defaultNetworkTraceIdx = 0) {
     return delta$.pipe(
-      map(delta => pick(delta, ['networkTraceIdx', 'alignId'])),
-      distinctUntilChanged(isEqual),
+      map(delta => _pick(delta, ['networkTraceIdx', 'alignId'])),
+      distinctUntilChanged(_isEqual),
       switchMap(({networkTraceIdx = defaultNetworkTraceIdx, alignId}) =>
         iif(
           () => alignId,
@@ -439,21 +502,21 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
       pairwise(),
       switchMap(([previousDelta, delta]) =>
         iif(
-          () => isNil(delta.viewName),
+          () => _isNil(delta.viewName),
           of({}),
           this.views$.pipe(
             map((views, index) => views[delta.viewName]),
             switchMap(view =>
               iif(
-                () => isNil(view),
+                () => _isNil(view),
                 EMPTY,
                 of(view)
               )
             ),
-            map(view => merge(
+            map(view => _merge(
               getCommonState(view.state),
               // if there was no change of view name allow for the view to be updated
-              (previousDelta.viewName === delta.viewName ? omit(delta, 'baseViewName') : {})
+              (previousDelta.viewName === delta.viewName ? _omit(delta, 'baseViewName') : {})
             ))
           )
         )
@@ -501,9 +564,10 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   getNetworkTraceNodes(
     networkTraceLinks
   ) {
-    return uniq(
-      flatMap(networkTraceLinks, ({source, target}) => [source, target])
-    );
+    return _flow(
+      _flatMap(({source, target}) => [source, target]),
+      _uniq,
+    )(networkTraceLinks);
   }
 
   // region Extract options
@@ -562,7 +626,7 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   private extractPredefinedValueProperties({sizing = {}}: { sizing: Graph.PredefinedSizing }) {
-    return transform(
+    return _transform(
       sizing,
       (predefinedValueAccessors, {node_sizing, link_sizing}, name) => {
         predefinedValueAccessors[name] = {
@@ -580,11 +644,11 @@ export class ControllerService extends StateControlAbstractService<SankeyOptions
   }
 
   private extractshortestPathPlusN({traceNetworks}: { traceNetworks: Array<SankeyTraceNetwork> }) {
-    return chain(traceNetworks)
-      .flatMap(({traces}) => traces)
-      .map(({shortestPathPlusN}) => shortestPathPlusN)
-      .max()
-      .value();
+    return _flow(
+      _flatMap(({traces}) => traces),
+      _map(({shortestPathPlusN}) => shortestPathPlusN),
+      max,
+    )(traceNetworks);
   }
 
   private extractOptionsFromGraph({links, graph, nodes}): SankeyFileOptions {

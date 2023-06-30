@@ -7,19 +7,26 @@
                     <label for="label">
                         Node Label:
                     </label>
-                    <input [(ngModel)]="node.display_name" class="form-control map-editor-initial-focus"
+                    <input [(ngModel)]="node.display_name" class="form-control"
                            (change)="doSave()" id="label" maxlength="2000"
                            #displayName>
                 </div>
 
                 <div class="form-group">
                     <label for="detail">Detail:</label>
-                    <div class="form-control textarea-grow-wrap" [attr.data-replicated-value]="node.data.detail">
-                        <textarea  [(ngModel)]="node.data.detail" cdkTextareaAutosize
-                                   cdkAutosizeMinRows="2"
-                                  (change)="doSave()"
-                                  id="detail"
-                                  maxlength="5000"></textarea>
+                    <div
+                      class="form-control textarea-grow-wrap"
+                      [attr.data-replicated-value]="node.data.detail"
+                      (click)="textArea.focus()"
+                    >
+                        <textarea #textArea
+                          [(ngModel)]="node.data.detail"
+                          cdkTextareaAutosize
+                          cdkAutosizeMinRows="2"
+                          (change)="doSave()"
+                          id="detail"
+                          maxlength="5000"
+                        ></textarea>
                     </div>
                 </div>
 

@@ -40,12 +40,12 @@ export class TreeViewComponent implements OnChanges {
    *      </ng-template>
    *  </app-tree-view>
    */
-  @Input() dataSource;
+  @Input() dataSource: object[];
   @Input() treeNode: TemplateRef<any>;
   @Input() nestedTreeNode: TemplateRef<any>;
   @Input() getChildren: (node: any) => Array<any> | undefined;
   @Input() hasChild: (index: number, node: any) => boolean;
-  treeControl;
+  public treeControl: NestedTreeControl<TreeNode>;
 
   ngOnChanges({getChildren, hasChild}: SimpleChanges) {
     if (getChildren) {

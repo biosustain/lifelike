@@ -10,7 +10,7 @@ import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/
 export const paramsToEnrichmentTableLink = ({project_name, file_id}) => ({
   appLink: [
     '/projects',
-    project_name,
+    encodeURIComponent(project_name),
     'enrichment-table',
     file_id
   ],

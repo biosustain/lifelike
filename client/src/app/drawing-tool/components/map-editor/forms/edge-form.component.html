@@ -3,45 +3,49 @@
     <li ngbNavItem="properties">
       <a ngbNavLink>Properties</a>
       <ng-template ngbNavContent>
-        <div class="module-body">
           <div class="form-group">
             <label for="label">
-              Label:
+              Edge Label:
             </label>
-            <input [(ngModel)]="edge.label" class="form-control map-editor-initial-focus"
+            <input [(ngModel)]="edge.label" class="form-control"
                    (change)="doSave()" id="label" #displayName>
           </div>
 
           <div class="form-group">
             <label for="detail">Detail:</label>
-            <textarea [(ngModel)]="edge.data.detail"
-                      rows="10" class="form-control" (change)="doSave()" id="detail"></textarea>
+            <div
+              class="form-control textarea-grow-wrap"
+              [attr.data-replicated-value]="edge.data.detail"
+              (click)="textArea.focus()"
+            >
+              <textarea #textArea
+                [(ngModel)]="edge.data.detail"
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="2"
+                (change)="doSave()"
+                id="detail"
+                maxlength="5000"
+              ></textarea>
+            </div>
           </div>
 
-          <div class="mt-4">
+          <div class="mb-4">
             <app-links-panel title="Sources" singularTitle="Source" fontAwesomeIcon="far fa-book"
                              [(ngModel)]="edge.data.sources"
                              (ngModelChange)="doSave()"></app-links-panel>
           </div>
 
-          <div class="mt-4">
+          <div class="mb-4">
             <app-links-panel title="Hyperlinks" singularTitle="Hyperlink"
                              [(ngModel)]="edge.data.hyperlinks"
                              (ngModelChange)="doSave()"></app-links-panel>
           </div>
-
-          <div class="mt-4">
-            <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
-              Delete
-            </button>
-          </div>
-        </div>
+          <ng-container [ngTemplateOutlet]="delete"></ng-container>
       </ng-template>
     </li>
     <li ngbNavItem="style">
       <a ngbNavLink>Style</a>
       <ng-template ngbNavContent>
-        <div class="module-body">
           <fieldset class="fieldset-properties">
             <legend>Label Style</legend>
 
@@ -133,10 +137,22 @@
               </select>
             </div>
           </fieldset>
-        </div>
+          <ng-container [ngTemplateOutlet]="delete"></ng-container>
       </ng-template>
     </li>
   </ul>
 
-  <div [ngbNavOutlet]="nav" class="flex-fill overflow-auto"></div>
+  <div class="overflow-auto h-100" #scrollWrapper>
+    <div class="module-body">
+        <div [ngbNavOutlet]="nav"></div>
+    </div>
+  </div>
 </div>
+
+<ng-template #delete>
+  <div class="mb-4">
+      <button (click)="doDelete()" type="button" class="btn btn-danger btn-block">
+          Delete
+      </button>
+  </div>
+</ng-template>

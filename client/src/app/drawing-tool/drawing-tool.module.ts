@@ -22,6 +22,7 @@ import { MapImageProviderService } from './services/map-image-provider.service';
 import { ImageEntityDataProvider } from './providers/image-entity-data.provider';
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
+import { GraphViewDirective } from './directives/graph-view.directive';
 
 
 @NgModule({
@@ -37,6 +38,7 @@ import { ImageUploadDataProvider } from './providers/image-upload-data.provider'
     InfoViewPanelComponent,
     LinkEditDialogComponent,
     GroupFormComponent,
+    GraphViewDirective
   ],
   entryComponents: [
     ConfirmDialogComponent,

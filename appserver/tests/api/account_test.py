@@ -110,8 +110,8 @@ def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
 
     assert response.status_code == 200
     result = response.get_json()
-    # Add 1 to include the current user
-    assert int(result['total']) == len(mock_users) + 1
+    # Add 2 to include the current user AND the assumed to be present ***ARANGO_DB_NAME*** superuser
+    assert int(result['total']) == len(mock_users) + 2
 
 
 def test_admin_can_get_any_user(client, mock_users, fix_admin_user):

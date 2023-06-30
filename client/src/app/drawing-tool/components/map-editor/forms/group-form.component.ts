@@ -16,8 +16,6 @@ import { EntityForm } from './entity-form';
   templateUrl: './group-form.component.html'
 })
 export class GroupFormComponent extends EntityForm  {
-
-
   originalGroup: UniversalGraphGroup;
   updatedGroup: UniversalGraphGroup;
 
@@ -48,6 +46,11 @@ export class GroupFormComponent extends EntityForm  {
     this.updatedGroup.data.sources = this.updatedGroup.data.sources || [];
     this.updatedGroup.data.hyperlinks = this.updatedGroup.data.hyperlinks || [];
     this.updatedGroup.style = this.updatedGroup.style || {};
+
+    // Anytime the view is changed (i.e. when a new group is selected) re-focus the label field.
+    if (this.viewInited) {
+      this.focus();
+    }
   }
 
   doSave() {
@@ -104,7 +107,4 @@ export class GroupFormComponent extends EntityForm  {
   }
 
   // TODO: Search related stuff?
-
-
-
 }

@@ -64,7 +64,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
     this.loadTask = new BackgroundTask(([hashId]) =>
         combineLatest(
-          this.filesystemService.get(hashId),
+          this.filesystemService.open(hashId),
           this.filesystemService.getContent(hashId).pipe(
             mapBlobToBuffer(),
             mapBufferToJsons<Document>(),
@@ -465,7 +465,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
 
 
   openFileNavigatorPane() {
-    const url = `/file-navigator/${this.object.project.name}/${this.object.hashId}`;
+    const url = `/file-navigator/${encodeURIComponent(this.object.project.name)}/${this.object.hashId}`;
     this.workSpaceManager.navigateByUrl({url, extras: { sideBySide: true, newTab: true }});
   }
 

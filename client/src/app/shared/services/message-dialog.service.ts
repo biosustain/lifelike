@@ -20,16 +20,11 @@ export class MessageDialog {
   ) {
   }
 
-  display(args: MessageArguments) {
+  display({type, ...error}: MessageArguments) {
     const modalRef = this.modalService.open(MessageDialogComponent, {
-      size: args.stacktrace ? 'lg' : 'md',
+      size: error.stacktrace ? 'lg' : 'md',
     });
-    modalRef.componentInstance.title = args.title;
-    modalRef.componentInstance.message = args.message;
-    modalRef.componentInstance.additionalMsgs = args.additionalMsgs;
-    modalRef.componentInstance.stacktrace = args.stacktrace;
-    modalRef.componentInstance.type = args.type;
-    modalRef.componentInstance.transactionId = args.transactionId;
+    Object.assign(modalRef.componentInstance, {type, error});
     return modalRef.result;
   }
 }

@@ -14,6 +14,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import table, column
 from sqlalchemy.sql.expression import not_
 
+# flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.database import db
 
 # revision identifiers, used by Alembic.

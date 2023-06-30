@@ -1,22 +1,20 @@
 <form (ngSubmit)="close()">
   <app-modal-header (cancel)="dismiss()">
-    {{ title }}
+    {{ error.title }}
   </app-modal-header>
 
   <app-modal-body>
     <div>
-      {{message}}
+      {{error.message}}
     </div>
     <br>
 
-    <div *ngFor="let msg of additionalMsgs">
+    <div *ngFor="let msg of error.additionalMsgs">
       <p>{{msg}}</p>
     </div>
 
-    <div *ngIf="stacktrace" class="detail">
-      <div class="detail-title">Technical Details</div>
-      <pre>{{stacktrace}}</pre>
-    </div>
+    <app-error-details [error]="error">
+    </app-error-details>
   </app-modal-body>
 
   <app-modal-footer>

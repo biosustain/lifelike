@@ -478,7 +478,7 @@ export class SankeyFile {
   private readonly filesystemService: FilesystemService;
 
   metaLoadTask = new BackgroundTask<string, FilesystemObject>(
-    hash => this.filesystemService.get(hash)
+    hash => this.filesystemService.open(hash)
   );
 
   contentLoadTask = new BackgroundTask<string, Graph.File>(

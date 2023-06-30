@@ -44,6 +44,15 @@ class Base():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
 
+    RQ_REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
+        host=os.getenv('REDIS_HOST', 'localhost'),
+        port=os.getenv('REDIS_PORT', '6379'),
+        password=os.getenv('REDIS_PASSWORD', ''),
+        db=os.getenv('REDIS_DB', '1')
+    )
+
+    FORWARD_STACKTRACE = False
+
     # Uncomment to run jobs synchronously in-process (default is True)
     # ReF: https://flask-rq2.readthedocs.io/en/latest/#rq-async
     # RQ_ASYNC = False
@@ -53,10 +62,12 @@ class Base():
 
 class Development(Base):
     """Development configurations"""
+    DOMAIN = 'http://localhost'
 
     ASSETS_DEBUG = True
     WTF_CSRF_ENABLED = False
-    DOMAIN = 'http://localhost'
+
+    FORWARD_STACKTRACE = True
 
 
 class QA(Base):
@@ -64,22 +75,31 @@ class QA(Base):
     SITE_NAME = 'Lifelike Knowledge Search (QA)'
     DOMAIN = 'https://qa.***ARANGO_DB_NAME***.bio'
 
+    FORWARD_STACKTRACE = True
+
 
 class Staging(Base):
     """Staging configurations"""
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
     DOMAIN = 'https://test.***ARANGO_DB_NAME***.bio'
 
+    FORWARD_STACKTRACE = True
+
 
 class Testing(Base):
     """Functional test configuration"""
     TESTING = True
     WTF_CSRF_ENABLED = False
+
     RQ_CONNECTION_CLASS = 'fakeredis.FakeStrictRedis'
+
     ARANGO_HOST = os.getenv('ARANGO_HOST', 'http://localhost:8529')
     ARANGO_DB_NAME = 'test_arango'
+
+    FORWARD_STACKTRACE = True
 
 
 class Production(Base):
     """ Production configuration """
     DOMAIN = 'https://kg.***ARANGO_DB_NAME***.bio'
+    FORWARD_STACKTRACE = False
