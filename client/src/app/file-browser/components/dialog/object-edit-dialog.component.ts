@@ -3,9 +3,9 @@ import {
   AbstractControl,
   FormControl,
   FormGroup,
+  FormArray,
   ValidationErrors,
   Validators,
-  FormArray
 } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -28,6 +28,7 @@ import { ObjectSelectionDialogComponent } from './object-selection-dialog.compon
 interface CreateObjectRequest
   extends Omit<ObjectCreateRequest, 'parentHashId' | 'fallbackOrganism'> {
   parent?: FilesystemObject;
+  contexts?: string[];
   fallbackOrganism?: OrganismAutocomplete;
 }
 
@@ -229,6 +230,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (_has('mimeType', value)) {
       patch.mimeType = value.mimeType;
     }
+    if (_has('contexts', value)) {
+      patch.contexts = value.contexts;
+    }
+
     // Add annotation-relevant parameters only when needed
     if (this.possiblyAnnotatable) {
       if (_has('fallbackOrganism', value)) {

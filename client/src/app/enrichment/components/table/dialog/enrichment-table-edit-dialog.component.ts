@@ -130,9 +130,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     if (_has('fileId')(objectChanges) || _has('fileId')(this)) {
       documentChanges.fileId = objectChanges.fileId || this.fileId;
     }
-    if (_has('contexts')(objectChanges)) {
-      documentChanges.contexts = objectChanges.contexts;
-    }
 
     return {
       ...parentValue,
@@ -169,6 +166,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   removeControl(controlList: FormArray, control: AbstractControl) {
     const index = controlList.controls.indexOf(control);
+    controlList.markAsDirty()
     return index >= 0 && controlList.removeAt(index);
   }
 
