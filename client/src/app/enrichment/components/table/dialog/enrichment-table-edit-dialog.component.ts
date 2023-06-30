@@ -166,7 +166,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   removeControl(controlList: FormArray, control: AbstractControl) {
     const index = controlList.controls.indexOf(control);
-    controlList.markAsDirty()
+    controlList.markAsDirty();
     return index >= 0 && controlList.removeAt(index);
   }
 
