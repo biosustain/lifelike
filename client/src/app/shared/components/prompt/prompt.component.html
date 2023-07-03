@@ -32,33 +32,31 @@
       <i class="fas fa-cog fa-fw"></i>
     </button>
     <div ngbDropdownMenu class="p-4">
-      <label [for]="temperature.uid">
-        Temperature:
-      </label>
-        <div class="d-flex" appUid #temperature="uid" [style.gap.rem]="0.75">
-          <input
-            class="flex-grow-1 form-control"
-            ngbButton
-            type="range"
-            min="0"
-            max="1"
-            step="any"
-            [ngModel]="tempertaure$ | async"
-            (ngModelChange)="tempertaure$.next($event)"
-            [style.width.px]="128"
-          />
-          <input
-            class="flex-grow-0 flex-shrink-0 form-control"
-            ngbButton
-            type="number"
-            min="0"
-            max="1"
-            step="any"
-            [ngModel]="tempertaure$ | async | number: '1.2-2'"
-            (ngModelChange)="tempertaure$.next($event)"
-            [style.width.px]="64"
-          />
-        </div>
+      <label [for]="temperature.uid"> Temperature: </label>
+      <div class="d-flex" appUid #temperature="uid" [style.gap.rem]="0.75">
+        <input
+          class="flex-grow-1 form-control"
+          ngbButton
+          type="range"
+          min="0"
+          max="1"
+          step="any"
+          [ngModel]="tempertaure$ | async"
+          (ngModelChange)="tempertaure$.next($event)"
+          [style.width.px]="128"
+        />
+        <input
+          class="flex-grow-0 flex-shrink-0 form-control"
+          ngbButton
+          type="number"
+          min="0"
+          max="1"
+          step="any"
+          [ngModel]="tempertaure$ | async | number : '1.2-2'"
+          (ngModelChange)="tempertaure$.next($event)"
+          [style.width.px]="64"
+        />
+      </div>
     </div>
   </div>
   <button class="d-inline-block btn btn-sm flex-grow-0" (click)="openPlayground()">
