@@ -14,14 +14,14 @@ bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 @use_args(ContextRelationshipRequestSchema)
 def relationship(params):
     entities = params.get('entities', [])
-    _in = params.get('_in')
+    context = params.get('context')
     options = params.get('options', {})
     response = ChatGPT.Completion.create(
         model="text-davinci-003",
         prompt=(
             'What is the relationship between '
             + ', '.join(entities)
-            + (f' in {_in}' if _in else '')
+            + (f' in {context}' if context else '')
             + '?'
             # + '\nPlease provide URL sources for your answer.'
         ),

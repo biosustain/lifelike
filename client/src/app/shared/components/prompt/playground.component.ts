@@ -9,18 +9,17 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { isInteger } from 'lodash-es';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   difference as _difference,
   first as _first,
-  isEmpty,
+  isEmpty as _isEmpty,
+  isInteger as _isInteger,
   keys as _keys,
   mapValues as _mapValues,
+  omit as _omit,
 } from 'lodash/fp';
-
 import { defer, Observable, of, Subject } from 'rxjs';
 import {
   catchError,
@@ -30,10 +29,13 @@ import {
   startWith,
   switchMap,
   takeUntil,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
-import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
 
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+
+import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
 import { ExplainService } from '../../services/explain.service';
 
 class FormArrayWithFactory<T = any> extends FormArray {
@@ -119,7 +121,7 @@ class FormGroupWithFactory<V = any> extends FormGroup {
 // tslint:disable-next-line:variable-name
 const CustomValidators = {
   isInteger: (control: AbstractControl) =>
-    isInteger(control.value) ? null : { notInteger: control.value },
+    _isInteger(control.value) ? null : { notInteger: control.value },
   isBoolean: (control: AbstractControl) =>
     typeof control.value === 'boolean' ? null : { notBoolean: control.value },
   oneOf: (options: readonly any[]) => (control: AbstractControl) =>
@@ -154,19 +156,19 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
       CustomValidators.oneOf(this.modelOptions),
     ]),
     prompt: new FormControl('', [Validators.required]),
-    max_tokens: new FormControl(200),
+    maxTokens: new FormControl(200),
     temperature: new FormControl(0, [Validators.min(0), Validators.max(2)]),
-    top_p: new FormControl(1),
+    topP: new FormControl(1),
     n: new FormControl(1, [CustomValidators.isInteger]),
     stream: new FormControl(false, [CustomValidators.isBoolean]),
-    logprobs: new FormControl(null, [Validators.max(5), CustomValidators.isInteger]),
+    logprobs: new FormControl(0, [Validators.max(5), CustomValidators.isInteger]),
     echo: new FormControl(false, [CustomValidators.isBoolean]),
     stop: new FormArrayWithFactory(() => new FormControl(null, [Validators.required]), null, [
       Validators.maxLength(4),
     ]),
-    presence_penalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
-    frequency_penalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
-    best_of: new FormControl(1, [
+    presencePenalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
+    frequencyPenalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
+    bestOf: new FormControl(1, [
       ({ value }: FormControl) => {
         const n = this.form?.controls.n?.value;
         if (!n) {
@@ -176,7 +178,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
       },
       CustomValidators.isInteger,
     ]),
-    logit_bias: new FormGroupWithFactory(
+    logitBias: new FormGroupWithFactory(
       () => new FormControl(0, [Validators.min(-100), Validators.max(100)]),
       {}
     ),
@@ -196,21 +198,18 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
 
   requestParams$ = this.submitRequest$.pipe(
     map(() => this.form.value),
-    map(({ stop, ...rest }) => ({
-      ...rest,
-      stop: isEmpty(stop) ? null : stop,
-    })),
+    map((params) =>
+      _omit([
+        _isEmpty(params.stop) ? 'stop' : null,
+        _isEmpty(params.logitBias) ? 'logitBias' : null,
+        params.n === 1 ? 'n' : null,
+      ])(params)
+    ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
   result$ = this.requestParams$.pipe(
-    map(() => this.form.value),
-    switchMap(({ stop, ...rest }) =>
-      this.explainService.playground({
-        ...rest,
-        stop: isEmpty(stop) ? null : stop,
-      })
-    ),
+    switchMap((params) => this.explainService.playground(params)),
     catchError((error) => of(error)),
     takeUntil(this.destroy$)
   );
@@ -226,13 +225,13 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
-      map(({ model, prompt, echo, best_of, n, max_tokens }) => {
+      map(({ model, prompt, echo, bestOf, n, maxTokens }) => {
         // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
         const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
         const modelCost = this.modelTokenCostMap.get(model);
         return [
-          (promptTokens + promptTokens * best_of + echo * promptTokens) * modelCost,
-          (promptTokens + max_tokens * best_of + echo * promptTokens) * modelCost,
+          (promptTokens + promptTokens * bestOf + echo * promptTokens) * modelCost,
+          (promptTokens + maxTokens * bestOf + echo * promptTokens) * modelCost,
         ];
       })
     )
@@ -281,9 +280,12 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     this.destroy$.complete();
   }
 
-  parseEntitiesToPropmpt(entities: string[], _in: string) {
+  parseEntitiesToPropmpt(entities: string[], context: string) {
     return (
-      'What is the relationship between ' + entities.join(', ') + (_in ? ` in ${_in}` : '') + '?'
+      'What is the relationship between ' +
+      entities.join(', ') +
+      (context ? ` in ${context}` : '') +
+      '?'
       // + '\nPlease provide URL sources for your answer.'
     );
   }

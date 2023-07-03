@@ -22,9 +22,7 @@ class ContextPlaygroundRequestSchema(CamelCaseSchema):
     )
     echo = fields.Boolean()
     stop = fields.List(
-        fields.String(required=True),
-        validate=marshmallow.validate.Length(min=0, max=4),
-        allow_none=True,
+        fields.String(required=True), validate=marshmallow.validate.Length(min=0, max=4)
     )
     presence_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))
     frequency_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))

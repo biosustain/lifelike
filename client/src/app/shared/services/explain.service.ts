@@ -24,7 +24,7 @@ export class ExplainService {
     return this.http
       .post<SingleResult<string>>(this.endpoint + 'relationship', {
         entities: Array.from(entities),
-        in: context,
+        context,
         options,
       })
       .pipe(map(({ result }) => result));

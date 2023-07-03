@@ -105,7 +105,7 @@
             <input
               class="form-control"
               type="number"
-              formControlName="max_tokens"
+              formControlName="maxTokens"
               appUid
               #input="uid"
             />
@@ -124,7 +124,7 @@
           </div>
           <div class="form-group col-auto">
             <label [for]="input.uid"> Top P </label>
-            <input class="form-control" type="number" formControlName="top_p" appUid #input="uid" />
+            <input class="form-control" type="number" formControlName="topP" appUid #input="uid" />
           </div>
         </div>
         <div class="form-row">
@@ -137,7 +137,7 @@
             <input
               class="form-control"
               type="number"
-              formControlName="best_of"
+              formControlName="bestOf"
               appUid
               #input="uid"
             />
@@ -209,7 +209,7 @@
             <input
               class="form-control"
               type="number"
-              formControlName="presence_penalty"
+              formControlName="presencePenalty"
               appUid
               #input="uid"
             />
@@ -219,7 +219,7 @@
             <input
               class="form-control"
               type="number"
-              formControlName="frequency_penalty"
+              formControlName="frequencyPenalty"
               appUid
               #input="uid"
             />
@@ -227,7 +227,7 @@
         </div>
         <div
           class="form-group"
-          *ngIf="form.controls.logit_bias as logitBiasControl"
+          *ngIf="form.controls.logitBias as logitBiasControl"
           [formGroup]="logitBiasControl"
         >
           <label>Logit Bias</label>
@@ -277,19 +277,6 @@
     </as-split-area>
     <as-split-area class="d-flex h-100 flex-column">
       <h6 class="mb-4"><strong>Output</strong></h6>
-      <label [for]="raw.uid">Raw response</label>
-      <samp
-        appUid
-        #raw="uid"
-        class="card bg-light overflow-auto flex-grow-1 mb-2"
-        [style.whiteSpace]="'pre-wrap'"
-      >
-        {{ resultJSON$ | async }}
-      </samp>
-      <div class="mb-2">
-        Estimated cost {{ requestCost$ | async | currency : 'USD' : 'symbol' : '1.2-7' }}
-        <ng-container *ngIf="cached$ | async">(cached)</ng-container>
-      </div>
       <label [for]="text.uid">Text response</label>
       <samp
         appUid
@@ -298,6 +285,19 @@
         [style.whiteSpace]="'pre-wrap'"
       >
         {{ resultText$ | async }}
+      </samp>
+      <div class="mb-2">
+        Estimated cost {{ requestCost$ | async | currency : 'USD' : 'symbol' : '1.2-7' }}
+        <ng-container *ngIf="cached$ | async">(cached)</ng-container>
+      </div>
+      <label [for]="raw.uid">Raw response</label>
+      <samp
+        appUid
+        #raw="uid"
+        class="card bg-light overflow-auto flex-grow-1 mb-2"
+        [style.whiteSpace]="'pre-wrap'"
+      >
+        {{ resultJSON$ | async }}
       </samp>
     </as-split-area>
   </as-split>
