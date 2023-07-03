@@ -73,13 +73,13 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     protected readonly enrichmentService: EnrichmentService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
-    private readonly findControllerService: FindControllerService
+    private readonly findControllerService: FindControllerService,
   ) {
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
     this.findControllerService.type$.next(this.annotation.id.length ? 'annotation' : 'text');
     this.findControllerService.query$.next(
-      this.annotation.id.length ? this.annotation.id : this.annotation.text
+      this.annotation.id.length ? this.annotation.id : this.annotation.text,
     );
   }
 
@@ -97,13 +97,13 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   fileId$: Observable<string> = merge(
     this.fileIdChange$,
     this.route.params.pipe(
-      map(({ file_id }) => file_id),
-      filter((fileId) => !!fileId)
-    )
+      map(({file_id}) => file_id),
+      filter((fileId) => !!fileId),
+    ),
   );
   object$: Observable<FilesystemObject> = this.fileId$.pipe(
     switchMap((fileId) => this.enrichmentService.get(fileId)),
-    shareReplay()
+    shareReplay(),
   );
   document$: Observable<EnrichmentDocument> = this.fileId$.pipe(
     switchMap((fileId) =>
@@ -120,18 +120,18 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         )
       )
     ),
-    shareReplay()
+    shareReplay(),
   );
   table$: Observable<EnrichmentTable> = this.document$.pipe(
     mergeScan((table, document) => table.load(document), new EnrichmentTable()),
-    this.errorHandler.create({ label: 'Load enrichment table' }),
-    shareReplay()
+    this.errorHandler.create({label: 'Load enrichment table'}),
+    shareReplay(),
   );
   modulePropertiesChange = this.object$.pipe(
     map((object) => ({
       title: object ? object.filename : 'Enrichment Table',
       fontAwesomeIcon: 'table',
-    }))
+    })),
   );
   findController$: Observable<AsyncElementFind> = this.findControllerService.elementFind$;
 
@@ -167,14 +167,14 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         new EnrichmentDocument(this.worksheetViewerService)
       ),
       tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
-      shareReplay()
+        shareReplay(),
     );
     this.table$ = this.document$.pipe(
       mergeMap((document) => {
         return new EnrichmentTable().load(document);
       }),
-      this.errorHandler.create({ label: 'Restore enrichment table' }),
-      shareReplay()
+      this.errorHandler.create({label: 'Restore enrichment table'}),
+      shareReplay(),
     );
   }
 
@@ -185,12 +185,12 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         document.refreshData().pipe(
           mergeMap(() => new EnrichmentTable().load(document)),
           tap((newTable) => {
-            this.snackBar.open(`Data refreshed.`, 'Close', { duration: 5000 });
-          })
-        )
+            this.snackBar.open(`Data refreshed.`, 'Close', {duration: 5000});
+          }),
+        ),
       ),
       shareReplay(),
-      this.errorHandler.create({ label: 'Load enrichment table' })
+      this.errorHandler.create({label: 'Load enrichment table'}),
     );
   }
 
@@ -201,7 +201,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         new BehaviorSubject<Progress>(
           new Progress({
             status: 'Saving enrichment table...',
-          })
+          }),
         ),
       ],
     });
@@ -213,27 +213,27 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         // not the matched results
         // so a new version of the file will not get created
         // the newly added gene matched
-        mergeMap((document) => document.updateParameters())
-      )
+        mergeMap((document) => document.updateParameters()),
+      ),
     ).pipe(
       take(1),
       mergeMap(([object, blob]) =>
         this.enrichmentService.save([object.hashId], {
           contentValue: blob,
           ...this.queuedChanges$.value,
-        })
+        }),
       ),
       map(() => {
         this.refreshData();
       }),
       tap(() => this.queuedChanges$.next(null)),
-      this.errorHandler.create({ label: 'Save enrichment table' }),
+      this.errorHandler.create({label: 'Save enrichment table'}),
       shareReplay(),
-      finalize(() => progressDialogRef.close())
+      finalize(() => progressDialogRef.close()),
     );
 
     observable.subscribe(() => {
-      this.snackBar.open(`Enrichment table saved.`, 'Close', { duration: 5000 });
+      this.snackBar.open(`Enrichment table saved.`, 'Close', {duration: 5000});
     });
 
     return observable;
@@ -258,12 +258,13 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
             this.table$ = new EnrichmentTable()
               .load(document)
               .pipe(
-                this.errorHandler.create({ label: 'Re-order enrichment table' }),
-                shareReplay()
+                this.errorHandler.create({label: 'Re-order enrichment table'}),
+                shareReplay(),
               );
           }
         },
-        () => {}
+        () => {
+        },
       );
     });
   }
@@ -273,7 +274,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
    */
   openEnrichmentTableEditDialog(
     object: FilesystemObject,
-    document: EnrichmentDocument
+    document: EnrichmentDocument,
   ): Promise<void> {
     const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
     dialogRef.componentInstance.promptObject = false;
@@ -296,12 +297,12 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   }
 
   switchToTextFind() {
-    this.annotation = { id: '', text: '', color: '' };
+    this.annotation = {id: '', text: '', color: ''};
     this.findControllerService.type$.next('text');
   }
 
   switchToAnnotationFind(id: string, text: string, color: string) {
-    this.annotation = { id, text, color };
+    this.annotation = {id, text, color};
     this.findControllerService.type$.next('annotation');
   }
 
