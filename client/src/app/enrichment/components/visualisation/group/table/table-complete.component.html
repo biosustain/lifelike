@@ -65,8 +65,7 @@
           <ngb-highlight
             [result]="row.goTerm"
             [term]="service.searchTerm"
-            [ngbPopover]="tooltipContent"
-            (contextmenu)="selectGoTerm(row.goTerm); $event.preventDefault()"
+            (click)="selectGoTerm(row.goTerm); $event.preventDefault()"
             autoClose="outside"
             container="body"
             placement="top bottom right left"
@@ -76,9 +75,8 @@
           <span [className]="'gene-list'">
             <ng-container *ngFor="let gene of row['geneNames']; let last = last">
               <ngb-highlight
-                [appSELink]="gene"
                 [result]="gene"
-                (contextmenu)="selectGoTermAndGeneName(row.goTerm, gene); $event.preventDefault()"
+                (click)="selectGoTermAndGeneName(row.goTerm, gene); $event.preventDefault()"
                 [term]="service.searchTerm"
               ></ngb-highlight>
               <ng-container *ngIf="!last">, </ng-container>
