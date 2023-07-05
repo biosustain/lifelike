@@ -48,7 +48,7 @@ export class FindControllerService implements OnDestroy {
             });
             return { handle: runRef.handle };
           },
-          { handle: null },
+          { handle: null }
         )
       )
       .subscribe();
@@ -91,7 +91,7 @@ export class FindControllerService implements OnDestroy {
     this.destroy$.next();
   }
 
-  private* generateAnnotationFindQueue(***ARANGO_USERNAME***: Node, query: string) {
+  private *generateAnnotationFindQueue(***ARANGO_USERNAME***: Node, query: string) {
     const annotations = Array.from(
       (***ARANGO_USERNAME*** as Element).querySelectorAll('[data-annotation-meta]')
     ) as HTMLElement[];
@@ -110,7 +110,7 @@ export class FindControllerService implements OnDestroy {
     }
   }
 
-  private* generateTextFindQueue(
+  private *generateTextFindQueue(
     ***ARANGO_USERNAME***: Node,
     query: string
   ): IterableIterator<NodeTextRange | undefined> {
