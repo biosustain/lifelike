@@ -77,10 +77,9 @@
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate"
-                          appHasPlaceholder>
+                    <div class="mt-2 text-truncate" appHasPlaceholder>
                       <i
-                      >Created by
+                        >Created by
                         <app-user [user]="result.item.user"></app-user>
                         on
                         {{ result.item.creationDate | date : 'fullDate' }}</i
@@ -102,7 +101,7 @@
                       </div>
                       <div class="d-flex align-items-center justify-content-end">
                         <a *ngIf="result.item.doi" [href]="result.item.doi" target="_blank"
-                        >DOI Link</a
+                          >DOI Link</a
                         >
                       </div>
                     </ng-container>
