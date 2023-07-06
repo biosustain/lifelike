@@ -21,7 +21,7 @@ def relationship(params):
         prompt=(
             'What is the relationship between '
             + ', '.join(entities)
-            + (f' in {context}' if context else '')
+            + (f', {context}' if context else '')
             + '?'
             # + '\nPlease provide URL sources for your answer.'
         ),

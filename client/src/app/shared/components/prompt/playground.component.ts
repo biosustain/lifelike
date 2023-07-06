@@ -284,7 +284,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     return (
       'What is the relationship between ' +
       entities.join(', ') +
-      (context ? ` in ${context}` : '') +
+      (context ? `, ${context}` : '') +
       '?'
       // + '\nPlease provide URL sources for your answer.'
     );

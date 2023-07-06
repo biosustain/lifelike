@@ -21,12 +21,12 @@ import {
 
 export const getTermsFromNode = (node: UniversalGraphNode): string | null => node?.display_name;
 
-export function getTermsFromEdge(this: GraphView<any>, edge: UniversalGraphEdge): string {
+export function getTermsFromEdge(this: GraphView<any>, edge: UniversalGraphEdge): string[] {
   return _compact([
     getTermsFromNode(this.getNodelikeByHash(edge.from)),
     // edge.label,
     getTermsFromNode(this.getNodelikeByHash(edge.to)),
-  ]).join(' ');
+  ]);
 }
 
 export const getTermsFromGroup = (

@@ -55,15 +55,14 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
     map(_pick(['edge', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     map(
-      () =>
-        new Set<string>([
+      () => new Set<string>(
           getTermsFromEdge.call(
             // We might run into situation when only one of them is beeing changed
             // therefore it is safe to address them this way
             this.graphView,
             this.edge
           ),
-        ])
+        )
     )
   );
 
