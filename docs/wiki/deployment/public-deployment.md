@@ -2,7 +2,7 @@
 
 ## Glossary
 
-- [introduction](#introduction)
+- [Introduction](#introduction)
 - [How the Azure Kubernetes Cluster Fits in to the Deployment](#how-the-azure-kubernetes-cluster-fits-in-to-the-deployment)
 - [Create the New Compute Engine VM](#create-the-new-compute-engine-vm)
   - [Disable OS Login](#disable-os-login)
@@ -256,7 +256,7 @@ The VM is now ready to send requests to the SQL server!
 
 We use [Traefik](https://traefik.io/traefik/) as the proxy service for our Google Cloud deployments. Updating the Traefik deployment to include a newly deployed service is relatively straightforward, however it does require logging into the VM and manually updating some configurations. At the time of writing the VM is called "traefik-proxy".
 
-You will need to login to the Traefik VM either as the "ansible" user. If you don't have the ssh keys needed to log in, you can find them in the "kg-secrets" storage bucket. The private key (the one you need to SSH into the VM) is called "ansible-traefik". Once you have downloaded the key, you can log in to the VM using the following command:
+You will need to login to the Traefik VM either as the "ansible" user or as root. If you don't have the ssh keys needed to log in, you can find them in the "kg-secrets" storage bucket. The private key (the one you need to SSH into the VM) is called "ansible-traefik". Once you have downloaded the key, you can log in to the VM using the following command:
 
 ```bash
 ssh -i /path/to/private/key/ansible-traefik ansible@<traefik-proxy-IP>
