@@ -1,5 +1,25 @@
 # How to Deploy Lifelike Public
 
+## Glossary
+
+- [introduction](#introduction)
+- [How the Azure Kubernetes Cluster Fits in to the Deployment](#how-the-azure-kubernetes-cluster-fits-in-to-the-deployment)
+- [Create the New Compute Engine VM](#create-the-new-compute-engine-vm)
+  - [Disable OS Login](#disable-os-login)
+- [Update Keycloak to Connect to the New Installation](#update-keycloak-to-connect-to-the-new-installation)
+  - [Export the Configurations for the Existing Public Realm](#export-the-configurations-for-the-existing-public-realm)
+  - [Import the Exported Keycloak Public Config to a New Realm](#import-the-exported-keycloak-public-config-to-a-new-realm)
+  - [Update Signing Keys for New Realm](#update-signing-keys-for-new-realm)
+- [Add a Ansible Vault File for the New Environment](#add-a-ansible-vault-file-for-the-new-environment)
+- [Ensure the Postgres DB Allows Incoming Connections from the VM](#ensure-the-postgres-db-allows-incoming-connections-from-the-vm)
+  - [Whitelisting on Google](#whitelisting-on-google)
+  - [Whitelisting on Azure](#whitelisting-on-azure)
+- [Update the Traefik Services File to Include the New Environment](#update-the-traefik-services-file-to-include-the-new-environment)
+  - [What if Logging in Via SSH Fails?](#what-if-logging-in-via-ssh-fails)
+- [Add a Github Action Workflow for the New Environment](#add-a-github-action-workflow-for-the-new-environment)
+- [Push the Updated Files to the kg-prototypes and lifelike-infra Repos](#push-the-updated-files-to-the-kg-prototypes-and-lifelike-infra-repos)
+- [Run the Github Action](#run-the-github-action)
+
 ## Why Does This Guide Exist?
 
 We recently discovered that a deployment of the public lifelike installation was completely offline. At the time of writing, it is still unknown what caused the installation to go offline, and it is not clear how it was originally deployed. We *were* able to restore our [Keycloak](https://www.keycloak.org/) installation, but the main Lifelike application remains inaccessible.
@@ -10,7 +30,7 @@ There are also a handful of idiosyncrasies related to deploying on Google Cloud 
 
 ## Introduction
 
-As mentioned in the previous section, this guide describes how to deploy a brand new installation of the public version of Lifelike on Google Cloud. Note that while the guide assumes a deployment of the public version, it can be extended to any version of Lifelike as well. This guide primarily serves to document how to setup a new environment on Google Cloud, and is not necessarily specific to the public Lifelike version.
+As mentioned in the previous section, this guide describes how to deploy a brand new installation of the public version of Lifelike on Google Cloud. Note that while the guide assumes a deployment of the public version, it can be extended to any version of Lifelike as well.
 
 ## How the Azure Kubernetes Cluster Fits in to the Deployment
 
