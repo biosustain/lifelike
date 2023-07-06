@@ -131,10 +131,12 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       documentChanges.fileId = objectChanges.fileId || this.fileId;
     }
 
+    // Finally, update the document with new params
+    this.document.setParameters(documentChanges);
+
     return {
       ...parentValue,
-      documentChanges,
-      document: this.document,
+      document: this.document
     };
   }
 
@@ -177,5 +179,4 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
 export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
-  documentChanges: Partial<EnrichmentDocument>;
 }
