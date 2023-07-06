@@ -6,6 +6,7 @@ import { compact as _compact, isNil as _isNil, has as _has, omit as _omit } from
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
+  FilesystemObjectEditFormValue,
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from 'app/file-browser/components/dialog/object-edit-dialog.component';
@@ -13,6 +14,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
+import { OrganismAutocomplete } from 'app/interfaces';
 
 import { environment } from '../../../../../environments/environment';
 
@@ -20,7 +22,9 @@ import { environment } from '../../../../../environments/environment';
   selector: 'app-enrichment-table-edit-dialog',
   templateUrl: './enrichment-table-edit-dialog.component.html',
 })
-export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponent {
+export class EnrichmentTableEditDialogComponent<
+  V extends EnrichmentTableEditDialogResults = EnrichmentTableEditDialogResults
+> extends ObjectEditDialogComponent<EnrichmentTableEditDialogValue> {
   private _document: EnrichmentDocument;
 
   @Input() title = 'Edit Enrichment Parameters';
@@ -88,24 +92,23 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     this.setDomains();
   }
 
-  applyValue(value: ObjectEditDialogValue) {}
+  // @ts-ignore
+  applyValue(value: V) {
+    console.log(value);
+    //   TODO
+  }
 
   private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
   }
 
-  getValue(): EnrichmentTableEditDialogValue {
-    const parentValue: ObjectEditDialogValue = super.getValue();
-    const objectChanges = parentValue.objectChanges as {
-      entitiesList: string;
-      domainsList: any;
-      fileId: any;
-      fallbackOrganism: any;
-    };
-    const documentChanges = {} as Partial<EnrichmentDocument>;
-    if (_has('entitiesList')(objectChanges)) {
-      const geneRows = (objectChanges.entitiesList as string).split(/[\/\n\r]/g);
+  getValue(): EnrichmentTableEditDialogResults {
+    const parentValue = super.getValue();
+    const { changes } = parentValue;
+    const documentChanges = {} as V['documentChanges'];
+    if (_has('entitiesList')(changes)) {
+      const geneRows = changes.entitiesList.split(/[\/\n\r]/g);
       documentChanges.values = new Map<string, string>();
       const expectedRowLen = 2;
 
@@ -118,16 +121,16 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         return cols[0];
       });
     }
-    if (_has('fallbackOrganism')(objectChanges)) {
-      const { fallbackOrganism } = objectChanges;
+    if (_has('fallbackOrganism')(changes)) {
+      const { fallbackOrganism } = changes;
       documentChanges.organism = fallbackOrganism.organism_name;
       documentChanges.taxID = fallbackOrganism.tax_id;
     }
-    if (_has('domainsList')(objectChanges)) {
-      documentChanges.domains = objectChanges.domainsList;
+    if (_has('domainsList')(changes)) {
+      documentChanges.domains = changes.domainsList;
     }
-    if (_has('fileId')(objectChanges) || _has('fileId')(this)) {
-      documentChanges.fileId = objectChanges.fileId || this.fileId;
+    if (_has('fileId')(this)) {
+      documentChanges.fileId = this.fileId;
     }
 
     // Finally, update the document with new params
@@ -181,7 +184,20 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   }
 }
 
-export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
+type EnrichmentDocumentEditFormValue = {
+  entitiesList: string; // translated to document values
+  domainsList: string[]; // translated to document domains
+} & Required<Pick<FilesystemObjectEditFormValue, 'fallbackOrganism'>>;
+
+export interface EnrichmentTableEditDialogValue
+  extends ObjectEditDialogValue<EnrichmentDocumentEditFormValue> {
   document: EnrichmentDocument;
-  documentChanges: Partial<EnrichmentDocument>;
+  documentChanges: Partial<EnrichmentDocumentEditFormValue>;
 }
+
+export type EnrichmentTableEditDialogResults = Omit<EnrichmentTableEditDialogValue, 'documentChanges'> & {
+  documentChanges: Partial<Pick<
+    EnrichmentDocument,
+    'fileId' | 'taxID' | 'importGenes' | 'values' | 'domains' | 'organism'
+  >>;
+};

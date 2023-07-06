@@ -2,16 +2,17 @@ import { Component, Input } from '@angular/core';
 
 import { NgbActiveModal, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
+import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
 
-import { ObjectEditDialogComponent } from './object-edit-dialog.component';
 import { ObjectCreateRequest } from '../../schema';
+import { ObjectEditDialogComponent } from './object-edit-dialog.component';
 
 @Component({
   selector: 'app-object-upload-dialog',
@@ -42,13 +43,15 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     protected readonly search: SharedSearchService,
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
-    protected readonly modalService: NgbModal
+    protected readonly modalService: NgbModal,
+    private readonly abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
   ) {
     super(modal, messageDialog, modalService);
   }
 
   // Empty overwrite prevents attempt of returned value to update dialog form
-  applyValue(value: any) {}
+  applyValue(value: any) {
+  }
 
   // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.
   // @ts-ignore
@@ -62,9 +65,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
       for (const file of this.fileList) {
         const formState = file.formState;
         uploadRequests.push({
-          ...this.createObjectRequest(formState),
-          parentHashId: value.parent ? value.parent.hashId : null,
-          contentValue: formState.contentValue,
+          ...this.abstractObjectTypeProviderHelper.parseToRequest(formState),
           ...this.request,
         });
       }
@@ -73,8 +74,8 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
     return [
       {
-        ...this.createObjectRequest(value),
-        ...(value.contentSource === 'contentUrl' && { contentUrl: value.contentUrl }),
+        ...this.abstractObjectTypeProviderHelper.parseToRequest(value),
+        ...(value.contentSource === 'contentUrl' && {contentUrl: value.contentUrl}),
         ...this.request,
       } as ObjectCreateRequest,
     ];

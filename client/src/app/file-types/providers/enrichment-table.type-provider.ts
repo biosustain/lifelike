@@ -3,9 +3,11 @@ import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/operators';
+import { has as _has } from 'lodash/fp';
 
 import {
   EnrichmentTableEditDialogComponent,
+  EnrichmentTableEditDialogResults,
   EnrichmentTableEditDialogValue,
 } from 'app/enrichment/components/table/dialog/enrichment-table-edit-dialog.component';
 import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
@@ -42,7 +44,9 @@ export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enri
 const BIOC_ID_COLUMN_INDEX = 2;
 
 @Injectable()
-export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
+export class EnrichmentTableTypeProvider<
+  EditDialogResults extends EnrichmentTableEditDialogResults
+> extends AbstractObjectTypeProvider<EnrichmentTableEditDialogResults, EditDialogResults> {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly modalService: NgbModal,
@@ -96,14 +100,13 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             object.mimeType = ENRICHMENT_TABLE_MIMETYPE;
             object.parent = options.parent;
 
-            const dialogRef = this.modalService.open(EnrichmentTableEditDialogComponent);
+            const dialogRef = openModal(this.modalService, EnrichmentTableEditDialogComponent);
             dialogRef.componentInstance.title = 'New Enrichment Table Parameters';
             dialogRef.componentInstance.object = object;
             dialogRef.componentInstance.document = new EnrichmentDocument(
               this.worksheetViewerService
             );
-
-            return dialogRef.result.then((value: EnrichmentTableEditDialogValue) => {
+            dialogRef.componentInstance.accept(({ value, document, changes, documentChanges }: EnrichmentTableEditDialogValue) => {
               const progressDialogRef = this.progressDialog.display({
                 title: 'Enrichment Table Creating',
                 progressObservables: [
@@ -115,10 +118,6 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                 ],
               });
 
-              const document = value.document;
-
-              document.setParameters(value.documentChanges);
-
               return document
                 .refreshData()
                 .pipe(
@@ -126,13 +125,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                   tap(() => progressDialogRef.close()),
                   map(
                     (blob) =>
-                      ({
-                        ...(value.createRequest as Omit<
-                          ObjectCreateRequest,
-                          keyof ObjectContentSource
-                        >),
+                      this.parseToRequest({
+                        ...object,
                         contentValue: blob,
-                      } as ObjectCreateRequest)
+                      }) as ObjectCreateRequest
                   ),
                   switchMap((request) =>
                     this.objectCreationService.executePutWithProgressDialog(
@@ -148,21 +144,22 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
                       ]
                     )
                   ),
-                  map((resultMapping) => resultMapping.values().next().value.creation.result),
+                  map(() => ({
+                    changes,
+                    documentChanges
+                  }) as EnrichmentTableEditDialogResults),
                   finalize(() => progressDialogRef.close())
                 )
                 .toPromise();
             });
+            return dialogRef.result.then(() => object);
           },
         },
       },
     ];
   }
 
-  openEditDialog(
-    target: FilesystemObject,
-    options: {} = {}
-  ): Promise<EnrichmentTableEditDialogValue> {
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<EditDialogResults> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Edit Enrichment Table',
       progressObservables: [
@@ -182,12 +179,22 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           new EnrichmentDocument(this.worksheetViewerService)
         ),
         tap(() => progressDialogRef.close()),
-        mergeMap((document) => {
-          const dialogRef = openModal(this.modalService, EnrichmentTableEditDialogComponent);
+        mergeMap((documentToEdit) => {
+          const dialogRef = openModal<
+            EnrichmentTableEditDialogComponent<EnrichmentTableEditDialogResults>
+          >(
+            this.modalService,
+            EnrichmentTableEditDialogComponent
+          );
           dialogRef.componentInstance.object = target;
-          dialogRef.componentInstance.document = document;
+          dialogRef.componentInstance.document = documentToEdit;
           dialogRef.componentInstance.fileId = target.hashId;
-          dialogRef.componentInstance.accept = (value: EnrichmentTableEditDialogValue) => {
+          dialogRef.componentInstance.accept = ({
+            changes,
+            document,
+            documentChanges,
+            ...rest
+          }) => {
             const progressDialog2Ref = this.progressDialog.display({
               title: 'Working...',
               progressObservables: [
@@ -199,42 +206,57 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
               ],
             });
 
-            value.document.setParameters(value.documentChanges);
-
-            const changes$: Observable<Partial<BulkObjectUpdateRequest>> = value.document
-              .markForRegeneration
-              ? value.document.updateParameters().pipe(
-                  map((blob) => ({
-                    contentValue: blob,
-                    ...value.patchRequest,
-                  })),
-                  take(1)
-                )
-              : of(value.patchRequest);
+            const request$: Observable<Partial<BulkObjectUpdateRequest>> =
+              document.markForRegeneration
+                ? document.updateParameters().pipe(
+                    map((blob) =>
+                      this.parseToRequest({
+                        ...changes,
+                        contentValue: blob,
+                      })
+                    ),
+                    take(1)
+                  )
+                : of(this.parseToRequest(changes));
 
             // old files can have outdated or corrupted data/schema
             // so instead of refreshing, update and save
             // this will trigger recreating the enrichment JSON
-            return changes$
+            return request$
               .pipe(
-                mergeMap((changes) =>
-                  this.filesystemService.save([target.hashId], changes, { [target.hashId]: target })
+                mergeMap((request) =>
+                  this.filesystemService
+                    .save([target.hashId], request, { [target.hashId]: target })
+                    .pipe(mergeMap((o) => document.refreshData()))
                 ),
-                mergeMap((o) => document.refreshData()),
-                map(() => value),
                 // Errors are lost below with the catch() so we need to handle errors here too
                 this.errorHandler.create(),
                 finalize(() => {
                   progressDialog2Ref.close();
-                })
+                }),
+                map(
+                  () =>
+                    ({
+                      changes,
+                      document,
+                      documentChanges,
+                      ...rest,
+                    })
+                )
               )
               .toPromise();
           };
 
           return from(
-            dialogRef.result.catch((e) => {
-              // A cancel should not be converted to an error
-            })
+            dialogRef.result.catch(
+              (e) =>
+                ({
+                  // A cancel should not be converted to an error but empty change
+                  object: target,
+                  changes: {},
+                  documentChanges: {},
+                } as EditDialogResults)
+            )
           );
         }),
         take(1),

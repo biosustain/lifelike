@@ -1,15 +1,15 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import {
   AbstractControl,
+  FormArray,
   FormControl,
   FormGroup,
-  FormArray,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has } from 'lodash/fp';
+import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy } from 'lodash/fp';
 
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
@@ -21,21 +21,17 @@ import { filenameValidator } from 'app/shared/validators';
 
 
 import { FilesystemObject } from '../../models/filesystem-object';
-import { AnnotationConfigurations, ObjectCreateRequest } from '../../schema';
 import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-
-interface CreateObjectRequest
-  extends Omit<ObjectCreateRequest, 'parentHashId' | 'fallbackOrganism'> {
-  parent?: FilesystemObject;
-  contexts?: string[];
-  fallbackOrganism?: OrganismAutocomplete;
-}
+import { ObjectContentSource } from '../../schema';
 
 @Component({
   selector: 'app-object-edit-dialog',
   templateUrl: './object-edit-dialog.component.html',
 })
-export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectEditDialogValue> {
+export class ObjectEditDialogComponent<
+  T extends ObjectEditDialogValue = ObjectEditDialogValue,
+  V extends ObjectEditDialogValue = T
+> extends CommonFormDialogComponent<T, V> {
   @ViewChild('fileInput', { static: false })
   protected readonly fileInputElement: ElementRef;
 
@@ -188,28 +184,21 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   contextFormControlFactory = (context = '') =>
     new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
-  applyValue(value: ObjectEditDialogValue) {
-    Object.assign(this.object, value.objectChanges);
+  applyValue(changes: V) {
+    // TODO
+    // this.object.update(changes);
   }
 
-  getValue(): ObjectEditDialogValue {
-    const value = this.form.value as CreateObjectRequest;
-
-    const objectChanges: Partial<FilesystemObject> = _flow(
-      // Return only changed values
-      _pickBy(({ pristine }: AbstractControl) => !pristine),
-      _mapValues((control: AbstractControl) => control.value)
-    )(this.form.controls);
-
+  getValue(): T {
     return {
       object: this.object,
-      objectChanges,
-      patchRequest: this.patchObjectRequest(objectChanges),
-      createRequest: this.createObjectRequest(value),
-      annotationConfigs: value.annotationConfigs,
-      fallbackOrganism: value.fallbackOrganism,
-      contexts: value.contexts,
-    };
+      value: this.form.value,
+      changes: _flow(
+        // Return only changed values
+        _pickBy(({dirty}: AbstractControl) => dirty),
+        _mapValues((control: AbstractControl) => control.value)
+      )(this.form.controls)
+    } as T;
   }
 
   patchObjectRequest(value: Partial<CreateObjectRequest>): Partial<ObjectCreateRequest> {
@@ -299,7 +288,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   setValueFromEvent(control, $event) {
-    return control.setValue($event.target.value);
+    control.setValue($event.target.value);
+    control.markAsDirty();
   }
 
   addControl(controlList: FormArray, control: AbstractControl) {
@@ -313,12 +303,22 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 }
 
-export interface ObjectEditDialogValue {
+export type FilesystemObjectEditFormValue = Pick<
+  FilesystemObject,
+  | 'filename'
+  | 'description'
+  | 'public'
+  | 'contexts'
+  | 'annotationConfigs'
+  | 'fallbackOrganism'
+  | 'mimeType'
+> &
+  ObjectContentSource & {
+    parent: Pick<FilesystemObject, 'hashId'>;
+  };
+
+export interface ObjectEditDialogValue<FormValue = {}> {
   object: FilesystemObject;
-  objectChanges: Partial<FilesystemObject>;
-  createRequest: ObjectCreateRequest;
-  patchRequest: Partial<ObjectCreateRequest>;
-  annotationConfigs: AnnotationConfigurations;
-  fallbackOrganism: OrganismAutocomplete;
-  contexts: string[];
+  changes: Partial<FilesystemObjectEditFormValue & FormValue>;
+  value: FilesystemObjectEditFormValue & FormValue;
 }
