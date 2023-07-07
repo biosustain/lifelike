@@ -1,4 +1,4 @@
-name: GCP Public Deployment
+name: Azure Public Deployment
 
 on:
   workflow_dispatch:
