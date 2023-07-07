@@ -1,0 +1,22 @@
+name: GCP Public Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [public]
+    branches: [public/**]
+
+jobs:
+  call-deployment-gcp:
+    uses: ./.github/workflows/deployment-az.yml
+    with:
+      environment_name: public
+      client_config: production
+      cloud_sql_instance_name: lifelike-public
+    secrets:
+      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+      CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
+      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
+      GCP_CREDENTIALS: ${{ secrets.GCE_SA_KEY }}
+      INFRA_PAT: ${{ secrets.INFRA_PAT }}
