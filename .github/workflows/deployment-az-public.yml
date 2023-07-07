@@ -3,14 +3,14 @@ name: Azure Public Deployment
 on:
   workflow_dispatch:
   push:
-    tags: [public]
-    branches: [public/**]
+    tags: [public-az]
+    branches: [public-az/**]
 
 jobs:
   call-deployment-az:
     uses: ./.github/workflows/deployment-az.yml
     with:
-      environment_name: public
+      environment_name: public-az
       client_config: production
     secrets:
       VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
