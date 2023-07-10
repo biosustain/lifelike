@@ -1,20 +1,30 @@
 import {
   Directive,
+  forwardRef,
   HostBinding,
+  Inject,
   InjectionToken,
   Input,
-  forwardRef,
   Optional,
-  Inject,
 } from '@angular/core';
 
 const PLACEHOLDER_CONTEXT = new InjectionToken<ShowPlaceholderDirective>('show_placeholders');
+const warnMissingPlaceholderContext = (placeholderContext) => {
+  if (!placeholderContext) {
+    console.warn('Placeholder directive should be used inside a placeholder context');
+  }
+};
 
 @Directive({
   selector: '[appHasPlaceholder]:not(button):not(input)',
 })
 export class HasPlaceholderDirective {
-  constructor(@Inject(PLACEHOLDER_CONTEXT) public placeholderContext: ShowPlaceholderDirective) {}
+  constructor(
+    @Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective
+  ) {
+    warnMissingPlaceholderContext(placeholderContext);
+  }
+
   @HostBinding('class.placeholder-slot') placeholderSlotClass = true;
 }
 
@@ -24,9 +34,12 @@ export class HasPlaceholderDirective {
 export class InteractiveInterfaceHasPlaceholderDirective {
   constructor(
     @Inject(PLACEHOLDER_CONTEXT) @Optional() public placeholderContext: ShowPlaceholderDirective
-  ) {}
+  ) {
+    warnMissingPlaceholderContext(placeholderContext);
+  }
+
   @HostBinding('attr.disabled') get disabled() {
-    return this.placeholderContext?.showPlaceholders;
+    return this.placeholderContext?.showPlaceholders || null;
   }
 }
 
