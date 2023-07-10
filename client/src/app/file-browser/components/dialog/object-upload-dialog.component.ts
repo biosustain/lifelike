@@ -1,4 +1,12 @@
 import { Component, Input } from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
 import { NgbActiveModal, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 
@@ -10,16 +18,34 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
 import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { filenameValidator } from 'app/shared/validators';
+import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
 
 import { ObjectCreateRequest } from '../../schema';
-import { ObjectEditDialogComponent } from './object-edit-dialog.component';
+import { FilesystemObject } from '../../models/filesystem-object';
 
 @Component({
   selector: 'app-object-upload-dialog',
   templateUrl: './object-upload-dialog.component.html',
 })
-export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
+export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> {
+
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly search: SharedSearchService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly modalService: NgbModal,
+    private readonly abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+  ) {
+    super(modal, messageDialog);
+  }
   @Input() request = {};
+  @Input() promptUpload = false;
+  @Input() promptParent = false;
+
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP)
@@ -33,21 +59,78 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
   selectedFile: FileInput<any> = null;
   selectedFileIndex;
 
+  private readonly defaultAnnotationMethods = this.annotationModels.reduce(
+    (obj, key) => ({
+      ...obj,
+      [key]: new FormGroup({
+        nlp: new FormControl(false),
+        rulesBased: new FormControl(true),
+      }),
+    }),
+    {},
+  );
+  protected filePossiblyAnnotatable = false;
+
   invalidInputs = false;
 
   readonly extensionsToCutRegex = /.map$/;
 
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-    protected readonly search: SharedSearchService,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly progressDialog: ProgressDialog,
-    protected readonly modalService: NgbModal,
-    private readonly abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-  ) {
-    super(modal, messageDialog, modalService);
-  }
+  readonly form: FormGroup = new FormGroup(
+    {
+      contentSource: new FormControl('contentValue'),
+      contentValue: new FormControl(null),
+      contentUrl: new FormControl(''),
+      parent: new FormControl(null),
+      filename: new FormControl('', [Validators.required, filenameValidator]),
+      description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
+      public: new FormControl(false),
+      contexts: new FormArray([]),
+      annotationConfigs: new FormGroup(
+        {
+          excludeReferences: new FormControl(false),
+          annotationMethods: new FormGroup(this.defaultAnnotationMethods),
+        },
+        [Validators.required]
+      ),
+      fallbackOrganism: new FormControl(null),
+      mimeType: new FormControl(null),
+    },
+    (group: FormGroup): ValidationErrors | null => {
+      if (this.promptUpload) {
+        const contentValueControl = group.get('contentValue');
+        const contentUrlControl = group.get('contentUrl');
+
+        if (group.get('contentSource').value === 'contentValue') {
+          contentUrlControl.setErrors(null);
+          if (!contentValueControl.value) {
+            contentValueControl.setErrors({
+              required: {},
+            });
+          }
+        } else if (group.get('contentSource').value === 'contentUrl') {
+          contentValueControl.setErrors(null);
+          if (!contentUrlControl.value) {
+            contentUrlControl.setErrors({
+              required: {},
+            });
+          }
+        }
+      }
+
+      if (this.promptParent) {
+        const control = group.get('parent');
+        if (!control.value) {
+          control.setErrors({
+            required: {},
+          });
+        }
+      }
+
+      return null;
+    }
+  );
+
+
 
   // Empty overwrite prevents attempt of returned value to update dialog form
   applyValue(value: any) {

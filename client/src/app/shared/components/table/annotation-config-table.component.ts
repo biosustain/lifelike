@@ -23,6 +23,8 @@ export class AnnotationConfigurationTableComponent {
   }
 
   excludeReferences(event) {
-    this.form.get('excludeReferences').setValue(event.target.checked);
+    const excludeReferencesControl = this.form.get('excludeReferences');
+    excludeReferencesControl.setValue(event.target.checked);
+    excludeReferencesControl.markAsDirty();
   }
 }

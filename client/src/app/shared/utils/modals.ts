@@ -17,7 +17,7 @@ export function openModal<T>(
   options?: NgbModalOptions
 ): Omit<NgbModalRef, 'componentInstance'|'result'> & {
   componentInstance: T,
-  result: T extends CommonDialogComponent<T, infer V> ? V : NgbModalRef['result']
+  result: T extends CommonDialogComponent<T, infer V> ? Promise<V> : NgbModalRef['result']
 } {
   return modalService.open(component, options) as any;
 }

@@ -3,23 +3,18 @@ import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/operators';
-import { has as _has } from 'lodash/fp';
 
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogResults,
   EnrichmentTableEditDialogValue,
-} from 'app/enrichment/components/table/dialog/enrichment-table-edit-dialog.component';
+} from 'app/file-types/dialog/enrichment-table/enrichment-table-edit-dialog.component';
 import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { EnrichmentTable } from 'app/enrichment/models/enrichment-table';
 import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  BulkObjectUpdateRequest,
-  ObjectContentSource,
-  ObjectCreateRequest,
-} from 'app/file-browser/schema';
+import { BulkObjectUpdateRequest, ObjectCreateRequest } from 'app/file-browser/schema';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
@@ -58,7 +53,7 @@ export class EnrichmentTableTypeProvider<
     protected readonly worksheetViewerService: EnrichmentTableService,
     protected readonly componentFactoryResolver: ComponentFactoryResolver,
     protected readonly injector: Injector,
-    protected readonly worksheetService: EnrichmentTableService
+    protected readonly worksheetService: EnrichmentTableService,
   ) {
     super(abstractObjectTypeProviderHelper);
   }
@@ -70,7 +65,7 @@ export class EnrichmentTableTypeProvider<
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions
+    options?: PreviewOptions,
   ) {
     const factory: ComponentFactory<EnrichmentTablePreviewComponent> =
       this.componentFactoryResolver.resolveComponentFactory(EnrichmentTablePreviewComponent);
@@ -78,12 +73,12 @@ export class EnrichmentTableTypeProvider<
     const instance: EnrichmentTablePreviewComponent = componentRef.instance;
     return contentValue$.pipe(
       mergeMap((blob) =>
-        new EnrichmentDocument(this.worksheetService).loadResult(blob, object.hashId)
+        new EnrichmentDocument(this.worksheetService).loadResult(blob, object.hashId),
       ),
       map((document) => {
         instance.document = document;
         return componentRef;
-      })
+      }),
     );
   }
 
@@ -104,16 +99,21 @@ export class EnrichmentTableTypeProvider<
             dialogRef.componentInstance.title = 'New Enrichment Table Parameters';
             dialogRef.componentInstance.object = object;
             dialogRef.componentInstance.document = new EnrichmentDocument(
-              this.worksheetViewerService
+              this.worksheetViewerService,
             );
-            dialogRef.componentInstance.accept(({ value, document, changes, documentChanges }: EnrichmentTableEditDialogValue) => {
+            dialogRef.componentInstance.accept(({
+                                                  value,
+                                                  document,
+                                                  changes,
+                                                  documentChanges,
+                                                }: EnrichmentTableEditDialogValue) => {
               const progressDialogRef = this.progressDialog.display({
                 title: 'Enrichment Table Creating',
                 progressObservables: [
                   new BehaviorSubject<Progress>(
                     new Progress({
                       status: 'Generating data for enrichment table...',
-                    })
+                    }),
                   ),
                 ],
               });
@@ -124,11 +124,10 @@ export class EnrichmentTableTypeProvider<
                   mergeMap((newDocument) => newDocument.save()),
                   tap(() => progressDialogRef.close()),
                   map(
-                    (blob) =>
-                      this.parseToRequest({
-                        ...object,
-                        contentValue: blob,
-                      }) as ObjectCreateRequest
+                    (blob) => ({
+                      ...this.parseToRequest(object) as ObjectCreateRequest,
+                      contentValue: blob,
+                    }),
                   ),
                   switchMap((request) =>
                     this.objectCreationService.executePutWithProgressDialog(
@@ -141,14 +140,14 @@ export class EnrichmentTableTypeProvider<
                             tax_id: document.taxID,
                           },
                         },
-                      ]
-                    )
+                      ],
+                    ),
                   ),
                   map(() => ({
                     changes,
-                    documentChanges
+                    documentChanges,
                   }) as EnrichmentTableEditDialogResults),
-                  finalize(() => progressDialogRef.close())
+                  finalize(() => progressDialogRef.close()),
                 )
                 .toPromise();
             });
@@ -159,14 +158,14 @@ export class EnrichmentTableTypeProvider<
     ];
   }
 
-  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<EditDialogResults> {
+  openEditDialog(target: FilesystemObject, options: {} = {}): Promise<any> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Edit Enrichment Table',
       progressObservables: [
         new BehaviorSubject<Progress>(
           new Progress({
             status: 'Getting table information for editing...',
-          })
+          }),
         ),
       ],
     });
@@ -176,7 +175,7 @@ export class EnrichmentTableTypeProvider<
       .pipe(
         mergeScan(
           (document, blob: Blob) => document.loadResult(blob, target.hashId),
-          new EnrichmentDocument(this.worksheetViewerService)
+          new EnrichmentDocument(this.worksheetViewerService),
         ),
         tap(() => progressDialogRef.close()),
         mergeMap((documentToEdit) => {
@@ -184,24 +183,24 @@ export class EnrichmentTableTypeProvider<
             EnrichmentTableEditDialogComponent<EnrichmentTableEditDialogResults>
           >(
             this.modalService,
-            EnrichmentTableEditDialogComponent
+            EnrichmentTableEditDialogComponent,
           );
           dialogRef.componentInstance.object = target;
           dialogRef.componentInstance.document = documentToEdit;
           dialogRef.componentInstance.fileId = target.hashId;
           dialogRef.componentInstance.accept = ({
-            changes,
-            document,
-            documentChanges,
-            ...rest
-          }) => {
+                                                  changes,
+                                                  document,
+                                                  documentChanges,
+                                                  ...rest
+                                                }) => {
             const progressDialog2Ref = this.progressDialog.display({
               title: 'Working...',
               progressObservables: [
                 new BehaviorSubject<Progress>(
                   new Progress({
                     status: 'Updating enrichment table...',
-                  })
+                  }),
                 ),
               ],
             });
@@ -209,14 +208,14 @@ export class EnrichmentTableTypeProvider<
             const request$: Observable<Partial<BulkObjectUpdateRequest>> =
               document.markForRegeneration
                 ? document.updateParameters().pipe(
-                    map((blob) =>
-                      this.parseToRequest({
-                        ...changes,
-                        contentValue: blob,
-                      })
-                    ),
-                    take(1)
-                  )
+                  map((blob) =>
+                    this.parseToRequest({
+                      ...changes,
+                      contentValue: blob,
+                    }),
+                  ),
+                  take(1),
+                )
                 : of(this.parseToRequest(changes));
 
             // old files can have outdated or corrupted data/schema
@@ -226,8 +225,8 @@ export class EnrichmentTableTypeProvider<
               .pipe(
                 mergeMap((request) =>
                   this.filesystemService
-                    .save([target.hashId], request, { [target.hashId]: target })
-                    .pipe(mergeMap((o) => document.refreshData()))
+                    .save([target.hashId], request, {[target.hashId]: target})
+                    .pipe(mergeMap((o) => document.refreshData())),
                 ),
                 // Errors are lost below with the catch() so we need to handle errors here too
                 this.errorHandler.create(),
@@ -241,8 +240,8 @@ export class EnrichmentTableTypeProvider<
                       document,
                       documentChanges,
                       ...rest,
-                    })
-                )
+                    }),
+                ),
               )
               .toPromise();
           };
@@ -255,13 +254,13 @@ export class EnrichmentTableTypeProvider<
                   object: target,
                   changes: {},
                   documentChanges: {},
-                } as EditDialogResults)
-            )
+                } as EditDialogResults),
+            ),
           );
         }),
         take(1),
         this.errorHandler.create(),
-        finalize(() => progressDialogRef.close())
+        finalize(() => progressDialogRef.close()),
       )
       .toPromise();
   }
@@ -290,10 +289,10 @@ export class EnrichmentTableTypeProvider<
           tableHeaderLine2.splice(
             BIOC_ID_COLUMN_INDEX,
             0,
-            ...biocycLabels.map((name) => ({ name, span: '1' }))
+            ...biocycLabels.map((name) => ({name, span: '1'})),
           );
         } else {
-          tableHeaderLine2.splice(BIOC_ID_COLUMN_INDEX, 0, { name: '', span: '1' });
+          tableHeaderLine2.splice(BIOC_ID_COLUMN_INDEX, 0, {name: '', span: '1'});
         }
       }
       document.result.genes.forEach((gene, index) =>
@@ -304,12 +303,12 @@ export class EnrichmentTableTypeProvider<
             const geneDomainResult = gene?.domains?.BioCyc?.[label];
             if (geneDomainResult) {
               const biocycId = /[\?&]id=([^&#]*)/.exec(geneDomainResult.link)?.[1] ?? '';
-              return { text: biocycId };
+              return {text: biocycId};
             } else {
-              return { text: '' };
+              return {text: ''};
             }
-          })
-        )
+          }),
+        ),
       );
     }
   }
@@ -317,10 +316,10 @@ export class EnrichmentTableTypeProvider<
   prepareTableForRadiateAnalysis(table: EnrichmentTable) {
     table.tableHeader = [
       [
-        { name: 'value', span: '1' },
-        { name: 'biocyc_id', span: '1' },
-        { name: 'gene_name', span: '1' },
-        { name: 'ncbi_gene_full_name', span: '1' },
+        {name: 'value', span: '1'},
+        {name: 'biocyc_id', span: '1'},
+        {name: 'gene_name', span: '1'},
+        {name: 'ncbi_gene_full_name', span: '1'},
       ],
     ];
     // Remove all rows where there was no match, and mutate each row to only include the required columns.
@@ -343,21 +342,21 @@ export class EnrichmentTableTypeProvider<
         export: () =>
           this.filesystemService.getContent(object.hashId).pipe(
             mergeMap((blob) =>
-              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
+              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId),
             ),
             mergeMap((document) =>
               new EnrichmentTable({
                 usePlainText: true,
               })
                 .load(document)
-                .pipe(tap((table) => this.addBioCycIdColumn(document, table)))
+                .pipe(tap((table) => this.addBioCycIdColumn(document, table))),
             ),
             mergeMap((table) =>
-              new TableCSVExporter().generate(table.tableHeader, table.tableCells)
+              new TableCSVExporter().generate(table.tableHeader, table.tableCells),
             ),
             map((blob) => {
               return new File([blob], object.filename + '.csv');
-            })
+            }),
           ),
       },
       {
@@ -365,7 +364,7 @@ export class EnrichmentTableTypeProvider<
         export: () =>
           this.filesystemService.getContent(object.hashId).pipe(
             mergeMap((blob) =>
-              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
+              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId),
             ),
             mergeMap((document) =>
               new EnrichmentTable({
@@ -374,15 +373,15 @@ export class EnrichmentTableTypeProvider<
                 .load(document)
                 .pipe(
                   tap((table) => this.addBioCycIdColumn(document, table)),
-                  tap((table) => this.prepareTableForRadiateAnalysis(table))
-                )
+                  tap((table) => this.prepareTableForRadiateAnalysis(table)),
+                ),
             ),
             mergeMap((table) =>
-              new TableCSVExporter().generate(table.tableHeader, table.tableCells)
+              new TableCSVExporter().generate(table.tableHeader, table.tableCells),
             ),
             map((blob) => {
               return new File([blob], object.filename + '_for_graph_analysis.csv');
-            })
+            }),
           ),
       },
       {
@@ -391,7 +390,7 @@ export class EnrichmentTableTypeProvider<
           return this.filesystemService.getContent(object.hashId).pipe(
             map((blob) => {
               return new File([blob], object.filename + '.llenrichmenttable.json');
-            })
+            }),
           );
         },
       },

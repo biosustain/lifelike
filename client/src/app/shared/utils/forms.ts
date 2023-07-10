@@ -1,4 +1,16 @@
-import { AbstractControl } from '@angular/forms';
+import { AbstractControl, FormArray, FormGroup } from '@angular/forms';
+
+import {
+  filter as _filter,
+  has as _has,
+  map as _map,
+  flow as _flow,
+  isObject as _isObject,
+  isArray as _isArray,
+  fromPairs as _fromPairs,
+  zip as _zip,
+  pickBy as _pickBy, mapValues as _mapValues,
+} from 'lodash/fp';
 
 export function getTopParent(control: AbstractControl) {
   let parent = control;
@@ -50,4 +62,24 @@ export function objectToMixedFormData(object: object): FormData {
 export interface ImageBlob {
   blob: Blob;
   filename: string;
+}
+
+export function getFormChangedValues(form: AbstractControl, flag = 'dirty') {
+  if (_has('controls')(form)) {
+    const controls = (form as any).controls;
+    if (_isObject(controls)) {
+      return _flow(
+        // Return only changed values
+        _pickBy((control: AbstractControl) => control[flag]),
+        _mapValues((control: AbstractControl) => getFormChangedValues(control, flag)),
+      )(controls)
+    }
+    if (_isArray(controls)) {
+      return _flow(
+        _filter((control: AbstractControl) => control[flag]),
+        _map((control: AbstractControl) => getFormChangedValues(control, flag)),
+      )(controls);
+    }
+  }
+  return form.value;
 }

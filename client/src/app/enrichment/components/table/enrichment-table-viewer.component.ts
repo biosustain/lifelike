@@ -43,7 +43,7 @@ import { EnrichmentTableOrderDialogComponent } from './dialog/enrichment-table-o
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
-} from './dialog/enrichment-table-edit-dialog.component';
+} from '../../../file-types/dialog/enrichment-table/enrichment-table-edit-dialog.component';
 import { EnrichmentService } from '../../services/enrichment.service';
 import { FindControllerService } from '../../services/find-controller.service';
 import { EnrichmentTableComponent } from './enrichment-table.component';

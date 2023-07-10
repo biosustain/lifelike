@@ -1,0 +1,16 @@
+<div [formGroupName]="name">
+  <app-form-row>
+    <ngb-accordion>
+      <ngb-panel title="Annotation Configurations">
+        <ng-template ngbPanelContent>
+          <app-annotation-config-table
+            [headers]="annotationMethods"
+            [models]="annotationModels"
+            [form]="formControl"
+            [fileType]="mimeType"
+          ></app-annotation-config-table>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+  </app-form-row>
+</div>

@@ -1,26 +1,27 @@
 import { ComponentRef, Injectable, InjectionToken, NgZone } from '@angular/core';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { has as _has, omit as _omit } from 'lodash/fp';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from 'app/file-browser/components/dialog/object-edit-dialog.component';
-import { getObjectLabel } from 'app/file-browser/utils/objects';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { BulkObjectUpdateRequest, ObjectCreateRequest } from 'app/file-browser/schema';
 import { AnnotationsService } from 'app/file-browser/services/annotations.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
+import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
+import { getObjectLabel } from 'app/file-browser/utils/objects';
+import { OrganismAutocomplete } from 'app/interfaces';
+import { Progress } from 'app/interfaces/common-dialog.interface';
+import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
-import { SearchType } from 'app/search/shared';
-import { Progress } from 'app/interfaces/common-dialog.interface';
-import { BulkObjectUpdateRequest, ObjectCreateRequest } from 'app/file-browser/schema';
-import { OrganismAutocomplete } from 'app/interfaces';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider<any>[]>('objectTypeProvider');
 
@@ -131,7 +132,7 @@ export class AbstractObjectTypeProviderHelper {
       ObjectEditDialogComponent,
     );
     dialogRef.componentInstance.object = target;
-    dialogRef.componentInstance.accept = ({value, changes}) => {
+    dialogRef.componentInstance.accept = (dialogValue) => {
       const progressDialogRef = this.progressDialog.display({
         title: 'Working...',
         progressObservables: [
@@ -143,30 +144,42 @@ export class AbstractObjectTypeProviderHelper {
         ],
       });
       return this.filesystemService
-        .save([target.hashId], this.parseToRequest(changes), {
+        .save([target.hashId], this.parseToPatchRequest(dialogValue), {
           [target.hashId]: target,
         })
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create({label: 'Edit object'}),
-          map(() => changes),
+          map(() => dialogValue.changes),
         )
         .toPromise();
     };
     return dialogRef.result;
   }
 
-  parseToRequest<
-    I extends BulkObjectUpdateRequest & { parent: { hashId: string } }
+  parseToPatchRequest<
+    I extends ObjectEditDialogValue
   >({
-      parent,
-      ...request
+      changes: {
+        file,
+        annotationConfigs,
+        ...rest
+      },
+      value,
     }: I): BulkObjectUpdateRequest {
-    if (parent?.hashId) {
-      request.parentHashId = parent.hashId;
+    const request: BulkObjectUpdateRequest = _omit('parent')(file);
+    if (_has('parent.hashId')(file)) {
+      request.parentHashId = file.parent.hashId;
     }
-    return request;
+    if (annotationConfigs) {
+      // If any part of annotationConfigs changes we need to update whole object
+      request.annotationConfigs = value.annotationConfigs;
+    }
+    return {
+      ...request,
+      ...rest,
+    };
   }
 }
 

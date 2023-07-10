@@ -1,28 +1,16 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormControl,
-  FormGroup,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy } from 'lodash/fp';
 
-import { OrganismAutocomplete } from 'app/interfaces';
-import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
-import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { filenameValidator } from 'app/shared/validators';
-
+import { getFormChangedValues } from 'app/shared/utils/forms';
 
 import { FilesystemObject } from '../../models/filesystem-object';
-import { ObjectSelectionDialogComponent } from './object-selection-dialog.component';
-import { ObjectContentSource } from '../../schema';
+import { AnnotationFormValue } from './form/annotation-form/annotation-form.component';
+import { FallbackOrganismFormValue } from './form/fallback-organism-form/fallback-organism-form.component';
+import { FileFormValue } from './form/file-form/file-form.component';
 
 @Component({
   selector: 'app-object-edit-dialog',
@@ -32,293 +20,61 @@ export class ObjectEditDialogComponent<
   T extends ObjectEditDialogValue = ObjectEditDialogValue,
   V extends ObjectEditDialogValue = T
 > extends CommonFormDialogComponent<T, V> {
-  @ViewChild('fileInput', { static: false })
-  protected readonly fileInputElement: ElementRef;
 
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
-  @Input() promptUpload = false;
   @Input() forceAnnotationOptions = false;
-  @Input() promptParent = false;
 
-  readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
-  readonly annotationModels = Object.keys(ENTITY_TYPE_MAP)
-    .filter((key) => NLPANNOTATIONMODELS.has(key))
-    .map((hasKey) => hasKey);
-
-  private _object: FilesystemObject;
   protected filePossiblyAnnotatable = false;
 
-  readonly defaultAnnotationMethods = this.annotationModels.reduce(
-    (obj, key) => ({
-      ...obj,
-      [key]: new FormGroup({
-        nlp: new FormControl(false),
-        rulesBased: new FormControl(true),
-      }),
-    }),
-    {}
-  );
-
-  readonly form: FormGroup = new FormGroup(
-    {
-      contentSource: new FormControl('contentValue'),
-      contentValue: new FormControl(null),
-      contentUrl: new FormControl(''),
-      parent: new FormControl(null),
-      filename: new FormControl('', [Validators.required, filenameValidator]),
-      description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
-      public: new FormControl(false),
-      contexts: new FormArray([]),
-      annotationConfigs: new FormGroup(
-        {
-          excludeReferences: new FormControl(false),
-          annotationMethods: new FormGroup(this.defaultAnnotationMethods),
-        },
-        [Validators.required]
-      ),
-      fallbackOrganism: new FormControl(null),
-      mimeType: new FormControl(null),
-    },
-    (group: FormGroup): ValidationErrors | null => {
-      if (this.promptUpload) {
-        const contentValueControl = group.get('contentValue');
-        const contentUrlControl = group.get('contentUrl');
-
-        if (group.get('contentSource').value === 'contentValue') {
-          contentUrlControl.setErrors(null);
-          if (!contentValueControl.value) {
-            contentValueControl.setErrors({
-              required: {},
-            });
-          }
-        } else if (group.get('contentSource').value === 'contentUrl') {
-          contentValueControl.setErrors(null);
-          if (!contentUrlControl.value) {
-            contentUrlControl.setErrors({
-              required: {},
-            });
-          }
-        }
-      }
-
-      if (this.promptParent) {
-        const control = group.get('parent');
-        if (!control.value) {
-          control.setErrors({
-            required: {},
-          });
-        }
-      }
-
-      return null;
-    }
-  );
+  readonly form: FormGroup = new FormGroup({
+    // fileForm
+    // annotationForm
+    // organismForm
+  });
 
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal
+    protected readonly modalService: NgbModal,
   ) {
     super(modal, messageDialog);
   }
 
-  get object() {
-    return this._object;
-  }
-
-  @Input()
-  set object(value: FilesystemObject) {
-    this._object = value;
-    this.form.patchValue({
-      parent: value.parent,
-      filename: value.filename || '',
-      description: value.description || '',
-      public: value.public || false,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.fallbackOrganism,
-    });
-    this.form.get('filename').updateValueAndValidity();
-
-    if (!value.parent) {
-      this.promptParent = true;
-    }
-
-    const annotationConfigs = value.annotationConfigs;
-    if (annotationConfigs != null) {
-      let ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-        'annotationMethods'
-      ) as FormControl;
-      if (annotationConfigs.annotationMethods != null) {
-        for (const [modelName, config] of Object.entries(annotationConfigs.annotationMethods)) {
-          if (ctrl.get(modelName)) {
-            ctrl.get(modelName).patchValue(config);
-          }
-        }
-      }
-
-      if (annotationConfigs.excludeReferences != null) {
-        ctrl = (this.form.get('annotationConfigs') as FormGroup).get(
-          'excludeReferences'
-        ) as FormControl;
-        ctrl.patchValue(annotationConfigs.excludeReferences);
-      }
-    }
-
-    this.setContexts(value.contexts);
-  }
+  @Input() object!: FilesystemObject;
 
   get possiblyAnnotatable(): boolean {
     return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
 
-  protected setContexts(contexts) {
-    const formArray: FormArray = this.form.get('contexts') as FormArray;
-    contexts?.forEach((context) => formArray.push(this.contextFormControlFactory(context)));
-  }
-
-  get contexts() {
-    return this.form.get('contexts') as FormArray;
-  }
-
-  contextFormControlFactory = (context = '') =>
-    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
-
   applyValue(changes: V) {
-    // TODO
-    // this.object.update(changes);
+    this.form.patchValue(changes);
   }
 
   getValue(): T {
     return {
       object: this.object,
       value: this.form.value,
-      changes: _flow(
-        // Return only changed values
-        _pickBy(({dirty}: AbstractControl) => dirty),
-        _mapValues((control: AbstractControl) => control.value)
-      )(this.form.controls)
+      changes: getFormChangedValues(this.form),
     } as T;
   }
 
-  patchObjectRequest(value: Partial<CreateObjectRequest>): Partial<ObjectCreateRequest> {
-    const patch = {} as Partial<ObjectCreateRequest>;
-    if (_has('filename', value)) {
-      patch.filename = value.filename;
-    }
-    if (_has('parent.hashId', value)) {
-      patch.parentHashId = value.parent?.hashId ?? null;
-    }
-    if (_has('description', value)) {
-      patch.description = value.description;
-    }
-    if (_has('public', value)) {
-      patch.public = value.public;
-    }
-    if (_has('mimeType', value)) {
-      patch.mimeType = value.mimeType;
-    }
-    if (_has('contexts', value)) {
-      patch.contexts = value.contexts;
-    }
-
-    // Add annotation-relevant parameters only when needed
-    if (this.possiblyAnnotatable) {
-      if (_has('fallbackOrganism', value)) {
-        patch.fallbackOrganism = value.fallbackOrganism;
-      }
-      if (_has('annotationConfigs', value)) {
-        patch.annotationConfigs = value.annotationConfigs;
-      }
-    }
-    return patch;
-  }
-
-  createObjectRequest(value: CreateObjectRequest): ObjectCreateRequest {
-    const object = {
-      filename: value.filename,
-      parentHashId: value.parent?.hashId ?? null,
-      description: value.description,
-      contexts: value.contexts,
-      public: value.public,
-      mimeType: value.mimeType,
-    };
-    // Add annotation-relevant parameters only when needed
-    if (this.possiblyAnnotatable) {
-      return {
-        ...object,
-        fallbackOrganism: value?.fallbackOrganism,
-        annotationConfigs: value?.annotationConfigs,
-      };
-    }
-    return object;
-  }
-
-  organismChanged(organism: OrganismAutocomplete | null) {
-    const organismControl = this.form.get('fallbackOrganism');
-    organismControl.setValue(organism ? organism : null);
-    organismControl.markAsDirty();
-  }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
     const field = this.form.get('annotationMethod');
     field.markAsTouched();
-    field.setValue(method ? method : null);
+    field.setValue(checked ? method : null);
     field.markAsDirty();
-  }
-
-  showFileDialog() {
-    this.fileInputElement.nativeElement.click();
-  }
-
-  showParentDialog() {
-    const dialogRef = this.modalService.open(ObjectSelectionDialogComponent);
-    dialogRef.componentInstance.hashId = null;
-    dialogRef.componentInstance.title = 'Select Location';
-    dialogRef.componentInstance.emptyDirectoryMessage = 'There are no sub-folders in this folder.';
-    dialogRef.componentInstance.objectFilter = (o: FilesystemObject) => o.isDirectory;
-    return dialogRef.result.then(
-      (destinations: FilesystemObject[]) => {
-        this.form.patchValue({
-          parent: destinations[0],
-        });
-      },
-      () => {}
-    );
-  }
-
-  setValueFromEvent(control, $event) {
-    control.setValue($event.target.value);
-    control.markAsDirty();
-  }
-
-  addControl(controlList: FormArray, control: AbstractControl) {
-    controlList.push(control);
-  }
-
-  removeControl(controlList: FormArray, control: AbstractControl) {
-    const index = controlList.controls.indexOf(control);
-    controlList.markAsDirty();
-    return index >= 0 && controlList.removeAt(index);
   }
 }
 
-export type FilesystemObjectEditFormValue = Pick<
-  FilesystemObject,
-  | 'filename'
-  | 'description'
-  | 'public'
-  | 'contexts'
-  | 'annotationConfigs'
-  | 'fallbackOrganism'
-  | 'mimeType'
-> &
-  ObjectContentSource & {
-    parent: Pick<FilesystemObject, 'hashId'>;
-  };
+export type FilesystemObjectEditFormValue =
+  FileFormValue
+  & AnnotationFormValue
+  & FallbackOrganismFormValue;
 
-export interface ObjectEditDialogValue<FormValue = {}> {
+export interface ObjectEditDialogValue {
   object: FilesystemObject;
-  changes: Partial<FilesystemObjectEditFormValue & FormValue>;
-  value: FilesystemObjectEditFormValue & FormValue;
+  value: FilesystemObjectEditFormValue;
+  changes: Partial<this['value']>;
 }

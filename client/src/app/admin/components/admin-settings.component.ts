@@ -3,8 +3,8 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { HttpEventType } from '@angular/common/http';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { BehaviorSubject, throwError, zip, of, EMPTY } from 'rxjs';
-import { concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
+import { BehaviorSubject, EMPTY, of, throwError, zip } from 'rxjs';
+import { catchError, concatMap, delay, mergeMap } from 'rxjs/operators';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -31,16 +31,14 @@ export class AdminSettingsComponent {
     private readonly snackBar: MatSnackBar,
     private storage: StorageService,
     private filesystemService: FilesystemService,
-    private worksheetViewerService: EnrichmentTableService
-  ) {}
+    private worksheetViewerService: EnrichmentTableService,
+  ) {
+  }
 
   fileChanged(event: { target: HTMLInputElement }) {
-    if (event.target.files.length) {
-      const file = event.target.files[0];
-      this.form.get('files').setValue([file]);
-    } else {
-      this.form.get('files').setValue(null);
-    }
+    const filesControl = this.form.get('files');
+    filesControl.setValue(event.target.files[0] ?? null)
+    filesControl.markAsDirty();
   }
 
   // TODO: Deprecate after LL-2840
@@ -57,9 +55,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              })
-            )
-          )
+              }),
+            ),
+          ),
         ),
         concatMap(([hashId, blob]) =>
           zip(
@@ -69,9 +67,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              })
-            )
-          )
+              }),
+            ),
+          ),
         ),
         concatMap(([hashId, document]) =>
           zip(
@@ -82,9 +80,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              })
-            )
-          )
+              }),
+            ),
+          ),
         ),
         concatMap(([document, hashId, newBlob]) =>
           this.filesystemService
@@ -101,13 +99,13 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              })
-            )
-        )
+              }),
+            ),
+        ),
       )
       .subscribe(
         (x) => console.log(`Updated enrichment table: ${x}`),
-        (err) => console.log(err)
+        (err) => console.log(err),
       );
   }
 
@@ -116,23 +114,23 @@ export class AdminSettingsComponent {
       new BehaviorSubject<Progress>(
         new Progress({
           status: 'Uploading user manual...',
-        })
+        }),
       ),
     ];
     const progressDialogRef = this.progressDialog.display({
       title: 'Saving manual as ***ARANGO_DB_NAME***-user-manual.pdf...',
       progressObservables,
     });
-    const data = { ...this.form.value };
+    const data = {...this.form.value};
     const file: File = data.files[0];
     this.storage
       .uploadUserManual(file)
-      .pipe(this.errorHandler.create({ label: 'Upload user manual' }))
+      .pipe(this.errorHandler.create({label: 'Upload user manual'}))
       .subscribe(
         (event) => {
           if (event.type === HttpEventType.UploadProgress) {
             progressObservables[0].next(
-              getProgressStatus(event, 'Processing file...', 'Uploading file...')
+              getProgressStatus(event, 'Processing file...', 'Uploading file...'),
             );
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
@@ -144,7 +142,7 @@ export class AdminSettingsComponent {
         (err) => {
           progressDialogRef.close();
           return throwError(err);
-        }
+        },
       );
   }
 }

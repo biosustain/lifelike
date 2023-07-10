@@ -46,6 +46,10 @@ import { ObjectUploadDialogComponent } from './components/dialog/object-upload-d
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 import { StarredBrowserComponent } from './components/starred-browser.component';
+import { FileFormComponent } from './components/dialog/form/file-form/file-form.component';
+import { AnnotationFormComponent } from './components/dialog/form/annotation-form/annotation-form.component';
+import { ContentFormComponent } from './components/dialog/form/content-form/content-form.component';
+import { FallbackOrganismFormComponent } from './components/dialog/form/fallback-organism-form/fallback-organism-form.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +86,10 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
     ObjectTileDeckComponent,
+    FileFormComponent,
+    AnnotationFormComponent,
+    ContentFormComponent,
+    FallbackOrganismFormComponent,
   ],
   imports: [SharedModule],
   entryComponents: [
@@ -112,6 +120,9 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     FileAnnotationHistoryDialogComponent,
     ObjectAnnotationHistoryComponent,
     ObjectReannotateResultsDialogComponent,
+    FileFormComponent,
+    FallbackOrganismFormComponent,
+    AnnotationFormComponent,
   ],
   providers: [
     ProjectsService,

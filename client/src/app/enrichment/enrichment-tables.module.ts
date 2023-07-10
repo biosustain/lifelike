@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
-import { EnrichmentTableEditDialogComponent } from './components/table/dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTableEditDialogComponent } from '../file-types/dialog/enrichment-table/enrichment-table-edit-dialog.component';
 import { EnrichmentTableOrderDialogComponent } from './components/table/dialog/enrichment-table-order-dialog.component';
 import { EnrichmentTableViewerComponent } from './components/table/enrichment-table-viewer.component';
 import { EnrichmentTableService } from './services/enrichment-table.service';

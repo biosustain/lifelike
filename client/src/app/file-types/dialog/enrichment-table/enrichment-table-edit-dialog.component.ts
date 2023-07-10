@@ -1,22 +1,22 @@
-import { Component, Input } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, Validators } from '@angular/forms';
+import { AfterViewInit, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compact as _compact, isNil as _isNil, has as _has, omit as _omit } from 'lodash/fp';
+import { compact as _compact, has as _has, isNil as _isNil, mapValues as _mapValues, omit as _omit } from 'lodash/fp';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
   FilesystemObjectEditFormValue,
-  ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from 'app/file-browser/components/dialog/object-edit-dialog.component';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
-import { OrganismAutocomplete } from 'app/interfaces';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-enrichment-table-edit-dialog',
@@ -24,13 +24,25 @@ import { environment } from '../../../../../environments/environment';
 })
 export class EnrichmentTableEditDialogComponent<
   V extends EnrichmentTableEditDialogResults = EnrichmentTableEditDialogResults
-> extends ObjectEditDialogComponent<EnrichmentTableEditDialogValue> {
+> extends CommonFormDialogComponent<EnrichmentTableEditDialogValue> implements AfterViewInit, OnChanges {
+
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly search: SharedSearchService,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly modalService: NgbModal,
+  ) {
+    super(modal, messageDialog);
+  }
   private _document: EnrichmentDocument;
 
   @Input() title = 'Edit Enrichment Parameters';
   @Input() submitButtonLabel = 'Save';
   @Input() fileId: string;
   @Input() promptObject = true;
+  @Input() object!: FilesystemObject;
 
   organismTaxId: string;
   domains: string[] = [];
@@ -44,68 +56,67 @@ export class EnrichmentTableEditDialogComponent<
     environment.keggEnabled && 'KEGG',
   ]);
 
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-    protected readonly search: SharedSearchService,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly progressDialog: ProgressDialog,
-    protected readonly modalService: NgbModal
-  ) {
-    super(modal, messageDialog, modalService);
-    this.form.addControl('entitiesList', new FormControl('', Validators.required));
-    this.form.addControl('domainsList', new FormArray([]));
-    this.form.get('fallbackOrganism').setValidators([Validators.required]);
+  form: FormGroup = new FormGroup({
+    entitiesList: new FormControl('', Validators.required),
+    domainsList: new FormArray([]),
+    // organismForm
+  });
+
+  @Input() document: EnrichmentDocument;
+
+  ngAfterViewInit() {
+    this.form.get('fallbackOrganism')?.setValidators([Validators.required]);
   }
 
-  get document() {
-    return this._document;
+  programaticChanges(update) {
+    if (_has('document')(update)) {
+      this.updateFromDocument(update.document);
+    }
   }
 
-  @Input() set document(value: EnrichmentDocument) {
-    this._document = value;
+  ngOnChanges(changes: SimpleChanges) {
+    this.programaticChanges(_mapValues(changes, 'currentValue'));
+  }
 
-    this.organismTaxId = value.taxID;
-    this.domains = value.domains;
+  updateFromDocument({organism, taxID, importGenes, values, domains}: EnrichmentDocument) {
     // Note: This replaces the file's fallback organism
     this.form.get('fallbackOrganism').setValue(
-      value.organism
+      organism
         ? {
-            organism_name: value.organism,
-            synonym: value.organism,
-            tax_id: value.taxID,
-          }
-        : null
+          organism_name: organism,
+          synonym: organism,
+          tax_id: taxID,
+        }
+        : null,
     );
     this.form.get('entitiesList').setValue(
-      value.importGenes
+      importGenes
         .map((gene) => {
-          const geneValue = value.values.get(gene);
+          const geneValue = values.get(gene);
           let row = gene;
           if (!_isNil(geneValue) && geneValue.length) {
             row += `\t${geneValue}`;
           }
           return row;
         })
-        .join('\n')
+        .join('\n'),
     );
-    this.setDomains();
+    this.setDomains(domains);
   }
 
   // @ts-ignore
-  applyValue(value: V) {
-    console.log(value);
+  applyValue(changes: V) {
     //   TODO
   }
 
-  private setDomains() {
+  private setDomains(domains: string[]) {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
-    this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
+    domains.forEach((d) => formArray.push(new FormControl(d)));
   }
 
-  getValue(): EnrichmentTableEditDialogResults {
-    const parentValue = super.getValue();
-    const { changes } = parentValue;
+  getValue() {
+    const parentValue = this.form.value;
+    const {changes} = parentValue;
     const documentChanges = {} as V['documentChanges'];
     if (_has('entitiesList')(changes)) {
       const geneRows = changes.entitiesList.split(/[\/\n\r]/g);
@@ -122,7 +133,7 @@ export class EnrichmentTableEditDialogComponent<
       });
     }
     if (_has('fallbackOrganism')(changes)) {
-      const { fallbackOrganism } = changes;
+      const {fallbackOrganism} = changes;
       documentChanges.organism = fallbackOrganism.organism_name;
       documentChanges.taxID = fallbackOrganism.tax_id;
     }
@@ -133,14 +144,8 @@ export class EnrichmentTableEditDialogComponent<
       documentChanges.fileId = this.fileId;
     }
 
-    // Finally, update the document with new params
-    this.document.setParameters(documentChanges);
-
     return {
       ...parentValue,
-      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(
-        objectChanges
-      ),
       documentChanges,
       document: this.document,
     };
@@ -170,9 +175,6 @@ export class EnrichmentTableEditDialogComponent<
     formArray.markAsDirty();
   }
 
-  contextFormControlFactory = (context = '') =>
-    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
-
   removeControl(controlList: FormArray, control: AbstractControl) {
     const index = controlList.controls.indexOf(control);
     controlList.markAsDirty();
@@ -190,12 +192,14 @@ type EnrichmentDocumentEditFormValue = {
 } & Required<Pick<FilesystemObjectEditFormValue, 'fallbackOrganism'>>;
 
 export interface EnrichmentTableEditDialogValue
-  extends ObjectEditDialogValue<EnrichmentDocumentEditFormValue> {
+  extends ObjectEditDialogValue {
   document: EnrichmentDocument;
   documentChanges: Partial<EnrichmentDocumentEditFormValue>;
 }
 
-export type EnrichmentTableEditDialogResults = Omit<EnrichmentTableEditDialogValue, 'documentChanges'> & {
+export type EnrichmentTableEditDialogResults =
+  Omit<EnrichmentTableEditDialogValue, 'documentChanges'>
+  & {
   documentChanges: Partial<Pick<
     EnrichmentDocument,
     'fileId' | 'taxID' | 'importGenes' | 'values' | 'domains' | 'organism'

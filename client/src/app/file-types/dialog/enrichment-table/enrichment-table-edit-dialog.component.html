@@ -1,0 +1,64 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <div>
+    <app-modal-header (cancel)="cancel()">
+      {{ title }}
+    </app-modal-header>
+
+    <app-modal-body>
+      <ng-container *ngIf="promptObject">
+        <app-file-form [object]="object"></app-file-form>
+      </ng-container>
+
+      <ng-template #enrichmentParamsFields>
+        <app-form-row for="entitiesList" label="Genes" [control]="form.get('entitiesList')">
+          <textarea
+            formControlName="entitiesList"
+            id="entitiesList"
+            [appFormInput]="form.get('entitiesList')"
+            rows="5"
+            placeholder="One gene per line"
+          ></textarea>
+        </app-form-row>
+
+        <app-fallback-organism-form [object]="object"></app-fallback-organism-form>
+
+        <app-form-row for="domainsList" label="Domains" [control]="form.get('domainsList')">
+          <div *ngFor="let choice of checks; let i = index">
+            <label>
+              <input
+                type="checkbox"
+                [value]="choice"
+                (change)="onCheckChange($event)"
+                [checked]="domains.includes(choice)"
+              />
+              {{ choice }}
+            </label>
+          </div>
+        </app-form-row>
+      </ng-template>
+
+      <fieldset class="fieldset-properties mt-4" *ngIf="promptObject">
+        <legend>Enrichment Table Parameters</legend>
+        <ng-container *ngTemplateOutlet="enrichmentParamsFields"></ng-container>
+      </fieldset>
+
+      <ng-container
+        *ngTemplateOutlet="!promptObject ? enrichmentParamsFields : null"
+      ></ng-container>
+
+      <ng-container *ngIf="promptObject">
+        <fieldset class="fieldset-properties mt-4">
+          <legend>Annotation Options</legend>
+          <app-annotation-form [object]="object"></app-annotation-form>
+        </fieldset>
+      </ng-container>
+    </app-modal-body>
+
+    <app-modal-footer>
+      <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+        {{ submitButtonLabel }}
+      </button>
+    </app-modal-footer>
+  </div>
+</form>

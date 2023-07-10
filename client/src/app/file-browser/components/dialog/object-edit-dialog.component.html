@@ -6,120 +6,15 @@
   <app-modal-body>
     <app-form-input-feedback [control]="form" [formLevel]="true"></app-form-input-feedback>
 
-    <app-form-row
-      for="parent"
-      [label]="parentLabel"
-      [control]="form.get('parent')"
-      *ngIf="promptParent"
-    >
-      <div class="d-flex align-items-center text-truncate">
-        <button type="button" class="btn btn-secondary mr-2" (click)="showParentDialog()">
-          Browse...
-        </button>
-        <div class="text-truncate" *ngIf="form.get('parent').value != null; else noParentChosen">
-          <i class="fa fa-fw fa-folder text-icon"></i>
-          {{ form.get('parent').value.effectiveName }}
-        </div>
-        <ng-template #noParentChosen> </ng-template>
-      </div>
-    </app-form-row>
-
-    <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
-      <input
-        type="text"
-        formControlName="filename"
-        id="filename"
-        [appFormInput]="form.get('filename')"
-        [pristineInvalid]="true"
-        appAutoFocus
-        [autoSelect]="true"
-      />
-    </app-form-row>
-
-    <app-form-row for="description" label="Description" [control]="form.get('description')">
-      <textarea
-        formControlName="description"
-        id="description"
-        [appFormInput]="form.get('description')"
-        rows="10"
-      ></textarea>
-    </app-form-row>
-
-    <app-form-row for="contexts" label="Contexts" [control]="contexts">
-      <ng-container *ngFor="let context of contexts.controls">
-        <div class="input-group input-border rounded mb-2">
-          <input
-            type="text"
-            class="form-control border-0"
-            [formControl]="context"
-            [value]="context.value"
-            (change)="setValueFromEvent(context, $event)"
-          />
-          <div class="input-group-append">
-            <button
-              class="form-control border-0"
-              type="button"
-              (click)="removeControl(contexts, context)"
-            >
-              <i class="fa fa-fw fa-times"></i>
-            </button>
-          </div>
-        </div>
-        <app-form-input-feedback
-          *ngIf="context != null"
-          [control]="context"
-        ></app-form-input-feedback>
-      </ng-container>
-      <button
-        class="btn btn-secondary"
-        type="button"
-        (click)="addControl(contexts, contextFormControlFactory())"
-      >
-        <i class="fa fa-fw fa-plus"></i>
-        Add context
-      </button>
-    </app-form-row>
-
-    <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
-        <label class="custom-control-label" for="public">Publicly share with the community</label>
-      </div>
-    </app-form-row>
+    <app-file-form [object]="object"></app-file-form>
 
     <ng-container *ngIf="possiblyAnnotatable">
       <fieldset class="fieldset-properties mt-4">
         <legend>Annotation Options</legend>
-        <app-form-row
-          *ngIf="object.promptOrganism"
-          label="Organism"
-          ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
-          #tooltipRef="ngbTooltip"
-          [appAutoCloseTooltipOutOfView]="tooltipRef"
-        >
-          <app-organism-autocomplete
-            formId="fallbackOrganism"
-            [organismTaxId]="
-              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
-            "
-            (organismPicked)="organismChanged($event)"
-          ></app-organism-autocomplete>
-        </app-form-row>
+        <app-fallback-organism-form *ngIf="object.promptOrganism">
+        </app-fallback-organism-form>
 
-        <app-form-row>
-          <ngb-accordion>
-            <ngb-panel title="Annotation Configurations">
-              <ng-template ngbPanelContent>
-                <app-annotation-config-table
-                  [headers]="annotationMethods"
-                  [models]="annotationModels"
-                  [form]="form.get('annotationConfigs')"
-                  [fileType]="object.mimeType"
-                ></app-annotation-config-table>
-              </ng-template>
-            </ngb-panel>
-          </ngb-accordion>
-        </app-form-row>
+        <app-annotation-form [mimeType]="object.mimeType"></app-annotation-form>
       </fieldset>
     </ng-container>
   </app-modal-body>
