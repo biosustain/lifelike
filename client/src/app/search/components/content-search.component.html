@@ -28,7 +28,7 @@
         <ng-template #searchEntered>
           <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
             <ng-container *ngIf="results.length; else noResults">
-              <div class="module-body text-muted">
+              <div class="module-body text-muted" [appShowPlaceholders]="status.placeholdersShown">
                 <div class="mb-3">
                   <app-results-summary
                     [page]="params.page"
@@ -63,22 +63,25 @@
                           class="mr-1"
                         ></app-file-type-label>
                         <a
+                          appHasPlaceholder
                           [appLink]="result.item.getCommands(false)"
                           [newTab]="true"
                           [sideBySide]="true"
                           (dragstart)="itemDragStart($event, result.item, true)"
                         >
                           <app-term-highlight
-                            [text]="result.item.name"
+                            [text]="result.item.filename"
                             [highlightTerms]="highlightTerms"
                             [highlightOptions]="highlightOptions"
                           ></app-term-highlight>
                         </a>
                       </h5>
                     </div>
-                    <div class="mt-2 text-truncate">
+                    <div class="mt-2 text-truncate" appHasPlaceholder>
                       <i
-                        >Created by <app-user [user]="result.item.user"></app-user> on
+                        >Created by
+                        <app-user [user]="result.item.user"></app-user>
+                        on
                         {{ result.item.creationDate | date : 'fullDate' }}</i
                       >
                     </div>
