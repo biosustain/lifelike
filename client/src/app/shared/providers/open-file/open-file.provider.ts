@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
 import { Observable, of, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
+
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Injectable()
 export class OpenFileProvider {

@@ -7,20 +7,20 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { ExplainService } from 'app/shared/services/explain.service';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { RecursivePartial } from 'app/shared/utils/types';
-
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { cloneDeep } from 'lodash-es';
 import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 import { Observable, ReplaySubject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { getTermsFromGroup } from '../../../utils/terms';
 
+import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ExplainService } from 'app/shared/services/explain.service';
+import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { RecursivePartial } from 'app/shared/utils/types';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+
+import { getTermsFromGroup } from '../../../utils/terms';
 import { EntityForm } from './entity-form';
 
 @Component({

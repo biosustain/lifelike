@@ -1,8 +1,6 @@
 import { Component, Injector, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
 import { BehaviorSubject, combineLatest, defer, Observable, Subject } from 'rxjs';
 import {
   distinctUntilChanged,
@@ -13,8 +11,10 @@ import {
   switchMap,
   takeUntil,
 } from 'rxjs/operators';
-import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
 
+import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+
+import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
 import { ExplainService } from '../../services/explain.service';
 import {
   DropdownController,

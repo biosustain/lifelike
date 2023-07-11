@@ -6,7 +6,7 @@ import { map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { BulkObjectUpdateRequest } from 'app/file-browser/schema';
-import { debug } from '../../shared/rxjs/debug';
+import { debug } from 'app/shared/rxjs/debug';
 
 const openEnrichmentFiles = new Map();
 

@@ -32,12 +32,12 @@ import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/beha
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GraphViewDirective } from '../directives/graph-view.directive';
-import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
 
 @Component({
   selector: 'app-map',
