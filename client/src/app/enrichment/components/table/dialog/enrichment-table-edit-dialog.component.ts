@@ -135,9 +135,11 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
     return {
       ...parentValue,
-      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(objectChanges),
+      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(
+        objectChanges
+      ),
       documentChanges,
-      document: this.document
+      document: this.document,
     };
   }
 

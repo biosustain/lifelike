@@ -25,20 +25,22 @@ export class EnrichmentService implements OnDestroy {
           switchMap(() =>
             this.filesystemService.open(hashId).pipe(
               /*map(Object.freeze),*/
-              switchMap((file) => file.changed$.pipe(
-                map(() => file),
-                debug('file changed'),
-                startWith(file)
-              )),
-              shareReplay(1)
+              switchMap((file) =>
+                file.changed$.pipe(
+                  map(() => file),
+                  debug('file changed'),
+                  startWith(file)
+                )
+              )
             )
-          )
+          ),
+          shareReplay(1),
+          debug('file open')
         ),
         // data is not mutable
         getContent: initialUpdate.pipe(
-          switchMap(() =>
-            this.filesystemService.getContent(hashId).pipe(map(Object.freeze), shareReplay(1))
-          )
+          switchMap(() => this.filesystemService.getContent(hashId).pipe(map(Object.freeze))),
+          shareReplay(1)
         ),
         update,
         ref: new Set(),

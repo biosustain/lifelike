@@ -3,25 +3,17 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
-import { combineLatest, ConnectableObservable, Observable, Subject } from 'rxjs';
-import {
-  filter,
-  map,
-  publishReplay,
-  shareReplay,
-  startWith,
-  switchMap,
-  takeUntil,
-} from 'rxjs/operators';
+import { combineLatest, Observable, Subject } from 'rxjs';
+import { filter, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { BackgroundTask, mergeStatuses, MultiTaskStatus } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ExplainService } from 'app/shared/services/explain.service';
 import { SingleResult } from 'app/shared/schemas/common';
 import { debug } from 'app/shared/rxjs/debug';
+import { addStatus, mergeStatuses, MultiPipeStatus } from 'app/shared/pipes/add-status.pipe';
 
-import { BaseEnrichmentDocument } from '../models/enrichment-document';
+import { BaseEnrichmentDocument, EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
 
 export interface EnrichWithGOTermsResult {
@@ -49,18 +41,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
     protected readonly snackBar: MatSnackBar,
     protected readonly enrichmentService: EnrichmentService,
     protected readonly explainService: ExplainService
-  ) {
-    this.enrichmentDocument$.connect();
-    this.enrichedWithGOTerms$.connect();
-    this.object$.connect();
-    this.fileId$.subscribe((fileId) => {
-      this.loadFileMetaDataTask.update(fileId);
-      this.loadEnrichmentDocumentTask.update(fileId);
-    });
-    this.enrichmentDocument$.subscribe((enrichmentDocument) => {
-      this.enrichWithGOTermsTask.update(enrichmentDocument);
-    });
-  }
+  ) {}
 
   private destroy$ = new Subject<void>();
 
@@ -69,14 +50,8 @@ export class EnrichmentVisualisationService implements OnDestroy {
     filter((fileId) => Boolean(fileId)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  private loadFileMetaDataTask: BackgroundTask<string, FilesystemObject> = new BackgroundTask(
-    (fileId) =>
-      this.enrichmentService
-        .get(fileId)
-        .pipe(this.errorHandler.create({ label: 'Load Statistical Enrichment' }))
-  );
-  private loadEnrichmentDocumentTask: BackgroundTask<string, BaseEnrichmentDocument> =
-    new BackgroundTask((fileId) =>
+  public readonly enrichmentDocument$: Observable<BaseEnrichmentDocument> = this.fileId$.pipe(
+    switchMap((fileId) =>
       this.enrichmentService.getContent(fileId).pipe(
         this.errorHandler.create({ label: 'Load Statistical Enrichment Content' }),
         switchMap((data) => {
@@ -85,41 +60,43 @@ export class EnrichmentVisualisationService implements OnDestroy {
         }),
         shareReplay({ bufferSize: 1, refCount: true })
       )
-    );
-  private enrichWithGOTermsTask: BackgroundTask<BaseEnrichmentDocument, EnrichWithGOTermsResult[]> =
-    new BackgroundTask((enrichmentDocument) =>
-      this._enrichWithGOTerms(enrichmentDocument).pipe(
-        this.errorHandler.create({ label: 'Enrich with GO Terms' })
-      )
-    );
-  public readonly status$: Observable<MultiTaskStatus> = combineLatest([
-    this.loadFileMetaDataTask.status$,
-    this.loadEnrichmentDocumentTask.status$,
-    this.enrichWithGOTermsTask.status$,
-  ]).pipe(map(mergeStatuses));
-  public readonly enrichmentDocument$: ConnectableObservable<BaseEnrichmentDocument> =
-    this.loadEnrichmentDocumentTask.results$.pipe(
-      map(({ result }) => result),
+    ),
+    takeUntil(this.destroy$),
+    shareReplay({ bufferSize: 1, refCount: true })
+  ) as Observable<BaseEnrichmentDocument>;
+  public readonly enrichedWithGOTerms$: Observable<EnrichWithGOTermsResult[]> =
+    this.enrichmentDocument$.pipe(
+      switchMap((enrichmentDocument) =>
+        this._enrichWithGOTerms(enrichmentDocument).pipe(
+          this.errorHandler.create({ label: 'Enrich with GO Terms' })
+        )
+      ),
       takeUntil(this.destroy$),
-      publishReplay(1) // tasks executes eagerly
-    ) as ConnectableObservable<BaseEnrichmentDocument>;
-  public readonly enrichedWithGOTerms$: ConnectableObservable<EnrichWithGOTermsResult[]> =
-    this.enrichWithGOTermsTask.results$.pipe(
-      map(({ result }) => result),
-      takeUntil(this.destroy$),
-      publishReplay(1) // tasks executes eagerly
-    ) as ConnectableObservable<EnrichWithGOTermsResult[]>;
-  public readonly object$: ConnectableObservable<FilesystemObject> =
-    this.loadFileMetaDataTask.results$.pipe(
-      map(({result}) => result),
-      switchMap((file) => file.changed$.pipe(
-        map(() => file),
-        startWith(file),
-      )),
-      takeUntil(this.destroy$),
-      publishReplay(1) // tasks executes eagerly
-    ) as ConnectableObservable<FilesystemObject>;
-  public readonly contexts$ = this.object$.pipe(map(({ contexts }) => contexts));
+      shareReplay({ bufferSize: 1, refCount: true })
+    ) as Observable<EnrichWithGOTermsResult[]>;
+  public readonly object$: Observable<FilesystemObject> = this.fileId$.pipe(
+    switchMap((fileId) =>
+      this.enrichmentService
+        .get(fileId)
+        .pipe(this.errorHandler.create({ label: 'Load Statistical Enrichment' }))
+    ),
+    debug('object'),
+    takeUntil(this.destroy$),
+    shareReplay({ bufferSize: 1, refCount: true })
+  ) as Observable<FilesystemObject>;
+
+  public readonly status$: Observable<
+    MultiPipeStatus<[FilesystemObject, EnrichmentDocument, EnrichWithGOTermsResult]>
+  > = combineLatest([
+    this.object$.pipe(addStatus()),
+    this.enrichmentDocument$.pipe(addStatus()),
+    this.enrichedWithGOTerms$.pipe(addStatus()),
+  ]).pipe(map((statuses) => mergeStatuses(statuses) as any));
+  public readonly contexts$: Observable<string[]> = this.object$.pipe(
+    debug('contexts'),
+    map(({ contexts }) => contexts),
+    shareReplay({ bufferSize: 1, refCount: true })
+  ) as Observable<string[]>;
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.

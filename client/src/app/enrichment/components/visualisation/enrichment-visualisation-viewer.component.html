@@ -1,9 +1,9 @@
 <div class="module" *ngIf="enrichmentService.status$ | async as status">
-  <app-module-error *ngFor="let error of status.errors" [error]="error"> </app-module-error>
-  <app-module-progress *ngIf="status.running">
-    Loading Statistical Enrichment... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
+  <app-module-error *ngFor="let error of status.errors" [error]="error"></app-module-error>
+  <app-module-progress *ngIf="status.loading">
+    Loading Statistical Enrichment...
   </app-module-progress>
-  <ng-container *ngIf="status.loaded">
+  <ng-container *ngIf="!status.loading">
     <app-module-header
       *ngIf="object$ | async as object"
       [object]="object"
@@ -11,15 +11,6 @@
       [showObjectMenu]="false"
     >
       <ng-template #tabTitle> {{ object.filename }} - Statistical Enrichment</ng-template>
-      <!--      <div ngbDropdown class="d-inline-block"-->
-      <!--           *ngIf="enrichmentService.enrichmentDocument.contexts as contexts">-->
-      <!--        <button class="btn btn-primary" ngbDropdownToggle>-->
-      <!--          Context: {{ currentContext }}-->
-      <!--        </button>-->
-      <!--        <div ngbDropdownMenu>-->
-      <!--          <button ngbDropdownItem *ngFor="let context of contexts">{{ context }}</button>-->
-      <!--        </div>-->
-      <!--      </div>-->
     </app-module-header>
     <as-split unit="pixel" direction="horizontal" [gutterSize]="2">
       <as-split-area [order]="0">

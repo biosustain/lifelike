@@ -75,6 +75,7 @@
           <span [className]="'gene-list'">
             <ng-container *ngFor="let gene of row['geneNames']; let last = last">
               <ngb-highlight
+                [appSELink]="gene"
                 [result]="gene"
                 (click)="selectGoTermAndGeneName(row.goTerm, gene); $event.preventDefault()"
                 [term]="service.searchTerm"

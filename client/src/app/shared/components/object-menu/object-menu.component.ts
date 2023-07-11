@@ -81,7 +81,7 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   openEditDialog(target: FilesystemObject) {
     return this.actions
       .openEditDialog(target)
-      .then(value =>
+      .then((value) =>
         this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {
           duration: 5000,
         })

@@ -14,7 +14,7 @@ bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 @use_args(ContextRelationshipRequestSchema)
 def relationship(params):
     entities = params.get('entities', [])
-    context = params.get('context')
+    context = params.get('context_')
     options = params.get('options', {})
     response = ChatGPT.Completion.create(
         model="text-davinci-003",
