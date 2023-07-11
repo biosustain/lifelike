@@ -23,7 +23,7 @@
               <i class="fa fa-fw fa-folder text-icon"></i>
               {{ form.get('parent').value.effectiveName }}
             </div>
-            <ng-template #noParentChosen> </ng-template>
+            <ng-template #noParentChosen></ng-template>
           </div>
         </app-form-row>
 
@@ -33,6 +33,7 @@
             formControlName="filename"
             id="filename"
             [appFormInput]="form.get('filename')"
+            [pristineInvalid]="true"
             appAutoFocus
             [autoSelect]="true"
           />
@@ -43,7 +44,7 @@
             formControlName="description"
             id="description"
             [appFormInput]="form.get('description')"
-            rows="5"
+            rows="10"
           ></textarea>
         </app-form-row>
 
@@ -73,10 +74,16 @@
           ></textarea>
         </app-form-row>
 
-        <app-form-row for="organism" label="Organism" [control]="form.get('organism')">
+        <app-form-row
+          for="fallbackOrganism"
+          label="Organism"
+          [control]="form.get('fallbackOrganism')"
+        >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="fallbackOrganism"
+            [organismTaxId]="
+              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
+            "
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>

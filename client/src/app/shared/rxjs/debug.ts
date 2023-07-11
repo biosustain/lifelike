@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { isDevMode } from '@angular/core';
 
 import { tap, finalize } from 'rxjs/operators';
 import { isInteger, isString } from 'lodash-es';
+import { MonoTypeOperatorFunction, Observable } from 'rxjs';
 
 import { skipStep } from './skipStep';
 
@@ -58,7 +58,7 @@ const composeFormatMapping = ({ args, label, params = [''], bgColor, color }) =>
 const statusMessage =
   ({ level, ...rest }) =>
   (...args) =>
-    console[level](...composeFormatMapping({ args, ...rest }));
+    console[level](...composeFormatMapping({ args, ...rest } as any));
 
 const init = (params) =>
   statusMessage({
@@ -118,7 +118,9 @@ const unsubscribed = (params) =>
  *     (level info) UNSUSCRIBED ABC
  * @param params set of params as we would use for console.log
  */
-export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = (
+export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = <
+  T
+>(
   ...params
 ) =>
   isDevMode()
@@ -136,3 +138,9 @@ export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOper
         );
       }
     : (skipStep as MonoTypeOperatorFunction<T>);
+
+export const inDevModeTap: <T>(
+  next?: (x: T) => void,
+  error?: (e: any) => void,
+  complete?: () => void
+) => MonoTypeOperatorFunction<T> = <T>(n, e, c) => (isDevMode() ? tap(n, e, c) : skipStep);

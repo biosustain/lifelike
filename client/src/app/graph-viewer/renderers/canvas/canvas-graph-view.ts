@@ -1,4 +1,4 @@
-import { isDevMode } from '@angular/core';
+import { isDevMode, NgZone } from '@angular/core';
 
 import * as d3 from 'd3';
 import { Transition, Selection } from 'd3';
@@ -32,11 +32,13 @@ import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { closePopups } from 'app/shared/DOMutils';
+import { inDevMode } from 'app/shared/utils/debug';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';
 import { PlacedObjectRenderTree } from './render-tree';
 import { GraphView } from '../graph-view';
 import { Point, SELECTION_SHADOW_COLOR } from '../../utils/canvas/shared';
+import { cachedMeasureText } from '../../utils/canvas/text-element';
 
 type SelectionOrTransition<GElement extends BaseType, Datum, PElement extends BaseType, PDatum> =
   | Selection<GElement, Datum, PElement, PDatum>
@@ -762,9 +764,9 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const dummyText = '\uf279\uf1c1';
     const ctx = this.canvas.getContext('2d');
     ctx.font = `18px \'Dummy Lifelike Font ${Math.random()}\'`;
-    const defaultMetrics = ctx.measureText(dummyText);
+    const defaultMetrics = cachedMeasureText(ctx, dummyText);
     ctx.font = "18px 'Font Awesome 5 Pro'";
-    const faMetrics = ctx.measureText(dummyText);
+    const faMetrics = cachedMeasureText(ctx, dummyText);
     for (const key of ['width', 'fontBoundingBoxAscent', 'hangingBaseline']) {
       if (defaultMetrics[key] !== faMetrics[key]) {
         return true;
@@ -1157,6 +1159,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasClicked() {
+    inDevMode(NgZone.assertNotInAngularZone);
     const behaviorEvent = {
       event: d3.event,
     };
@@ -1164,6 +1167,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasDoubleClicked() {
+    inDevMode(NgZone.assertNotInAngularZone);
     const behaviorEvent = {
       event: d3.event,
     };
@@ -1171,11 +1175,13 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasMouseDown() {
+    inDevMode(NgZone.assertNotInAngularZone);
     closePopups();
     this.mouseDown = true;
   }
 
   canvasMouseMoved() {
+    inDevMode(NgZone.assertNotInAngularZone);
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     const graphX = this.transform.invertX(mouseX);
     const graphY = this.transform.invertY(mouseY);
@@ -1203,18 +1209,22 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasFocused() {
+    inDevMode(NgZone.assertNotInAngularZone);
     this.requestRender();
   }
 
   canvasBlurred() {
+    inDevMode(NgZone.assertNotInAngularZone);
     this.requestRender();
   }
 
   canvasMouseLeave() {
+    inDevMode(NgZone.assertNotInAngularZone);
     this.hoverPosition = null;
   }
 
   canvasMouseUp() {
+    inDevMode(NgZone.assertNotInAngularZone);
     this.mouseDown = false;
     this.touchPosition = null;
     this.requestRender();
@@ -1239,6 +1249,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   // }
 
   documentPaste(event): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     const behaviorEvent = {
       event,
     };
@@ -1246,6 +1257,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasDragStarted(): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     this.dragStartPosition = { x: mouseX, y: mouseY };
     this.dragStarted = false;
@@ -1270,6 +1282,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasDragged(): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     let dragStarted = this.dragStarted;
 
@@ -1306,6 +1319,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasDragEnded(): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     const subject: CanvasSubject = d3.event.subject;
     const behaviorEvent: DragBehaviorEvent = {
       event: d3.event.sourceEvent,
@@ -1319,6 +1333,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasZoomed(): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     const [mouseX, mouseY] = d3.mouse(this.canvas);
     this.d3Transform = d3.event.transform;
     this.panningOrZooming = true;
@@ -1333,6 +1348,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
   }
 
   canvasZoomEnded(): void {
+    inDevMode(NgZone.assertNotInAngularZone);
     this.panningOrZooming = false;
     this.touchPosition = null;
     this.mouseDown = false;

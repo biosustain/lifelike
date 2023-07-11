@@ -35,9 +35,7 @@ import { WorkspaceManager } from '../../../workspace-manager';
 export class XMLAnnotationComponent extends XMLTag implements OnChanges {
   parsedMeta: Meta;
 
-  @Input() set meta(value) {
-    this.parsedMeta = isString(value) ? (JSON.parse(value) as Meta) : value;
-  }
+  @Input() meta: string;
 
   @Input() type;
   @ViewChild('annotation') annotation;
@@ -59,6 +57,7 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
   backgroundColor: string;
 
   update() {
+    this.parsedMeta = JSON.parse(this.meta) as Meta;
     const { id, type, idType, idHyperlinks, links, allText } = this.parsedMeta;
     const annoId = id.indexOf(':') !== -1 ? id.split(':')[1] : id;
     this.annoId = annoId.indexOf('NULL') === -1 ? annoId : undefined;

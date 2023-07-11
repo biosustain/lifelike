@@ -10,7 +10,7 @@
   [draggable]="true"
   (dragstart)="dragStart($event)"
   [style.background]="backgroundColor"
-  [attr.data-annotation-meta]="parsedMeta | json"
+  [attr.data-annotation-meta]="meta"
   ><ng-content></ng-content
 ></span>
 

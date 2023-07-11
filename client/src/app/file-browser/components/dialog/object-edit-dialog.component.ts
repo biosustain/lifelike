@@ -1,7 +1,14 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has } from 'lodash/fp';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
@@ -18,7 +25,7 @@ import { ObjectSelectionDialogComponent } from './object-selection-dialog.compon
 interface CreateObjectRequest
   extends Omit<ObjectCreateRequest, 'parentHashId' | 'fallbackOrganism'> {
   parent?: FilesystemObject;
-  organism?: OrganismAutocomplete;
+  fallbackOrganism?: OrganismAutocomplete;
 }
 
 @Component({
@@ -70,7 +77,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         },
         [Validators.required]
       ),
-      organism: new FormControl(null),
+      fallbackOrganism: new FormControl(null),
       mimeType: new FormControl(null),
     },
     (group: FormGroup): ValidationErrors | null => {
@@ -129,9 +136,9 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       description: value.description || '',
       public: value.public || false,
       mimeType: value.mimeType,
-      organism: value.fallbackOrganism,
+      fallbackOrganism: value.fallbackOrganism,
     });
-    this.form.get('filename').markAsDirty();
+    this.form.get('filename').updateValueAndValidity();
 
     if (!value.parent) {
       this.promptParent = true;
@@ -170,25 +177,49 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   getValue(): ObjectEditDialogValue {
     const value = this.form.value as CreateObjectRequest;
 
-    const objectChanges: Partial<FilesystemObject> = {
-      parent: value.parent,
-      filename: value.filename,
-      description: value.description,
-      public: value.public,
-      mimeType: value.mimeType,
-      fallbackOrganism: value.organism,
-      annotationConfigs: value.annotationConfigs,
-    };
-
-    const request: ObjectCreateRequest = this.createObjectRequest(value);
+    const objectChanges: Partial<FilesystemObject> = _flow(
+      // Return only changed values
+      _pickBy(({ pristine }: AbstractControl) => !pristine),
+      _mapValues((control: AbstractControl) => control.value)
+    )(this.form.controls);
 
     return {
       object: this.object,
       objectChanges,
-      request,
+      patchRequest: this.patchObjectRequest(objectChanges),
+      createRequest: this.createObjectRequest(value),
       annotationConfigs: value.annotationConfigs,
-      organism: value.organism,
+      fallbackOrganism: value.fallbackOrganism,
     };
+  }
+
+  patchObjectRequest(value: Partial<CreateObjectRequest>): Partial<ObjectCreateRequest> {
+    const patch = {} as Partial<ObjectCreateRequest>;
+    if (_has('filename', value)) {
+      patch.filename = value.filename;
+    }
+    if (_has('parent.hashId', value)) {
+      patch.parentHashId = value.parent?.hashId ?? null;
+    }
+    if (_has('description', value)) {
+      patch.description = value.description;
+    }
+    if (_has('public', value)) {
+      patch.public = value.public;
+    }
+    if (_has('mimeType', value)) {
+      patch.mimeType = value.mimeType;
+    }
+    // Add annotation-relevant parameters only when needed
+    if (this.possiblyAnnotatable) {
+      if (_has('fallbackOrganism', value)) {
+        patch.fallbackOrganism = value.fallbackOrganism;
+      }
+      if (_has('annotationConfigs', value)) {
+        patch.annotationConfigs = value.annotationConfigs;
+      }
+    }
+    return patch;
   }
 
   createObjectRequest(value: CreateObjectRequest): ObjectCreateRequest {
@@ -203,7 +234,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (this.possiblyAnnotatable) {
       return {
         ...object,
-        fallbackOrganism: value?.organism,
+        fallbackOrganism: value?.fallbackOrganism,
         annotationConfigs: value?.annotationConfigs,
       };
     }
@@ -211,17 +242,16 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   }
 
   organismChanged(organism: OrganismAutocomplete | null) {
-    this.form.get('organism').setValue(organism ? organism : null);
+    const organismControl = this.form.get('fallbackOrganism');
+    organismControl.setValue(organism ? organism : null);
+    organismControl.markAsDirty();
   }
 
   onAnnotationMethodPick(method: string, checked: boolean) {
     const field = this.form.get('annotationMethod');
     field.markAsTouched();
-    if (checked) {
-      field.setValue(method);
-    } else {
-      field.setValue(null);
-    }
+    field.setValue(method ? method : null);
+    field.markAsDirty();
   }
 
   showFileDialog() {
@@ -248,7 +278,8 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
 export interface ObjectEditDialogValue {
   object: FilesystemObject;
   objectChanges: Partial<FilesystemObject>;
-  request: ObjectCreateRequest;
+  createRequest: ObjectCreateRequest;
+  patchRequest: Partial<ObjectCreateRequest>;
   annotationConfigs: AnnotationConfigurations;
-  organism: OrganismAutocomplete;
+  fallbackOrganism: OrganismAutocomplete;
 }

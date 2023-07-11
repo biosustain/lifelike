@@ -1,7 +1,8 @@
-import { first } from 'lodash-es';
+import { first, partial } from 'lodash-es';
 
 import { REGEX } from 'app/shared/regex';
 import { wrapText } from 'app/shared/utils/canvas';
+import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
 
 interface TextboxOptions {
   width?: number;
@@ -22,6 +23,12 @@ interface TextboxOptions {
   leftInset?: number;
   rightInset?: number;
 }
+
+export const cachedMeasureText = (() => {
+  const textMetrics = new ExtendedMap<string, TextMetrics>();
+  return (ctx: CanvasRenderingContext2D, staticText: string): TextMetrics =>
+    textMetrics.getSetLazily(`${ctx.font}-${staticText}`, () => ctx.measureText(staticText));
+})();
 
 /**
  * Draws text oriented around a point or within a box, with support for
@@ -56,7 +63,7 @@ export class TextElement {
   readonly bottomInset = 0;
   readonly leftInset = 0;
   readonly rightInset = 0;
-  readonly hyphenWidth = this.ctx.measureText('-').width;
+  readonly hyphenWidth: number;
 
   /**
    * Create a new instance.
@@ -71,8 +78,9 @@ export class TextElement {
 
     ctx.font = this.font;
 
+    this.hyphenWidth = cachedMeasureText(ctx, '-').width;
     // Calculate height of line
-    this.lineMetrics = ctx.measureText('Mjpunkrockisntdead!');
+    this.lineMetrics = cachedMeasureText(ctx, 'Mjpunkrockisntdead!');
     this.actualLineHeight =
       (this.lineMetrics.actualBoundingBoxAscent + this.lineMetrics.actualBoundingBoxDescent) *
       this.lineHeight;
