@@ -7,7 +7,7 @@ on:
     branches: [traefik-az/**]
 
 jobs:
-  call-deployment-gcp:
+  call-traefik-az:
     uses: ./.github/workflows/traefik.yml
     with:
       playbook_path: playbooks/proxy-azure.yml
