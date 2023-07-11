@@ -48,7 +48,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild(GraphViewDirective, {static: true}) graphCanvasDirective!: GraphViewDirective;
+  @ViewChild(GraphViewDirective, { static: true }) graphCanvasDirective!: GraphViewDirective;
 
   get graphCanvas() {
     return this.graphCanvasDirective.canvasGraphView;
@@ -60,7 +60,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.filesystemService.open(hashId),
         this.filesystemService.getContent(hashId),
         this.getBackupBlob(),
-      ]),
+      ])
   );
   loadSubscription: Subscription;
 
@@ -193,7 +193,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
             this.graphCanvas.findMatching(this.highlightTerms, {
               keepSearchSpecialChars: true,
               wholeWord: true,
-            }),
+            })
           );
         }
       });

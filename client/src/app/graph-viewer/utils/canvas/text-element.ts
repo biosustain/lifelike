@@ -63,7 +63,7 @@ export class TextElement {
   readonly bottomInset = 0;
   readonly leftInset = 0;
   readonly rightInset = 0;
-  readonly hyphenWidth : number;
+  readonly hyphenWidth: number;
 
   /**
    * Create a new instance.

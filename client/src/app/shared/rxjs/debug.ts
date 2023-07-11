@@ -118,7 +118,9 @@ const unsubscribed = (params) =>
  *     (level info) UNSUSCRIBED ABC
  * @param params set of params as we would use for console.log
  */
-export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = <T>(
+export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = <
+  T
+>(
   ...params
 ) =>
   isDevMode()
