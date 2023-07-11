@@ -167,7 +167,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
         new EnrichmentDocument(this.worksheetViewerService)
       ),
       tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
-        shareReplay()
+      shareReplay()
     );
     this.table$ = this.document$.pipe(
       mergeMap((document) => {
