@@ -140,7 +140,7 @@ export class AbstractObjectTypeProviderHelper {
         ],
       });
       return this.filesystemService
-        .save([target.hashId], value.request, {
+        .save([target.hashId], value.patchRequest, {
           [target.hashId]: target,
         })
         .pipe(

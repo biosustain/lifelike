@@ -1,18 +1,18 @@
 import { Component, Input } from '@angular/core';
 import { FormArray, FormControl, Validators } from '@angular/forms';
 
-import { isNil, compact } from 'lodash-es';
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { compact as _compact, isNil as _isNil, has as _has } from 'lodash/fp';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { SharedSearchService } from 'app/shared/services/shared-search.service';
+import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
 } from 'app/file-browser/components/dialog/object-edit-dialog.component';
-import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { SharedSearchService } from 'app/shared/services/shared-search.service';
 
 import { environment } from '../../../../../environments/environment';
 
@@ -31,7 +31,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   organismTaxId: string;
   domains: string[] = [];
 
-  checks: Array<string> = compact([
+  checks: Array<string> = _compact([
     'Regulon',
     'UniProt',
     'String',
@@ -51,21 +51,20 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
-    this.form.get('organism').setValidators([Validators.required]);
+    this.form.get('fallbackOrganism').setValidators([Validators.required]);
   }
 
   get document() {
     return this._document;
   }
 
-  @Input()
-  set document(value: EnrichmentDocument) {
+  @Input() set document(value: EnrichmentDocument) {
     this._document = value;
 
     this.organismTaxId = value.taxID;
     this.domains = value.domains;
     // Note: This replaces the file's fallback organism
-    this.form.get('organism').setValue(
+    this.form.get('fallbackOrganism').setValue(
       value.organism
         ? {
             organism_name: value.organism,
@@ -79,7 +78,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         .map((gene) => {
           const geneValue = value.values.get(gene);
           let row = gene;
-          if (!isNil(geneValue) && geneValue.length) {
+          if (!_isNil(geneValue) && geneValue.length) {
             row += `\t${geneValue}`;
           }
           return row;
@@ -89,6 +88,8 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     this.setDomains();
   }
 
+  applyValue(value: ObjectEditDialogValue) {}
+
   private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
@@ -96,31 +97,42 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   getValue(): EnrichmentTableEditDialogValue {
     const parentValue: ObjectEditDialogValue = super.getValue();
-    const value = this.form.value;
-    const geneRows = (value.entitiesList as string).split(/[\/\n\r]/g);
-    const values = new Map<string, string>();
-    const expectedRowLen = 2;
+    const objectChanges = parentValue.objectChanges as {
+      entitiesList: string;
+      domainsList: any;
+      fileId: any;
+      fallbackOrganism: any;
+    };
+    const documentChanges = {} as Partial<EnrichmentDocument>;
+    if (_has('entitiesList')(objectChanges)) {
+      const geneRows = (objectChanges.entitiesList as string).split(/[\/\n\r]/g);
+      documentChanges.values = new Map<string, string>();
+      const expectedRowLen = 2;
 
-    const importGenes = geneRows.map((row) => {
-      const cols = row.split('\t');
-      if (cols.length < expectedRowLen) {
-        cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
-      }
-      values.set(cols[0], cols[1]);
-      return cols[0];
-    });
-
-    this.document.setParameters({
-      fileId: value.fileId || this.fileId || '',
-      importGenes,
-      values,
-      taxID: value.organism.tax_id,
-      organism: value.organism.organism_name,
-      domains: value.domainsList,
-    });
+      documentChanges.importGenes = geneRows.map((row) => {
+        const cols = row.split('\t');
+        if (cols.length < expectedRowLen) {
+          cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
+        }
+        documentChanges.values.set(cols[0], cols[1]);
+        return cols[0];
+      });
+    }
+    if (_has('fallbackOrganism')(objectChanges)) {
+      const { fallbackOrganism } = objectChanges;
+      documentChanges.organism = fallbackOrganism.organism_name;
+      documentChanges.taxID = fallbackOrganism.tax_id;
+    }
+    if (_has('domainsList')(objectChanges)) {
+      documentChanges.domains = objectChanges.domainsList;
+    }
+    if (_has('fileId')(objectChanges) || _has('fileId')(this)) {
+      documentChanges.fileId = objectChanges.fileId || this.fileId;
+    }
 
     return {
       ...parentValue,
+      documentChanges,
       document: this.document,
     };
   }
@@ -151,4 +163,5 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
 export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
+  documentChanges: Partial<EnrichmentDocument>;
 }

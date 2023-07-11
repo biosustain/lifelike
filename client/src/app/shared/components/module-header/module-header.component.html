@@ -28,7 +28,7 @@
         class="toolbar-title text-truncate"
         cdkDrag
         [draggable]="drag"
-        (cdkDragMoved)="drag.cdkDragMoved($event)"
+        (cdkDragStarted)="drag.cdkDragStarted($event)"
         (cdkDragReleased)="drag.cdkDragReleased($event)"
       >
         {{ object.filename }}
@@ -36,7 +36,7 @@
     </ng-container>
     <ng-template #titleFromTemplate>
       <h1
-        (cdkDragMoved)="drag.cdkDragMoved($event)"
+        (cdkDragStarted)="drag.cdkDragStarted($event)"
         (cdkDragReleased)="drag.cdkDragReleased($event)"
         [draggable]="drag"
         cdkDrag

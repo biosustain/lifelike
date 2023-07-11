@@ -4,7 +4,7 @@
   appContextMenu
   cdkDrag
   [cdkDragData]="tab"
-  (cdkDragMoved)="drag.cdkDragMoved($event)"
+  (cdkDragStarted)="drag.cdkDragStarted($event)"
   (cdkDragReleased)="drag.cdkDragReleased($event)"
 >
   <div class="nav-link d-flex text-truncate" [class.active]="active" (click)="tabClick.emit()">
