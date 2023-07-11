@@ -325,12 +325,9 @@ export class MapEditorComponent
 
   reload() {
     const doReload = () => {
-      NgZone.assertInAngularZone();
-      this.ngZone.runOutsideAngular(() => {
-        this.lockService.clearLockInterval();
-        this.loadTask.update(this.locator);
-        this.lockService.startLockInterval();
-      });
+      this.lockService.clearLockInterval();
+      this.loadTask.update(this.locator);
+      this.lockService.startLockInterval();
     };
     if (this.unsavedChanges$.value) {
       if (confirm('You have unsaved changes. Are you sure that you want to reload?')) {
