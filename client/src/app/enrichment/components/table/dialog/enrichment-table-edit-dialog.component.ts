@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compact as _compact, isNil as _isNil, has as _has } from 'lodash/fp';
+import { compact as _compact, isNil as _isNil, has as _has, omit as _omit } from 'lodash/fp';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
@@ -51,7 +51,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     super(modal, messageDialog, modalService);
     this.form.addControl('entitiesList', new FormControl('', Validators.required));
     this.form.addControl('domainsList', new FormArray([]));
-    this.form.addControl('contexts', new FormArray([]));
     this.form.get('fallbackOrganism').setValidators([Validators.required]);
   }
 
@@ -136,6 +135,8 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
     return {
       ...parentValue,
+      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(objectChanges),
+      documentChanges,
       document: this.document
     };
   }
@@ -161,6 +162,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         i++;
       });
     }
+    formArray.markAsDirty();
   }
 
   contextFormControlFactory = (context = '') =>
@@ -179,4 +181,5 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
 export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
+  documentChanges: Partial<EnrichmentDocument>;
 }

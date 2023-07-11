@@ -11,8 +11,6 @@ import {
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has } from 'lodash/fp';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';

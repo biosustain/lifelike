@@ -4,16 +4,25 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { combineLatest, ConnectableObservable, Observable, Subject } from 'rxjs';
-import { filter, map, publishReplay, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
+import {
+  filter,
+  map,
+  publishReplay,
+  shareReplay,
+  startWith,
+  switchMap,
+  takeUntil,
+} from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { BackgroundTask, mergeStatuses, MultiTaskStatus } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ExplainService } from 'app/shared/services/explain.service';
+import { SingleResult } from 'app/shared/schemas/common';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { BaseEnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
-import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
   goTerm: string;
@@ -102,7 +111,11 @@ export class EnrichmentVisualisationService implements OnDestroy {
     ) as ConnectableObservable<EnrichWithGOTermsResult[]>;
   public readonly object$: ConnectableObservable<FilesystemObject> =
     this.loadFileMetaDataTask.results$.pipe(
-      map(({ result }) => result),
+      map(({result}) => result),
+      switchMap((file) => file.changed$.pipe(
+        map(() => file),
+        startWith(file),
+      )),
       takeUntil(this.destroy$),
       publishReplay(1) // tasks executes eagerly
     ) as ConnectableObservable<FilesystemObject>;

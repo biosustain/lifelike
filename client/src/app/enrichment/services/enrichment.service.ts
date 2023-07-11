@@ -6,6 +6,7 @@ import { map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { BulkObjectUpdateRequest } from 'app/file-browser/schema';
+import { debug } from '../../shared/rxjs/debug';
 
 const openEnrichmentFiles = new Map();
 
@@ -22,7 +23,15 @@ export class EnrichmentService implements OnDestroy {
         // metadata can be mutated (example params edit)
         get: initialUpdate.pipe(
           switchMap(() =>
-            this.filesystemService.open(hashId).pipe(/*map(Object.freeze),*/ shareReplay(1))
+            this.filesystemService.open(hashId).pipe(
+              /*map(Object.freeze),*/
+              switchMap((file) => file.changed$.pipe(
+                map(() => file),
+                debug('file changed'),
+                startWith(file)
+              )),
+              shareReplay(1)
+            )
           )
         ),
         // data is not mutable

@@ -1,5 +1,5 @@
-import { Observable, of } from 'rxjs';
-import { map, mergeMap, tap, shareReplay } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
+import { map, mergeMap, tap } from 'rxjs/operators';
 import {
   compact as _compact,
   has as _has,
@@ -37,6 +37,7 @@ export class BaseEnrichmentDocument {
   duplicateGenes: string[] = [];
   fileId = '';
   markForRegeneration = false;
+  changed$ = new Subject<void>();
 
   private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {
     // parse the file content to get gene list and organism tax id and name
@@ -78,6 +79,9 @@ export class BaseEnrichmentDocument {
       this.markForRegeneration = true;
     }
     Object.assign(this, parsedParams);
+    if (!_isEmpty(parsedParams)) {
+      this.changed$.next();
+    }
     return parsedParams;
   }
 
@@ -188,10 +192,12 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   refreshData(): Observable<this> {
     if (!this.fileId) {
       this.result = null;
+      this.changed$.next();
       // file was just created
       return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
         map((result: EnrichmentResult) => {
           this.result = result;
+          this.changed$.next();
           return this;
         })
       );
@@ -200,6 +206,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
         return of(null);
       }
       this.result = null;
+      this.changed$.next();
       return this.worksheetViewerService
         .refreshEnrichmentAnnotations([this.fileId])
         .pipe(mergeMap((_) => this.annotate()));
@@ -228,6 +235,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       mergeMap((enriched: EnrichmentParsedData) => {
         if (Object.keys(enriched).length > 0) {
           this.result = enriched.result;
+          this.changed$.next();
           return of(this);
         } else {
           const params = {
@@ -242,6 +250,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
               this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
                 map((annotated: EnrichmentParsedData) => {
                   this.result = annotated.result;
+                  this.changed$.next();
                   return this;
                 })
               )
