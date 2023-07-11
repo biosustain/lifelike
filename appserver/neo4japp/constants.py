@@ -411,7 +411,7 @@ COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
 # Start shared Elastic constants
 FRAGMENT_SIZE = 1024
 
-ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_FOLDER'))
+ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_PATH'))
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
