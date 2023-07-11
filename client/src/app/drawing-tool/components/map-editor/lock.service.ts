@@ -49,7 +49,7 @@ export class LockService implements OnDestroy {
     startWith(),
     inDevModeTap(NgZone.assertNotInAngularZone),
     map(() => window.performance.now()),
-    shareReplay(1)
+    shareReplay(1),
   );
 
   private readonly lockCheckTimeInterval = 1000 * 30;
@@ -123,7 +123,7 @@ export class LockService implements OnDestroy {
                     this.errorHandler.showError(error);
                   }
                   return throwError(error);
-                })
+                }),
               )
               .subscribe(
                 (locks) => {
@@ -133,11 +133,10 @@ export class LockService implements OnDestroy {
                 (err: LockError) => {
                   this.lockAcquired = false;
                   this.locks = 'locks' in err ? err.locks : [];
-                }
+                },
               );
           }
-        })
-    );
+        }));
   }
 
   startLockInterval() {

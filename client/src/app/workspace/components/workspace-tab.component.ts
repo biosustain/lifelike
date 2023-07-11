@@ -43,8 +43,9 @@ export class WorkspaceTabComponent implements OnChanges {
   constructor(
     protected readonly viewService: ViewService,
     protected readonly clipboard: ClipboardService,
-    protected readonly ngZone: NgZone
-  ) {}
+    protected readonly ngZone: NgZone,
+  ) {
+  }
 
   dragData$ = defer(() =>
     combineLatest(

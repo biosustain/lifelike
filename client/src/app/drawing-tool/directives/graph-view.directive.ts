@@ -23,14 +23,18 @@ export class GraphViewDirective implements OnDestroy {
     protected readonly mapImageProviderService: MapImageProviderService,
     private readonly dataTransferDataService: DataTransferDataService,
     private readonly graphActionsService: GraphActionsService,
-    private readonly ngZone: NgZone
+    private readonly ngZone: NgZone,
   ) {
     ngZone.runOutsideAngular(() => {
       const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
-      this.canvasGraphView = new CanvasGraphView(canvasElem.nativeElement as HTMLCanvasElement, {
-        nodeRenderStyle: style,
-        edgeRenderStyle: style,
-        groupRenderStyle: style,
+      this.canvasGraphView = new CanvasGraphView(
+        canvasElem.nativeElement as HTMLCanvasElement,
+        {
+          nodeRenderStyle: style,
+          edgeRenderStyle: style,
+          groupRenderStyle: style,
+        },
+      );
       });
     });
   }

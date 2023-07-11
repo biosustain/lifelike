@@ -25,10 +25,11 @@ export class ModuleHeaderComponent implements OnChanges {
   constructor(
     // protected readonly filesystemService: FilesystemService,
     private tabUrlService: ModuleContext,
-    private ngZone: NgZone
-  ) {}
+    private ngZone: NgZone,
+  ) {
+  }
 
-  ngOnChanges({ dragTitleData$ }: SimpleChanges) {
+  ngOnChanges({dragTitleData$}: SimpleChanges) {
     if (dragTitleData$) {
       this.drag =
         dragTitleData$.currentValue &&
