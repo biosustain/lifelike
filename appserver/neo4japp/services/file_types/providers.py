@@ -583,7 +583,7 @@ def create_group_node(group: dict):
 
     border_width = style.get('lineWidthScale', 1.0) if has_border else 0.0
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label_lines = get_fitting_lines(display_name, style, params['data'])
+    label_lines = get_fitting_lines(display_name, style, group['data'])
     label_offset = (
         -group['data']['height'] / 2.0
         - LABEL_OFFSET
