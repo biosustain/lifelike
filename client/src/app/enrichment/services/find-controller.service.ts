@@ -1,21 +1,12 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 
-import { escapeRegExp } from 'lodash-es';
-import {
-  animationFrame,
-  animationFrameScheduler,
-  asyncScheduler,
-  BehaviorSubject,
-  combineLatest,
-  interval,
-  ReplaySubject,
-  Subject,
-} from 'rxjs';
+import { escapeRegExp, isNil } from 'lodash-es';
+import { asyncScheduler, ReplaySubject, Subject } from 'rxjs';
 import {
   map,
   observeOn,
   pairwise,
-  share,
+  scan,
   shareReplay,
   startWith,
   switchMap,
@@ -28,7 +19,7 @@ import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 
 @Injectable()
 export class FindControllerService implements OnDestroy {
-  constructor() {
+  constructor(private ngZone: NgZone) {
     this.query$
       .pipe(
         withLatestFrom(this.elementFind$), // changing elementFind$ should not rerun query
@@ -41,12 +32,26 @@ export class FindControllerService implements OnDestroy {
       });
     this.elementFind$
       .pipe(
-        switchMap((elementFind) =>
-          interval(0, animationFrameScheduler).pipe(map(() => elementFind))
-        ),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
+        scan(
+          (runRef: { handle: number }, elementFind) => {
+            // animationFrameScheduler runs in Angular context
+            this.ngZone.runOutsideAngular(() => {
+              if (isNil(runRef.handle)) {
+                cancelAnimationFrame(runRef.handle);
+              }
+              const step = () => {
+                elementFind.tick();
+                runRef.handle = requestAnimationFrame(step);
+              };
+              runRef.handle = requestAnimationFrame(step);
+            });
+            return { handle: runRef.handle };
+          },
+          { handle: null }
+        )
       )
-      .subscribe((elementFind) => elementFind.tick());
+      .subscribe();
     this.target$
       .pipe(
         // lazy init

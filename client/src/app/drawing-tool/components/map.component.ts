@@ -1,7 +1,6 @@
 import {
   AfterViewInit,
   Component,
-  ContentChild,
   EventEmitter,
   Input,
   NgZone,
@@ -10,35 +9,29 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ContentChildren,
-  ViewChildren,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, combineLatest, Observable, Subscription, of, defer } from 'rxjs';
-import { catchError, switchMap, map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, defer, Observable, of, Subscription } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 
-import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
-import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
-import { mapBufferToJson, mapJsonToGraph, mapBlobToBuffer } from 'app/shared/utils/files';
+import { mapBlobToBuffer, mapBufferToJson, mapJsonToGraph } from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/selectable-entity.behavior'; // from below
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import { DelegateResourceManager } from 'app/graph-viewer/utils/resource/resource-manager';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
-import { GraphView } from 'app/graph-viewer/renderers/graph-view';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -55,7 +48,11 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild(GraphViewDirective, { static: true }) graphCanvas!: GraphViewDirective;
+  @ViewChild(GraphViewDirective, { static: true }) graphCanvasDirective!: GraphViewDirective;
+
+  get graphCanvas() {
+    return this.graphCanvasDirective.canvasGraphView;
+  }
 
   loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]> = new BackgroundTask(
     (hashId) =>
@@ -148,8 +145,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   ngAfterViewInit() {
     this.registerGraphBehaviors();
 
-    this.graphCanvas.startParentFillResizeListener();
     this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.startParentFillResizeListener();
       this.graphCanvas.startAnimationLoop();
     });
 
@@ -186,18 +183,20 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     }
 
     this.emitModuleProperties();
-    this.providerSubscription$ = this.openMap(this.contentValue, this.map).subscribe((graph) => {
-      this.graphCanvas.initializeGraph(graph);
-      this.graphCanvas.zoomToFit(0);
+    this.ngZone.runOutsideAngular(() => {
+      this.providerSubscription$ = this.openMap(this.contentValue, this.map).subscribe((graph) => {
+        this.graphCanvas.initializeGraph(graph);
+        this.graphCanvas.zoomToFit(0);
 
-      if (this.highlightTerms != null && this.highlightTerms.length) {
-        this.graphCanvas.highlighting.replace(
-          this.graphCanvas.findMatching(this.highlightTerms, {
-            keepSearchSpecialChars: true,
-            wholeWord: true,
-          })
-        );
-      }
+        if (this.highlightTerms != null && this.highlightTerms.length) {
+          this.graphCanvas.highlighting.replace(
+            this.graphCanvas.findMatching(this.highlightTerms, {
+              keepSearchSpecialChars: true,
+              wholeWord: true,
+            })
+          );
+        }
+      });
     });
   }
 
@@ -234,7 +233,6 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (unsavedChangesSubscription) {
       unsavedChangesSubscription.unsubscribe();
     }
-    this.graphCanvas.destroy();
     this.subscriptions.unsubscribe();
     this.providerSubscription$.unsubscribe();
   }
@@ -252,15 +250,21 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   // ========================================
 
   zoomToFit() {
-    this.graphCanvas.zoomToFit();
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.zoomToFit();
+    });
   }
 
   undo() {
-    this.graphCanvas.undo();
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.undo();
+    });
   }
 
   redo() {
-    this.graphCanvas.redo();
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.redo();
+    });
   }
 
   // ========================================
@@ -277,19 +281,15 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
           wholeWord: false,
         }
       );
-      this.entitySearchListIdx = -1;
-
-      this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
-      this.graphCanvas.searchFocus.replace([]);
-      this.graphCanvas.requestRender();
     } else {
       this.entitySearchList = [];
-      this.entitySearchListIdx = -1;
-
-      this.graphCanvas.searchHighlighting.replace([]);
-      this.graphCanvas.searchFocus.replace([]);
-      this.graphCanvas.requestRender();
     }
+    this.graphCanvas.searchHighlighting.replace(this.entitySearchList);
+    this.entitySearchListIdx = -1;
+    this.graphCanvas.searchFocus.replace([]);
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.requestRender();
+    });
   }
 
   clearSearchQuery() {
@@ -303,7 +303,9 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (this.entitySearchListIdx >= this.entitySearchList.length) {
       this.entitySearchListIdx = 0;
     }
-    this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
+    });
   }
 
   previous() {
@@ -312,6 +314,8 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     if (this.entitySearchListIdx <= -1) {
       this.entitySearchListIdx = this.entitySearchList.length - 1;
     }
-    this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
+    this.ngZone.runOutsideAngular(() => {
+      this.graphCanvas.panToEntity(this.entitySearchList[this.entitySearchListIdx] as GraphEntity);
+    });
   }
 }

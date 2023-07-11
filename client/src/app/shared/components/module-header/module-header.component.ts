@@ -1,25 +1,10 @@
-import {
-  Component,
-  Input,
-  EventEmitter,
-  Output,
-  TemplateRef,
-  OnChanges,
-  SimpleChanges,
-  ChangeDetectorRef,
-} from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, Input, NgZone, OnChanges, SimpleChanges, TemplateRef } from '@angular/core';
 
-import { get, isNil } from 'lodash-es';
-import { Observable, ReplaySubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ViewService } from 'app/file-browser/services/view.service';
-import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
-// import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 
-import { WorkspaceManager } from '../../workspace-manager';
+// import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { ModuleContext } from '../../services/module-context.service';
 import { CdkNativeDragItegration } from '../../utils/drag';
 
@@ -39,13 +24,15 @@ export class ModuleHeaderComponent implements OnChanges {
 
   constructor(
     // protected readonly filesystemService: FilesystemService,
-    private tabUrlService: ModuleContext
+    private tabUrlService: ModuleContext,
+    private ngZone: NgZone
   ) {}
 
   ngOnChanges({ dragTitleData$ }: SimpleChanges) {
     if (dragTitleData$) {
       this.drag =
-        dragTitleData$.currentValue && new CdkNativeDragItegration(dragTitleData$.currentValue);
+        dragTitleData$.currentValue &&
+        new CdkNativeDragItegration(dragTitleData$.currentValue, this.ngZone);
     }
   }
 
