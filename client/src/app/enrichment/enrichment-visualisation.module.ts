@@ -19,5 +19,4 @@ import { EnrichmentVisualisationService } from './services/enrichment-visualisat
   exports: [EnrichmentVisualisationViewerComponent],
   providers: [EnrichmentVisualisationService],
 })
-export class EnrichmentVisualisationsModule {
-}
+export class EnrichmentVisualisationsModule {}
