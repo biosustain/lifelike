@@ -1,0 +1,33 @@
+name: Azure Traefik deployment
+
+jobs:
+  deploy:
+    name: Deploy
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.INFRA_PAT }}
+          submodules: recursive
+
+      - name: Set git metadata
+        id: git-meta
+        run: |
+          echo ::set-output name=commit_timestamp::$(git log -1 --format=%cI)
+          echo ::set-output name=build_number::$(git rev-list --count HEAD)
+          echo ::set-output name=build_version::$(echo "${GITHUB_REF#refs/*/}")
+      - name: Run Ansible deployment action
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: deployment/ansible
+          playbook_file_path: playbooks/proxy-azure.yml
+          inventory_file_path: inventories/hosts-az.yml
+          vault_password: ${{ secrets.VAULT_PASSWORD }}
+          ssh_key: ${{ secrets.SSH_KEY }}
+          options: |
+            --user ansible
+            --verbose
