@@ -35,11 +35,16 @@ class _ServerTimingRecord:
 
     @property
     def description_dict(self):
-        nested_time = reduce(lambda a, b: a + b['duration'], self.nested_records, timedelta())
+        nested_time = reduce(
+            lambda a, b: a + b['duration'], self.nested_records, timedelta()
+        )
         return {
             'duration': f"{_str_time(self.duration)}",
             'self': f"{_str_time(self.duration - nested_time)}",
-            **{record['key']: record['description_dict'] for record in self.nested_records}
+            **{
+                record['key']: record['description_dict']
+                for record in self.nested_records
+            },
         }
 
     @property
@@ -54,7 +59,7 @@ class _ServerTimingRecord:
         self.duration += datetime.now() - self._start_time
         del self._start_time
 
-    def __dict__(self) -> _ServerTimingRecordSnapshot:
+    def to_dict(self) -> _ServerTimingRecordSnapshot:
         return {
             'key': self.key,
             'duration': self.duration,
@@ -84,14 +89,18 @@ class ServerTiming:
 
     @staticmethod
     def _add_server_timing_header(response):
-        request_context_server_timing = ServerTiming._get_request_context_server_timing()
+        request_context_server_timing = (
+            ServerTiming._get_request_context_server_timing()
+        )
         records = request_context_server_timing['records']
         if records:
-            response.headers['Server-Timing'] = ', '.join(map(
-                # putting increasing unicode char first to keep order
-                lambda er: f"{chr(48+er[0])}_{er[1]}",
-                enumerate(records)
-            ))
+            response.headers['Server-Timing'] = ', '.join(
+                map(
+                    # putting increasing unicode char first to keep order
+                    lambda er: f"{chr(48+er[0])}_{er[1]}",
+                    enumerate(records),
+                )
+            )
         return response
 
     @staticmethod
@@ -127,7 +136,7 @@ class ServerTiming:
             with record:
                 yield
             if previous_record is not None:
-                previous_record.nested_records.append(record.__dict__())
+                previous_record.nested_records.append(record.to_dict())
             server_timing['current_record'] = previous_record
         else:
             yield
