@@ -50,7 +50,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  @ViewChild(GraphViewDirective, {static: true}) graphCanvasDirective!: GraphViewDirective;
+  @ViewChild(GraphViewDirective, { static: true }) graphCanvasDirective!: GraphViewDirective;
 
   get graphCanvas() {
     return this.graphCanvasDirective.canvasGraphView;
@@ -62,7 +62,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.filesystemService.open(hashId),
         this.filesystemService.getContent(hashId),
         this.getBackupBlob(),
-      ]),
+      ])
   );
   loadSubscription: Subscription;
 
@@ -96,12 +96,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService,
-    readonly openFileProvider: OpenFileProvider,
+    readonly openFileProvider: OpenFileProvider
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(
-      ({result: [mapFile, mapBlob, backupBlob], value}) => {
+      ({ result: [mapFile, mapBlob, backupBlob], value }) => {
         this.map = mapFile;
         this.openFileProvider.object = mapFile;
 
@@ -118,7 +118,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         this.contentValue = mapBlob;
         this.initializeMap();
         this.handleBackupBlob(backupBlob);
-      },
+      }
     );
   }
 
@@ -140,8 +140,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     return new BehaviorSubject(null);
   }
 
-  handleBackupBlob(data: ExtraResult) {
-  }
+  handleBackupBlob(data: ExtraResult) {}
 
   // ========================================
   // Angular events
@@ -173,7 +172,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   }
 
   private isInEditMode() {
-    const {path = ''} = this.route.snapshot.url[4] || {};
+    const { path = '' } = this.route.snapshot.url[4] || {};
     return path === 'edit';
   }
 
@@ -198,26 +197,26 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
             this.graphCanvas.findMatching(this.highlightTerms, {
               keepSearchSpecialChars: true,
               wholeWord: true,
-            }),
+            })
           );
         }
       });
     });
-  };
+  }
 
   openMap(mapBlob: Blob, mapFile: FilesystemObject): Observable<KnowledgeMapGraph> {
     return this.objectTypeService.get(mapFile).pipe(
       switchMap((typeProvider) => typeProvider.unzipContent(mapBlob)),
-      map((graphRepr) => new Blob([graphRepr], {type: MimeTypes.Map})),
+      map((graphRepr) => new Blob([graphRepr], { type: MimeTypes.Map })),
       mapBlobToBuffer(),
       mapBufferToJson<KnowledgeMapGraph>(),
       mapJsonToGraph(),
-      this.errorHandler.create({label: 'Parse map data'}),
+      this.errorHandler.create({ label: 'Parse map data' }),
       catchError((e) => {
         // Data is corrupt
         // TODO: Prevent the user from editing or something so the user doesnt lose data?
         throw e;
-      }),
+      })
     );
   }
 
@@ -226,12 +225,12 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     this.graphCanvas.behaviors.add(
       'copy-keyboard-shortcut',
       new CopyKeyboardShortcutBehavior(this.graphCanvas, this.snackBar),
-      -100,
+      -100
     );
   }
 
   ngOnDestroy() {
-    const {historyChangesSubscription, unsavedChangesSubscription} = this;
+    const { historyChangesSubscription, unsavedChangesSubscription } = this;
     if (historyChangesSubscription) {
       historyChangesSubscription.unsubscribe();
     }
@@ -284,7 +283,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
         }),
         {
           wholeWord: false,
-        },
+        }
       );
     } else {
       this.entitySearchList = [];
@@ -324,8 +323,3 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     });
   }
 }
-
-
-
-
-

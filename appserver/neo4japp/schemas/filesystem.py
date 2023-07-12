@@ -147,7 +147,7 @@ class MultipleProjectResponseSchema(ResultMappingSchema):
 FilePrivilegesSchema = marshmallow_dataclass.class_schema(FilePrivileges)
 
 ContextsSchema = fields.List(
-    fields.String(validate=marshmallow.validate.Length(min=0, max=2048)), required=True
+    fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
 )
 
 
