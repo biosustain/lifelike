@@ -7,6 +7,7 @@ from neo4japp.models import GlobalList
 
 from .constants import EntityType, ManualAnnotationType
 from .data_transfer_objects import GlobalExclusions
+from ...utils.server_timing import ServerTiming
 
 
 class AnnotationDBService(DBConnection):
@@ -15,6 +16,7 @@ class AnnotationDBService(DBConnection):
             and_(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
         )
 
+    @ServerTiming.record_call
     def get_entity_exclusions(self, exclusions: List[dict]) -> GlobalExclusions:
         """Returns set of combined global and local exclusions
         for each entity type.

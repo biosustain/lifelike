@@ -93,6 +93,7 @@ from ..services.annotations.utils.graph_queries import (
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
+from ..utils.server_timing import ServerTiming
 from ..utils.string import sub_whitespace
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -454,6 +455,7 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
 
 class FileAnnotationsGenerationView(FilesystemBaseView):
+    @ServerTiming.record_call
     def annotate_files(
         self, files, user_id, override_organism=None, override_annotation_configs=None
     ):
@@ -584,12 +586,13 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         """Generate annotations for one or more files."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(
-            Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
-        )
-        self.check_file_permissions(
-            files, current_user, ['writable'], permit_recycled=False
-        )
+        with ServerTiming.record('get_files'):
+            files = self.get_nondeleted_recycled_files(
+                Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
+            )
+            self.check_file_permissions(
+                files, current_user, ['writable'], permit_recycled=False
+            )
 
         override_organism = None
         override_annotation_configs = None
@@ -620,6 +623,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             )
         )
 
+    @ServerTiming.record_call('annotate')
     def _annotate(
         self,
         file: Files,
@@ -683,6 +687,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
         return update, version
 
+    @ServerTiming.record_call('annotate_enrichment_table')
     def _annotate_enrichment_table(
         self,
         file: Files,
@@ -737,62 +742,63 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         prev_index = -1
         enriched_gene = ''
 
-        start = time.time()
-        for index, cell_text in enriched.text_index_map:
-            annotation_chunk = [
-                anno
-                for anno in sorted_annotations_list
-                if anno.get('hiLocationOffset', None)
-                and anno.get('hiLocationOffset') <= index
-            ]
-            # it's sorted so we can do this to make the list shorter every iteration
-            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk) :]
+        with ServerTiming.record('create enrichment snippets'):
+            start = time.time()
+            for index, cell_text in enriched.text_index_map:
+                annotation_chunk = [
+                    anno
+                    for anno in sorted_annotations_list
+                    if anno.get('hiLocationOffset', None)
+                    and anno.get('hiLocationOffset') <= index
+                ]
+                # it's sorted so we can do this to make the list shorter every iteration
+                sorted_annotations_list = sorted_annotations_list[len(annotation_chunk) :]
 
-            # update JSON to have enrichment row and domain...
-            for anno in annotation_chunk:
-                if prev_index != -1:
-                    # only do this for subsequent cells b/c
-                    # first cell will always have the correct index
-                    # update index offset to be relative to the cell again
-                    # since they're relative to the combined text
-                    anno['loLocationOffset'] = (
-                        anno['loLocationOffset'] - (prev_index + 1) - 1
-                    )
-                    anno['hiLocationOffset'] = (
-                        anno['loLocationOffset'] + anno['keywordLength'] - 1
-                    )
+                # update JSON to have enrichment row and domain...
+                for anno in annotation_chunk:
+                    if prev_index != -1:
+                        # only do this for subsequent cells b/c
+                        # first cell will always have the correct index
+                        # update index offset to be relative to the cell again
+                        # since they're relative to the combined text
+                        anno['loLocationOffset'] = (
+                            anno['loLocationOffset'] - (prev_index + 1) - 1
+                        )
+                        anno['hiLocationOffset'] = (
+                            anno['loLocationOffset'] + anno['keywordLength'] - 1
+                        )
 
-                if 'domain' in cell_text:
-                    # imported should come first for each row
-                    if cell_text['domain'] == 'Imported':
-                        enriched_gene = cell_text['text']
-                    anno['enrichmentGene'] = enriched_gene
-                    if cell_text['domain'] == 'Regulon':
-                        anno['enrichmentDomain']['domain'] = cell_text['domain']
-                        anno['enrichmentDomain']['subDomain'] = cell_text['label']
-                    else:
-                        anno['enrichmentDomain']['domain'] = cell_text['domain']
+                    if 'domain' in cell_text:
+                        # imported should come first for each row
+                        if cell_text['domain'] == 'Imported':
+                            enriched_gene = cell_text['text']
+                        anno['enrichmentGene'] = enriched_gene
+                        if cell_text['domain'] == 'Regulon':
+                            anno['enrichmentDomain']['domain'] = cell_text['domain']
+                            anno['enrichmentDomain']['subDomain'] = cell_text['label']
+                        else:
+                            anno['enrichmentDomain']['domain'] = cell_text['domain']
 
-            snippet = self._highlight_annotations(
-                original_text=cell_text['text'], annotations=annotation_chunk
+                snippet = self._highlight_annotations(
+                    original_text=cell_text['text'], annotations=annotation_chunk
+                )
+                enrichment_genes_index = enrichment['result']['genes'][cell_text['index']]
+                if cell_text['domain'] == 'Imported':
+                    enrichment_genes_index['annotatedImported'] = snippet
+                elif cell_text['domain'] == 'Matched':
+                    enrichment_genes_index['annotatedMatched'] = snippet
+                elif cell_text['domain'] == 'Full Name':
+                    enrichment_genes_index['annotatedFullName'] = snippet
+                else:
+                    enrichment_genes_index.get('domains').get(cell_text['domain']).get(
+                        cell_text['label']
+                    )['annotatedText'] = snippet
+
+                prev_index = index
+
+            current_app.logger.info(
+                f'Time to create enrichment snippets {time.time() - start}'
             )
-            enrichment_genes_index = enrichment['result']['genes'][cell_text['index']]
-            if cell_text['domain'] == 'Imported':
-                enrichment_genes_index['annotatedImported'] = snippet
-            elif cell_text['domain'] == 'Matched':
-                enrichment_genes_index['annotatedMatched'] = snippet
-            elif cell_text['domain'] == 'Full Name':
-                enrichment_genes_index['annotatedFullName'] = snippet
-            else:
-                enrichment_genes_index.get('domains').get(cell_text['domain']).get(
-                    cell_text['label']
-                )['annotatedText'] = snippet
-
-            prev_index = index
-
-        current_app.logger.info(
-            f'Time to create enrichment snippets {time.time() - start}'
-        )
 
         update = {
             'id': file.id,

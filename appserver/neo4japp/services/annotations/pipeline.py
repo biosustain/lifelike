@@ -13,6 +13,7 @@ from neo4japp.constants import LogEventType, FILE_MIME_TYPE_PDF
 from neo4japp.exceptions import AnnotationError
 from neo4japp.util import normalize_str
 from neo4japp.utils.logger import EventLog
+from ...utils.server_timing import ServerTiming
 
 
 class Pipeline:
@@ -45,6 +46,7 @@ class Pipeline:
         self.global_inclusions = None
 
     @classmethod
+    @ServerTiming.record_call
     def parse(self, content_type: str, **kwargs) -> Tuple[str, List[PDFWord]]:
         """
         :param content_type : str
@@ -73,6 +75,7 @@ class Pipeline:
 
         return parse_content(content_type, **params)
 
+    @ServerTiming.record_call
     def get_globals(
         self, excluded_annotations: List[dict], custom_annotations: List[dict]
     ):
@@ -80,14 +83,17 @@ class Pipeline:
         graph_service = self.steps['ags']()
 
         start = time.time()
-        self.global_exclusions = db_service.get_entity_exclusions(excluded_annotations)
-        self.global_inclusions = graph_service.get_entity_inclusions(custom_annotations)
+        with ServerTiming.record('get_global_exclusions'):
+            self.global_exclusions = db_service.get_entity_exclusions(excluded_annotations)
+        with ServerTiming.record('get_global_inclusions'):
+            self.global_inclusions = graph_service.get_entity_inclusions(custom_annotations)
         current_app.logger.info(
             f'Time to process entity exclusions/inclusions {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
         )
         return self
 
+    @ServerTiming.record_call
     def identify(self, annotation_methods: dict):
         self.er_service = self.steps['aers'](
             exclusions=self.global_exclusions, inclusions=self.global_inclusions
@@ -118,6 +124,7 @@ class Pipeline:
         )
         return self
 
+    @ServerTiming.record_call
     def annotate(
         self,
         specified_organism_synonym: str,
@@ -150,6 +157,7 @@ class Pipeline:
         bioc = bioc_service.read(text=self.text, file_uri=filename)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
+    @ServerTiming.record_call
     def create_fallback_organism(
         self, specified_organism_synonym: str, specified_organism_tax_id: str
     ):

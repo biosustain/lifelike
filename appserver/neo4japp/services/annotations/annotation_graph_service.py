@@ -40,6 +40,7 @@ from neo4japp.utils.logger import EventLog
 from neo4japp.services.arangodb import execute_arango_query, get_db
 from ...exceptions import ServerWarning
 from ...utils.globals import warn
+from ...utils.server_timing import ServerTiming
 
 
 class AnnotationGraphService(GraphConnection):
@@ -118,6 +119,7 @@ class AnnotationGraphService(GraphConnection):
             entity['id_hyperlinks'] = inclusion.get('hyperlinks')
             inclusion_dict[normalized_synonym].append(entity)
 
+    @ServerTiming.record_call
     def get_entity_inclusions(self, inclusions: List[dict]) -> GlobalInclusions:
         """Returns global inclusions for each entity type.
         For species (taxonomy), also return the local inclusions.
