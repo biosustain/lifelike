@@ -1,6 +1,13 @@
 import { Component } from '@angular/core';
 
-import { map, shareReplay, startWith, switchMap } from 'rxjs/operators';
+import {
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  throttle,
+} from 'rxjs/operators';
 import {
   filter as _filter,
   flatMap as _flatMap,
@@ -9,6 +16,7 @@ import {
   uniq as _uniq,
 } from 'lodash/fp';
 import { combineLatest, Observable } from 'rxjs';
+import { isEqual } from 'lodash-es';
 
 import {
   EnrichmentVisualisationService,
@@ -18,8 +26,8 @@ import {
   DropdownController,
   dropdownControllerFactory,
 } from 'app/shared/utils/dropdown.controller.factory';
-
-import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
+import { idle } from 'app/shared/rxjs/idle-observable';
+import { EnrichmentVisualisationSelectService } from 'app/enrichment/services/enrichment-visualisation-select.service';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -82,7 +90,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   explanation$: Observable<string> = combineLatest([
     this.contextsController$.pipe(
       switchMap(({ current$ }) => current$),
-      startWith(undefined)
+      startWith(undefined),
     ),
     this.goTermController$.pipe(
       switchMap(({ current$ }) => current$),
@@ -93,6 +101,8 @@ export class EnrichmentVisualisationExplanationPanelComponent {
       startWith(undefined)
     ),
   ]).pipe(
+    throttle(() => idle(), { leading: true, trailing: true }),
+    distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
       this.enrichmentService
         .enrichTermWithContext(goTerm, context, geneName)

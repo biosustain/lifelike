@@ -129,7 +129,6 @@
             [resultCount]="findController.getResultCount()"
             (previous)="findController.previous()"
             (next)="findController.next()"
-            (next)="findController.next()"
             (enterPress)="findController.next()"
             (valueClear)="switchToTextFind()"
           >
@@ -137,7 +136,7 @@
         </ng-container>
         <ng-template #textSearchControl>
           <app-search-control
-            [(ngModel)]="findController.query"
+            [ngModel]="findController.query"
             (ngModelChange)="findController.nextOrStart()"
             [resultIndex]="findController.getResultIndex()"
             [resultCount]="findController.getResultCount()"
