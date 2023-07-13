@@ -90,7 +90,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   explanation$: Observable<string> = combineLatest([
     this.contextsController$.pipe(
       switchMap(({ current$ }) => current$),
-      startWith(undefined),
+      startWith(undefined)
     ),
     this.goTermController$.pipe(
       switchMap(({ current$ }) => current$),
