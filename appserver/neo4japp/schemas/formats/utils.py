@@ -6,7 +6,7 @@ from typing import Generic, List, Tuple, TypeVar, Callable, Iterable, Iterator, 
 from neo4japp.message import ServerMessage
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ContentValidationMessage(ServerMessage):
     pass
 
