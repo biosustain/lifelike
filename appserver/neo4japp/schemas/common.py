@@ -88,6 +88,10 @@ class BaseResponseSchema(CamelCaseSchema):
     def get_version(self, ex):
         return current_app.config.get('GITHUB_HASH')
 
+
+class ErrorResponseSchema(BaseResponseSchema):
+    """All errors are emitted with this schema."""
+
     stacktrace = fields.Method('get_stacktrace')
 
     def get_stacktrace(self, ex):
@@ -103,12 +107,6 @@ class BaseResponseSchema(CamelCaseSchema):
     def get_cause(self, e):
         if isinstance(e.__cause__, BaseResponseSchema):
             return BaseResponseSchema().dump(e.__cause__)
-
-
-class ErrorResponseSchema(BaseResponseSchema):
-    """All errors are emitted with this schema."""
-
-    pass
 
 
 class WarningResponseSchema(ErrorResponseSchema):
