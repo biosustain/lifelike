@@ -30,7 +30,7 @@ import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
 import { closePopups } from 'app/shared/DOMutils';
 
-import { representativePositiveNumber } from '../utils';
+import { positiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';
 import { SankeySearchService } from '../services/search.service';
 import { LayoutService } from '../services/layout.service';
@@ -645,7 +645,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
 
   updateNodeRect(rects) {
     return rects
-      .attr('height', ({ y1, y0 }) => representativePositiveNumber(y1 - y0))
+      .attr('height', ({ y1, y0 }) => positiveNumber(y1 - y0))
       .attr('width', ({ x1, x0 }) => x1 - x0);
   }
 

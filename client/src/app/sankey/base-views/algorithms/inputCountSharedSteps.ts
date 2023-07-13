@@ -21,7 +21,9 @@ export function calculateInputCountSkippingCircularLinks(
     n.value = prevLinks.reduce((a, l) => a + (l.value ?? 0), n.value);
     this.warningController.assert(
       // JS floats calculations has very limited precision which can lead to rounding error in here
-      n.value.toPrecision(5) <= maxExpectedValue,
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON
+      //  Explanation: https://github.com/SBRG/kg-prototypes/pull/2068/files#r1261601488
+      maxExpectedValue >= n.value * (1 + Number.EPSILON),
       'Input count algorithm fail - node value exceeds input node count'
     );
     const outFrac = nextLinkValue(n.value, nextLinks);

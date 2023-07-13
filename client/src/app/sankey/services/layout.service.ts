@@ -16,6 +16,7 @@ import {
   flow as _flow,
   values as _values,
   groupBy as _groupBy,
+  every as _every,
 } from 'lodash/fp';
 import {
   map,
@@ -50,7 +51,7 @@ import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
 
 import { SankeyBaseState, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
-import { normalizeGenerator } from '../utils';
+import { normalizeGenerator, positiveNumber } from '../utils';
 import {
   SankeyAbstractLayoutService,
   LayoutData,
@@ -780,8 +781,7 @@ export class LayoutService<Base extends TypeContext>
 
   calculateLinkPathParams(link, normalize = true) {
     const { source, target, multipleValues } = link;
-    let { value: linkValue } = link;
-    linkValue = linkValue || 1e-4;
+    const { value: linkValue } = link;
     const sourceX = source.x1;
     const targetX = target.x0;
     const { sourceLinks } = source;
@@ -794,19 +794,19 @@ export class LayoutService<Base extends TypeContext>
     const sourceBezierX = sourceX + bezierOffset;
     const targetBezierX = targetX - bezierOffset;
     let sourceY0;
-    let sourceY1;
+    let sourceYDelta;
     let targetY0;
-    let targetY1;
+    let targetYDelta;
     let sourceY = 0;
     let targetY = 0;
 
     for (let i = 0; i < sourceIndex; i++) {
       const nestedLink = sourceLinks[i];
-      sourceY += nestedLink.multipleValues?.[0] ?? nestedLink.value ?? 0;
+      sourceY += positiveNumber(nestedLink.multipleValues?.[0] ?? nestedLink.value ?? 0);
     }
     for (let i = 0; i < targetIndex; i++) {
       const nestedLink = targetLinks[i];
-      targetY += nestedLink.multipleValues?.[1] ?? nestedLink.value ?? 0;
+      targetY += positiveNumber(nestedLink.multipleValues?.[1] ?? nestedLink.value ?? 0);
     }
 
     if (normalize) {
@@ -829,53 +829,48 @@ export class LayoutService<Base extends TypeContext>
       sourceY0 = sourceNormalizer.normalize(sourceY) * sourceHeight + source.y0;
       targetY0 = targetNormalizer.normalize(targetY) * targetHeight + target.y0;
       if (multipleValues) {
-        sourceY1 = sourceNormalizer.normalize(multipleValues[0]) * sourceHeight + sourceY0;
-        targetY1 = targetNormalizer.normalize(multipleValues[1]) * targetHeight + targetY0;
+        sourceYDelta = sourceNormalizer.normalize(multipleValues[0]) * sourceHeight;
+        targetYDelta = targetNormalizer.normalize(multipleValues[1]) * targetHeight;
       } else {
-        sourceY1 = sourceNormalizer.normalize(linkValue) * sourceHeight + sourceY0;
-        targetY1 = targetNormalizer.normalize(linkValue) * targetHeight + targetY0;
+        sourceYDelta = sourceNormalizer.normalize(linkValue) * sourceHeight;
+        targetYDelta = targetNormalizer.normalize(linkValue) * targetHeight;
       }
     } else {
-      let { width } = link;
-      width = width || 1e-4;
-      const valueScaler = width / linkValue;
+      const valueScaler = link.width / linkValue;
 
-      sourceY0 = sourceY * valueScaler + source.y0;
-      targetY0 = targetY * valueScaler + target.y0;
-      if (multipleValues) {
-        sourceY1 = multipleValues[0] * valueScaler + sourceY0;
-        targetY1 = multipleValues[1] * valueScaler + targetY0;
+      if (isFinite(valueScaler) && valueScaler > 0) {
+        sourceY0 = sourceY * valueScaler + source.y0;
+        targetY0 = targetY * valueScaler + target.y0;
+        if (multipleValues) {
+          sourceYDelta = multipleValues[0] * valueScaler;
+          targetYDelta = multipleValues[1] * valueScaler;
+        } else {
+          sourceYDelta = linkValue * valueScaler;
+          targetYDelta = linkValue * valueScaler;
+        }
       } else {
-        sourceY1 = linkValue * valueScaler + sourceY0;
-        targetY1 = linkValue * valueScaler + targetY0;
+        sourceY0 = sourceY + source.y0;
+        targetY0 = targetY + target.y0;
+        sourceYDelta = 0;
+        targetYDelta = 0;
       }
     }
-    if (
-      [sourceX, sourceY0, sourceY1, targetX, targetY0, targetY1, sourceBezierX, targetBezierX].some(
-        isNaN
-      )
-    ) {
-      console.log(
-        sourceX,
-        sourceY0,
-        sourceY1,
-        targetX,
-        targetY0,
-        targetY1,
-        sourceBezierX,
-        targetBezierX
-      );
-    }
-    return {
+    const linkParams = {
       sourceX,
       sourceY0,
-      sourceY1,
+      sourceY1: sourceY0 + positiveNumber(sourceYDelta, sourceY0),
       targetX,
       targetY0,
-      targetY1,
+      targetY1: targetY0 + positiveNumber(targetYDelta, targetY0),
       sourceBezierX,
       targetBezierX,
     };
+    console.assert(
+      _every(isFinite)(linkParams),
+      'Link params contains infinite value:',
+      linkParams
+    );
+    return linkParams;
   }
 
   /**
