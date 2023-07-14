@@ -7,7 +7,6 @@ import { mapIterable } from 'app/shared/utils';
 
 import { ErrorMessages } from '../../constants/error';
 import { Palette } from '../single-lane/interfaces';
-import { CubehelixColor } from 'd3';
 
 export const DEFAULT_SATURATION = 0.35;
 export const DEFAULT_LIGHTNESS = 0.75;

@@ -31,13 +31,17 @@ export class AdminSettingsComponent {
     private readonly snackBar: MatSnackBar,
     private storage: StorageService,
     private filesystemService: FilesystemService,
-    private worksheetViewerService: EnrichmentTableService,
-  ) {
-  }
+    private worksheetViewerService: EnrichmentTableService
+  ) {}
 
   fileChanged(event: { target: HTMLInputElement }) {
     const filesControl = this.form.get('files');
-    filesControl.setValue(event.target.files[0] ?? null)
+    if (event.target.files.length) {
+      const file = event.target.files[0];
+      filesControl.setValue([file]);
+    } else {
+      filesControl.setValue(null);
+    }
     filesControl.markAsDirty();
   }
 
@@ -55,9 +59,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              }),
-            ),
-          ),
+              })
+            )
+          )
         ),
         concatMap(([hashId, blob]) =>
           zip(
@@ -67,9 +71,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              }),
-            ),
-          ),
+              })
+            )
+          )
         ),
         concatMap(([hashId, document]) =>
           zip(
@@ -80,9 +84,9 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              }),
-            ),
-          ),
+              })
+            )
+          )
         ),
         concatMap(([document, hashId, newBlob]) =>
           this.filesystemService
@@ -99,13 +103,13 @@ export class AdminSettingsComponent {
               catchError((err) => {
                 console.log(err);
                 return EMPTY;
-              }),
-            ),
-        ),
+              })
+            )
+        )
       )
       .subscribe(
         (x) => console.log(`Updated enrichment table: ${x}`),
-        (err) => console.log(err),
+        (err) => console.log(err)
       );
   }
 
@@ -114,23 +118,23 @@ export class AdminSettingsComponent {
       new BehaviorSubject<Progress>(
         new Progress({
           status: 'Uploading user manual...',
-        }),
+        })
       ),
     ];
     const progressDialogRef = this.progressDialog.display({
       title: 'Saving manual as ***ARANGO_DB_NAME***-user-manual.pdf...',
       progressObservables,
     });
-    const data = {...this.form.value};
+    const data = { ...this.form.value };
     const file: File = data.files[0];
     this.storage
       .uploadUserManual(file)
-      .pipe(this.errorHandler.create({label: 'Upload user manual'}))
+      .pipe(this.errorHandler.create({ label: 'Upload user manual' }))
       .subscribe(
         (event) => {
           if (event.type === HttpEventType.UploadProgress) {
             progressObservables[0].next(
-              getProgressStatus(event, 'Processing file...', 'Uploading file...'),
+              getProgressStatus(event, 'Processing file...', 'Uploading file...')
             );
           } else if (event.type === HttpEventType.Response) {
             progressDialogRef.close();
@@ -142,7 +146,7 @@ export class AdminSettingsComponent {
         (err) => {
           progressDialogRef.close();
           return throwError(err);
-        },
+        }
       );
   }
 }

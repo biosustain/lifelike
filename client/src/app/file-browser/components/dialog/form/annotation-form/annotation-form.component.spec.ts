@@ -8,9 +8,8 @@ describe('AnnotationFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AnnotationFormComponent ]
-    })
-    .compileComponents();
+      declarations: [AnnotationFormComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

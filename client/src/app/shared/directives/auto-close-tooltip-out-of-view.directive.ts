@@ -16,8 +16,7 @@ export class AutoCloseTooltipOutOfViewDirective implements OnInit, OnDestroy {
   @Input('appAutoCloseTooltipOutOfView') tooltipRef: NgbTooltip;
   private bindingSubscription: Subscription;
 
-  constructor(private readonly element: ElementRef<HTMLElement>) {
-  }
+  constructor(private readonly element: ElementRef<HTMLElement>) {}
 
   ngOnInit() {
     this.bindingSubscription = this.tooltipRef.shown
@@ -31,12 +30,11 @@ export class AutoCloseTooltipOutOfViewDirective implements OnInit, OnDestroy {
               if (!isWithinScrollableView(this.element.nativeElement, container)) {
                 this.tooltipRef?.close();
               }
-            }),
-          ),
-        ),
+            })
+          )
+        )
       )
-      .subscribe(() => {
-      });
+      .subscribe(() => {});
   }
 
   ngOnDestroy() {

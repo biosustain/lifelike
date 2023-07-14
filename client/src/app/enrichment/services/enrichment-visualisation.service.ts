@@ -15,7 +15,6 @@ import { addStatus, mergeStatuses, MultiPipeStatus } from 'app/shared/pipes/add-
 
 import { BaseEnrichmentDocument, EnrichmentDocument } from '../models/enrichment-document';
 import { EnrichmentService } from './enrichment.service';
-import { SingleResult } from '../../shared/schemas/common';
 
 export interface EnrichWithGOTermsResult {
   goTerm: string;

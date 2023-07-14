@@ -193,7 +193,6 @@ type BaseObjectCreateRequest = Required<
 export type ObjectCreateRequest = BaseObjectCreateRequest &
   Partial<ObjectContentSource> & {
     mimeType?: string;
-
   };
 
 /**

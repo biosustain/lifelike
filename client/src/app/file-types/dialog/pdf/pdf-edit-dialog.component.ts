@@ -2,7 +2,12 @@ import { AfterViewInit, Component, Input, OnChanges, SimpleChanges } from '@angu
 import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compact as _compact, has as _has, isNil as _isNil, mapValues as _mapValues } from 'lodash/fp';
+import {
+  compact as _compact,
+  has as _has,
+  isNil as _isNil,
+  mapValues as _mapValues,
+} from 'lodash/fp';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
@@ -23,16 +28,18 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './pdf-edit-dialog.component.html',
 })
 export class PdfEditDialogComponent<
-  V extends EnrichmentTableEditDialogResults = EnrichmentTableEditDialogResults
-> extends CommonFormDialogComponent<EnrichmentTableEditDialogValue> implements AfterViewInit, OnChanges {
-
+    V extends EnrichmentTableEditDialogResults = EnrichmentTableEditDialogResults
+  >
+  extends CommonFormDialogComponent<EnrichmentTableEditDialogValue>
+  implements AfterViewInit, OnChanges
+{
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
     protected readonly search: SharedSearchService,
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
-    protected readonly modalService: NgbModal,
+    protected readonly modalService: NgbModal
   ) {
     super(modal, messageDialog);
   }
@@ -78,16 +85,16 @@ export class PdfEditDialogComponent<
     this.programaticChanges(_mapValues(changes, 'currentValue'));
   }
 
-  updateFromDocument({organism, taxID, importGenes, values, domains}: EnrichmentDocument) {
+  updateFromDocument({ organism, taxID, importGenes, values, domains }: EnrichmentDocument) {
     // Note: This replaces the file's fallback organism
     this.form.get('fallbackOrganism').setValue(
       organism
         ? {
-          organism_name: organism,
-          synonym: organism,
-          tax_id: taxID,
-        }
-        : null,
+            organism_name: organism,
+            synonym: organism,
+            tax_id: taxID,
+          }
+        : null
     );
     this.form.get('entitiesList').setValue(
       importGenes
@@ -99,7 +106,7 @@ export class PdfEditDialogComponent<
           }
           return row;
         })
-        .join('\n'),
+        .join('\n')
     );
     this.setDomains(domains);
   }
@@ -116,7 +123,7 @@ export class PdfEditDialogComponent<
 
   getValue() {
     const parentValue = this.form.value;
-    const {changes} = parentValue;
+    const { changes } = parentValue;
     const documentChanges = {} as V['documentChanges'];
     if (_has('entitiesList')(changes)) {
       const geneRows = changes.entitiesList.split(/[\/\n\r]/g);
@@ -133,7 +140,7 @@ export class PdfEditDialogComponent<
       });
     }
     if (_has('fallbackOrganism')(changes)) {
-      const {fallbackOrganism} = changes;
+      const { fallbackOrganism } = changes;
       documentChanges.organism = fallbackOrganism.organism_name;
       documentChanges.taxID = fallbackOrganism.tax_id;
     }
@@ -190,17 +197,16 @@ type EnrichmentDocumentEditFormValue = {
   domainsList: string[]; // translated to document domains
 } & Required<Pick<FilesystemObjectEditFormValue, 'fallbackOrganism'>>;
 
-export interface EnrichmentTableEditDialogValue
-  extends ObjectEditDialogValue {
+export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
   documentChanges: Partial<EnrichmentDocumentEditFormValue>;
 }
 
-export type EnrichmentTableEditDialogResults =
-  Omit<EnrichmentTableEditDialogValue, 'documentChanges'>
-  & {
-  documentChanges: Partial<Pick<
-    EnrichmentDocument,
-    'fileId' | 'taxID' | 'importGenes' | 'values' | 'domains' | 'organism'
-  >>;
+export type EnrichmentTableEditDialogResults = Omit<
+  EnrichmentTableEditDialogValue,
+  'documentChanges'
+> & {
+  documentChanges: Partial<
+    Pick<EnrichmentDocument, 'fileId' | 'taxID' | 'importGenes' | 'values' | 'domains' | 'organism'>
+  >;
 };

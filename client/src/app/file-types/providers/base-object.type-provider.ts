@@ -57,7 +57,9 @@ export interface Exporter {
  * A file type provider knows how to handle a certain or set of object types. Instances
  * are used by the application to discover operations on objects stored within Lifelike.
  */
-export interface ObjectTypeProvider<EditDialogResult extends ObjectEditDialogValue = ObjectEditDialogValue> {
+export interface ObjectTypeProvider<
+  EditDialogResult extends ObjectEditDialogValue = ObjectEditDialogValue
+> {
   /**
    * Test whether this provider is for the given type of object.
    * @param object the object
@@ -74,7 +76,7 @@ export interface ObjectTypeProvider<EditDialogResult extends ObjectEditDialogVal
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions,
+    options?: PreviewOptions
   ): Observable<ComponentRef<any> | undefined>;
 
   /**
@@ -122,15 +124,11 @@ export class AbstractObjectTypeProviderHelper {
     protected readonly filesystemService: FilesystemService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly errorHandler: ErrorHandler,
-    protected readonly ngZone: NgZone,
-  ) {
-  }
+    protected readonly ngZone: NgZone
+  ) {}
 
   openEditDialog(target: FilesystemObject, options: {} = {}) {
-    const dialogRef = openModal(
-      this.modalService,
-      ObjectEditDialogComponent,
-    );
+    const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
     dialogRef.componentInstance.object = target;
     dialogRef.componentInstance.accept = (dialogValue) => {
       const progressDialogRef = this.progressDialog.display({
@@ -139,7 +137,7 @@ export class AbstractObjectTypeProviderHelper {
           new BehaviorSubject<Progress>(
             new Progress({
               status: `Saving changes to ${getObjectLabel(target)}...`,
-            }),
+            })
           ),
         ],
       });
@@ -150,24 +148,18 @@ export class AbstractObjectTypeProviderHelper {
         .pipe(
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({label: 'Edit object'}),
-          map(() => dialogValue.changes),
+          this.errorHandler.create({ label: 'Edit object' }),
+          map(() => dialogValue.changes)
         )
         .toPromise();
     };
     return dialogRef.result;
   }
 
-  parseToPatchRequest<
-    I extends ObjectEditDialogValue
-  >({
-      changes: {
-        file,
-        annotationConfigs,
-        ...rest
-      },
-      value,
-    }: I): BulkObjectUpdateRequest {
+  parseToPatchRequest<I extends ObjectEditDialogValue>({
+    changes: { file, annotationConfigs, ...rest },
+    value,
+  }: I): BulkObjectUpdateRequest {
     const request: BulkObjectUpdateRequest = _omit('parent')(file);
     if (_has('parent.hashId')(file)) {
       request.parentHashId = file.parent.hashId;
@@ -196,17 +188,16 @@ export interface CreateObjectRequest
 export abstract class AbstractObjectTypeProvider<
   T extends ObjectEditDialogValue = ObjectEditDialogValue,
   V extends ObjectEditDialogValue = T
->
-  implements ObjectTypeProvider<V> {
+> implements ObjectTypeProvider<V>
+{
   abstract handles(object: FilesystemObject): boolean;
 
-  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {
-  }
+  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {}
 
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions,
+    options?: PreviewOptions
   ): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }

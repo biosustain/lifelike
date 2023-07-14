@@ -20,7 +20,6 @@ export class ObjectEditDialogComponent<
   T extends ObjectEditDialogValue = ObjectEditDialogValue,
   V extends ObjectEditDialogValue = T
 > extends CommonFormDialogComponent<T, V> {
-
   @Input() title = 'Edit Item';
   @Input() parentLabel = 'Location';
   @Input() forceAnnotationOptions = false;
@@ -36,7 +35,7 @@ export class ObjectEditDialogComponent<
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly modalService: NgbModal,
+    protected readonly modalService: NgbModal
   ) {
     super(modal, messageDialog);
   }
@@ -59,7 +58,6 @@ export class ObjectEditDialogComponent<
     } as T;
   }
 
-
   onAnnotationMethodPick(method: string, checked: boolean) {
     const field = this.form.get('annotationMethod');
     field.markAsTouched();
@@ -68,10 +66,9 @@ export class ObjectEditDialogComponent<
   }
 }
 
-export type FilesystemObjectEditFormValue =
-  FileFormValue
-  & AnnotationFormValue
-  & FallbackOrganismFormValue;
+export type FilesystemObjectEditFormValue = FileFormValue &
+  AnnotationFormValue &
+  FallbackOrganismFormValue;
 
 export interface ObjectEditDialogValue {
   object: FilesystemObject;

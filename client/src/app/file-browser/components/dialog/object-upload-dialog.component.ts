@@ -30,7 +30,6 @@ import { FilesystemObject } from '../../models/filesystem-object';
   templateUrl: './object-upload-dialog.component.html',
 })
 export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> {
-
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
@@ -38,14 +37,13 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> 
     protected readonly errorHandler: ErrorHandler,
     protected readonly progressDialog: ProgressDialog,
     protected readonly modalService: NgbModal,
-    private readonly abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+    private readonly abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper
   ) {
     super(modal, messageDialog);
   }
   @Input() request = {};
   @Input() promptUpload = false;
   @Input() promptParent = false;
-
 
   readonly annotationMethods: AnnotationMethods[] = ['NLP', 'Rules Based'];
   readonly annotationModels = Object.keys(ENTITY_TYPE_MAP)
@@ -67,7 +65,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> 
         rulesBased: new FormControl(true),
       }),
     }),
-    {},
+    {}
   );
   protected filePossiblyAnnotatable = false;
 
@@ -130,11 +128,8 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> 
     }
   );
 
-
-
   // Empty overwrite prevents attempt of returned value to update dialog form
-  applyValue(value: any) {
-  }
+  applyValue(value: any) {}
 
   // NOTE: We can add the rest of the request data here, but, to be honest, it is redundant.
   // @ts-ignore
@@ -158,7 +153,7 @@ export class ObjectUploadDialogComponent extends CommonFormDialogComponent<any> 
     return [
       {
         ...this.abstractObjectTypeProviderHelper.parseToRequest(value),
-        ...(value.contentSource === 'contentUrl' && {contentUrl: value.contentUrl}),
+        ...(value.contentSource === 'contentUrl' && { contentUrl: value.contentUrl }),
         ...this.request,
       } as ObjectCreateRequest,
     ];

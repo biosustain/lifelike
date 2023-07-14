@@ -10,8 +10,7 @@
         <button type="button" class="btn btn-secondary mr-2" (click)="showParentDialog()">
           Browse...
         </button>
-        <div class="text-truncate"
-             *ngIf="parentControl.value != null; else noParentChosen">
+        <div class="text-truncate" *ngIf="parentControl.value != null; else noParentChosen">
           <i class="fa fa-fw fa-folder text-icon"></i>
           {{ parentControlTypedValue.effectiveName }}
         </div>
@@ -33,12 +32,12 @@
   </app-form-row>
 
   <app-form-row for="description" label="Description" [control]="formControl.get('description')">
-      <textarea
-        formControlName="description"
-        id="description"
-        [appFormInput]="formControl.get('description')"
-        rows="10"
-      ></textarea>
+    <textarea
+      formControlName="description"
+      id="description"
+      [appFormInput]="formControl.get('description')"
+      rows="10"
+    ></textarea>
   </app-form-row>
 
   <ng-container *ngIf="contextsControl as contextsControl">
@@ -80,7 +79,7 @@
 
   <app-form-row [control]="formControl.get('public')" *ngIf="!object.isDirectory">
     <div class="custom-control custom-checkbox">
-      <input type="checkbox" class="custom-control-input" id="public" formControlName="public"/>
+      <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
       <label class="custom-control-label" for="public">Publicly share with the community</label>
     </div>
   </app-form-row>

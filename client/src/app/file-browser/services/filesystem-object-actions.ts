@@ -169,7 +169,7 @@ export class FilesystemObjectActions {
         )
         .pipe(
           finalize(() => progressDialogRef.close()),
-          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.formControl),
+          this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
           this.errorHandler.create({ label: 'Move object' })
         )
         .toPromise()

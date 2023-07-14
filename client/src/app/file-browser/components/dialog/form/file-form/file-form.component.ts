@@ -22,19 +22,14 @@ import { AbstractNestedForm } from '../abstract-nested-form';
   selector: 'app-file-form',
   templateUrl: './file-form.component.html',
   styleUrls: ['./file-form.component.scss'],
-  viewProviders: [
-    {provide: ControlContainer, useExisting: FormGroupDirective},
-  ],
+  viewProviders: [{ provide: ControlContainer, useExisting: FormGroupDirective }],
 })
 export class FileFormComponent extends AbstractNestedForm implements OnInit, OnChanges {
   get parentControlTypedValue() {
     return this.formControl.get('parent')?.value as FilesystemObject;
   }
 
-  constructor(
-    protected parentFormDirective: FormGroupDirective,
-    private modalService: NgbModal,
-  ) {
+  constructor(protected parentFormDirective: FormGroupDirective, private modalService: NgbModal) {
     super(parentFormDirective);
   }
 
@@ -68,12 +63,11 @@ export class FileFormComponent extends AbstractNestedForm implements OnInit, OnC
           parent: destinations[0],
         });
       },
-      () => {
-      },
+      () => {}
     );
   }
 
-  private updateFromObject({filename, description, parent, public: p, contexts}): void {
+  private updateFromObject({ filename, description, parent, public: p, contexts }): void {
     this.formControl.patchValue({
       filename: filename || '',
       description: description || '',
@@ -88,7 +82,7 @@ export class FileFormComponent extends AbstractNestedForm implements OnInit, OnC
     this.setContexts(contexts);
   }
 
-  ngOnChanges({object}: SimpleChanges): void {
+  ngOnChanges({ object }: SimpleChanges): void {
     if (object) {
       this.updateFromObject(object.currentValue);
     }

@@ -16,9 +16,7 @@ import { AbstractNestedForm } from '../abstract-nested-form';
   selector: 'app-annotation-form',
   templateUrl: './annotation-form.component.html',
   styleUrls: ['./annotation-form.component.scss'],
-  viewProviders: [
-    {provide: ControlContainer, useExisting: FormGroupDirective},
-  ],
+  viewProviders: [{ provide: ControlContainer, useExisting: FormGroupDirective }],
 })
 export class AnnotationFormComponent extends AbstractNestedForm implements OnInit, OnChanges {
   @Input() mimeType: string;
@@ -35,7 +33,7 @@ export class AnnotationFormComponent extends AbstractNestedForm implements OnIni
         rulesBased: new FormControl(true),
       }),
     }),
-    {},
+    {}
   );
 
   readonly formControl = new FormGroup(
@@ -43,18 +41,18 @@ export class AnnotationFormComponent extends AbstractNestedForm implements OnIni
       excludeReferences: new FormControl(false),
       annotationMethods: new FormGroup(this.defaultAnnotationMethods),
     },
-    [Validators.required],
+    [Validators.required]
   );
   readonly name = 'annotationConfigs';
   ngOnInit(): void {
     super.ngOnInit();
   }
 
-  private updateFromObject({annotationConfigs}): void {
+  private updateFromObject({ annotationConfigs }): void {
     this.formControl.patchValue(annotationConfigs);
   }
 
-  ngOnChanges({object}: SimpleChanges): void {
+  ngOnChanges({ object }: SimpleChanges): void {
     if (object) {
       this.updateFromObject(object.currentValue);
     }
@@ -72,7 +70,7 @@ export interface AnnotationFormValue {
       [key: string]: {
         nlp: boolean;
         rulesBased: boolean;
-      }
-    }
-  }
+      };
+    };
+  };
 }

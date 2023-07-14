@@ -13,19 +13,16 @@ import { AbstractNestedForm } from '../abstract-nested-form';
   selector: 'app-content-form',
   templateUrl: './content-form.component.html',
   styleUrls: ['./content-form.component.scss'],
-  viewProviders: [
-    {provide: ControlContainer, useExisting: FormGroupDirective},
-  ],
+  viewProviders: [{ provide: ControlContainer, useExisting: FormGroupDirective }],
 })
 export class ContentFormComponent extends AbstractNestedForm implements OnInit {
-
   constructor(protected parentFormDirective: FormGroupDirective) {
     super(parentFormDirective);
   }
   @Input() promptUpload = false;
   @Input() promptParent = false;
 
-  @ViewChild('fileInput', {static: false})
+  @ViewChild('fileInput', { static: false })
   protected readonly fileInputElement: ElementRef;
 
   readonly formControl = new FormGroup(
@@ -54,7 +51,7 @@ export class ContentFormComponent extends AbstractNestedForm implements OnInit {
         }
       }
       return null;
-    },
+    }
   );
   readonly name = 'contentForm';
 
@@ -65,5 +62,4 @@ export class ContentFormComponent extends AbstractNestedForm implements OnInit {
   ngOnInit(): void {
     super.ngOnInit();
   }
-
 }

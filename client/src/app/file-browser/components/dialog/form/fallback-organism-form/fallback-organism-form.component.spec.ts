@@ -8,9 +8,8 @@ describe('FallbackOrganismFormComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ FallbackOrganismFormComponent ]
-    })
-    .compileComponents();
+      declarations: [FallbackOrganismFormComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

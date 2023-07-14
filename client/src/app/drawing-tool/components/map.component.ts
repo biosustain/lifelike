@@ -38,7 +38,6 @@ import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GraphViewDirective } from '../directives/graph-view.directive';
-import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
 
 @Component({
   selector: 'app-map',

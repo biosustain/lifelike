@@ -1,31 +1,18 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import {
-  BehaviorSubject,
-  defer,
-  EMPTY,
-  Observable,
-  of,
-  ReplaySubject,
-  Subject,
-  Subscription,
-  throwError,
-} from 'rxjs';
-import { map, shareReplay, switchMap, take } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import {
   flow as _flow,
-  thru as _thru,
-  sortBy as _sortBy,
   fromPairs as _fromPairs,
-  toPairs as _toPairs,
   map as _map,
-  values as _values,
+  sortBy as _sortBy,
+  thru as _thru,
+  toPairs as _toPairs,
 } from 'lodash/fp';
-import { isEmpty } from 'lodash-es';
 
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
   EnrichmentVisualisationService,
@@ -51,7 +38,7 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
   constructor(
     protected readonly route: ActivatedRoute,
     readonly enrichmentService: EnrichmentVisualisationService,
-    private readonly moduleContext: ModuleContext
+    private readonly moduleContext: ModuleContext,
   ) {
     moduleContext.register(this);
   }
@@ -61,7 +48,7 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
     map((object) => ({
       title: object?.filename ?? 'Statistical Enrichment',
       fontAwesomeIcon: 'chart-bar',
-    }))
+    })),
   );
 
   readonly grouping = {
@@ -74,20 +61,21 @@ export class EnrichmentVisualisationViewerComponent implements ModuleAwareCompon
     map(
       _flow(
         _flow(
-        _sortBy<EnrichWithGOTermsResult>('p-value'),
-        _thru((result) =>
-          _flow(
-            _toPairs,
-            _map(([group, goLabel]) => [
-              group,
-              result.filter(({ goLabel: labels }) => labels.includes(goLabel)),
-            ]),
-            _fromPairs
-          )(this.grouping)
-        )
-      )
+          _sortBy<EnrichWithGOTermsResult>('p-value'),
+          _thru((result) =>
+            _flow(
+              _toPairs,
+              _map(([group, goLabel]) => [
+                group,
+                result.filter(({goLabel: labels}) => labels.includes(goLabel)),
+              ]),
+              _fromPairs,
+            )(this.grouping),
+          ),
+        ),
+      ),
     ),
-    shareReplay({ bufferSize: 1, refCount: true })
+    shareReplay({bufferSize: 1, refCount: true}),
   );
 
   sourceData$ = this.object$.pipe(map((object) => object.getGraphEntitySources()));

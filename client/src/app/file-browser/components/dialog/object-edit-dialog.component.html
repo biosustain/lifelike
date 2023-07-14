@@ -11,8 +11,7 @@
     <ng-container *ngIf="possiblyAnnotatable">
       <fieldset class="fieldset-properties mt-4">
         <legend>Annotation Options</legend>
-        <app-fallback-organism-form *ngIf="object.promptOrganism">
-        </app-fallback-organism-form>
+        <app-fallback-organism-form *ngIf="object.promptOrganism"> </app-fallback-organism-form>
 
         <app-annotation-form [mimeType]="object.mimeType"></app-annotation-form>
       </fieldset>

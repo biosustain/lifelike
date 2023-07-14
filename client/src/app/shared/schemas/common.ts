@@ -100,4 +100,4 @@ export interface ServiceOnInit {
   onInit(): void;
 }
 
-export type Awaited<T> = T extends PromiseLike<infer U> ? U : T
+export type Awaited<T> = T extends PromiseLike<infer U> ? U : T;

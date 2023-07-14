@@ -1,6 +1,7 @@
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgbModalOptions } from '@ng-bootstrap/ng-bootstrap/modal/modal-config';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap/modal/modal-ref';
+
 import { CommonDialogComponent } from '../components/dialog/common-dialog.component';
 import { Awaited } from '../schemas/common';
 
@@ -15,9 +16,9 @@ export function openModal<T>(
   modalService: NgbModal,
   component: new (...args: any[]) => T,
   options?: NgbModalOptions
-): Omit<NgbModalRef, 'componentInstance'|'result'> & {
-  componentInstance: T,
-  result: T extends CommonDialogComponent<T, infer V> ? Promise<V> : NgbModalRef['result']
+): Omit<NgbModalRef, 'componentInstance' | 'result'> & {
+  componentInstance: T;
+  result: T extends CommonDialogComponent<T, infer V> ? Promise<V> : NgbModalRef['result'];
 } {
   return modalService.open(component, options) as any;
 }

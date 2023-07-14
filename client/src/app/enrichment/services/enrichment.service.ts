@@ -65,21 +65,21 @@ export class EnrichmentService implements OnDestroy {
 
   ngOnDestroy() {
     openEnrichmentFiles.forEach(
-      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId),
+      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
     );
   }
 
   save(
     hashIds: string[],
     changes: Partial<BulkObjectUpdateRequest>,
-    updateWithLatest?: { [hashId: string]: FilesystemObject },
+    updateWithLatest?: { [hashId: string]: FilesystemObject }
   ): Observable<{ [hashId: string]: FilesystemObject }> {
     return this.filesystemService.save(hashIds, changes, updateWithLatest).pipe(
       tap((ret) =>
         // dump keep track of file upon save so it reloaded
         // todo: implement optimistic update
-        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId)),
-      ),
+        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId))
+      )
     );
   }
 }

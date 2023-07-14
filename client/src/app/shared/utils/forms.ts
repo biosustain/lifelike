@@ -9,7 +9,8 @@ import {
   isArray as _isArray,
   fromPairs as _fromPairs,
   zip as _zip,
-  pickBy as _pickBy, mapValues as _mapValues,
+  pickBy as _pickBy,
+  mapValues as _mapValues,
 } from 'lodash/fp';
 
 export function getTopParent(control: AbstractControl) {
@@ -71,13 +72,13 @@ export function getFormChangedValues(form: AbstractControl, flag = 'dirty') {
       return _flow(
         // Return only changed values
         _pickBy((control: AbstractControl) => control[flag]),
-        _mapValues((control: AbstractControl) => getFormChangedValues(control, flag)),
-      )(controls)
+        _mapValues((control: AbstractControl) => getFormChangedValues(control, flag))
+      )(controls);
     }
     if (_isArray(controls)) {
       return _flow(
         _filter((control: AbstractControl) => control[flag]),
-        _map((control: AbstractControl) => getFormChangedValues(control, flag)),
+        _map((control: AbstractControl) => getFormChangedValues(control, flag))
       )(controls);
     }
   }

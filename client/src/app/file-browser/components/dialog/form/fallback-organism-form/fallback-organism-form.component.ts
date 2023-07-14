@@ -6,17 +6,13 @@ import { OrganismAutocomplete } from 'app/interfaces';
 import { AbstractNestedForm } from '../abstract-nested-form';
 import { FilesystemObject } from '../../../../models/filesystem-object';
 
-
 @Component({
   selector: 'app-fallback-organism-form',
   templateUrl: './fallback-organism-form.component.html',
   styleUrls: ['./fallback-organism-form.component.scss'],
-  viewProviders: [
-    {provide: ControlContainer, useExisting: FormGroupDirective},
-  ],
+  viewProviders: [{ provide: ControlContainer, useExisting: FormGroupDirective }],
 })
 export class FallbackOrganismFormComponent extends AbstractNestedForm implements OnInit, OnChanges {
-
   readonly formControl = new FormControl(null);
   readonly name: string = 'fallbackOrganism';
 
@@ -26,11 +22,11 @@ export class FallbackOrganismFormComponent extends AbstractNestedForm implements
     super.ngOnInit();
   }
 
-  private updateFromObject({fallbackOrganism}): void {
+  private updateFromObject({ fallbackOrganism }): void {
     this.formControl.patchValue(fallbackOrganism);
   }
 
-  ngOnChanges({object}: SimpleChanges): void {
+  ngOnChanges({ object }: SimpleChanges): void {
     if (object) {
       this.updateFromObject(object.currentValue);
     }
