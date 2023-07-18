@@ -50,7 +50,7 @@ export class TableCompleteComponent implements OnChanges {
   }
 
   selectGoTermAndGeneName(goTerm: string, geneName: string) {
-    this.enrichmentVisualisationSelectService.goTerm$.next(goTerm);
+    this.selectGoTerm(goTerm);
     this.enrichmentVisualisationSelectService.geneName$.next(geneName);
   }
 
