@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss"/>
+<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss" />
 <div class="d-flex flex-column h-100">
   <div class="module-body">
     <ng-container *ngIf="one as selected; else multiSelect">
@@ -18,9 +18,9 @@
 
       <ng-container
         *ngIf="
-            (selected.entity.data?.sources && selected.entity.data?.sources.length) ||
-            (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
-          "
+          (selected.entity.data?.sources && selected.entity.data?.sources.length) ||
+          (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
+        "
       >
         <fieldset class="fieldset-properties mt-4">
           <legend>Links</legend>
