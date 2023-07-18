@@ -1,6 +1,6 @@
 import { sum } from 'd3-array';
 
-import { representativePositiveNumber } from '../utils';
+import { nonNegativeNumber } from '../utils';
 import { DefaultLayoutService } from '../services/layout.service';
 import { ValueProcessingStep } from '../interfaces/valueAccessors';
 import { TypeContext } from '../interfaces';
@@ -38,7 +38,7 @@ export const byProperty: (property: string) => ValueProcessingStep<TypeContext> 
   // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
   function (this: DefaultLayoutService, { nodes }) {
     nodes.forEach((n) => {
-      n.value = representativePositiveNumber(n[property]);
+      n.value = nonNegativeNumber(n[property]);
     });
     return {
       _sets: {

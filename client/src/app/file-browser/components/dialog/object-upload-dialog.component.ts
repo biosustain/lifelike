@@ -92,7 +92,7 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
             filename,
             description,
             public: false,
-            organism: null,
+            fallbackOrganism: null,
             annotationsConfigs: {
               annotationMethods: this.defaultAnnotationMethods,
               excludeReferences: true,

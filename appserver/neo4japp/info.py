@@ -6,7 +6,7 @@ from neo4japp.message import ServerMessage
 from neo4japp.utils.transaction_id import transaction_id
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerInfo(ServerMessage):
     """
     Create a new Info.
@@ -39,6 +39,6 @@ class ServerInfo(ServerMessage):
         return '\n'.join(lines)
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ContentValidationInfo(ServerInfo):
     pass

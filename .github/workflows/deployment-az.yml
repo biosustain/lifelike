@@ -67,8 +67,6 @@ jobs:
           password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
           dockerfile: ./Dockerfile
 
-
-
   # -------------------------------------------------------------
   # JOB: Deploy to AZ environment using Ansible playbook
   #      pointed by the Git submodule: /deployment

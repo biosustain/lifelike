@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 
 import { combineLatest, defer, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -34,7 +42,8 @@ export class WorkspaceTabComponent implements OnChanges {
 
   constructor(
     protected readonly viewService: ViewService,
-    protected readonly clipboard: ClipboardService
+    protected readonly clipboard: ClipboardService,
+    protected readonly ngZone: NgZone
   ) {}
 
   dragData$ = defer(() =>
@@ -71,7 +80,7 @@ export class WorkspaceTabComponent implements OnChanges {
     )
   );
 
-  drag = new CdkNativeDragItegration(this.dragData$);
+  drag = new CdkNativeDragItegration(this.dragData$, this.ngZone);
 
   ngOnChanges({ tab }: SimpleChanges) {
     if (tab) {

@@ -41,4 +41,3 @@ jobs:
           ssh_key: ${{ secrets.SSH_KEY }}
           options: |
             --user ansible
-            --verbose

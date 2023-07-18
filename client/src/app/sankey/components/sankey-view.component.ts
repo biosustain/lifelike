@@ -113,7 +113,7 @@ export class SankeyViewComponent
 {
   searchParams$ = this.sankeyController.state$.pipe(
     map(
-      ({ networkTraceIdx, viewName, baseView }) =>
+      ({ networkTraceIdx, viewName, baseView }: any) =>
         omitBy(
           {
             [SankeyURLLoadParam.NETWORK_TRACE_IDX]: networkTraceIdx,
@@ -653,7 +653,7 @@ export class SankeyViewComponent
         first(),
         switchMap((viewName) =>
           iif(
-            () => viewName,
+            () => Boolean(viewName),
             defer(() => this.viewController.createView(viewName)),
             defer(() => this.saveViewAs())
           )

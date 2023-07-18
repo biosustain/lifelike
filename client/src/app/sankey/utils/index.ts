@@ -32,7 +32,9 @@ export const isPositiveNumber = (v: any) => isNumber(v) || v > 0;
 
 export const clamp = (min, max) => (value) => Math.min(Math.max(min, Number(value)), max);
 
-export const representativePositiveNumber = clamp(Number.MIN_VALUE, 1e4);
+export const nonNegativeNumber = clamp(0, Number.MAX_VALUE);
+export const positiveNumber = (value, precisionFor = 0) =>
+  clamp(Number.MIN_VALUE + precisionFor * Number.EPSILON, Number.MAX_VALUE)(value);
 // endregion
 
 export const parseForRendering = (v, propertyName: string | boolean = true) => {

@@ -16,7 +16,7 @@ with resources.open_text(formats, 'graph_v6.json') as f:
     current_version = '6'
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ContentValidationNotDefinedSourceTargetMessage(ContentValidationMessage):
     message: Optional[str] = None
     additional_msgs: Tuple[str, ...] = tuple()

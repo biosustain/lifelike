@@ -1,6 +1,6 @@
 import { isNotEmpty } from 'app/shared/utils';
 
-import { representativePositiveNumber } from '../utils';
+import { nonNegativeNumber } from '../utils';
 import { DefaultLayoutService } from '../services/layout.service';
 import { ValueProcessingStep } from '../interfaces/valueAccessors';
 import { NetworkTraceData, TypeContext } from '../interfaces';
@@ -27,7 +27,7 @@ export const byProperty: (property: string) => ValueProcessingStep<TypeContext> 
   // tslint:disable-next-line:only-arrow-functions // allowing non-arrow function so we can maintain execution context
   function (this: DefaultLayoutService, { links }) {
     links.forEach((l) => {
-      l.value = representativePositiveNumber((l as SankeyLink).get(property));
+      l.value = nonNegativeNumber((l as SankeyLink).get(property));
       delete l.multipleValues;
     });
     return {
@@ -50,7 +50,7 @@ export const byArrayProperty: (property: string) => ValueProcessingStep<TypeCont
   function (this: DefaultLayoutService, { links }) {
     links.forEach((l) => {
       const [v1, v2] = (l as SankeyLink).get(property);
-      l.multipleValues = [v1, v2].map((d) => representativePositiveNumber(d)) as [number, number];
+      l.multipleValues = [v1, v2].map((d) => nonNegativeNumber(d)) as [number, number];
       // take max for layer calculation
       l.value = Math.max(...l.multipleValues);
     });
