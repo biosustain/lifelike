@@ -48,9 +48,10 @@ jobs:
           - image: kg-statistical-enrichment
             path: ./statistical-enrichment
           - image: filebeat
-            path: ./filebeat
+            path: ./.github/config/filebeat
           - image: metricbeat
-            path: ./metricbeat
+            path: ./.github/config/metricbeat
+
     steps:
       - uses: actions/checkout@v3
       - name: Build and push ${{ matrix.image }} image
