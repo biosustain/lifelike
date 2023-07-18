@@ -1,14 +1,45 @@
+from typing import Callable, Iterable, Union
+
 import marshmallow
 from marshmallow import fields
+from marshmallow.validate import Validator
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.services.chat_gpt import ChatGPT
 
 
+# noinspection PyMissingConstructor
+class DeferedOneOf(marshmallow.validate.OneOf):
+    choices_callback: Callable[[], Iterable]
+
+    def __init__(
+        self,
+        choices_callback: Callable[[], Iterable],
+        labels: Union[Iterable[str], None] = None,
+        *,
+        error: Union[str, None] = None,
+    ):
+        self.choices_callback = choices_callback
+        self.labels = labels if labels is not None else []
+        self.labels_text = ", ".join(str(label) for label in self.labels)
+        self.error = error or self.default_message  # type: str
+
+    @property
+    def choices(self):
+        return self.choices_callback()
+
+    @property
+    def choices_text(self):
+        """Choices is dynamic list so does choices_text need to be"""
+        return ", ".join(str(choice) for choice in self.choices)
+
+
 class ContextPlaygroundRequestSchema(CamelCaseSchema):
     timeout = fields.Float()
     model = fields.String(
-        validate=marshmallow.validate.OneOf(ChatGPT.Completion.models),
+        validate=DeferedOneOf(
+            lambda: tuple(map(lambda model: model['id'], ChatGPT.Model.list()['data']))
+        ),
         required=True,
     )
     prompt = fields.String(required=True)

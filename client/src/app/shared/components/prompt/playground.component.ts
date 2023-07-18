@@ -1,4 +1,12 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -9,22 +17,44 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   difference as _difference,
-  first as _first,
+  flow as _flow,
+  groupBy as _groupBy,
+  identity as _identity,
   isEmpty as _isEmpty,
   isInteger as _isInteger,
+  keyBy as _keyBy,
   keys as _keys,
+  map as _map,
   mapValues as _mapValues,
+  mergeWith as _mergeWith,
   omit as _omit,
+  sortBy as _sortBy,
+  values as _values,
 } from 'lodash/fp';
-import { defer, Observable, of, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  defer,
+  EMPTY,
+  from,
+  iif,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+} from 'rxjs';
 import {
   catchError,
   distinctUntilChanged,
+  filter,
+  finalize,
   map,
+  mergeMap,
+  scan,
   shareReplay,
   startWith,
   switchMap,
@@ -36,7 +66,8 @@ import {
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
-import { ExplainService } from '../../services/explain.service';
+import { ChatGPTModel, ExplainService } from '../../services/explain.service';
+import { ChatGPT, CompletitionsParams } from './ChatGPT';
 
 class FormArrayWithFactory<T = any> extends FormArray {
   constructor(
@@ -130,7 +161,9 @@ const CustomValidators = {
 
 @Component({
   selector: 'app-playground',
+  styleUrls: ['./playground.component.scss'],
   templateUrl: './playground.component.html',
+  encapsulation: ViewEncapsulation.None,
 })
 export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   constructor(
@@ -142,24 +175,45 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   @Input() entities: Iterable<string>;
   @Input() temperature: number;
   @Input() context: number;
-  readonly modelOptions = Object.freeze([
-    'text-davinci-003',
-    'text-davinci-002',
-    'text-curie-001',
-    'text-babbage-001',
-    'text-ada-001',
-  ]);
+  models$: Observable<string[]> = this.explainService
+    .models()
+    .pipe(
+      map(_map((model: ChatGPTModel) => model.id)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+  groupedModels$: Observable<Record<string, string[]>> = this.models$.pipe(
+    map(_flow(_groupBy(ChatGPT.getModelGroup), _mapValues(_sortBy(_identity)))),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
   form = new FormGroup({
     timeout: new FormControl(60),
-    model: new FormControl(_first(this.modelOptions), [
-      Validators.required,
-      CustomValidators.oneOf(this.modelOptions),
-    ]),
+    model: new FormControl(
+      'text-davinci-003',
+      [Validators.required],
+      [
+        (control: AbstractControl) =>
+          this.models$.pipe(
+            map((models) =>
+              models.includes(control.value) ? null : { notAvailable: control.value }
+            )
+          ),
+      ]
+    ),
     prompt: new FormControl('', [Validators.required]),
     maxTokens: new FormControl(200),
     temperature: new FormControl(0, [Validators.min(0), Validators.max(2)]),
     topP: new FormControl(1),
-    n: new FormControl(1, [CustomValidators.isInteger]),
+    n: new FormControl(1, [
+      CustomValidators.isInteger,
+      ({ value }: FormControl) => {
+        const bestOf = this.form?.controls.bestOf?.value;
+        if (!bestOf) {
+          return null;
+        }
+        return value < bestOf ? { nSmallerThanBestOf: { value, bestOf } } : null;
+      },
+    ]),
     stream: new FormControl(false, [CustomValidators.isBoolean]),
     logprobs: new FormControl(0, [Validators.max(5), CustomValidators.isInteger]),
     echo: new FormControl(false, [CustomValidators.isBoolean]),
@@ -168,16 +222,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     ]),
     presencePenalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
     frequencyPenalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
-    bestOf: new FormControl(1, [
-      ({ value }: FormControl) => {
-        const n = this.form?.controls.n?.value;
-        if (!n) {
-          return null;
-        }
-        return value < n ? { bestOfSmallerThanN: { value, n } } : null;
-      },
-      CustomValidators.isInteger,
-    ]),
+    bestOf: new FormControl(1, [CustomValidators.isInteger]),
     logitBias: new FormGroupWithFactory(
       () => new FormControl(0, [Validators.min(-100), Validators.max(100)]),
       {}
@@ -194,54 +239,78 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  submitRequest$ = new Subject<void>();
 
-  requestParams$ = this.submitRequest$.pipe(
-    map(() => this.form.value),
-    map((params) =>
-      _omit([
-        _isEmpty(params.stop) ? 'stop' : null,
-        _isEmpty(params.logitBias) ? 'logitBias' : null,
-        params.n === 1 ? 'n' : null,
-      ])(params)
-    ),
+  requestParams$ = new ReplaySubject<CompletitionsParams>(1);
+
+  request$ = this.requestParams$.pipe(
+    map((params) => {
+      const loading$ = new BehaviorSubject(true);
+      const error$ = new ReplaySubject<HttpErrorResponse>(1);
+      const result$: Observable<any> = this.explainService.playground(params).pipe(
+        tap(() => loading$.next(false)),
+        catchError((error) => {
+          error$.next(error);
+          return EMPTY;
+        }),
+        finalize(() => {
+          loading$.complete();
+          error$.complete();
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      );
+
+      return {
+        params,
+        loading$,
+        error$,
+        result$,
+      };
+    }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  result$ = this.requestParams$.pipe(
-    switchMap((params) => this.explainService.playground(params)),
-    catchError((error) => of(error)),
-    takeUntil(this.destroy$)
+  result$ = this.request$.pipe(
+    switchMap(({ result$, params }) =>
+      iif(
+        () => params.stream,
+        result$.pipe(
+          tap((result) => console.log(result)),
+          filter(({ partialText }) => Boolean(partialText)),
+          mergeMap(({ partialText }) =>
+            from(partialText.split('\n').filter(_identity)).pipe(
+              map((partialTextLine: string) => JSON.parse(partialTextLine)),
+              scan((acc, partial) =>
+                _mergeWith((a, b, key, obj) =>
+                  key === 'choices'
+                    ? _values(
+                        _mergeWith((ca, cb, ckey) =>
+                          ckey === 'text' ? `${ca ?? ''}${cb ?? ''}` : undefined
+                        )(_keyBy('index')(a), _keyBy('index')(b))
+                      )
+                    : undefined
+                )(acc, partial)
+              )
+            )
+          ),
+          tap((result) => console.log(result)),
+          map((result) => ({ result, cached: false }))
+        ),
+        result$
+      )
+    ),
+    takeUntil(this.destroy$),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  modelTokenCostMap = new Map<string, number>([
-    ['text-davinci-003', 0.02 / 1e3],
-    ['text-davinci-002', 0.02 / 1e3],
-    ['text-curie-001', 0.002 / 1e3],
-    ['text-babbage-001', 0.0005 / 1e3],
-    ['text-ada-001', 0.0004 / 1e3],
-  ]);
-
   estimatedCost$ = defer(() =>
-    this.form.valueChanges.pipe(
-      startWith(this.form.value),
-      map(({ model, prompt, echo, bestOf, n, maxTokens }) => {
-        // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-        const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
-        const modelCost = this.modelTokenCostMap.get(model);
-        return [
-          (promptTokens + promptTokens * bestOf + echo * promptTokens) * modelCost,
-          (promptTokens + maxTokens * bestOf + echo * promptTokens) * modelCost,
-        ];
-      })
-    )
+    this.form.valueChanges.pipe(startWith(this.form.value), map(ChatGPT.estimateCost))
   );
 
   requestCost$ = this.result$.pipe(
     withLatestFrom(this.requestParams$),
     map(
       ([{ result }, params]) =>
-        this.modelTokenCostMap.get(params.model) * result?.usage?.total_tokens
+        ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens
     )
   );
 
@@ -249,10 +318,18 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
 
   resultJSON$: Observable<any> = this.result$.pipe(
     map((result) => JSON.stringify(result.result ?? result, null, 2)),
+    catchError((error) => of(`Error: ${error}`)),
     takeUntil(this.destroy$)
   );
 
-  resultText$ = this.result$.pipe(map(({ result }) => result?.choices?.[0]?.text));
+  resultChoices$ = this.result$.pipe(
+    map(({ result }) => result?.choices ?? []),
+    catchError((error) => of(`Error: ${error}`))
+  );
+
+  lastPricingUpdate = ChatGPT.lastUpdate;
+
+  trackByIndex = ({ index }) => index;
 
   ngOnChanges({ entities, context, temperature }: SimpleChanges) {
     if (entities) {
@@ -305,11 +382,22 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
     );
   }
 
+  private parseFormValueToParams = (formValue): CompletitionsParams =>
+    _omit([
+      _isEmpty(formValue.stop) ? 'stop' : null,
+      _isEmpty(formValue.logitBias) ? 'logitBias' : null,
+      formValue.n === 1 ? 'n' : null,
+    ])(formValue) as CompletitionsParams;
+
   onSubmitRequest() {
-    this.submitRequest$.next();
+    this.requestParams$.next(this.parseFormValueToParams(this.form.value));
   }
 
   close() {
     this.modal.close();
+  }
+
+  getModelGroup(model: string) {
+    return ChatGPT.getModelGroup(model);
   }
 }

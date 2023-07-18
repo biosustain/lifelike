@@ -121,6 +121,10 @@ class Base:
 
     SUPPORTED_LOCALES = ['en']
 
+    CHAT_GPT_PLAYGROUND_ENABLED = (
+        os.environ.get('CHAT_GPT_PLAYGROUND_ENABLED', 'false').lower() == 'true'
+    )
+
 
 class Development(Base):
     """Development configurations"""
@@ -134,6 +138,8 @@ class Development(Base):
 
     FORWARD_STACKTRACE = True
 
+    CHAT_GPT_PLAYGROUND_ENABLED = True
+
 
 class QA(Base):
     """QA configuration"""
@@ -145,6 +151,8 @@ class QA(Base):
 
     FORWARD_STACKTRACE = True
 
+    CHAT_GPT_PLAYGROUND_ENABLED = True
+
 
 class Staging(Base):
     """Staging configurations"""
@@ -154,6 +162,8 @@ class Staging(Base):
 
     FORWARD_STACKTRACE = True
     SENTRY_ENABLED = True
+
+    CHAT_GPT_PLAYGROUND_ENABLED = True
 
 
 class Testing(Base):
@@ -170,6 +180,8 @@ class Testing(Base):
     ARANGO_DB_NAME = 'test_arango'
 
     FORWARD_STACKTRACE = True
+
+    CHAT_GPT_PLAYGROUND_ENABLED = True
 
 
 class Production(Base):

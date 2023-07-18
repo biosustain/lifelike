@@ -21,6 +21,7 @@ import {
   dropdownControllerFactory,
 } from '../../utils/dropdown.controller.factory';
 import { PlaygroundComponent } from './playground.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-prompt',
@@ -75,6 +76,8 @@ export class PromptComponent implements OnDestroy, OnChanges {
         .pipe(startWith(undefined))
     )
   );
+
+  showPlayground = environment.chatGPTPlaygroundEnabled;
 
   public ngOnChanges(change: SimpleChanges) {
     this.change$.next(change);

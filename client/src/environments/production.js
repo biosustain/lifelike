@@ -4,6 +4,9 @@
   // Whether to run the app in prod mode
   window.__env.production = false;
 
+  // Whether to render UI for ChatGPT playground
+  window.__env.chatGPTPlaygroundEnabled = false;
+
   // Whether we are running with valid KEGG license
   window.__env.keggEnabled = false;
 
