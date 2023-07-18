@@ -1,24 +1,24 @@
-import { Component, Input, OnChanges, OnDestroy, SimpleChange, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 
 import {
   first as _first,
   flow as _flow,
+  get as _get,
   groupBy as _groupBy,
   map as _map,
   mapValues as _mapValues,
   pick as _pick,
   some as _some,
-  values as _values,
-  get as _get,
   thru as _thru,
+  values as _values,
 } from 'lodash/fp';
-import { combineLatest, defer, Observable, ReplaySubject } from 'rxjs';
-import { filter, map, startWith, switchMap } from 'rxjs/operators';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter, map, startWith } from 'rxjs/operators';
 
-import { SearchType } from 'app/search/shared';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { ExplainService } from 'app/shared/services/explain.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { SearchType } from 'app/search/shared';
+import { ExplainService } from 'app/shared/services/explain.service';
+import { InternalSearchService } from 'app/shared/services/internal-search.service';
 
 import {
   GraphEntity,
@@ -37,8 +37,9 @@ import { getTermsFromGraphEntityArray } from '../utils/terms';
 export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   constructor(
     protected readonly internalSearch: InternalSearchService,
-    protected readonly explainService: ExplainService
-  ) {}
+    protected readonly explainService: ExplainService,
+  ) {
+  }
 
   change$ = new ReplaySubject<SimpleChanges>(1);
   entities$: Observable<Set<string>> = this.change$.pipe(
@@ -52,10 +53,10 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
             // We might run into situation when only one of them is beeing changed
             // therefore it is safe to address them this way
             this.graphView,
-            this.selected
-          )
-        )
-    )
+            this.selected,
+          ),
+        ),
+    ),
   );
   private tempertaure$: ReplaySubject<number> = new ReplaySubject(1);
 
@@ -65,36 +66,45 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
       filter(Boolean),
       map(
         _flow(
-          _thru(({ currentValue }) => currentValue),
-          _groupBy(({ type }: GraphEntity) => type),
-          _mapValues(_map(({ entity }) => entity))
-        )
-      )
+          _thru(({currentValue}) => currentValue),
+          _groupBy(({type}: GraphEntity) => type),
+          _mapValues(_map(({entity}) => entity)),
+        ),
+      ),
     );
 
   @Input() graphView: CanvasGraphView;
   @Input() selected: GraphEntity[];
+  // Return entity if there is only one selected, otherwise return undefined
+  one: { typeLabel: string, name: string, isNode: boolean} & GraphEntity;
 
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+
+    if (changes.selected) {
+      if (this.selected.length === 1) {
+        const selected = _first(this.selected);
+        this.one = {
+          ...selected,
+          typeLabel: this.typeLabel(selected),
+          name: this.name(selected),
+          isNode: this.isNode(selected),
+        }
+      } else {
+        this.one = undefined;
+      }
+    }
   }
 
   ngOnDestroy() {
     this.change$.complete();
   }
 
-  // Return entity if there is only one selected, otherwise return undefined
-  get one() {
-    if (this.selected.length === 1) {
-      return _first(this.selected);
-    }
-  }
-
-  isNode({ type }: GraphEntity) {
+  private isNode({type}: GraphEntity) {
     return type === GraphEntityType.Node;
   }
 
-  name({ type, entity }: GraphEntity): string {
+  private name({type, entity}: GraphEntity): string {
     if (type === GraphEntityType.Node) {
       const node = entity as UniversalGraphNode;
       return node.display_name;
@@ -109,7 +119,7 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
     }
   }
 
-  selectedType({ type, entity }: GraphEntity): string {
+  private typeLabel({type, entity}: GraphEntity): string {
     if (type === GraphEntityType.Node) {
       return (entity as UniversalGraphNode).label;
     } else if (type === GraphEntityType.Edge) {
@@ -128,6 +138,6 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   }
 
   searchMapNodeInContent(node, type: SearchType | string) {
-    return this.internalSearch.fileContents(node.display_name, { types: [type] });
+    return this.internalSearch.fileContents(node.display_name, {types: [type]});
   }
 }
