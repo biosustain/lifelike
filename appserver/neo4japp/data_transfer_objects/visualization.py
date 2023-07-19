@@ -5,7 +5,7 @@ from neo4japp.exceptions import FormatterException
 from neo4japp.models import GraphNode
 from neo4japp.util import CamelDictMixin
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 # Start Enums #

@@ -35,7 +35,6 @@ from neo4japp.services.search import (
     get_synonyms_count,
     visualizer_search,
 )
-from neo4japp.util import SuccessResponse
 from neo4japp.utils.globals import config
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
