@@ -3,6 +3,7 @@ import {
   AbstractControl,
   FormControl,
   FormGroup,
+  FormArray,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
@@ -10,13 +11,13 @@ import {
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has } from 'lodash/fp';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
-import { filenameValidator } from 'app/shared/validators';
+import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { filenameValidator } from 'app/shared/validators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { AnnotationConfigurations, ObjectCreateRequest } from '../../schema';
@@ -25,6 +26,7 @@ import { ObjectSelectionDialogComponent } from './object-selection-dialog.compon
 interface CreateObjectRequest
   extends Omit<ObjectCreateRequest, 'parentHashId' | 'fallbackOrganism'> {
   parent?: FilesystemObject;
+  contexts?: string[];
   fallbackOrganism?: OrganismAutocomplete;
 }
 
@@ -70,6 +72,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: new FormControl('', [Validators.required, filenameValidator]),
       description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
       public: new FormControl(false),
+      contexts: new FormArray([]),
       annotationConfigs: new FormGroup(
         {
           excludeReferences: new FormControl(false),
@@ -164,11 +167,25 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
         ctrl.patchValue(annotationConfigs.excludeReferences);
       }
     }
+
+    this.setContexts(value.contexts);
   }
 
   get possiblyAnnotatable(): boolean {
     return this.object.isAnnotatable || this.filePossiblyAnnotatable || this.forceAnnotationOptions;
   }
+
+  protected setContexts(contexts) {
+    const formArray: FormArray = this.form.get('contexts') as FormArray;
+    contexts?.forEach((context) => formArray.push(this.contextFormControlFactory(context)));
+  }
+
+  get contexts() {
+    return this.form.get('contexts') as FormArray;
+  }
+
+  contextFormControlFactory = (context = '') =>
+    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
 
   applyValue(value: ObjectEditDialogValue) {
     Object.assign(this.object, value.objectChanges);
@@ -190,6 +207,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       createRequest: this.createObjectRequest(value),
       annotationConfigs: value.annotationConfigs,
       fallbackOrganism: value.fallbackOrganism,
+      contexts: value.contexts,
     };
   }
 
@@ -210,6 +228,10 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
     if (_has('mimeType', value)) {
       patch.mimeType = value.mimeType;
     }
+    if (_has('contexts', value)) {
+      patch.contexts = value.contexts;
+    }
+
     // Add annotation-relevant parameters only when needed
     if (this.possiblyAnnotatable) {
       if (_has('fallbackOrganism', value)) {
@@ -227,6 +249,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       filename: value.filename,
       parentHashId: value.parent?.hashId ?? null,
       description: value.description,
+      contexts: value.contexts,
       public: value.public,
       mimeType: value.mimeType,
     };
@@ -273,6 +296,20 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       () => {}
     );
   }
+
+  setValueFromEvent(control, $event) {
+    return control.setValue($event.target.value);
+  }
+
+  addControl(controlList: FormArray, control: AbstractControl) {
+    controlList.push(control);
+  }
+
+  removeControl(controlList: FormArray, control: AbstractControl) {
+    const index = controlList.controls.indexOf(control);
+    controlList.markAsDirty();
+    return index >= 0 && controlList.removeAt(index);
+  }
 }
 
 export interface ObjectEditDialogValue {
@@ -282,4 +319,5 @@ export interface ObjectEditDialogValue {
   patchRequest: Partial<ObjectCreateRequest>;
   annotationConfigs: AnnotationConfigurations;
   fallbackOrganism: OrganismAutocomplete;
+  contexts: string[];
 }

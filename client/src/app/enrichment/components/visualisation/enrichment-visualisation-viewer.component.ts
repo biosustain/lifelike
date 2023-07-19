@@ -1,7 +1,28 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { defer, of, Subscription } from 'rxjs';
+import {
+  BehaviorSubject,
+  defer,
+  EMPTY,
+  Observable,
+  of,
+  ReplaySubject,
+  Subject,
+  Subscription,
+  throwError,
+} from 'rxjs';
+import { map, shareReplay, switchMap, take } from 'rxjs/operators';
+import {
+  flow as _flow,
+  thru as _thru,
+  sortBy as _sortBy,
+  fromPairs as _fromPairs,
+  toPairs as _toPairs,
+  map as _map,
+  values as _values,
+} from 'lodash/fp';
+import { isEmpty } from 'lodash-es';
 
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
@@ -13,76 +34,65 @@ import {
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
 import { EnrichmentService } from '../../services/enrichment.service';
+import { EnrichmentVisualisationSelectService } from '../../services/enrichment-visualisation-select.service';
 
 @Component({
   selector: 'app-enrichment-visualisation-viewer',
   templateUrl: './enrichment-visualisation-viewer.component.html',
   styleUrls: ['./enrichment-visualisation-viewer.component.scss'],
-  providers: [EnrichmentVisualisationService, EnrichmentService, ModuleContext],
+  providers: [
+    EnrichmentVisualisationService,
+    EnrichmentService,
+    ModuleContext,
+    EnrichmentVisualisationSelectService,
+  ],
 })
-export class EnrichmentVisualisationViewerComponent implements OnInit, ModuleAwareComponent {
+export class EnrichmentVisualisationViewerComponent implements ModuleAwareComponent {
   constructor(
     protected readonly route: ActivatedRoute,
     readonly enrichmentService: EnrichmentVisualisationService,
     private readonly moduleContext: ModuleContext
   ) {
     moduleContext.register(this);
-    this.enrichmentService.fileId = this.route.snapshot.params.file_id || '';
-    this.loadingData = true;
   }
 
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  object$: Observable<FilesystemObject> = this.enrichmentService.object$;
+  @Output() modulePropertiesChange = this.object$.pipe(
+    map((object) => ({
+      title: object?.filename ?? 'Statistical Enrichment',
+      fontAwesomeIcon: 'chart-bar',
+    }))
+  );
 
-  object: FilesystemObject;
-  groups = ['Biological Process', 'Molecular Function', 'Cellular Component'];
-  data = new Map<string, undefined | EnrichWithGOTermsResult[]>([
-    ['BiologicalProcess', undefined],
-    ['MolecularFunction', undefined],
-    ['CellularComponent', undefined],
-  ]);
+  readonly grouping = {
+    'Biological Process': 'BiologicalProcess',
+    'Molecular Function': 'MolecularFunction',
+    'Cellular Component': 'CellularComponent',
+  };
 
-  loadingData: boolean;
+  data$ = this.enrichmentService.enrichedWithGOTerms$.pipe(
+    map(
+      _flow(
+        _sortBy<EnrichWithGOTermsResult>('p-value'),
+        _thru((result) =>
+          _flow(
+            _toPairs,
+            _map(([group, goLabel]) => [
+              group,
+              result.filter(({ goLabel: labels }) => labels.includes(goLabel)),
+            ]),
+            _fromPairs
+          )(this.grouping)
+        )
+      )
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
-  loadTask: BackgroundTask<string, EnrichWithGOTermsResult[]>;
-
-  loadSubscription: Subscription;
-
-  sourceData$ = defer(() => of(this.object.getGraphEntitySources()));
+  sourceData$ = this.object$.pipe(map((object) => object.getGraphEntitySources()));
 
   // preserve sort for keyvalue pipe
   originalOrder(a, b) {
     return 0;
-  }
-
-  ngOnInit() {
-    this.enrichmentService.loadTaskMetaData.results$.subscribe(({ result }) => {
-      this.object = result;
-      this.emitModuleProperties();
-    });
-    this.loadTask = new BackgroundTask((analysis) =>
-      this.enrichmentService.enrichWithGOTerms(analysis)
-    );
-
-    this.loadSubscription = this.loadTask.results$.subscribe(({ result }) => {
-      const data = result.sort((a, b) => a['p-value'] - b['p-value']);
-      this.data.forEach((value, key, map) =>
-        map.set(
-          key,
-          data.filter(({ goLabel }) => goLabel.includes(key)) as EnrichWithGOTermsResult[]
-        )
-      );
-      this.loadingData = false;
-    });
-    this.enrichmentService.load.subscribe((data) => {
-      this.loadTask.update('fisher');
-    });
-  }
-
-  // End of changing enrichment params section.
-  emitModuleProperties() {
-    this.modulePropertiesChange.emit({
-      title: this.object?.filename ?? 'Statistical Enrichment',
-      fontAwesomeIcon: 'chart-bar',
-    });
   }
 }

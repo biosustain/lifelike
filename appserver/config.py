@@ -44,6 +44,8 @@ class Base:
     AZURE_ACCOUNT_STORAGE_KEY = os.environ.get('AZURE_ACCOUNT_STORAGE_KEY')
     AZURE_BLOB_STORAGE_URL = os.environ.get('AZURE_BLOB_STORAGE_URL')
 
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
     SQLALCHEMY_DATABASE_URI = 'postgresql://%s:%s@%s:%s/%s' % (
         POSTGRES_USER,
         POSTGRES_PASSWORD,
@@ -94,11 +96,21 @@ class Base:
 
     ASSETS_PATH = os.environ.get('ASSETS_FOLDER') or '/home/n4j/assets/'
 
+    REDIS_HOST = os.environ.get('REDIS_HOST', 'localhost')
+    REDIS_PORT = port = os.environ.get('REDIS_PORT', '6379')
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', '')
+    REDIS_SSL = os.environ.get('REDIS_SSL', 'false').lower() == 'true'
+    CACHE_REDIS_DB = os.environ.get('CACHE_REDIS_DB', '0')
+    CACHE_REDIS_URL = '{protocol}://:{password}@{host}:{port}/{db}'.format(
+        protocol='rediss' if REDIS_SSL else 'redis',
+        host=REDIS_HOST,
+        port=REDIS_PORT,
+        password=REDIS_PASSWORD,
+        db=CACHE_REDIS_DB,
+    )
+    RQ_REDIS_DB = os.environ.get('RQ_REDIS_DB', '1')
     RQ_REDIS_URL = 'redis://:{password}@{host}:{port}/{db}'.format(
-        host=os.environ.get('REDIS_HOST', 'localhost'),
-        port=os.environ.get('REDIS_PORT', '6379'),
-        password=os.environ.get('REDIS_PASSWORD', ''),
-        db=os.environ.get('REDIS_DB', '1'),
+        host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=RQ_REDIS_DB
     )
 
     FORWARD_STACKTRACE = False
@@ -108,6 +120,10 @@ class Base:
     # RQ_ASYNC = False
 
     SUPPORTED_LOCALES = ['en']
+
+    CHAT_GPT_PLAYGROUND_ENABLED = (
+        os.environ.get('CHAT_GPT_PLAYGROUND_ENABLED', 'false').lower() == 'true'
+    )
 
 
 class Development(Base):
@@ -122,6 +138,8 @@ class Development(Base):
 
     FORWARD_STACKTRACE = True
 
+    CHAT_GPT_PLAYGROUND_ENABLED = True
+
 
 class QA(Base):
     """QA configuration"""
@@ -133,6 +151,8 @@ class QA(Base):
 
     FORWARD_STACKTRACE = True
 
+    CHAT_GPT_PLAYGROUND_ENABLED = True
+
 
 class Staging(Base):
     """Staging configurations"""
@@ -142,6 +162,8 @@ class Staging(Base):
 
     FORWARD_STACKTRACE = True
     SENTRY_ENABLED = True
+
+    CHAT_GPT_PLAYGROUND_ENABLED = True
 
 
 class Testing(Base):
@@ -158,6 +180,8 @@ class Testing(Base):
     ARANGO_DB_NAME = 'test_arango'
 
     FORWARD_STACKTRACE = True
+
+    CHAT_GPT_PLAYGROUND_ENABLED = True
 
 
 class Production(Base):
