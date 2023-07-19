@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 import { DataService } from 'app/shared/services/table.service';
 import {
@@ -9,7 +10,13 @@ import {
   SortEvent,
   SortDirection,
 } from 'app/shared/directives/table-sortable-header.directive';
-import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
+import {
+  EnrichmentVisualisationService,
+  EnrichWithGOTermsResult,
+} from 'app/enrichment/services/enrichment-visualisation.service';
+import { ExtendedMap } from 'app/shared/utils/types';
+
+import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
 
 @Component({
   selector: 'app-table-complete',
@@ -27,9 +34,30 @@ export class TableCompleteComponent implements OnChanges {
 
   @ViewChildren(SortableTableHeaderDirective) headers: QueryList<SortableTableHeaderDirective>;
 
-  constructor(public service: DataService) {
+  constructor(
+    readonly enrichmentService: EnrichmentVisualisationService,
+    public service: DataService,
+    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService
+  ) {
     this.data$ = service.data$;
     this.total$ = service.total$;
+  }
+
+  termContextExplanations = new ExtendedMap<string, Observable<string>>();
+
+  selectGoTerm(goTerm: string) {
+    this.enrichmentVisualisationSelectService.goTerm$.next(goTerm);
+  }
+
+  selectGoTermAndGeneName(goTerm: string, geneName: string) {
+    this.selectGoTerm(goTerm);
+    this.enrichmentVisualisationSelectService.geneName$.next(geneName);
+  }
+
+  getTermContextExplanation(term: string) {
+    return this.termContextExplanations.getSetLazily(term, (key) =>
+      this.enrichmentService.enrichTermWithContext(key).pipe(shareReplay(1))
+    );
   }
 
   ngOnChanges({ show, showMore, data }: SimpleChanges) {

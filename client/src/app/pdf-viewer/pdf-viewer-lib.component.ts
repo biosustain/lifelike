@@ -49,7 +49,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { mapIterable, isNotEmpty } from 'app/shared/utils';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { Annotation, Location, Meta, Rect } from './annotation-type';

@@ -1,12 +1,26 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 
 import { cloneDeep } from 'lodash-es';
+import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { UniversalGraphGroup } from 'app/drawing-tool/services/interfaces';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ExplainService } from 'app/shared/services/explain.service';
+import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { RecursivePartial } from 'app/shared/utils/types';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
+import { getTermsFromGroup } from '../../../utils/terms';
 import { EntityForm } from './entity-form';
 
 @Component({
@@ -14,18 +28,11 @@ import { EntityForm } from './entity-form';
   styleUrls: ['./entity-form.component.scss'],
   templateUrl: './group-form.component.html',
 })
-export class GroupFormComponent extends EntityForm {
-  originalGroup: UniversalGraphGroup;
-  updatedGroup: UniversalGraphGroup;
-
-  @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphGroup>;
-    updatedData: RecursivePartial<UniversalGraphGroup>;
-  }>();
-
+export class GroupFormComponent extends EntityForm implements OnChanges, OnDestroy {
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
-    protected readonly internalSearch: InternalSearchService
+    protected readonly internalSearch: InternalSearchService,
+    protected readonly explainService: ExplainService
   ) {
     super(workspaceManager);
   }
@@ -52,6 +59,41 @@ export class GroupFormComponent extends EntityForm {
     if (this.viewInited) {
       this.focus();
     }
+  }
+
+  change$ = new ReplaySubject<SimpleChanges>(1);
+  entities$: Observable<Iterable<string>> = this.change$.pipe(
+    map(_pick(['group', 'graphView'])),
+    filter(_flow(_values, _some(Boolean))),
+    map(
+      ({ selected, graphView }) =>
+        new Set<string>(
+          getTermsFromGroup().call(
+            // We might run into situation when only one of them is beeing changed
+            // therefore it is safe to address them this way
+            this.graphView,
+            this.group
+          )
+        )
+    )
+  );
+
+  originalGroup: UniversalGraphGroup;
+  updatedGroup: UniversalGraphGroup;
+
+  @Output() save = new EventEmitter<{
+    originalData: RecursivePartial<UniversalGraphGroup>;
+    updatedData: RecursivePartial<UniversalGraphGroup>;
+  }>();
+
+  @Input() graphView: CanvasGraphView;
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.change$.next(changes);
+  }
+
+  ngOnDestroy() {
+    this.change$.complete();
   }
 
   doSave() {

@@ -21,6 +21,7 @@ import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { ImageBlob } from 'app/shared/utils/forms';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -30,7 +31,7 @@ import { GraphActionsService } from '../services/graph-actions.service';
   selector: 'app-map-view',
   templateUrl: './map-view.component.html',
   styleUrls: ['./map.component.scss'],
-  providers: [ModuleContext],
+  providers: [ModuleContext, OpenFileProvider],
 })
 export class MapViewComponent<ExtraResult = void>
   extends MapComponent<ExtraResult>
@@ -51,6 +52,7 @@ export class MapViewComponent<ExtraResult = void>
     mapImageProviderService: MapImageProviderService,
     graphActionsService: GraphActionsService,
     public readonly progressDialog: ProgressDialog,
+    openFileProvider: OpenFileProvider,
     protected readonly moduleContext: ModuleContext
   ) {
     super(
@@ -66,7 +68,8 @@ export class MapViewComponent<ExtraResult = void>
       dataTransferDataService,
       mapImageProviderService,
       objectTypeService,
-      graphActionsService
+      graphActionsService,
+      openFileProvider
     );
     moduleContext.register(this);
 

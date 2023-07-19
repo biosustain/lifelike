@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { catchError } from 'rxjs/operators';
-import { from, Observable, pipe, throwError } from 'rxjs';
+import { from, never, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
 import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } from 'lodash-es';
 
@@ -227,6 +227,8 @@ export const deepDiff = ([a, b]) =>
 
 export const isNotEmpty = (obj) => !isEmpty(obj);
 
+type IterableType<T> = T extends Iterable<infer U> ? U : never;
+
 /**
  * Helper mapper function, that works not only with arrays, but also with objects, sets, maps etc.
  * It is creating a new object of same type (as of default 'mappedObjectConstructor'), with mapped values.
@@ -242,8 +244,24 @@ export const isNotEmpty = (obj) => !isEmpty(obj);
  * @param mapping - the mapping function
  * @param mappedObjectConstructor - contructor
  */
-export const mapIterable = <O, R>(itrable, mapping, mappedObjectConstructor?) =>
-  new (mappedObjectConstructor ?? itrable.constructor)(Array.from(itrable, mapping));
+export const mapIterable = <
+  InputType extends Iterable<Value>,
+  Mapping extends (v: Value, k: number) => Result,
+  MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => any,
+  Value,
+  Result
+>(
+  itrable: InputType,
+  mapping: (v: Value, k: number) => ReturnType<Mapping>,
+  mappedObjectConstructor?: MappedTypeConstructor
+) =>
+  new (mappedObjectConstructor ?? (itrable.constructor as any))(
+    Array.from<Value, ReturnType<Mapping>>(itrable, mapping)
+  ) as MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : InputType extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : never;
 
 /** Unique Symbol to be used as defualt value of parameter.
  * We want to use it so we are not running into issue of differentiate between
