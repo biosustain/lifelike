@@ -5,7 +5,6 @@ import { PlacedObject, PlacedObjectRenderer } from '../../styles/styles';
 import { RenderTree } from '../render-tree';
 
 export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTree<T> {
-
   private readonly children: Map<T, PlacedObject> = new Map();
   private renderQueue: Map<PlacedObject, boolean> = new Map();
   private readonly renderStart$ = new Subject<void>();
@@ -15,7 +14,7 @@ export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTr
       const result: [PlacedObject, boolean][] = Array.from(this.renderQueue.entries());
       this.renderQueue.clear();
       return result;
-    }),
+    })
   );
 
   get(key: T): PlacedObject | undefined {
@@ -73,5 +72,4 @@ export class PlacedObjectRenderTree<T> implements PlacedObjectRenderer, RenderTr
       console.error('failed to unbind', value, e);
     }
   }
-
 }

@@ -14,15 +14,8 @@ describe('AppComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule,
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [
-        AppComponent
-      ],
+      imports: [RouterTestingModule, RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [AppComponent],
     });
   });
 

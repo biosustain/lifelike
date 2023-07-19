@@ -1,17 +1,19 @@
+import time
+
 from arango.client import ArangoClient
 from flask import current_app
 from sqlalchemy.orm import Session as SQLAlchemySession
-import time
 from typing import List
 from urllib.parse import urlencode
 
 from neo4japp.constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain, LogEventType
-from neo4japp.exceptions import AnnotationError
+from neo4japp.exceptions import AnnotationError, ServerException, ServerWarning, wrap_exceptions
 from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.util import compact
+from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
 
 
@@ -19,14 +21,14 @@ class EnrichmentTableService(RDBMSBaseDao):
     def __init__(self, session: SQLAlchemySession):
         super().__init__(session=session)
 
+    @wrap_exceptions(AnnotationError, title='Could not annotate enrichment table')
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
             validate_enrichment_table(enrichment)
         except Exception as e:
-            raise AnnotationError(
-                title='Could not annotate enrichment table',
+            raise ServerException(
                 message='Could not annotate enrichment table, '
-                        'there was a problem validating the format.'
+                'there was a problem validating the format.'
             ) from e
 
         # got here so passed validation
@@ -46,62 +48,80 @@ class EnrichmentTableService(RDBMSBaseDao):
                 continue
 
             try:
-                cell_texts.append({
-                    'text': gene['imported'],
-                    'index': i,
-                    'domain': 'Imported',
-                    'label': 'Imported'
-                })
-                cell_texts.append({
-                    'text': gene['matched'],
-                    'index': i,
-                    'domain': 'Matched',
-                    'label': 'Matched'
-                })
-                cell_texts.append({
-                    'text': gene['fullName'],
-                    'index': i,
-                    'domain': 'Full Name',
-                    'label': 'Full Name'
-                })
+                cell_texts.append(
+                    {
+                        'text': gene['imported'],
+                        'index': i,
+                        'domain': 'Imported',
+                        'label': 'Imported',
+                    }
+                )
+                cell_texts.append(
+                    {
+                        'text': gene['matched'],
+                        'index': i,
+                        'domain': 'Matched',
+                        'label': 'Matched',
+                    }
+                )
+                cell_texts.append(
+                    {
+                        'text': gene['fullName'],
+                        'index': i,
+                        'domain': 'Full Name',
+                        'label': 'Full Name',
+                    }
+                )
 
                 if gene.get('domains'):
                     for k, v in gene['domains'].items():
                         if k == EnrichmentDomain.REGULON.value:
                             for k2, v2 in v.items():
-                                cell_texts.append({
-                                    'text': v2['text'],
+                                cell_texts.append(
+                                    {
+                                        'text': v2['text'],
+                                        'index': i,
+                                        'domain': k,
+                                        'label': k2,
+                                    }
+                                )
+                        elif k == EnrichmentDomain.BIOCYC.value:
+                            cell_texts.append(
+                                {
+                                    'text': v['Pathways']['text'],
                                     'index': i,
                                     'domain': k,
-                                    'label': k2
-                                })
-                        elif k == EnrichmentDomain.BIOCYC.value:
-                            cell_texts.append({
-                                'text': v['Pathways']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Pathways'
-                            })
-                        elif k == EnrichmentDomain.GO.value or k == EnrichmentDomain.STRING.value:
-                            cell_texts.append({
-                                'text': v['Annotation']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Annotation'
-                            })
+                                    'label': 'Pathways',
+                                }
+                            )
+                        elif (
+                            k == EnrichmentDomain.GO.value
+                            or k == EnrichmentDomain.STRING.value
+                        ):
+                            cell_texts.append(
+                                {
+                                    'text': v['Annotation']['text'],
+                                    'index': i,
+                                    'domain': k,
+                                    'label': 'Annotation',
+                                }
+                            )
                         elif k == EnrichmentDomain.UNIPROT.value:
-                            cell_texts.append({
-                                'text': v['Function']['text'],
-                                'index': i,
-                                'domain': k,
-                                'label': 'Function'
-                            })
+                            cell_texts.append(
+                                {
+                                    'text': v['Function']['text'],
+                                    'index': i,
+                                    'domain': k,
+                                    'label': 'Function',
+                                }
+                            )
             except KeyError as e:
+                message = f'Missing key when creating enrichment table text row/column mapping.'
                 current_app.logger.error(
-                    f'Missing key when creating enrichment table text row/column mapping.',
-                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+                    message,
+                    extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
                 continue
 
         for text in cell_texts:
@@ -113,7 +133,8 @@ class EnrichmentTableService(RDBMSBaseDao):
                 combined_text += ' '  # to separate prev text
 
         return EnrichmentCellTextMapping(
-            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts)
+            text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts
+        )
 
 
 def match_ncbi_genes(

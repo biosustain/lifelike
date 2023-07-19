@@ -4,16 +4,17 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { TextAnnotationGenerationRequest, AnnotationGenerationResultSchema } from 'app/file-browser/schema';
+import {
+  TextAnnotationGenerationRequest,
+  AnnotationGenerationResultSchema,
+} from 'app/file-browser/schema';
 import { ResultMapping } from 'app/shared/schemas/common';
 
 import { EnrichmentParsedData } from '../models/enrichment-document';
 
 @Injectable()
 export class EnrichmentTableService {
-
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   /**
    * Match gene names to NCBI nodes with same name and has given taxonomy ID.
@@ -21,12 +22,12 @@ export class EnrichmentTableService {
    * @param organism tax id of organism
    */
   matchNCBINodes(geneNames: string[], organism: string): Observable<NCBIWrapper[]> {
-    return this.http.post<{ result: NCBIWrapper[] }>(
-      '/api/enrichment-table/match-ncbi-nodes',
-      {geneNames, organism},
-    ).pipe(
-      map(resp => resp.result),
-    );
+    return this.http
+      .post<{ result: NCBIWrapper[] }>('/api/enrichment-table/match-ncbi-nodes', {
+        geneNames,
+        organism,
+      })
+      .pipe(map((resp) => resp.result));
   }
 
   /**
@@ -43,32 +44,30 @@ export class EnrichmentTableService {
     );
   }
 
-  annotateEnrichment(hashIds: string[],
-                     request: TextAnnotationGenerationRequest): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
+  annotateEnrichment(
+    hashIds: string[],
+    request: TextAnnotationGenerationRequest
+  ): Observable<ResultMapping<AnnotationGenerationResultSchema>> {
     return this.http.post<ResultMapping<AnnotationGenerationResultSchema>>(
       `/api/filesystem/annotations/generate`,
-      {hashIds, ...request}
+      { hashIds, ...request }
     );
   }
 
   refreshEnrichmentAnnotations(hashIds: string[]): Observable<'Success'> {
-    return this.http.post<{ 'results': 'Success' }>(
-      `/api/filesystem/annotations/refresh`,
-      {hashIds},
-    ).pipe(
-      map(resp => resp.results)
-    );
+    return this.http
+      .post<{ results: 'Success' }>(`/api/filesystem/annotations/refresh`, { hashIds })
+      .pipe(map((resp) => resp.results));
   }
 
   getAnnotatedEnrichment(hashId: string): Observable<EnrichmentParsedData> {
-    return this.http.get<{ results: EnrichmentParsedData }>(
-      `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`,
-    ).pipe(
-      map(resp => resp.results),
-    );
+    return this.http
+      .get<{ results: EnrichmentParsedData }>(
+        `/api/filesystem/objects/${encodeURIComponent(hashId)}/enrichment/annotations`
+      )
+      .pipe(map((resp) => resp.results));
   }
 }
-
 
 export interface Worksheet {
   id: number;

@@ -29,6 +29,7 @@ class TransactionContext(metaclass=abc.ABCMeta):
     We don't need to do this for SQLAlchemy because
     flask-sqlalchemy does it for us, other databases we do.
     """
+
     @abc.abstractmethod
     def __enter__(self):
         raise NotImplementedError
@@ -52,6 +53,7 @@ class DatabaseConnection(metaclass=abc.ABCMeta):
             self._session = self.conn.session()
         return self._session
     """
+
     @abc.abstractmethod
     def begin(self, **kwargs):
         """Needs to return an instance of TransactionContext

@@ -7,7 +7,7 @@
 Use the following command to install dependencies:
 
 ```sh
-docker-compose exec client yarn add $package_name
+docker compose exec client yarn add $package_name
 ```
 
 ## Unit Tests
@@ -15,7 +15,7 @@ docker-compose exec client yarn add $package_name
 ### Running Tests
 
 ```sh
-docker-compose exec client yarn test
+docker compose exec client yarn test
 ```
 
 ## Lint Checks
@@ -23,5 +23,5 @@ docker-compose exec client yarn test
 ### Running Checks
 
 ```sh
-docker-compose exec client yarn lint
+docker compose exec client yarn lint
 ```

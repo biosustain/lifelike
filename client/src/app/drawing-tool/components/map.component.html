@@ -1,5 +1,5 @@
 <div class="position-relative h-100">
-  <ng-container *ngIf="(loadTask.status$ | async) as status">
+  <ng-container *ngIf="loadTask.status$ | async as status">
     <app-module-progress *ngIf="status.running">
       Loading map... {{ status.retryInProgressShown ? 'Retrying...' : '' }}
     </app-module-progress>
@@ -7,7 +7,9 @@
 
   <div class="position-absolute w-100 h-100 d-flex flex-column" style="z-index: 0">
     <div class="flex-fill position-relative overflow-hidden">
-      <canvas appGraphView></canvas>
+      <div class="graph-container">
+        <canvas appGraphView></canvas>
+      </div>
     </div>
   </div>
 </div>

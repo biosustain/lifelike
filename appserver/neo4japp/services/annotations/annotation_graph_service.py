@@ -21,7 +21,7 @@ from .utils.lmdb import (
     create_ner_type_entity,
     create_ner_type_lab_sample,
     create_ner_type_lab_strain,
-    EntityIdStr
+    EntityIdStr,
 )
 from .utils.graph_queries import (
     collection_labels,

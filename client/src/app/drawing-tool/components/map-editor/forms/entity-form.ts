@@ -1,4 +1,12 @@
-import { AfterViewInit, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
@@ -7,13 +15,16 @@ import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
 export abstract class EntityForm implements AfterViewInit {
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
-  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+  @ViewChild('displayName', { static: false }) displayNameRef: ElementRef;
+  @ViewChild('scrollWrapper', { static: false }) scrollWrapper: ElementRef;
 
   lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
+    [
+      null,
+      {
+        name: '(Default)',
+      },
+    ],
     ...LINE_TYPES.entries(),
   ];
 
@@ -26,11 +37,9 @@ export abstract class EntityForm implements AfterViewInit {
   @Output() sourceOpen = new EventEmitter<string>();
 
   overflow = false;
+  viewInited = false;
 
-  protected constructor(
-    protected readonly workspaceManager: WorkspaceManager,
-  ) {
-  }
+  protected constructor(protected readonly workspaceManager: WorkspaceManager) {}
 
   /**
    * Emit save event on user changes
@@ -51,17 +60,18 @@ export abstract class EntityForm implements AfterViewInit {
   onResize() {
     const {
       scrollWrapper: {
-        nativeElement: {
-          offsetHeight
-        }
+        nativeElement: { offsetHeight },
       },
-      ASSUMED_PANEL_HEIGHT
+      ASSUMED_PANEL_HEIGHT,
     } = this;
     this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
   }
 
   ngAfterViewInit() {
     setTimeout(() => this.onResize(), 0);
+
+    this.focus();
+    this.viewInited = true;
   }
 
   /**
@@ -75,10 +85,8 @@ export abstract class EntityForm implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
+    openPotentialExternalLink(this.workspaceManager, hyperlink, { newTab: true, sideBySide: true });
   }
-
-
 
   /**
    * Bring user to original source of entity information
@@ -91,7 +99,6 @@ export abstract class EntityForm implements AfterViewInit {
     if (this.displayNameRef != null) {
       const element = this.displayNameRef.nativeElement;
       element.focus();
-      element.select();
     }
   }
 }

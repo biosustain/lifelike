@@ -1,6 +1,6 @@
-from os import environ
-
 from neo4japp.database import get_or_create_arango_client
+from neo4japp.utils.globals import config
+
 
 from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
@@ -11,7 +11,7 @@ from .manual_annotation_service import ManualAnnotationService
 from .lmdb_service import LMDBService
 from .sorted_annotation_service import (
     sorted_annotations_dict,
-    sorted_annotations_per_file_type_dict
+    sorted_annotations_per_file_type_dict,
 )
 from .tokenizer import Tokenizer
 from .constants import (
@@ -41,7 +41,7 @@ configs = {
     PHENOMENAS_LMDB: 'phenomenas',
     PHENOTYPES_LMDB: 'phenotypes',
     PROTEINS_LMDB: 'proteins',
-    SPECIES_LMDB: 'species'
+    SPECIES_LMDB: 'species',
 }
 
 
@@ -79,14 +79,12 @@ def get_bioc_document_service():
 
 
 def get_lmdb_service():
-    return LMDBService(environ.get('LMDB_HOME_FOLDER'), **configs)
+    return LMDBService(config.get('LMDB_HOME_FOLDER'), **configs)
 
 
 def get_recognition_service(exclusions, inclusions):
     return EntityRecognitionService(
-        exclusions=exclusions,
-        inclusions=inclusions,
-        lmdb=get_lmdb_service()
+        exclusions=exclusions, inclusions=inclusions, lmdb=get_lmdb_service()
     )
 
 
@@ -97,5 +95,5 @@ def get_sorted_annotation_service(sort_id, *, mime_type=None):
         )
 
     return sorted_annotations_per_file_type_dict[mime_type][sort_id](
-            annotation_service=get_manual_annotation_service()
+        annotation_service=get_manual_annotation_service()
     )

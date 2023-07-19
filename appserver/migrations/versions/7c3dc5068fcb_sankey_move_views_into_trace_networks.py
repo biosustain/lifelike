@@ -37,26 +37,24 @@ def iterate_sankeys(updateCallback):
     session = Session(conn)
 
     t_files = table(
-        'files',
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        'files', column('content_id', sa.Integer), column('mime_type', sa.String)
+    )
 
     t_files_content = table(
         'files_content',
         column('id', sa.Integer),
         column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary)
+        column('checksum_sha256', sa.Binary),
     )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
-        and_(
-            t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
-            t_files.c.content_id == t_files_content.c.id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
+            and_(
+                t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
+                t_files.c.content_id == t_files_content.c.id,
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         for id, content in chunk:
@@ -68,15 +66,13 @@ def iterate_sankeys(updateCallback):
                 raw_file = json.dumps(data).encode('utf-8')
                 checksum_sha256 = hashlib.sha256(raw_file).digest()
                 session.execute(
-                    t_files_content.update().where(
-                        t_files_content.c.id == id
-                    ).values(
-                        raw_file=raw_file,
-                        checksum_sha256=checksum_sha256
-                    )
+                    t_files_content.update()
+                    .where(t_files_content.c.id == id)
+                    .values(raw_file=raw_file, checksum_sha256=checksum_sha256)
                 )
                 session.flush()
     session.commit()
+
 
 def update_nodes_and_links_overwrites(view, updateCallback):
     nodes = view['nodes']
@@ -86,7 +82,9 @@ def update_nodes_and_links_overwrites(view, updateCallback):
     for key, link in links.items():
         links[key] = updateCallback(link)
 
+
 # endregion
+
 
 # region Upgrade
 def remove_private_prefixes(obj):
@@ -97,6 +95,7 @@ def remove_private_prefixes(obj):
         else:
             new_obj[key] = value
     return new_obj
+
 
 def change_to_nested_view(view):
     view['state']['baseViewName'] = view['base']
@@ -130,7 +129,10 @@ def data_upgrades():
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
+
+
 # endregion
+
 
 # region Downgrade
 def add_private_prefixes(obj):
@@ -142,11 +144,13 @@ def add_private_prefixes(obj):
             new_obj[key] = value
     return new_obj
 
+
 def change_to_standalone_view(view, networkTraceIdx):
     view['base'] = view['state']['baseViewName']
     view['state']['networkTraceIdx'] = networkTraceIdx
     update_nodes_and_links_overwrites(view, add_private_prefixes)
     return view
+
 
 def make_views_main_property(data):
     trace_networks = data.get('trace_networks', [])
@@ -177,4 +181,6 @@ def downgrade():
     """
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_downgrades()
+
+
 # endregion

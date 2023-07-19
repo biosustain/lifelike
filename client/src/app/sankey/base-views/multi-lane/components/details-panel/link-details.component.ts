@@ -8,7 +8,7 @@ import { SankeyTraceLink } from '../../../../model/sankey-document';
 
 @Component({
   selector: 'app-sankey-multi-lane-link-details',
-  templateUrl: './link-details.component.html'
+  templateUrl: './link-details.component.html',
 })
 export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractLinkDetailsComponent<Base> {
   constructor(
@@ -20,4 +20,3 @@ export class SankeyMultiLaneLinkDetailsComponent extends SankeyAbstractLinkDetai
 
   entity: SankeyTraceLink;
 }
-

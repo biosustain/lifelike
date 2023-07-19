@@ -5,14 +5,16 @@ from neo4japp.exceptions import FormatterException
 from neo4japp.models import GraphNode
 from neo4japp.util import CamelDictMixin
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 
 # Start Enums #
 
+
 class Direction(Enum):
     TO = 'Incoming'
     FROM = 'Outgoing'
+
 
 # End Enums
 
@@ -144,6 +146,7 @@ class DuplicateEdgeConnectionData(CamelDictMixin):
         del edge_data_input_dict['from']
         return edge_data_input_dict
 
+
 # Begin Request DTOs #
 
 
@@ -178,6 +181,7 @@ class GetSnippetsForClusterRequest(CamelDictMixin):
     limit: int = attr.ib()
     edges: List[DuplicateEdgeConnectionData] = attr.ib()
 
+
 # End Request DTOs #
 
 # Begin Respose DTOs #
@@ -198,7 +202,9 @@ class GetEdgeSnippetsResult(CamelDictMixin):
     query_data: EdgeConnectionData = attr.ib()
 
     def to_dict_formatter(self, edge_data_output_dict: dict):
-        edge_data_output_dict['query_data']['from'] = edge_data_output_dict['query_data']['from_']
+        edge_data_output_dict['query_data']['from'] = edge_data_output_dict[
+            'query_data'
+        ]['from_']
         del edge_data_output_dict['query_data']['from_']
         return edge_data_output_dict
 
@@ -246,5 +252,6 @@ class AssociatedTypesResult(CamelDictMixin):
 @attr.s(frozen=True)
 class GetAssociatedTypesResult(CamelDictMixin):
     associated_data: List[AssociatedTypesResult] = attr.ib()
+
 
 # End Response DTOs #

@@ -19,10 +19,7 @@ export interface ProgressDialogArguments {
   providedIn: '***ARANGO_USERNAME***',
 })
 export class ProgressDialog {
-  constructor(
-    public modalService: NgbModal
-  ) {
-  }
+  constructor(public modalService: NgbModal) {}
 
   display(args: ProgressDialogArguments, options?: NgbModalOptions) {
     const modalRef = openModal(this.modalService, ProgressDialogComponent, options);

@@ -18,7 +18,8 @@ export class UserSettingsComponent {
   activeTab: 'profile' | 'security';
 
   // TODO: Better to have an environment variable for this
-  oauthPasswordChangeLink = 'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master/account/#/security/signingin';
+  oauthPasswordChangeLink =
+    'https://keycloak.apps.***ARANGO_DB_NAME***.cloud/auth/realms/master/account/#/security/signingin';
 
   get oauthEnabled() {
     return environment.oauthEnabled;

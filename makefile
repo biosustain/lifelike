@@ -16,8 +16,8 @@ container-login:
 
 # Fetches the LMDB files needed to run the application
 lmdb:
-	docker-compose up -d appserver
-	docker-compose exec appserver flask load-lmdb
+	docker compose up -d appserver
+	docker compose exec appserver flask load-lmdb
 	find $(LMDB_PATH) -name '*.mdb.backup' -delete
 
 # Sets up everything you need to run the application
@@ -29,15 +29,15 @@ githooks:
 	git config --local core.hooksPath .githooks/
 
 docker-build:
-	docker-compose build
+	docker compose build
 
 # Runs enough containers for the application to function
 docker-run: azure-secrets container-login lmdb
-	docker-compose up -d
+	docker compose up -d
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
 docker-run-all: azure-secrets container-login lmdb
-	docker-compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
+	docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
 
 docker-stop:
 	docker ps -aq | xargs docker stop
@@ -45,12 +45,12 @@ docker-stop:
 	docker volume prune
 
 docker-flask-seed:
-	docker-compose exec appserver flask seed
+	docker compose exec appserver flask seed
 
 clean-postgres:
 	# Quick command to drop the data in localhost postgres database
 	# Usually used to seed database from cloud backups
-	docker-compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	docker compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 clean-pyc:
 	find . -name '*.pyc' -delete

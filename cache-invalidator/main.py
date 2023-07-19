@@ -302,6 +302,7 @@ def _precalculate_go():
     arango_client.close()
 
 
+
 def main():
     next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
     kg_statistics_successful = False
@@ -339,5 +340,5 @@ def main():
                     next_error_sleep_time = min(ERROR_MAX_SLEEP_TIME, next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

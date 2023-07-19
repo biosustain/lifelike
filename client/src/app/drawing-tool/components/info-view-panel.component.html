@@ -1,8 +1,6 @@
 <div class="d-flex flex-column h-100">
   <div class="module-body">
-    <h4 *ngIf="name">
-      "{{ name }}"
-    </h4>
+    <h4 *ngIf="name">"{{ name }}"</h4>
     <div class="text-muted">
       <div class="mb-2">Type: {{ selectedType | titlecase }}</div>
     </div>
@@ -16,14 +14,24 @@
       </div>
     </div>
 
-    <ng-container *ngIf="(selected.entity.data?.sources && selected.entity.data?.sources.length)
-                        || (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)">
+    <ng-container
+      *ngIf="
+        (selected.entity.data?.sources && selected.entity.data?.sources.length) ||
+        (selected.entity.data?.hyperlinks && selected.entity.data?.hyperlinks.length)
+      "
+    >
       <fieldset class="fieldset-properties mt-4">
         <legend>Links</legend>
-        <app-links-panel [ngModel]="selected.entity.data.sources"
-                         [showHeader]="false" [editable]="false"></app-links-panel>
-        <app-links-panel [ngModel]="selected.entity.data.hyperlinks"
-                         [showHeader]="false" [editable]="false"></app-links-panel>
+        <app-links-panel
+          [ngModel]="selected.entity.data.sources"
+          [showHeader]="false"
+          [editable]="false"
+        ></app-links-panel>
+        <app-links-panel
+          [ngModel]="selected.entity.data.hyperlinks"
+          [showHeader]="false"
+          [editable]="false"
+        ></app-links-panel>
       </fieldset>
     </ng-container>
 

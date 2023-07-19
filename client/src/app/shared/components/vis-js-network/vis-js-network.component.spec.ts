@@ -17,16 +17,12 @@ describe('VisJsNetworkComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         // This import is for the ngModel input of the app-search-control-component
-        FormsModule
+        FormsModule,
       ],
       declarations: [
         VisJsNetworkComponent,
-        MockComponents(
-          LegendComponent,
-          SearchControlComponent,
-          CollapsibleWindowComponent,
-        ),
-      ]
+        MockComponents(LegendComponent, SearchControlComponent, CollapsibleWindowComponent),
+      ],
     });
   });
 

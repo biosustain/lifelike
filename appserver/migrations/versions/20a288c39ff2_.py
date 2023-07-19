@@ -13,6 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 from neo4japp.models.files import FileAnnotationsVersion
@@ -54,21 +55,21 @@ def data_upgrades():
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
         column('mime_type', sa.String),
-        column('annotation_configs', sa.String))
+        column('annotation_configs', sa.String),
+    )
 
     # fix annotations, set to proper null value for files with no annotations
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.annotations
-    ]).where(
-        sa.and_(
-            sa.or_(
-                tableclause.c.mime_type == 'application/pdf',
-                tableclause.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
-            ),
-            tableclause.c.annotations == 'null'
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.annotations]).where(
+            sa.and_(
+                sa.or_(
+                    tableclause.c.mime_type == 'application/pdf',
+                    tableclause.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
+                ),
+                tableclause.c.annotations == 'null',
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         collected = []
@@ -82,23 +83,24 @@ def data_upgrades():
             raise
 
     # update files that do not have annotation_configs to default
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.annotations
-    ]).where(
-        sa.and_(
-            sa.or_(
-                tableclause.c.mime_type == 'application/pdf',
-                tableclause.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table'
-            ),
-            tableclause.c.annotation_configs.is_(None)
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.annotations]).where(
+            sa.and_(
+                sa.or_(
+                    tableclause.c.mime_type == 'application/pdf',
+                    tableclause.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
+                ),
+                tableclause.c.annotation_configs.is_(None),
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         collected = []
         for fid, file_annotations in chunk:
-            collected.append({'id': fid, 'annotation_configs': DEFAULT_ANNOTATION_CONFIGS})
+            collected.append(
+                {'id': fid, 'annotation_configs': DEFAULT_ANNOTATION_CONFIGS}
+            )
         try:
             session.bulk_update_mappings(Files, collected)
             session.commit()

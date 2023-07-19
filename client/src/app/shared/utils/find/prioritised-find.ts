@@ -17,7 +17,7 @@ export function prioritisedCompileFind(terms, options) {
   const ends = new RegExp(`${pattern}$`, 'i');
   const other = new RegExp(pattern, 'i');
 
-  return s => {
+  return (s) => {
     if (other.test(s)) {
       if (starts.test(s)) {
         if (exact.test(s)) {

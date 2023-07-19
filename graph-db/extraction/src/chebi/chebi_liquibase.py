@@ -6,7 +6,9 @@ from zipfile import ZipFile
 
 class ChebiChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author, zip_data_file: str, initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_CHEBI, NODE_CHEMICAL, initial_load)
+        ChangeLogFileGenerator.__init__(
+            self, author, zip_data_file, DB_CHEBI, NODE_CHEMICAL, initial_load
+        )
         self.index_quieries = []
         self.logger = logging.getLogger(__name__)
 
@@ -23,7 +25,9 @@ class ChebiChangeLogsGenerator(ChangeLogFileGenerator):
             filename = "chebi.tsv"
             with zip.open(filename) as f:
                 df = pd.read_csv(f, sep='\t')
-                node_changeset = self.get_node_changeset(df, filename, NODE_CHEMICAL, NODE_CHEBI)
+                node_changeset = self.get_node_changeset(
+                    df, filename, NODE_CHEMICAL, NODE_CHEBI
+                )
                 self.change_sets.append(node_changeset)
 
     def add_synonym_changesets(self):
@@ -40,16 +44,19 @@ class ChebiChangeLogsGenerator(ChangeLogFileGenerator):
             if file in filenames:
                 with zip.open(file) as f:
                     df = pd.read_csv(f, sep='\t')
-                    changesets = self.get_relationships_changesets(df, file, NODE_CHEBI, NODE_CHEBI)
+                    changesets = self.get_relationships_changesets(
+                        df, file, NODE_CHEBI, NODE_CHEBI
+                    )
                     self.change_sets += changesets
 
 
 def main():
     task = ChebiChangeLogsGenerator('rcai', "chebi-data-04052022.zip")
     task.add_all_change_sets()
-    task.generate_changelog_file(f"chebi_changelog_{task.date_tag.replace('/', '')}.xml")
+    task.generate_changelog_file(
+        f"chebi_changelog_{task.date_tag.replace('/', '')}.xml"
+    )
 
 
 if __name__ == '__main__':
     main()
-

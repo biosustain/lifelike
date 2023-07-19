@@ -1,4 +1,9 @@
-import { GraphEntityType, UniversalGraphGroup, UniversalGraphEdge, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
+import {
+  GraphEntityType,
+  UniversalGraphGroup,
+  UniversalGraphEdge,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 
 import { GraphAction, GraphActionReceiver } from './actions';
 
@@ -9,21 +14,18 @@ export class NodeCreation implements GraphAction {
   constructor(
     public readonly description: string,
     public readonly node: UniversalGraphNode,
-    public readonly select = false,
-    public readonly focus = false,
-  ) {
-  }
+    public readonly select = false
+  ) {}
 
   apply(component: GraphActionReceiver) {
     component.addNode(this.node);
     if (this.select) {
-      component.selection.add([{
-        type: GraphEntityType.Node,
-        entity: this.node,
-      }]);
-    }
-    if (this.focus) {
-      component.focusEditorPanel();
+      component.selection.add([
+        {
+          type: GraphEntityType.Node,
+          entity: this.node,
+        },
+      ]);
     }
   }
 
@@ -38,15 +40,13 @@ export class NodeCreation implements GraphAction {
 export class NodeDeletion implements GraphAction {
   private removedEdges: UniversalGraphEdge[];
 
-  constructor(public description: string,
-              public node: UniversalGraphNode) {
-  }
+  constructor(public description: string, public node: UniversalGraphNode) {}
 
   apply(component: GraphActionReceiver) {
     if (this.removedEdges != null) {
       throw new Error('cannot double apply NodeDeletion()');
     }
-    const {removedEdges} = component.removeNode(this.node);
+    const { removedEdges } = component.removeNode(this.node);
     this.removedEdges = removedEdges;
   }
 
@@ -69,10 +69,12 @@ export class NodeMove implements GraphAction {
   previousX: number;
   previousY: number;
 
-  constructor(public description: string,
-              public node: UniversalGraphNode,
-              public nextX: number,
-              public nextY: number) {
+  constructor(
+    public description: string,
+    public node: UniversalGraphNode,
+    public nextX: number,
+    public nextY: number
+  ) {
     this.previousX = node.data.x;
     this.previousY = node.data.y;
   }
@@ -92,11 +94,11 @@ export class NodeMove implements GraphAction {
  * Used to handle adding of the node(s) into the group
  */
 export class NodesGroupAdd implements GraphAction {
-
-  constructor(public description: string,
-              public nodes: UniversalGraphNode[],
-              public group: UniversalGraphGroup) {
-  }
+  constructor(
+    public description: string,
+    public nodes: UniversalGraphNode[],
+    public group: UniversalGraphGroup
+  ) {}
 
   apply(component: GraphActionReceiver): void {
     component.addToGroup(this.nodes, this.group);
@@ -111,11 +113,11 @@ export class NodesGroupAdd implements GraphAction {
  * Used to handle removal of the node(s) from the group
  */
 export class NodesGroupRemoval implements GraphAction {
-
-  constructor(public description: string,
-              public nodes: UniversalGraphNode[],
-              public group: UniversalGraphGroup) {
-  }
+  constructor(
+    public description: string,
+    public nodes: UniversalGraphNode[],
+    public group: UniversalGraphGroup
+  ) {}
 
   apply(component: GraphActionReceiver): void {
     component.removeFromGroup(this.nodes, this.group);

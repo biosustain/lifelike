@@ -10,7 +10,7 @@ describe('PolicyViewerComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      declarations: [ PolicyViewerComponent ],
+      declarations: [PolicyViewerComponent],
     });
   });
 

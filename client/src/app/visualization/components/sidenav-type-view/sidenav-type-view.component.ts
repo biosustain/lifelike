@@ -15,11 +15,10 @@ import {
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
 import { VisualizationService } from 'app/visualization/services/visualization.service';
 
-
 @Component({
-    selector: 'app-sidenav-type-view',
-    templateUrl: './sidenav-type-view.component.html',
-    styleUrls: ['./sidenav-type-view.component.scss']
+  selector: 'app-sidenav-type-view',
+  templateUrl: './sidenav-type-view.component.html',
+  styleUrls: ['./sidenav-type-view.component.scss'],
 })
 export class SidenavTypeViewComponent {
   @Input() legend: Map<string, string[]>;
@@ -58,14 +57,14 @@ export class SidenavTypeViewComponent {
 
     const request: AssociatedTypeSnippetCountRequest = {
       source_node: this.node.id,
-      associated_nodes: this.connectedNodes.map(node => node.id),
+      associated_nodes: this.connectedNodes.map((node) => node.id),
     };
     this.color = this.legend.get(this.type)[0];
     this.visualizationService.getAssociatedTypeSnippetCount(request).subscribe(
       (associatedTypes) => {
         this.typeEntries = [];
         const max = associatedTypes.length > 0 ? associatedTypes[0].snippetCount : 0;
-        associatedTypes.forEach(associatedType => {
+        associatedTypes.forEach((associatedType) => {
           const entry: AssociatedTypeEntry = {
             id: associatedType.nodeId,
             name: associatedType.name,
@@ -111,14 +110,14 @@ export class SidenavTypeViewComponent {
       (result) => {
         this.queryData = result.queryData;
         this.selectedRowSnippetTotal = result.totalResults;
-        this.selectedRowSnippetData = result.snippetData.map(row => {
+        this.selectedRowSnippetData = result.snippetData.map((row) => {
           let fromNode: VisNode;
           let toNode: VisNode;
           if (row.fromNodeId === this.node.id) {
             fromNode = this.node;
-            toNode = this.connectedNodes.find(node => node.id === row.toNodeId);
+            toNode = this.connectedNodes.find((node) => node.id === row.toNodeId);
           } else {
-            fromNode = this.connectedNodes.find(node => node.id === row.fromNodeId);
+            fromNode = this.connectedNodes.find((node) => node.id === row.fromNodeId);
             toNode = this.node;
           }
 

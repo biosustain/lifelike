@@ -90,10 +90,12 @@ export class FileAnnotationChange {
     this.date = data.date;
     this.user = data.user;
     this.cause = data.cause;
-    this.inclusionChanges = data.inclusionChanges.map(
-      itemData => new AnnotationInclusionChange().update(itemData));
-    this.exclusionChanges = data.exclusionChanges.map(
-      itemData => new AnnotationExclusionChange().update(itemData));
+    this.inclusionChanges = data.inclusionChanges.map((itemData) =>
+      new AnnotationInclusionChange().update(itemData)
+    );
+    this.exclusionChanges = data.exclusionChanges.map((itemData) =>
+      new AnnotationExclusionChange().update(itemData)
+    );
     return this;
   }
 }
@@ -110,8 +112,9 @@ export class FileAnnotationHistory extends ModelList<FileAnnotationChange> {
 
   update(data: FileAnnotationHistoryResponse): FileAnnotationHistory {
     this.collectionSize = data.total;
-    this.results.replace(data.results.map(
-      itemData => new FileAnnotationChange().update(itemData)));
+    this.results.replace(
+      data.results.map((itemData) => new FileAnnotationChange().update(itemData))
+    );
     return this;
   }
 }

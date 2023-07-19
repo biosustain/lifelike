@@ -18,7 +18,7 @@ from neo4japp.services.annotations.initializer import (
     get_recognition_service,
     get_annotation_tokenizer,
     get_annotation_service,
-    get_bioc_document_service
+    get_bioc_document_service,
 )
 
 
@@ -32,8 +32,7 @@ ORGANISM_TAX_ID = ''
 
 @contextlib.contextmanager
 def cprofiled():
-    """Used to generate cProfile report of function calls.
-    """
+    """Used to generate cProfile report of function calls."""
     pr = cProfile.Profile()
     pr.enable()
     yield
@@ -55,18 +54,19 @@ def cprofiled():
 
 
 def main():
-    app = create_app('Functional Test Flask App', config='config.Testing')
+    app = create_app('Functional Test Flask App', config_package='config.Testing')
     with app.app_context():
         req = requests.post(
             'http://localhost:5000/auth/login',
             data=json.dumps({'email': 'admin@example.com', 'password': 'password'}),
-            headers={'Content-type': 'application/json'})
+            headers={'Content-type': 'application/json'},
+        )
 
         access_token = json.loads(req.text)['accessToken']['token']
 
         pdf = os.path.join(
             directory,
-            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf'
+            '../../../../tests/database/services/annotations/pdf_samples/2000genes.pdf',
         )
 
         hash_id = None
@@ -77,7 +77,8 @@ def main():
                 files={'contentValue': f},
                 data={
                     'filename': 'Protein Protein Interactions for Covid.pdf',
-                    'parentHashId': 'lazhauxymcrahybaxcvkathnofyissffuidu'}
+                    'parentHashId': 'lazhauxymcrahybaxcvkathnofyissffuidu',
+                },
             )
 
             hash_id = json.loads(upload_req.text)['result']['hashId']
@@ -85,8 +86,10 @@ def main():
         f = db.session.query(Files).filter(Files.hash_id == hash_id).one()
         with cprofiled():
             text, parsed = Pipeline.parse(
-              f.mime_type, file_id=f.id,
-              exclude_references=DEFAULT_ANNOTATION_CONFIGS['exclude_references'])
+                f.mime_type,
+                file_id=f.id,
+                exclude_references=DEFAULT_ANNOTATION_CONFIGS['exclude_references'],
+            )
 
             pipeline = Pipeline(
                 {
@@ -94,20 +97,23 @@ def main():
                     'aers': get_recognition_service,
                     'tkner': get_annotation_tokenizer,
                     'as': get_annotation_service,
-                    'bs': get_bioc_document_service
+                    'bs': get_bioc_document_service,
                 },
-                text=text, parsed=parsed)
+                text=text,
+                parsed=parsed,
+            )
 
             pipeline.get_globals(
                 excluded_annotations=f.excluded_annotations or [],
-                custom_annotations=f.custom_annotations or []
+                custom_annotations=f.custom_annotations or [],
             ).identify(
                 annotation_methods=DEFAULT_ANNOTATION_CONFIGS['annotation_methods']
             ).annotate(
                 specified_organism_synonym=ORGANISM_SYNONYM,
                 specified_organism_tax_id=ORGANISM_TAX_ID,
                 custom_annotations=f.custom_annotations or [],
-                filename=f.filename)
+                filename=f.filename,
+            )
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 import hashlib
-import os
 
 from arango import ArangoClient
 from arango.http import DefaultHTTPClient
@@ -13,21 +12,20 @@ from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
 
 from neo4japp.utils.flask import scope_flask_app_ctx
+from neo4japp.utils.globals import config
 
 
 def trunc_long_constraint_name(name: str) -> str:
-    if (len(name) > 59):
-        truncated_name = name[:55] + '_' + \
-                         hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+    if len(name) > 59:
+        truncated_name = (
+            name[:55] + '_' + hashlib.md5(name[55:].encode('utf-8')).hexdigest()[:4]
+        )
         return truncated_name
     return name
 
 
 def uq_trunc(unique_constraint: UniqueConstraint, table: Table):
-    tokens = [table.name] + [
-        column.name
-        for column in unique_constraint.columns
-    ]
+    tokens = [table.name] + [column.name for column in unique_constraint.columns]
     return trunc_long_constraint_name('_'.join(tokens))
 
 
@@ -37,7 +35,7 @@ convention = {
     'uq': "uq_%(uq_trunc)s",
     'ck': "ck_%(table_name)s_%(constraint_name)s",
     'fk': "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    'pk': "pk_%(table_name)s"
+    'pk': "pk_%(table_name)s",
 }
 
 ma = Marshmallow()
@@ -47,24 +45,25 @@ db = SQLAlchemy(
     metadata=metadata,
     engine_options={
         'executemany_mode': 'values',
-        'executemany_values_page_size': 10000
-    }
+        'executemany_values_page_size': 10000,
+    },
 )
 
+_jwt_client: PyJWKClient
+
+
 # Note that this client should only be used when JWKS_URL has been configured!
-jwt_client = PyJWKClient(os.environ.get('JWKS_URL', ''))
+def get_jwt_client():
+    global _jwt_client
+    if _jwt_client is None:
+        _jwt_client = PyJWKClient(config.get('JWKS_URL', ''))
+    return _jwt_client
+
 
 
 def get_redis_connection() -> Redis:
     if not hasattr(g, 'redis_conn'):
-        HOST = os.environ.get('REDIS_HOST')
-        PORT = os.environ.get('REDIS_PORT')
-        PASSWORD = os.environ.get('REDIS_PASSWORD')
-        DB = os.getenv('REDIS_DB', '1')
-        SSL = os.environ.get('REDIS_SSL', 'false').lower()
-        connection_prefix = 'rediss' if SSL == 'true' else 'redis'
-
-        g.redis_conn = Redis.from_url(f'{connection_prefix}://:{PASSWORD}@{HOST}:{PORT}/{DB}')
+        g.redis_conn = Redis.from_url(config.get('RQ_REDIS_URL'))
     return g.redis_conn
 
 
@@ -77,10 +76,7 @@ def close_redis_conn(error):
 
 
 def _connect_to_elastic():
-    return Elasticsearch(
-        timeout=180,
-        hosts=[os.environ.get('ELASTICSEARCH_HOSTS')]
-    )
+    return Elasticsearch(timeout=180, hosts=[config.get('ELASTICSEARCH_HOSTS')])
 
 
 def create_arango_client(hosts=None) -> ArangoClient:
@@ -142,10 +138,19 @@ def get_file_type_service():
 
     :return: the service
     """
-    from neo4japp.services.file_types.service import FileTypeService, GenericFileTypeProvider
-    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        PDFTypeProvider, BiocTypeProvider, \
-        DirectoryTypeProvider, MapTypeProvider, GraphTypeProvider
+    from neo4japp.services.file_types.service import (
+        FileTypeService,
+        GenericFileTypeProvider,
+    )
+    from neo4japp.services.file_types.providers import (
+        EnrichmentTableTypeProvider,
+        PDFTypeProvider,
+        BiocTypeProvider,
+        DirectoryTypeProvider,
+        MapTypeProvider,
+        GraphTypeProvider,
+    )
+
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
@@ -167,6 +172,7 @@ def get_enrichment_table_service():
 def get_authorization_service():
     if 'authorization_service' not in g:
         from neo4japp.services import AuthService
+
         g.authorization_service = AuthService(session=db.session)
     return g.authorization_service
 
@@ -174,6 +180,7 @@ def get_authorization_service():
 def get_account_service():
     if 'account_service' not in g:
         from neo4japp.services import AccountService
+
         g.account_service = AccountService(session=db.session)
     return g.account_service
 
@@ -181,6 +188,7 @@ def get_account_service():
 def get_projects_service():
     if 'projects_service' not in g:
         from neo4japp.services import ProjectsService
+
         g.projects_service = ProjectsService(session=db.session)
     return g.projects_service
 
@@ -188,12 +196,14 @@ def get_projects_service():
 def get_elastic_service():
     if 'elastic_service' not in g:
         from neo4japp.services.elastic import ElasticService
+
         g.elastic_service = ElasticService()
     return g.elastic_service
 
 
 def get_excel_export_service():
     from neo4japp.services.export import ExcelExportService
+
     return ExcelExportService()
 
 
@@ -204,7 +214,7 @@ def get_or_create_arango_client() -> ArangoClient:
 
 
 def reset_dao():
-    """ Cleans up DAO bound to flask request context
+    """Cleans up DAO bound to flask request context
 
     Used in functional test fixture, but may come in
     handy for production later.

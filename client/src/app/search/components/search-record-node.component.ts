@@ -16,7 +16,6 @@ import { getGraphQueryParams } from '../utils/search';
   styleUrls: ['./search-record-node.component.scss'],
 })
 export class SearchRecordNodeComponent {
-
   private currentNode: FTSQueryRecord;
   nodeURL: string;
   normalizedNodeLabel: string;
@@ -52,21 +51,28 @@ export class SearchRecordNodeComponent {
     }
 
     dataTransfer.setData('text/plain', this.node.node.displayName);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.node.node.displayName,
-      label: this.node.node.label.toLowerCase(),
-      sub_labels: [],
-      data: {
-        hyperlinks: [{
-          domain,
-          url: url.toString()
-        }],
-        references: [{
-          type: 'DATABASE',
-          id: getLink(this.node),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
+    dataTransfer.setData(
+      'application/***ARANGO_DB_NAME***-node',
+      JSON.stringify({
+        display_name: this.node.node.displayName,
+        label: this.node.node.label.toLowerCase(),
+        sub_labels: [],
+        data: {
+          hyperlinks: [
+            {
+              domain,
+              url: url.toString(),
+            },
+          ],
+          references: [
+            {
+              type: 'DATABASE',
+              id: getLink(this.node),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   getNodeDomain(url: URL): string {

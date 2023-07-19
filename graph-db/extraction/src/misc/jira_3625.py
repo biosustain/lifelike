@@ -69,6 +69,8 @@ a TSV data file.
 The data file is then uploaded to a cloud storage (e.g Azure),
 where the migration will pull from and use.
 """
+
+
 def create_data_file(db: Database, filepath: str, query: str):
     with open(filepath, 'w', newline='\n') as tsvfile:
         results = db.get_data(query)
@@ -87,25 +89,46 @@ def create_data_file(db: Database, filepath: str, query: str):
         for index, row in results.iterrows():
             node_id_global[row.entity_id].add(row.is_global)
             node_id_labels[row.entity_id] = row.node_labels
-            node_id_edge_entity_type[row.entity_id] = node_id_edge_entity_type[row.entity_id].union(
-                set(entity_type for entity_type in row.edge_entity_types))
+            node_id_edge_entity_type[row.entity_id] = node_id_edge_entity_type[
+                row.entity_id
+            ].union(set(entity_type for entity_type in row.edge_entity_types))
 
         del results
 
         for entity_id, global_set in node_id_global.items():
             if True not in global_set:
-                writer.writerow([entity_id, '|'.join(label for label in node_id_labels[entity_id])])
+                writer.writerow(
+                    [entity_id, '|'.join(label for label in node_id_labels[entity_id])]
+                )
             else:
                 if len(node_id_labels[entity_id]) == 1:
-                    writer.writerow([entity_id, '|'.join(label for label in node_id_labels[entity_id])])
+                    writer.writerow(
+                        [
+                            entity_id,
+                            '|'.join(label for label in node_id_labels[entity_id]),
+                        ]
+                    )
                 else:
-                    writer.writerow([entity_id, '|'.join(
-                        label for label in set(node_id_labels[entity_id]) - node_id_edge_entity_type[entity_id])])
+                    writer.writerow(
+                        [
+                            entity_id,
+                            '|'.join(
+                                label
+                                for label in set(node_id_labels[entity_id])
+                                - node_id_edge_entity_type[entity_id]
+                            ),
+                        ]
+                    )
 
 
 if __name__ == '__main__':
     db = get_database()
-    for prefix, query in [('mesh', MESH_QUERY), ('compound', COMPOUND_QUERY), ('chemical', CHEMICAL_QUERY), ('protein', PROTEIN_QUERY)]:
+    for prefix, query in [
+        ('mesh', MESH_QUERY),
+        ('compound', COMPOUND_QUERY),
+        ('chemical', CHEMICAL_QUERY),
+        ('protein', PROTEIN_QUERY),
+    ]:
         filename = f'prod-jira-LL-3625-add-entity-type-array-{prefix}.tsv'
         filepath = os.path.join(get_data_dir(), filename)
         create_data_file(db, filepath, query)

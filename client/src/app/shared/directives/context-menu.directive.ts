@@ -47,9 +47,10 @@ export class ContextMenuBodyDirective {
    */
   @HostBinding('style.overflow') _overflowStyle = 'auto';
 
-  constructor(@Inject(forwardRef(() => ContextMenuDirective))
-              readonly contextMenu: ContextMenuDirective) {
-  }
+  constructor(
+    @Inject(forwardRef(() => ContextMenuDirective))
+    readonly contextMenu: ContextMenuDirective
+  ) {}
 }
 
 /**
@@ -59,7 +60,7 @@ export class ContextMenuBodyDirective {
   selector: '[appContextMenu]',
 })
 export class ContextMenuDirective implements AfterViewInit, OnDestroy {
-  @ContentChild(ContextMenuBodyDirective, {static: false, read: ElementRef})
+  @ContentChild(ContextMenuBodyDirective, { static: false, read: ElementRef })
   private bodyDirective: ElementRef;
 
   @Output() contextMenuOpened = new EventEmitter<any>();
@@ -70,27 +71,33 @@ export class ContextMenuDirective implements AfterViewInit, OnDestroy {
   private mouseMovedBound = this.mouseMoved.bind(this);
   protected dropdownController: DropdownController;
 
-  constructor(protected readonly element: ElementRef,
-              protected readonly renderer: Renderer2,
-              protected readonly ngZone: NgZone) {
-  }
+  constructor(
+    protected readonly element: ElementRef,
+    protected readonly renderer: Renderer2,
+    protected readonly ngZone: NgZone
+  ) {}
 
   ngAfterViewInit() {
     this.dropdownController = new DropdownController(
       this.renderer,
       this.element.nativeElement,
-      this.bodyDirective.nativeElement, {
+      this.bodyDirective.nativeElement,
+      {
         viewportSpacing: 5,
         focusAfterOpen: true,
-      },
+      }
     );
 
     // This forces all context menus to close on any right click, so we don't need to
     // keep track of which context menu is supposed to be open, although this means you cannot
     // right click on the contents of context menus
-    this.subscriptions.add(fromEvent(document.body, 'contextmenu', {
-      capture: true,
-    }).pipe(map(() => this.open = false)).subscribe());
+    this.subscriptions.add(
+      fromEvent(document.body, 'contextmenu', {
+        capture: true,
+      })
+        .pipe(map(() => (this.open = false)))
+        .subscribe()
+    );
 
     this.ngZone.runOutsideAngular(() => {
       // Register this event outside because NgZone may be slow

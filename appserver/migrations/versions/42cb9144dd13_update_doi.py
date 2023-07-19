@@ -23,12 +23,17 @@ depends_on = None
 
 db = SQLAlchemy()
 
+
 class Files(db.Model):
     __tablename__ = 'files'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mime_type = db.Column(db.String(127), nullable=False)
-    content_id = db.Column(db.Integer, db.ForeignKey('files_content.id', ondelete='CASCADE'),
-                           index=True, nullable=True)
+    content_id = db.Column(
+        db.Integer,
+        db.ForeignKey('files_content.id', ondelete='CASCADE'),
+        index=True,
+        nullable=True,
+    )
     content = db.relationship('FileContent', foreign_keys=content_id)
     doi = db.Column(db.String(1024), nullable=True)
 
@@ -43,17 +48,16 @@ def recalculate_doi_based_on_current_algorithm():
     session = Session(op.get_bind())
     pdf_type_provider = PDFTypeProvider()
 
-    for file in session.query(Files) \
-            .filter(Files.mime_type == 'application/pdf') \
-            .join(Files.content) \
-            .with_entities(Files.id, Files.doi, FileContent.raw_file):
-
+    for file in (
+        session.query(Files)
+        .filter(Files.mime_type == 'application/pdf')
+        .join(Files.content)
+        .with_entities(Files.id, Files.doi, FileContent.raw_file)
+    ):
         buffer = io.BytesIO(file.raw_file)
         extracted_doi = pdf_type_provider.extract_doi(buffer)
 
-        session.query(Files)\
-            .filter(Files.id == file.id)\
-            .update(dict(doi=extracted_doi))
+        session.query(Files).filter(Files.id == file.id).update(dict(doi=extracted_doi))
 
 
 def upgrade():

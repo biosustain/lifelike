@@ -12,4 +12,3 @@ add_gene_line_by_name:
     match(n:db_STRING) where not (n)-[:HAS_GENE]-()
         with n match (m:Gene) where m.tax_id = n.tax_id and m.name = n.name
         merge (n)-[:HAS_GENE]->(m);
-

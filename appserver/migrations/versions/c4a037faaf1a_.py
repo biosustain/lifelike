@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 from os import path
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_ENRICHMENT_TABLE
 from neo4japp.models import Files, FileContent
@@ -29,7 +30,9 @@ branch_labels = None
 depends_on = None
 
 directory = path.realpath(path.dirname(__file__))
-schema_file = path.join(directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v5.json')
+schema_file = path.join(
+    directory, '../..', 'neo4japp/schemas/formats/enrichment_tables_v5.json'
+)
 
 
 def upgrade():
@@ -59,36 +62,44 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        column('mime_type', sa.String),
+    )
 
     tableclause2 = table(
         'files_content',
         column('id', sa.Integer),
         column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary))
+        column('checksum_sha256', sa.Binary),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id.label('file_id'),
-        tableclause2.c.id.label('file_content_id'),
-        tableclause2.c.raw_file
-    ]).where(
-        and_(
-            tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
-            tableclause1.c.content_id == tableclause2.c.id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select(
+            [
+                tableclause1.c.id.label('file_id'),
+                tableclause2.c.id.label('file_content_id'),
+                tableclause2.c.raw_file,
+            ]
+        ).where(
+            and_(
+                tableclause1.c.mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE,
+                tableclause1.c.content_id == tableclause2.c.id,
+            )
         )
-    ))
+    )
 
     # just in case the processing has not picked up a checksum
     # that exists in the db before trying to insert it
-    existing_checksums = session.execute(sa.select([
-        tableclause2.c.id.label('file_content_id'),
-        tableclause2.c.checksum_sha256
-    ]))
+    existing_checksums = session.execute(
+        sa.select(
+            [tableclause2.c.id.label('file_content_id'), tableclause2.c.checksum_sha256]
+        )
+    )
 
     with open(schema_file, 'rb') as f:
         validate_enrichment_table = fastjsonschema.compile(json.load(f))
         file_content_hashes = {
-            content_hash: content_id for content_id, content_hash in existing_checksums}
+            content_hash: content_id for content_id, content_hash in existing_checksums
+        }
 
         for chunk in window_chunk(files, 25):
             files_to_update = []
@@ -109,7 +120,9 @@ def data_upgrades():
                         if err == "data.result must not contain {'version'} properties":
                             file_obj = {'id': fid}
                             current['result'].pop('version')
-                            current = json.dumps(current, separators=(',', ':')).encode('utf-8')
+                            current = json.dumps(current, separators=(',', ':')).encode(
+                                'utf-8'
+                            )
                             new_hash = hashlib.sha256(current).digest()
 
                             # because we are fixing JSONs, it is possible
@@ -117,7 +130,13 @@ def data_upgrades():
                             # can potentially result in an existing JSON
                             if new_hash not in file_content_hashes:
                                 file_content_hashes[new_hash] = fcid
-                                raws_to_update.append({'id': fcid, 'raw_file': current, 'checksum_sha256': new_hash})  # noqa
+                                raws_to_update.append(
+                                    {
+                                        'id': fcid,
+                                        'raw_file': current,
+                                        'checksum_sha256': new_hash,
+                                    }
+                                )  # noqa
                             else:
                                 file_obj['content_id'] = file_content_hashes[new_hash]
                                 files_to_update.append(file_obj)

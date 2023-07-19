@@ -3,10 +3,10 @@ from http import HTTPStatus
 from typing import Union, Optional
 
 from neo4japp.message import ServerMessage
-from neo4japp.utils.transaction_id import get_transaction_id
+from neo4japp.utils.transaction_id import transaction_id
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerInfo(ServerMessage):
     """
     Create a new Info.
@@ -16,6 +16,7 @@ class ServerInfo(ServerMessage):
     :param code: the Info code
     :param fields:
     """
+
     title: str = "Server returned information message"
     message: Optional[str] = "Code executed with following informations"
     fields: Optional[dict] = None
@@ -27,7 +28,7 @@ class ServerInfo(ServerMessage):
 
     @property
     def transaction_id(self):
-        return get_transaction_id()
+        return transaction_id
 
     def __str__(self):
         lines = [f'<{self.type} {self.transaction_id}> {self.title}: {self.message}']
@@ -38,6 +39,6 @@ class ServerInfo(ServerMessage):
         return '\n'.join(lines)
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ContentValidationInfo(ServerInfo):
     pass

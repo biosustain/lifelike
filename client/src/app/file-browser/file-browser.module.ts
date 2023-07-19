@@ -25,7 +25,10 @@ import { ProjectsService } from './services/projects.service';
 import { ObjectEditDialogComponent } from './components/dialog/object-edit-dialog.component';
 import { ObjectVersionHistoryComponent } from './components/object-version-history.component';
 import { ObjectVersionHistoryDialogComponent } from './components/dialog/object-version-history-dialog.component';
-import { ObjectPreviewComponent, ObjectPreviewOutletComponent, } from './components/object-preview.component';
+import {
+  ObjectPreviewComponent,
+  ObjectPreviewOutletComponent,
+} from './components/object-preview.component';
 import { ObjectExportDialogComponent } from './components/dialog/object-export-dialog.component';
 import { ObjectTileDeckComponent } from './components/object-tile-deck.component';
 import { DirectoryPreviewComponent } from './components/directory-preview.component';
@@ -78,11 +81,9 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
-    ObjectTileDeckComponent
+    ObjectTileDeckComponent,
   ],
-  imports: [
-    SharedModule,
-  ],
+  imports: [SharedModule],
   entryComponents: [
     ObjectDeleteDialogComponent,
     ProjectEditDialogComponent,
@@ -128,5 +129,4 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     },
   ],
 })
-export class FileBrowserModule {
-}
+export class FileBrowserModule {}

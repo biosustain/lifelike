@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, request, jsonify
 from flask.views import MethodView
 from flask_apispec import use_kwargs
+from http import HTTPStatus
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_or_create_arango_client
@@ -25,7 +26,9 @@ from neo4japp.services.visualizer import (
     get_snippets_for_node_pair
 
 )
-from neo4japp.util import SuccessResponse, jsonify_with_class, camel_to_snake_dict
+from neo4japp.util import camel_to_snake_dict
+from neo4japp.utils.jsonify import jsonify_with_class
+from neo4japp.schemas.common import SuccessResponse
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
@@ -55,7 +58,7 @@ def get_ref_table(req: ReferenceTableDataRequest):
             for pair in req.node_edge_pairs
         ]
     )
-    return SuccessResponse(reference_table_data, status_code=200)
+    return SuccessResponse(reference_table_data, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-snippets-for-edge', methods=['POST'])
@@ -67,7 +70,7 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
         raise InvalidArgument(
             title='Failed to Get Edge Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=400
+            code=HTTPStatus.BAD_REQUEST,
         )
 
     arango_client = get_or_create_arango_client()
@@ -84,12 +87,12 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
         raise InvalidArgument(
             title='Failed to Get Cluster Snippets',
             message='Query limit is out of bounds, the limit is 0 <= limit <= 1000.',
-            code=400
+            code=HTTPStatus.BAD_REQUEST,
         )
 
     arango_client = get_or_create_arango_client()
     result = get_snippets_for_cluster(arango_client, req.edges, req.page, req.limit)
-    return SuccessResponse(result, status_code=200)
+    return SuccessResponse(result, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-associated-type-snippet-count', methods=['POST'])

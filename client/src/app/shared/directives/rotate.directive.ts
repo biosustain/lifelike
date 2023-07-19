@@ -1,7 +1,7 @@
 import { Directive, HostBinding, Input } from '@angular/core';
 
 @Directive({
-  selector: '[appRotate]'
+  selector: '[appRotate]',
 })
 export class RotateDirective {
   @HostBinding('style.transform') transform;

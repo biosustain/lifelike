@@ -2,8 +2,12 @@ import {
   ApplicationRef,
   Component,
   ComponentFactoryResolver,
-  ElementRef, Injector, NgZone,
-  Output, Input, EventEmitter,
+  ElementRef,
+  Injector,
+  NgZone,
+  Output,
+  Input,
+  EventEmitter,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -41,21 +45,21 @@ export class AnnotationLayerComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly internalSearch: InternalSearchService,
     protected readonly clipboard: ClipboardService,
-    readonly annotationService: PDFAnnotationService,
-  ) {
-  }
+    readonly annotationService: PDFAnnotationService
+  ) {}
 
   annotations$: Observable<Annotation[]> = this.annotationService.pageGroupedAnnotations$.pipe(
-    map(gropuedAnnotations =>
-      gropuedAnnotations[(this.pdfPageView as any).id]
-    )
+    map((gropuedAnnotations) => gropuedAnnotations[(this.pdfPageView as any).id])
   );
 
   currentHighlightAnnotationId$: Observable<string> = this.annotationService.highlightAnnotationId$;
 
   @Input() pdfPageView: PDFPageView;
   @Output() dragStart = new EventEmitter<AnnotationDragEvent>();
-  annotationRectsMap = new ExtendedWeakMap<Annotation, { top: number, left: number, width: number, height: number, rect: any }>();
+  annotationRectsMap = new ExtendedWeakMap<
+    Annotation,
+    { top: number; left: number; width: number; height: number; rect: any }
+  >();
 
   displayFilter(meta) {
     if (meta.isExcluded) {
@@ -81,7 +85,7 @@ export class AnnotationLayerComponent {
 
     const viewPort: PageViewport = this.pdfPageView.viewport;
 
-    return annotation.rects.map(rect => {
+    return annotation.rects.map((rect) => {
       const bounds = viewPort.convertToViewportRectangle(rect);
       return {
         rect,
@@ -93,7 +97,7 @@ export class AnnotationLayerComponent {
     });
   }
 
-  annotationDragStart(event, {meta, rect}) {
+  annotationDragStart(event, { meta, rect }) {
     this.dragStart.emit({
       event,
       meta,
@@ -105,7 +109,7 @@ export class AnnotationLayerComponent {
     event.stopPropagation();
   }
 
-  removeCustomAnnotation({uuid}: Annotation) {
+  removeCustomAnnotation({ uuid }: Annotation) {
     return this.annotationService.annotationRemoved(uuid);
   }
 
@@ -118,7 +122,6 @@ export class AnnotationLayerComponent {
       rects: annotation.rects,
       pageNumber: annotation.pageNumber,
     });
-
   }
 
   addHighlightItem(highlightRect: number[]) {
@@ -131,8 +134,19 @@ export class AnnotationLayerComponent {
     // TODO don't use direct DOM manipulations
     const overlayContainer = this.elementRef.nativeElement;
     const overlayDiv = document.createElement('div');
-    overlayDiv.setAttribute('style', `border: 2px solid red; position:absolute;` +
-      'left:' + (left - 4) + 'px;top:' + (top - 4) + 'px;width:' + (width + 8) + 'px;height:' + (height + 8) + 'px;');
+    overlayDiv.setAttribute(
+      'style',
+      `border: 2px solid red; position:absolute;` +
+        'left:' +
+        (left - 4) +
+        'px;top:' +
+        (top - 4) +
+        'px;width:' +
+        (width + 8) +
+        'px;height:' +
+        (height + 8) +
+        'px;'
+    );
     overlayContainer.appendChild(overlayDiv);
     setTimeout(() => {
       overlayContainer.removeChild(overlayDiv);

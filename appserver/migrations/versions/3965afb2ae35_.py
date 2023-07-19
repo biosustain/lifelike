@@ -59,15 +59,26 @@ def data_upgrades():
         'app_user_role',
         sa.MetaData(),
         sa.Column('appuser_id', sa.Integer(), primary_key=True, index=True),
-        sa.Column('app_role_id', sa.Integer(), primary_key=True, index=True)
+        sa.Column('app_role_id', sa.Integer(), primary_key=True, index=True),
     )
 
     t_appuser = aliased(t_app_user)
     t_approle = aliased(t_app_role)
-    subquery = sa.select([t_appuser.c.id]).select_from(
-        t_appuser.join(t_app_user_role, t_app_user_role.c.appuser_id == t_appuser.c.id)
-        .join(t_approle, t_app_user_role.c.app_role_id == t_approle.c.id)).where(t_approle.c.name == 'user').alias('subquery')
-    query = sa.select([t_appuser.c.id]).select_from(t_appuser).where(~t_appuser.c.id.in_(subquery))
+    subquery = (
+        sa.select([t_appuser.c.id])
+        .select_from(
+            t_appuser.join(
+                t_app_user_role, t_app_user_role.c.appuser_id == t_appuser.c.id
+            ).join(t_approle, t_app_user_role.c.app_role_id == t_approle.c.id)
+        )
+        .where(t_approle.c.name == 'user')
+        .alias('subquery')
+    )
+    query = (
+        sa.select([t_appuser.c.id])
+        .select_from(t_appuser)
+        .where(~t_appuser.c.id.in_(subquery))
+    )
 
     app_role_query = sa.select([t_approle.c.id]).where(t_approle.c.name == 'user')
     app_role_id = session.execute(app_role_query).fetchone()
@@ -84,6 +95,7 @@ def data_upgrades():
 
     if prepared_inserts:
         session.execute(t_app_user_role.insert(), prepared_inserts)
+
 
 def data_downgrades():
     """Add optional data downgrade migrations here"""

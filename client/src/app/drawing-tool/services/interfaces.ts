@@ -35,18 +35,18 @@ export interface UniversalGraphNode {
   data: {
     x: number;
     y: number;
-    width?: number,
-    height?: number,
+    width?: number;
+    height?: number;
   } & UniversalEntityData;
   display_name: string;
   hash: string;
   shape?: string;
   icon?: {
-    code: string,
-    color: string,
-    face: string,
-    size: number,
-    weight: string,
+    code: string;
+    color: string;
+    face: string;
+    size: number;
+    weight: string;
   };
   image_id?: string;
   label: string;
@@ -55,12 +55,11 @@ export interface UniversalGraphNode {
   style?: UniversalNodeStyle;
 }
 
-export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, 'data' | 'style' | 'hash'> &
-  {
-    data?: Partial<UniversalGraphNode['data']>,
-    style?: Partial<UniversalGraphNode['style']>,
-    hash?: Partial<UniversalGraphNode['hash']>
-  };
+export type UniversalGraphNodeTemplate = Omit<UniversalGraphNode, 'data' | 'style' | 'hash'> & {
+  data?: Partial<UniversalGraphNode['data']>;
+  style?: Partial<UniversalGraphNode['style']>;
+  hash?: Partial<UniversalGraphNode['hash']>;
+};
 
 export type UniversalGraphImageNodeTemplate = WithRequired<UniversalGraphNodeTemplate, 'image_id'>;
 
@@ -84,21 +83,23 @@ export interface UniversalGraphEdge {
   style?: UniversalEdgeStyle;
 }
 
-
 export interface KnowledgeMapGraph {
   nodes: UniversalGraphNode[];
   edges: UniversalGraphEdge[];
   groups: UniversalGraphGroup[];
 }
 
-export declare type UniversalGraphEntity = UniversalGraphNode | UniversalGraphEdge | UniversalGraphGroup;
+export declare type UniversalGraphEntity =
+  | UniversalGraphNode
+  | UniversalGraphEdge
+  | UniversalGraphGroup;
 
 export declare type UniversalGraphNodelike = UniversalGraphNode | UniversalGraphGroup;
 
 export enum GraphEntityType {
   Node = 'node',
   Edge = 'edge',
-  Group = 'group'
+  Group = 'group',
 }
 
 export interface GraphEntity {
@@ -129,11 +130,11 @@ export interface LaunchApp {
   app: string;
   arg?: {
     // For pdf-viewer, coordinate of the nnoation of pd
-    coords?: number[],
+    coords?: number[];
     // hash of pdf to locate by
-    fileId?: string,
+    fileId?: string;
     // page of the pdf that the annotation is located on
-    pageNumber?: number
+    pageNumber?: number;
   };
 }
 

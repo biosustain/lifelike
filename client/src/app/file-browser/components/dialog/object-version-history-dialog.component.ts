@@ -21,13 +21,11 @@ export class ObjectVersionHistoryDialogComponent extends CommonFormDialogCompone
     version: new FormControl(null, Validators.required),
   });
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog) {
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  getValue(): ObjectVersion | null  {
+  getValue(): ObjectVersion | null {
     return this.form.get('version').value;
   }
 }
-

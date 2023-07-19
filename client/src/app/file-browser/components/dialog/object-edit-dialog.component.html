@@ -6,7 +6,12 @@
   <app-modal-body>
     <app-form-input-feedback [control]="form" [formLevel]="true"></app-form-input-feedback>
 
-    <app-form-row for="parent" [label]="parentLabel" [control]="form.get('parent')" *ngIf="promptParent">
+    <app-form-row
+      for="parent"
+      [label]="parentLabel"
+      [control]="form.get('parent')"
+      *ngIf="promptParent"
+    >
       <div class="d-flex align-items-center text-truncate">
         <button type="button" class="btn btn-secondary mr-2" (click)="showParentDialog()">
           Browse...
@@ -15,24 +20,34 @@
           <i class="fa fa-fw fa-folder text-icon"></i>
           {{ form.get('parent').value.effectiveName }}
         </div>
-        <ng-template #noParentChosen>
-        </ng-template>
+        <ng-template #noParentChosen> </ng-template>
       </div>
     </app-form-row>
 
     <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
-      <input type="text" formControlName="filename" id="filename" [appFormInput]="form.get('filename')"
-             appAutoFocus [autoSelect]="true">
+      <input
+        type="text"
+        formControlName="filename"
+        id="filename"
+        [appFormInput]="form.get('filename')"
+        [pristineInvalid]="true"
+        appAutoFocus
+        [autoSelect]="true"
+      />
     </app-form-row>
 
     <app-form-row for="description" label="Description" [control]="form.get('description')">
-      <textarea formControlName="description" id="description" [appFormInput]="form.get('description')"
-                rows="10"></textarea>
+      <textarea
+        formControlName="description"
+        id="description"
+        [appFormInput]="form.get('description')"
+        rows="10"
+      ></textarea>
     </app-form-row>
 
     <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public">
+        <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
         <label class="custom-control-label" for="public">Publicly share with the community</label>
       </div>
     </app-form-row>
@@ -44,10 +59,14 @@
           *ngIf="object.promptOrganism"
           label="Organism"
           ngbTooltip="If you know the specific organism strain related to the paper, you may optionally search for it by name here."
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
         >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="fallbackOrganism"
+            [organismTaxId]="
+              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
+            "
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>
@@ -60,7 +79,8 @@
                   [headers]="annotationMethods"
                   [models]="annotationModels"
                   [form]="form.get('annotationConfigs')"
-                  [fileType]="object.mimeType"></app-annotation-config-table>
+                  [fileType]="object.mimeType"
+                ></app-annotation-config-table>
               </ng-template>
             </ngb-panel>
           </ngb-accordion>
@@ -71,6 +91,6 @@
 
   <app-modal-footer>
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid" >Save</button>
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Save</button>
   </app-modal-footer>
 </form>

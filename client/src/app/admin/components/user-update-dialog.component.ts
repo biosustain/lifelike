@@ -1,9 +1,5 @@
-import {Component, Input} from '@angular/core';
-import {
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -24,7 +20,7 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent<UserUpd
     firstName: new FormControl('', Validators.required),
     lastName: new FormControl('', Validators.required),
     username: new FormControl('', Validators.required),
-    roles: new FormControl('')
+    roles: new FormControl(''),
   });
 
   constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
@@ -41,10 +37,10 @@ export class UserUpdateDialogComponent extends CommonFormDialogComponent<UserUpd
       username: this.user.username,
       firstName: this.user.firstName,
       lastName: this.user.lastName,
-      roles: this.user.roles.includes('admin') ? 'admin' : 'user'
+      roles: this.user.roles.includes('admin') ? 'admin' : 'user',
     });
     if (this.isSelf) {
-          this.form.controls.roles.disable();
+      this.form.controls.roles.disable();
     }
   }
 }

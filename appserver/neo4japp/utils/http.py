@@ -3,7 +3,9 @@ from urllib.parse import quote
 from flask import make_response
 
 
-def make_cacheable_file_response(request, content, etag: str, filename: str, mime_type: str = None):
+def make_cacheable_file_response(
+    request, content, etag: str, filename: str, mime_type: str = None
+):
     """
     Make a Flask response for a file, as a download, with support for browser
     caching. Headers are sent to make the browser always check for the latest version,
@@ -20,7 +22,8 @@ def make_cacheable_file_response(request, content, etag: str, filename: str, mim
         if mime_type:
             response.headers['Content-Type'] = mime_type
         response.headers['Content-Length'] = len(content)
-        response.headers['Content-Disposition'] = \
-            f'attachment; filename="{fallback_filename}"; filename*=UTF-8\'\'{quoted_filename}'
+        response.headers[
+            'Content-Disposition'
+        ] = f'attachment; filename="{fallback_filename}"; filename*=UTF-8\'\'{quoted_filename}'
         response.headers['ETag'] = f'"{etag}"'
         return response

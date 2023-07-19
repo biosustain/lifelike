@@ -45,18 +45,21 @@ def test_can_get_an_existing_queue(rq_service: RedisQueueService, queue_A: Queue
     assert len(existing_q.jobs) == 1
 
 
-def test_get_job_in_queue(rq_service: RedisQueueService, queue_A: Queue, easy_job_A: Job):
+def test_get_job_in_queue(
+    rq_service: RedisQueueService, queue_A: Queue, easy_job_A: Job
+):
     assert rq_service.get_job_in_queue(queue_A.name, easy_job_A.get_id()) == easy_job_A
 
 
 def test_get_job_in_queue_returns_None_if_job_does_not_exist(
-    rq_service: RedisQueueService,
-    queue_A: Queue
+    rq_service: RedisQueueService, queue_A: Queue
 ):
     rq_service.get_job_in_queue(queue_A.name, 'fake_id') is None
 
 
-def test_get_all_jobs_in_a_queue(rq_service: RedisQueueService, queue_A: Queue, easy_job_A: Job):
+def test_get_all_jobs_in_a_queue(
+    rq_service: RedisQueueService, queue_A: Queue, easy_job_A: Job
+):
     assert len(rq_service.get_all_jobs_in_queue(queue_A.name)) == 1
 
     rq_service.enqueue(sum, [3, 4], queue=queue_A.name)
@@ -90,10 +93,7 @@ def test_get_job_throws_if_job_does_not_exist(rq_service: RedisQueueService):
 
 
 def test_get_worker_with_existing_queue(rq_service: RedisQueueService, queue_A: Queue):
-    new_worker = rq_service.create_worker(
-        queues=[queue_A.name],
-        name='new_worker'
-    )
+    new_worker = rq_service.create_worker(queues=[queue_A.name], name='new_worker')
 
     assert new_worker is not None
     assert new_worker.name == 'new_worker'
@@ -104,10 +104,7 @@ def test_get_worker_with_existing_queue(rq_service: RedisQueueService, queue_A: 
 
 
 def test_get_worker_with_new_queue(rq_service: RedisQueueService):
-    new_worker = rq_service.create_worker(
-        queues=['new_queue'],
-        name='new_worker'
-    )
+    new_worker = rq_service.create_worker(queues=['new_queue'], name='new_worker')
 
     assert new_worker is not None
     assert new_worker.name == 'new_worker'
@@ -118,10 +115,15 @@ def test_get_worker_with_new_queue(rq_service: RedisQueueService):
 
 
 def test_get_existing_worker(rq_service: RedisQueueService, worker_A: Worker):
-    assert rq_service.create_worker(queues=worker_A.queue_names(), name=worker_A.name) == worker_A
+    assert (
+        rq_service.create_worker(queues=worker_A.queue_names(), name=worker_A.name)
+        == worker_A
+    )
 
 
-def test_get_existing_worker_with_different_queues(rq_service: RedisQueueService, worker_A: Worker):
+def test_get_existing_worker_with_different_queues(
+    rq_service: RedisQueueService, worker_A: Worker
+):
     # This test is intended to show that creating a "new" worker with the name of an existing
     # worker has some unexpected behavior. It seems that once a worker has started working, there
     # is NOT any way to update which queues it reads from! See the
@@ -144,13 +146,13 @@ def test_start_worker(queue_A: Queue, easy_job_A: Job, worker_A: Worker):
 
 
 def test_start_worker_with_existing_name_throws(
-    rq_service: RedisQueueService,
-    default_queue: Queue,
-    queue_A: Queue
+    rq_service: RedisQueueService, default_queue: Queue, queue_A: Queue
 ):
     with pytest.raises(ValueError):
         queue_A.enqueue(sum, [1, 2], max_retry=None, failure_ttl=0)
-        new_default = rq_service.create_worker(queues=[queue_A.name], name=default_queue.name)
+        new_default = rq_service.create_worker(
+            queues=[queue_A.name], name=default_queue.name
+        )
         new_default.work(burst=True)
 
 
@@ -167,8 +169,8 @@ def test_rq_service_get_a_count_of_all_workers(rq_service: RedisQueueService):
 
 
 @pytest.mark.skip(
-    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which ' +
-    'can cause tests to fail.'
+    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which '
+    + 'can cause tests to fail.'
 )
 def test_get_failed_jobs(rq_service: RedisQueueService, default_queue: Queue):
     rq_service.enqueue(
@@ -185,8 +187,8 @@ def test_get_failed_jobs(rq_service: RedisQueueService, default_queue: Queue):
 
 
 @pytest.mark.skip(
-    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which ' +
-    'can cause tests to fail.'
+    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which '
+    + 'can cause tests to fail.'
 )
 def test_cleanup_failed_job(rq_service: RedisQueueService, default_queue: Queue):
     rq_service.enqueue(
@@ -209,8 +211,8 @@ def test_cleanup_failed_job(rq_service: RedisQueueService, default_queue: Queue)
 
 
 @pytest.mark.skip(
-    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which ' +
-    'can cause tests to fail.'
+    'Skipping this to avoid CI failing. Sleeping leads to non-deterministic execution which '
+    + 'can cause tests to fail.'
 )
 def test_retry_failed_jobs(rq_service: RedisQueueService, default_queue: Queue):
     rq_service.enqueue(

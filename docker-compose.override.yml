@@ -173,7 +173,7 @@ services:
     ports:
       - 8529:8529
     volumes:
-      - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
+      - ./arangodb/bin:/home/dbuser/bin # the /home/dbuser directory is setup in the Dockerfile
       - ./arangodb/data:/var/lib/arangodb3
       - ./arangodb/apps:/var/lib/arangodb3-apps
     networks:

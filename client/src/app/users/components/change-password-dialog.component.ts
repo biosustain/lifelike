@@ -13,23 +13,25 @@ import { UserEffects } from '../store/effects';
 
 @Component({
   selector: 'app-change-password-dialog',
-  templateUrl: './change-password-dialog.component.html'
+  templateUrl: './change-password-dialog.component.html',
 })
 export class ChangePasswordDialogComponent extends CommonDialogComponent<boolean> {
   user: PrivateAppUser;
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              private readonly accountService: AccountService,
-              private readonly userEffects: UserEffects) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private readonly accountService: AccountService,
+    private readonly userEffects: UserEffects
+  ) {
     super(modal, messageDialog);
-    this.accountService.currentUser().subscribe(user => this.user = user);
-    this.userEffects.actions$.pipe(ofType(UserActions.changePasswordSuccess)).subscribe(() => this.submit());
+    this.accountService.currentUser().subscribe((user) => (this.user = user));
+    this.userEffects.actions$
+      .pipe(ofType(UserActions.changePasswordSuccess))
+      .subscribe(() => this.submit());
   }
 
   getValue(): boolean {
     return true;
   }
-
 }
-

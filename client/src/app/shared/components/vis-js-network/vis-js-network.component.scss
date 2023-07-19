@@ -7,7 +7,7 @@
   margin: variables.$spacer;
   pointer-events: none;
   position: absolute;
-  width: calc(100% - #{2*variables.$spacer});
+  width: calc(100% - #{2 * variables.$spacer});
   z-index: 1;
 
   > * {

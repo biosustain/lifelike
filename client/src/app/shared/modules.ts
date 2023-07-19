@@ -15,7 +15,9 @@ export interface ShouldConfirmUnload {
    * If we guard against angular route unload, we should also guard against browser unload event.
    */
   // @HostListener('window:beforeunload', ['$event'])
-  handleBeforeUnload: (event: BeforeUnloadEvent) => void | BeforeUnloadEvent | Promise<void | BeforeUnloadEvent>;
+  handleBeforeUnload: (
+    event: BeforeUnloadEvent
+  ) => void | BeforeUnloadEvent | Promise<void | BeforeUnloadEvent>;
 }
 
 export interface ModuleAwareComponent {

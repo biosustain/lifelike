@@ -5,19 +5,20 @@
 </ng-template>
 
 <div ngbDropdown class="input-group input-border rounded" placement="bottom-left" container="body">
-  <input #organismDropdown="uid" appUid
-         autocomplete="off"
-         class="form-control border-0"
-         type="text"
-         container="body"
-         ngbDropdownToggle
-         [(ngModel)]="inputText"
-         (ngModelChange)="inputText$.next($event)"/>
+  <input
+    #organismDropdown="uid"
+    appUid
+    autocomplete="off"
+    class="form-control border-0"
+    type="text"
+    container="body"
+    ngbDropdownToggle
+    [(ngModel)]="inputText"
+    (ngModelChange)="inputText$.next($event)"
+  />
 
   <div *ngIf="isOrganismSelected" class="input-group-append">
-    <button type="button"
-            class="form-control border-0"
-            (click)="clear()">
+    <button type="button" class="form-control border-0" (click)="clear()">
       <i class="fa fa-times"></i>
     </button>
   </div>
@@ -28,13 +29,17 @@
 
   <div ngbDropdownMenu [attr.aria-labelledby]="organismDropdown">
     <ng-container *ngFor="let curatedOrganism of organismShortlist">
-      <ng-container *ngTemplateOutlet="organismResult; context: {organism: curatedOrganism, term: inputText}"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="organismResult; context: { organism: curatedOrganism, term: inputText }"
+      ></ng-container>
     </ng-container>
     <ng-container *ngIf="searcher$ | async as searchResults">
       <ng-container *ngIf="searchResults.length">
         <div class="dropdown-divider"></div>
         <ng-container *ngFor="let result of searchResults">
-          <ng-container *ngTemplateOutlet="organismResult; context: {organism: result, term: inputText}"></ng-container>
+          <ng-container
+            *ngTemplateOutlet="organismResult; context: { organism: result, term: inputText }"
+          ></ng-container>
         </ng-container>
       </ng-container>
     </ng-container>

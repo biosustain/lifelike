@@ -3,21 +3,19 @@ import click
 import copy
 import hashlib
 import importlib
-import io
 import json
 import logging
 import math
 import os
 import re
 import requests
-import sentry_sdk
 import sys
 import timeflake
 import uuid
 import zipfile
 
 from collections import namedtuple
-from flask import current_app, request, g
+from flask import request, g
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
@@ -33,10 +31,15 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
     SEED_FILE_KEY_FILE_CONTENT,
     SEED_FILE_KEY_USER,
-    SEED_FILE_KEY_FILES
+    SEED_FILE_KEY_FILES,
 )
-from neo4japp.database import db, get_account_service, get_elastic_service, get_file_type_service
-from neo4japp.exceptions import OutdatedVersionException
+from neo4japp.database import (
+    db,
+    get_account_service,
+    get_elastic_service,
+    get_file_type_service,
+)
+from neo4japp.exceptions import OutdatedVersionException, ServerWarning
 from neo4japp.factory import create_app
 from neo4japp.lmdb_manager import LMDBManager, AzureStorageProvider
 from neo4japp.models import AppUser
@@ -49,17 +52,17 @@ from neo4japp.services.redis.redis_queue_service import RedisQueueService
 from neo4japp.utils import FileContentBuffer
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.warnings import ServerWarning
+from neo4japp.utils.globals import config
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
-app = create_app(config=f'config.{app_config}')
+app = create_app(config_package=f'config.{app_config}')
 logger = logging.getLogger(__name__)
 
 
 @app.before_request
 def init_exceptions_handling():
-    g.info = list()
-    g.warnings = list()
+    g.info = set()
+    g.warnings = set()
 
     g.transaction_id = request.headers.get('X-Transaction-Id')
     if not g.transaction_id:
@@ -76,19 +79,16 @@ def check_version_header():
     if so, ensure it matches the current version or otherwise return a '406 Not Acceptable' status
     """
     requested_version = request.headers.get("Accept-Lifelike-Version")
-    if requested_version and requested_version != current_app.config.get('GITHUB_HASH'):
+    if requested_version and requested_version != config.get('GITHUB_HASH'):
         raise OutdatedVersionException(
-            'A new version of Lifelike is available. Please refresh your browser to use the new ' +
-            'changes'
+            'A new version of Lifelike is available. Please refresh your browser to use the new '
+            + 'changes'
         )
 
 
 @app.before_request
 def request_navigator_log():
-    with sentry_sdk.configure_scope() as scope:
-        scope.set_tag('transaction_id', request.headers.get('X-Transaction-Id'))
-    app.logger.info(
-        EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
+    app.logger.info(EventLog(event_type=LogEventType.SYSTEM.value).to_dict())
 
 
 # `default_login_required` enforces login on all endpoints by default.
@@ -179,7 +179,11 @@ def seed(filename):
                                         find_existing_row(fk_model, value)
                                     )
                             else:
-                                setattr(instance, key, find_existing_row(fk_model, record[key]))
+                                setattr(
+                                    instance,
+                                    key,
+                                    find_existing_row(fk_model, record[key]),
+                                )
                         else:
                             setattr(instance, key, record[key])
                     db.session.add(instance)
@@ -190,9 +194,11 @@ def seed(filename):
 
             if 'id' in table.columns:
                 logger.info(f"Updating sequence for {table.name}...")
-                conn.execute(f'SELECT pg_catalog.setval('
-                             f'pg_get_serial_sequence(\'{table.name}\', \'id\'), '
-                             f'MAX(id) + 1) FROM {table.name};')
+                conn.execute(
+                    f'SELECT pg_catalog.setval('
+                    f'pg_get_serial_sequence(\'{table.name}\', \'id\'), '
+                    f'MAX(id) + 1) FROM {table.name};'
+                )
             else:
                 logger.info(f"No ID column for {class_name}")
 
@@ -208,7 +214,9 @@ def seed(filename):
 @click.option('-d', '--directory', default=1)
 @click.option('-o', '--owner', default=1)
 @click.argument('filenames', nargs=-1)
-def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filenames: tuple):
+def append_to_the_seed(
+    seed_filename: str, directory: int, owner: int, filenames: tuple
+):
     if not len(filenames):
         print('Please specify at least one filename!', file=sys.stderr)
         return
@@ -216,51 +224,71 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
     seed_file = open(seed_filename, 'r+')
     fixtures = json.load(seed_file)
 
-    files = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILES)['records']
-    users = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_USER)['records']
+    files = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILES)[
+        'records'
+    ]
+    users = next(fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_USER)[
+        'records'
+    ]
     selected_user = list(filter(lambda user: user['id'] == owner, users))
     if not selected_user:
-        print(f"Cannot find user with id {owner} in seed file: {seed_filename}",
-              file=sys.stderr)
+        print(
+            f"Cannot find user with id {owner} in seed file: {seed_filename}",
+            file=sys.stderr,
+        )
         return
-    selected_directory = list(filter(lambda file: file['id'] == directory and
-                                     file.get('mime_type', '')
-                                     == FILE_MIME_TYPE_DIRECTORY, files))
+    selected_directory = list(
+        filter(
+            lambda file: file['id'] == directory
+            and file.get('mime_type', '') == FILE_MIME_TYPE_DIRECTORY,
+            files,
+        )
+    )
     if not selected_directory:
-        print(f"Cannot find directory with id {directory} in seed file: {seed_filename}",
-              file=sys.stderr)
+        print(
+            f"Cannot find directory with id {directory} in seed file: {seed_filename}",
+            file=sys.stderr,
+        )
         return
 
-    query = db.session.query(
-        Files.id,
-        Files.hash_id,
-        Files.filename,
-        Files.mime_type,
-        Files.content_id,
-        FileContent.raw_file,
-    ).filter(
-        Files.content_id == FileContent.id
-    ).filter(
-        and_(Files.filename.in_(filenames), Files.deletion_date.is_(None))
-    ).group_by(
-        Files.id,
-        Files.hash_id,
-        Files.filename,
-        Files.mime_type,
-        Files.content_id,
-        FileContent.raw_file,
+    query = (
+        db.session.query(
+            Files.id,
+            Files.hash_id,
+            Files.filename,
+            Files.mime_type,
+            Files.content_id,
+            FileContent.raw_file,
+        )
+        .filter(Files.content_id == FileContent.id)
+        .filter(and_(Files.filename.in_(filenames), Files.deletion_date.is_(None)))
+        .group_by(
+            Files.id,
+            Files.hash_id,
+            Files.filename,
+            Files.mime_type,
+            Files.content_id,
+            FileContent.raw_file,
+        )
     )
 
-    results = [{column: value for column, value in row_proxy.items()} for row_proxy in
-               db.session.execute(query).fetchall()]
+    results = [
+        {column: value for column, value in row_proxy.items()}
+        for row_proxy in db.session.execute(query).fetchall()
+    ]
 
     if not len(results):
-        print(f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
-              file=sys.stderr)
+        print(
+            f'Could not find the filename{"s" if len(filenames) > 1 else " " + filenames[0]}!',
+            file=sys.stderr,
+        )
         return
 
     if len(results) != len(filenames):
-        print('Could not retrieve some of the files! Was able to retrieve:', file=sys.stderr)
+        print(
+            'Could not retrieve some of the files! Was able to retrieve:',
+            file=sys.stderr,
+        )
         correct = [res['files_filename'] for res in results]
         print(', '.join(correct), file=sys.stderr)
         print('Missing files:', file=sys.stderr)
@@ -268,27 +296,29 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
         print('', ''.join(missing), file=sys.stderr)
         return
 
-    file_content = next((fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILE_CONTENT)
-                        )['records']
+    file_content = next(
+        (fix for fix in fixtures if fix.get('model') == SEED_FILE_KEY_FILE_CONTENT)
+    )['records']
 
     new_id = max([file['id'] for file in files]) + 1
     content_id = max([file['id'] for file in file_content]) + 1
     taken_hashes = {file['hash_id'] for file in files}
     for res in results:
-        files.append({
-            'id': new_id,
-            'hash_id': res['files_hash_id'] if res['files_hash_id'] not in taken_hashes
-            else timeflake.random().base62,
-            'filename': res['files_filename'],
-            'mime_type': res['files_mime_type'],
-            'parent_id': directory,
-            'user_id': owner,
-            'public': False,
-            'content_id': content_id
-        })
-        file_c = {
-            'id': content_id
-        }
+        files.append(
+            {
+                'id': new_id,
+                'hash_id': res['files_hash_id']
+                if res['files_hash_id'] not in taken_hashes
+                else timeflake.random().base62,
+                'filename': res['files_filename'],
+                'mime_type': res['files_mime_type'],
+                'parent_id': directory,
+                'user_id': owner,
+                'public': False,
+                'content_id': content_id,
+            }
+        )
+        file_c = {'id': content_id}
         # # Encode as Base64
         data = base64.standard_b64encode(res['files_content_raw_file'])
         # # Decode to Base64encoded string
@@ -303,18 +333,15 @@ def append_to_the_seed(seed_filename: str, directory: int, owner: int,  filename
 @app.cli.command("drop_tables")
 def drop_all_tables_and_enums():
     """
-        Drop all tables and user enums from a postgres database
+    Drop all tables and user enums from a postgres database
     """
     with app.app_context():
-
         # Get and drop all tables
         table_sql = (
             "SELECT table_name FROM information_schema.tables "
             "WHERE table_schema='public' AND table_name NOT LIKE 'pg_%%'"
         )
-        for table in [
-            name for (name,) in db.engine.execute(text(table_sql))
-        ]:
+        for table in [name for (name,) in db.engine.execute(text(table_sql))]:
             db.engine.execute(text('DROP TABLE "%s" CASCADE' % table))
 
         # Get and drop all enums
@@ -323,17 +350,12 @@ def drop_all_tables_and_enums():
             "FROM pg_catalog.pg_type t "
             "JOIN pg_catalog.pg_enum e ON t.oid = e.enumtypid"
         )
-        for enum in [
-            name for (name,) in db.engine.execute(text(enum_sql))
-        ]:
+        for enum in [name for (name,) in db.engine.execute(text(enum_sql))]:
             db.engine.execute(text('DROP TYPE IF EXISTS "%s" CASCADE' % enum))
 
 
 def validate_email(email):
-    if not re.match(
-        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
-        email
-    ):
+    if not re.match(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email):
         raise ValueError('Invalid email address')
     return email
 
@@ -375,8 +397,16 @@ def set_role(email, role):
 def reset_elastic():
     """Seeds Elastic with all pipelines and indices. Typically should be used when a new Elastic DB
     is first created, but will also update/re-index the entire database if run later."""
+    with app.app_context():
+        elastic_service = get_elastic_service()
+        elastic_service.recreate_indices_and_pipelines()
+
+
+@app.cli.command('reindex-files')
+def reindex_files():
+    """Re-indexes all documents used by this environment without recreating indexes."""
     elastic_service = get_elastic_service()
-    elastic_service.recreate_indices_and_pipelines()
+    elastic_service.reindex_all_documents()
 
 
 @app.cli.command('recreate-elastic-index')
@@ -391,7 +421,7 @@ def update_or_create_index(index_id, index_mapping_file):
 
 @app.cli.command('load-lmdb')
 def load_lmdb():
-    """ Downloads LMDB files from Cloud to Local for application """
+    """Downloads LMDB files from Cloud to Local for application"""
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.download_all(lmdb_dir_path)
@@ -400,7 +430,7 @@ def load_lmdb():
 
 @app.cli.command('upload-lmdb')
 def upload_lmdb():
-    """ Uploads LMDB files from local to Azure cloud storage.
+    """Uploads LMDB files from local to Azure cloud storage.
     To upload LMDB files,
     1. Load the files into the proper directories under
     ../services/annotations/lmdb/<categories>/<data.mdb|lock.mdb>
@@ -415,16 +445,18 @@ def upload_lmdb():
 @app.cli.command('create-lmdb')
 @click.option('--file-type', type=str)
 def create_lmdb_files(file_type):
-    valid_values = {EntityType.ANATOMY.value,
-                    EntityType.CHEMICAL.value,
-                    EntityType.COMPOUND.value,
-                    EntityType.DISEASE.value,
-                    EntityType.FOOD.value,
-                    EntityType.GENE.value,
-                    EntityType.PHENOMENA.value,
-                    EntityType.PHENOTYPE.value,
-                    EntityType.PROTEIN.value,
-                    EntityType.SPECIES.value}
+    valid_values = {
+        EntityType.ANATOMY.value,
+        EntityType.CHEMICAL.value,
+        EntityType.COMPOUND.value,
+        EntityType.DISEASE.value,
+        EntityType.FOOD.value,
+        EntityType.GENE.value,
+        EntityType.PHENOMENA.value,
+        EntityType.PHENOTYPE.value,
+        EntityType.PROTEIN.value,
+        EntityType.SPECIES.value,
+    }
     if file_type is not None and file_type not in valid_values:
         raise ValueError(f'Only these valid values are accepted: {valid_values}')
     service = get_lmdb_service()
@@ -439,6 +471,7 @@ Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organis
 @click.argument('password')
 def reannotate_files(user, password):
     from neo4japp.models import FileContent
+
     # from neo4japp.exceptions import AnnotationError
     from neo4japp.schemas.annotations import AnnotationConfigurations
     from multiprocessing import Queue
@@ -448,24 +481,33 @@ def reannotate_files(user, password):
         req = requests.post(
             'http://localhost:5000/auth/login',
             data=json.dumps({'email': user, 'password': password}),
-            headers={'Content-type': 'application/json'})
+            headers={'Content-type': 'application/json'},
+        )
         return json.loads(req.text)['accessToken']['token']
 
     def do_work(token, hash_ids, configs, organism: Fallback):
         resp = requests.post(
             'http://localhost:5000/filesystem/annotations/generate',
-            data=json.dumps({
-                'hashIds': hash_ids,
-                'organism': {
-                    'organism_name': organism.organism_name,
-                    'synonym': organism.organism_synonym,
-                    'tax_id': organism.organism_id
-                },
-                'annotationConfigs': configs
-            }),
-            headers={'Content-type': 'application/json', 'Authorization': f'Bearer {token}'})
-        print(f'Got response back for files {hash_ids}, status code is {resp.status_code}')
-        # if resp.status_code != 200:
+            data=json.dumps(
+                {
+                    'hashIds': hash_ids,
+                    'organism': {
+                        'organism_name': organism.organism_name,
+                        'synonym': organism.organism_synonym,
+                        'tax_id': organism.organism_id,
+                    },
+                    'annotationConfigs': configs,
+                }
+            ),
+            headers={
+                'Content-type': 'application/json',
+                'Authorization': f'Bearer {token}',
+            },
+        )
+        print(
+            f'Got response back for files {hash_ids}, status code is {resp.status_code}'
+        )
+        # if resp.status_code != HTTPStatus.OK:
         #     raise AnnotationError(resp.text)
         resp.close()
 
@@ -477,23 +519,23 @@ def reannotate_files(user, password):
     # NUM_PROCESSES = 2
     task_queue = Queue()
 
-    files = db.session.query(
-        Files.id,
-        Files.hash_id,
-        Files.annotation_configs,
-        Files.organism_name,
-        Files.organism_synonym,
-        Files.organism_taxonomy_id
-    ).join(
-        FileContent,
-        FileContent.id == Files.content_id
-    ).filter(
-        and_(
-            Files.mime_type.in_([FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]),
-            Files.deletion_date.is_(None),
+    files = (
+        db.session.query(
+            Files.id,
+            Files.hash_id,
+            Files.annotation_configs,
+            Files.organism_name,
+            Files.organism_synonym,
+            Files.organism_taxonomy_id,
+        )
+        .join(FileContent, FileContent.id == Files.content_id)
+        .filter(
             and_(
-                Files.annotations.isnot(None),
-                Files.annotations != '[]'
+                Files.mime_type.in_(
+                    [FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]
+                ),
+                Files.deletion_date.is_(None),
+                and_(Files.annotations.isnot(None), Files.annotations != '[]'),
             )
         )
     )
@@ -501,11 +543,14 @@ def reannotate_files(user, password):
     print(f'Total files: {files.count()}')
 
     for fid, hash, configs, organism, organism_synonym, organism_id in files:
-        task_queue.put((
-            fid, hash,
-            json.loads(AnnotationConfigurations().dumps(configs)),
-            Fallback(organism, organism_synonym, organism_id)
-        ))
+        task_queue.put(
+            (
+                fid,
+                hash,
+                json.loads(AnnotationConfigurations().dumps(configs)),
+                Fallback(organism, organism_synonym, organism_id),
+            )
+        )
 
     print(f'Total tasks to do: {task_queue.qsize()}')
 
@@ -558,7 +603,9 @@ def reannotate_files(user, password):
     #         break
 
 
-def add_file(filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes):
+def add_file(
+    filename: str, description: str, user_id: int, parent_id: int, file_bstr: bytes
+):
     """Helper for adding a generic file to the database."""
     user = db.session.query(AppUser).filter(AppUser.id == user_id).one()
     parent = db.session.query(Files).filter(Files.id == parent_id).one()
@@ -588,7 +635,8 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
     # Check max file size
     if size > 1024 * 1024 * 300:
         raise ValidationError(
-            'Your file could not be processed because it is too large.')
+            'Your file could not be processed because it is too large.'
+        )
 
     # Get the provider based on what we know now
     provider = file_type_service.get(file)
@@ -633,11 +681,13 @@ def add_file(filename: str, description: str, user_id: int, parent_id: int, file
                 except ValueError:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
-                        "filename")
+                        "filename",
+                    )
             elif trial == 3:  # Give up
                 raise ValidationError(
                     'Filename conflicts with an existing file in the same folder.',
-                    "filename")
+                    "filename",
+                )
             with db.session.begin_nested():
                 db.session.add(file)
                 break
@@ -731,10 +781,7 @@ def merge_maps(user_id, filename, description, parent_id, maps):
         map_dict = {}
 
         for m in maps:
-            map_dict[m['name']] = {
-                'nodes': m['nodes'],
-                'edges': m['edges']
-            }
+            map_dict[m['name']] = {'nodes': m['nodes'], 'edges': m['edges']}
 
         map_origin_dict = {}
 
@@ -763,8 +810,12 @@ def merge_maps(user_id, filename, description, parent_id, maps):
                 # First, translate the node as if 0, 0 were the center of the map. This normalizes
                 # the positions of all maps. Then, translate the node according to the new origin
                 # we calculated earlier.
-                node['data']['x'] = node['data']['x'] + (-1 * center_of_map[0]) + new_origin[0]
-                node['data']['y'] = node['data']['y'] + (-1 * center_of_map[1]) + new_origin[1]
+                node['data']['x'] = (
+                    node['data']['x'] + (-1 * center_of_map[0]) + new_origin[0]
+                )
+                node['data']['y'] = (
+                    node['data']['y'] + (-1 * center_of_map[1]) + new_origin[1]
+                )
                 combined_nodes.append(node)
             for edge in map_dict[m]['edges']:
                 combined_edges.append(edge)
@@ -835,30 +886,17 @@ def merge_maps(user_id, filename, description, parent_id, maps):
             if node['hash'] not in old_hash_to_new_hash_map:
                 nodes.append(node)
 
-        return {
-            'nodes': nodes,
-            'edges': edges
-        }
+        return {'nodes': nodes, 'edges': edges}
 
     raw_map_data = [
         [json.loads(raw_data[0]), raw_data[1]]
-        for raw_data in db.session.query(
-            FileContent.raw_file,
-            Files.filename
-        ).join(
-            Files,
-            and_(
-                Files.content_id == FileContent.id,
-                Files.id.in_(maps)
-            )
-        ).all()
+        for raw_data in db.session.query(FileContent.raw_file, Files.filename)
+        .join(Files, and_(Files.content_id == FileContent.id, Files.id.in_(maps)))
+        .all()
     ]
     map_data = [
-        {
-            'name': filename,
-            'nodes': file_data['nodes'],
-            'edges': file_data['edges']
-        } for file_data, filename in raw_map_data
+        {'name': filename, 'nodes': file_data['nodes'], 'edges': file_data['edges']}
+        for file_data, filename in raw_map_data
     ]
 
     add_file(
@@ -866,7 +904,7 @@ def merge_maps(user_id, filename, description, parent_id, maps):
         description,
         user_id,
         parent_id,
-        json.dumps(merge_maps(map_data)).encode('utf-8')
+        json.dumps(merge_maps(map_data)).encode('utf-8'),
     )
 
 
@@ -891,15 +929,15 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
         parent-id -- ID of the folder the new map should be added to
     """
 
-    sankey_file = db.session.query(
-        FileContent.raw_file,
-    ).join(
-        Files,
-        and_(
-            Files.content_id == FileContent.id,
-            Files.id == sankey_file_id
+    sankey_file = (
+        db.session.query(
+            FileContent.raw_file,
         )
-    ).one()
+        .join(
+            Files, and_(Files.content_id == FileContent.id, Files.id == sankey_file_id)
+        )
+        .one()
+    )
 
     sankey_data = json.loads(sankey_file[0].decode('utf-8'))
 
@@ -937,8 +975,8 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
                 'highlight': {
                     'background': '#FFFFFF',
                     'border': color,
-                }
-            }
+                },
+            },
         }
         for trace, nodes_in_trace in node_ids_in_traces.items():
             if node['id'] in nodes_in_trace:
@@ -957,10 +995,8 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
                 'from': link['source'],
                 'to': link['target'],
                 'label': link.get('label', link.get('description', 'Unknown')),
-                'color': {
-                    'color': '#0c8caa'
-                },
-                'arrows': 'to'
+                'color': {'color': '#0c8caa'},
+                'arrows': 'to',
             }
             links_in_traces[trace].append(plotly_link)
 
@@ -973,23 +1009,27 @@ def generate_plotly_from_***ARANGO_DB_NAME***_sankey(
             '',
             user_id,
             parent_id,
-            json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8')
+            json.dumps({'nodes': nodes, 'edges': links}).encode('utf-8'),
         )
 
 
 @app.cli.command('find-broken-map-links')
 def find_broken_map_links():
     print('Starting find_broken_map_links')
-    all_maps = db.session.query(
-        Files.id,
-        FileContent.raw_file,
-    ).join(
-        Files,
-        and_(
-            Files.content_id == FileContent.id,
-            Files.mime_type == FILE_MIME_TYPE_MAP
+    all_maps = (
+        db.session.query(
+            Files.id,
+            FileContent.raw_file,
         )
-    ).yield_per(100)
+        .join(
+            Files,
+            and_(
+                Files.content_id == FileContent.id,
+                Files.mime_type == FILE_MIME_TYPE_MAP,
+            ),
+        )
+        .yield_per(100)
+    )
 
     print('Got all_maps results...')
 
@@ -1014,25 +1054,35 @@ def find_broken_map_links():
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
-            potential_links = [source['url'] for source in node['data'].get('sources', [])]
+            potential_links = [
+                source['url'] for source in node['data'].get('sources', [])
+            ]
             add_links(potential_links, files_id)
 
         for edge in map_json['edges']:
             if 'data' in edge:
-                potential_links = [source['url'] for source in edge['data'].get('sources', [])]
+                potential_links = [
+                    source['url'] for source in edge['data'].get('sources', [])
+                ]
                 add_links(potential_links, files_id)
 
     print('Added potential links...')
 
-    files_that_exist = db.session.query(
-        Files.hash_id,
-    ).filter(
-        Files.hash_id.in_([hash_id for hash_id in hash_id_to_file_list_pairs.keys()])
-    ).yield_per(100)
+    files_that_exist = (
+        db.session.query(
+            Files.hash_id,
+        )
+        .filter(
+            Files.hash_id.in_(
+                [hash_id for hash_id in hash_id_to_file_list_pairs.keys()]
+            )
+        )
+        .yield_per(100)
+    )
 
     print('Got files_that_exist results...')
 
-    for hash_id, in files_that_exist:
+    for (hash_id,) in files_that_exist:
         hash_id_to_file_list_pairs.pop(hash_id)
 
     print('Removed files that exist from hash_id_to_file_list_pairs...')
@@ -1070,32 +1120,23 @@ def fix_broken_map_links():
         'cb380810-8c11-47d4-9092-4f91870c2f5e': '92367577-ec4c-43cd-9d19-94bf6f0592ec',
         'a6c9ba6b-4e5b-4747-9646-960e8482612c': '0a526733-3f74-44c9-9b0f-3df989459a50',
     }
-    FILE_IDS = [
-        1117,
-        1222,
-        1350,
-        1367,
-        2010,
-        1128,
-        1228,
-        2007,
-        1353,
-        1366,
-        1634,
-        1555
-    ]
+    FILE_IDS = [1117, 1222, 1350, 1367, 2010, 1128, 1228, 2007, 1353, 1366, 1634, 1555]
 
-    raw_maps_to_fix = db.session.query(
-        FileContent.id,
-        FileContent.raw_file,
-    ).join(
-        Files,
-        and_(
-            Files.id.in_(FILE_IDS),
-            Files.mime_type == FILE_MIME_TYPE_MAP,
-            Files.content_id == FileContent.id,
+    raw_maps_to_fix = (
+        db.session.query(
+            FileContent.id,
+            FileContent.raw_file,
         )
-    ).yield_per(100)
+        .join(
+            Files,
+            and_(
+                Files.id.in_(FILE_IDS),
+                Files.mime_type == FILE_MIME_TYPE_MAP,
+                Files.content_id == FileContent.id,
+            ),
+        )
+        .yield_per(100)
+    )
 
     new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
     need_to_update = []
@@ -1111,12 +1152,11 @@ def fix_broken_map_links():
                     hash_id = link_search.group(1)
                     if hash_id in HASH_CONVERSION_MAP:
                         print(
-                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
-                            f'{HASH_CONVERSION_MAP[hash_id]}'
+                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
+                            + f'{HASH_CONVERSION_MAP[hash_id]}'
                         )
                         source['url'] = source['url'].replace(
-                            hash_id,
-                            HASH_CONVERSION_MAP[hash_id]
+                            hash_id, HASH_CONVERSION_MAP[hash_id]
                         )
 
         for edge in map_json['edges']:
@@ -1127,12 +1167,11 @@ def fix_broken_map_links():
                         hash_id = link_search.group(1)
                         if hash_id in HASH_CONVERSION_MAP:
                             print(
-                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
-                                f'{HASH_CONVERSION_MAP[hash_id]}'
+                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
+                                + f'{HASH_CONVERSION_MAP[hash_id]}'
                             )
                             source['url'] = source['url'].replace(
-                                hash_id,
-                                HASH_CONVERSION_MAP[hash_id]
+                                hash_id, HASH_CONVERSION_MAP[hash_id]
                             )
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
@@ -1144,7 +1183,9 @@ def fix_broken_map_links():
             zip_file.writestr('graph.json', byte_graph)
         new_bytes = zip_bytes2.getvalue()
         new_hash = hashlib.sha256(new_bytes).digest()
-        need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
+        need_to_update.append(
+            {'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash}
+        )  # noqa
 
     try:
         db.session.bulk_update_mappings(FileContent, need_to_update)

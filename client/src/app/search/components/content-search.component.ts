@@ -27,6 +27,10 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
 import { TrackingService } from 'app/shared/services/tracking.service';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { rankedItemLoadingMock } from 'app/shared/mocks/loading/common';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { getURLFromSnapshot } from 'app/shared/utils/router';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -39,27 +43,31 @@ import {
   ContentSearchQueryParameters,
   ContentSearchParameters,
   createContentSearchParamsFromQuery,
-  getContentSearchQueryParams
+  getContentSearchQueryParams,
 } from '../utils/search';
-
 
 @Component({
   selector: 'app-content-search',
   templateUrl: './content-search.component.html',
   styleUrls: ['./content-search.component.scss'],
 })
-export class ContentSearchComponent extends PaginatedResultListComponent<ContentSearchParameters,
-  RankedItem<FilesystemObject>> implements OnInit, OnDestroy, ModuleAwareComponent {
+export class ContentSearchComponent
+  extends PaginatedResultListComponent<ContentSearchParameters, RankedItem<FilesystemObject>>
+  implements OnInit, OnDestroy, ModuleAwareComponent
+{
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   private readonly DEFAULT_LIMIT = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
 
-  results = new CollectionModel<RankedItem<FilesystemObject>>([], { multipleSelection: false });
-  fileResults: PDFResult = {hits: [{} as PDFSnippets], maxScore: 0, total: 0};
+  results = new CollectionModel<RankedItem<FilesystemObject>>(
+    mockArrayOf(() => rankedItemLoadingMock(filesystemObjectLoadingMock())),
+    { multipleSelection: false }
+  );
+  fileResults: PDFResult = { hits: [{} as PDFSnippets], maxScore: 0, total: 0 };
   highlightTerms: string[] = [];
-  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
+  highlightOptions: FindOptions = { keepSearchSpecialChars: true, wholeWord: true };
   searchTypes: SearchType[];
   searchTypesMap: Map<string, SearchType>;
 
@@ -76,34 +84,42 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     return !(qExists || typesExists || foldersExists);
   }
 
-  constructor(private modalService: NgbModal,
-              protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly contentSearchService: ContentSearchService,
-              protected readonly zone: NgZone,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly messageDialog: MessageDialog,
-              protected readonly objectTypeService: ObjectTypeService,
-              private readonly tracking: TrackingService) {
+  constructor(
+    private modalService: NgbModal,
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly contentSearchService: ContentSearchService,
+    protected readonly zone: NgZone,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly messageDialog: MessageDialog,
+    protected readonly objectTypeService: ObjectTypeService,
+    private readonly tracking: TrackingService
+  ) {
     super(route, workspaceManager);
     objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
-      this.searchTypes = flatten(providers.map(provider => provider.getSearchTypes()));
-      this.searchTypesMap = new Map(Array.from(this.searchTypes.values()).map(value => [value.shorthand, value]));
+      this.searchTypes = flatten(providers.map((provider) => provider.getSearchTypes()));
+      this.searchTypesMap = new Map(
+        Array.from(this.searchTypes.values()).map((value) => [value.shorthand, value])
+      );
     });
   }
 
   ngOnInit() {
     super.ngOnInit();
 
-    this.subscriptions.add(this.route.queryParams.pipe(
-      mergeMap(params => this.deserializeParams(params as ContentSearchQueryParameters))
-    ).subscribe(params => {
-      this.queryString = this.getQueryStringFromParams(params);
-    }));
+    this.subscriptions.add(
+      this.route.queryParams
+        .pipe(mergeMap((params) => this.deserializeParams(params as ContentSearchQueryParameters)))
+        .subscribe((params) => {
+          this.queryString = this.getQueryStringFromParams(params);
+        })
+    );
   }
 
   getBreadCrumbsTitle(object: FilesystemObject): string {
-    return getPath(object).map(item => item.effectiveName).join(' > ');
+    return getPath(object)
+      .map((item) => item.effectiveName)
+      .join(' > ');
   }
 
   valueChanged(value: ContentSearchOptions) {
@@ -120,7 +136,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
         total: 0,
         results: [],
         synonyms: {},
-        droppedFolders: []
+        droppedFolders: [],
       });
     }
     const serialisedParams = this.serializeParams(params);
@@ -128,11 +144,11 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       category: TRACKING_CATEGORIES.search,
       action: TRACKING_ACTIONS.search,
       label: JSON.stringify(serialisedParams),
-      url: this.route.toString()
+      url: getURLFromSnapshot(this.route.snapshot).toString(),
     });
     return this.contentSearchService.search(serialisedParams).pipe(
-      this.errorHandler.create({label: 'Content search'}),
-      tap(response => {
+      this.errorHandler.create({ label: 'Content search' }),
+      tap((response) => {
         this.highlightTerms = response.query.phrases;
         const rejectedFolders: string[] = response.droppedFolders;
 
@@ -159,34 +175,45 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     }
     if (params.hasOwnProperty('types')) {
       if (params.types.length) {
-        q.push(`(${params.types.map(type => `type:${type.shorthand}`).join(' OR ')})`);
+        q.push(`(${params.types.map((type) => `type:${type.shorthand}`).join(' OR ')})`);
       }
     }
     return q.join(' ');
   }
 
   deserializeParams(params: ContentSearchQueryParameters): Observable<ContentSearchParameters> {
-    return of(createContentSearchParamsFromQuery(params, {
-      defaultLimit: this.DEFAULT_LIMIT,
-      searchTypesMap: this.searchTypesMap,
-    }));
+    return of(
+      createContentSearchParamsFromQuery(params, {
+        defaultLimit: this.DEFAULT_LIMIT,
+        searchTypesMap: this.searchTypesMap,
+      })
+    );
   }
 
-  serializeParams(params: ContentSearchParameters, restartPagination = false): ContentSearchQueryParameters {
+  serializeParams(
+    params: ContentSearchParameters,
+    restartPagination = false
+  ): ContentSearchQueryParameters {
     return getContentSearchQueryParams(params, restartPagination);
   }
 
   search(form: SearchableRequestOptions) {
-    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
-      queryParams: {
-        ...this.serializeParams({
-          ...this.getDefaultParams(),
-          // If normal search, only use the 'q' form value; Ignore any advanced params we arrived at the page with
-          q: isNil(form.q) ? '' : form.q,
-        }, true),
-        t: new Date().getTime(),
-      },
-    });
+    this.workspaceManager.navigate(
+      this.route.snapshot.url.map((item) => item.path),
+      {
+        queryParams: {
+          ...this.serializeParams(
+            {
+              ...this.getDefaultParams(),
+              // If normal search, only use the 'q' form value; Ignore any advanced params we arrived at the page with
+              q: isNil(form.q) ? '' : form.q,
+            },
+            true
+          ),
+          t: new Date().getTime(),
+        },
+      }
+    );
   }
 
   /**
@@ -194,16 +221,22 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
    * @param params Object representing the search query options.
    */
   advancedSearch(params: ContentSearchOptions) {
-    this.workspaceManager.navigate(this.route.snapshot.url.map(item => item.path), {
-      queryParams: {
-        ...this.serializeParams({
-          ...this.getDefaultParams(),
-          // If advanced search, use all params
-          ...params,
-        }, true),
-        t: new Date().getTime(),
-      },
-    });
+    this.workspaceManager.navigate(
+      this.route.snapshot.url.map((item) => item.path),
+      {
+        queryParams: {
+          ...this.serializeParams(
+            {
+              ...this.getDefaultParams(),
+              // If advanced search, use all params
+              ...params,
+            },
+            true
+          ),
+          t: new Date().getTime(),
+        },
+      }
+    );
   }
 
   highlightClicked(object: FilesystemObject, highlight: string) {
@@ -212,7 +245,7 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     const commands = object.getCommands(false);
     this.workspaceManager.navigate(commands, {
       matchExistingTab: getObjectMatchExistingTab(object),
-      shouldReplaceTab: component => {
+      shouldReplaceTab: (component) => {
         if (object.type === 'file') {
           const pdfViewComponent = component as PdfViewComponent;
           pdfViewComponent.scrollInPdf({
@@ -232,8 +265,8 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
   highlightDisplayLimitChanged(object: DirectoryObject, change: HighlightDisplayLimitChange) {
     if (this.snippetAnnotations) {
       const queue: {
-        index: number,
-        text: string,
+        index: number;
+        text: string;
       }[] = [];
 
       if (!object.highlightAnnotated) {
@@ -250,17 +283,19 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       }
 
       if (queue.length) {
-        this.contentSearchService.annotate({
-          texts: queue.map(item => item.text),
-        }).subscribe(result => {
-          this.zone.run(() => {
-            for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
-              const index = queue[i].index;
-              object.highlight[index] = result.texts[i];
-              object.highlightAnnotated[index] = true;
-            }
+        this.contentSearchService
+          .annotate({
+            texts: queue.map((item) => item.text),
+          })
+          .subscribe((result) => {
+            this.zone.run(() => {
+              for (let i = 0, j = change.previous; j < change.limit; i++, j++) {
+                const index = queue[i].index;
+                object.highlight[index] = result.texts[i];
+                object.highlightAnnotated[index] = true;
+              }
+            });
           });
-        });
       }
     }
   }
@@ -285,9 +320,10 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
 
     // Remove 'types' from q and add to the types option of the advancedParams
     const typeMatches = q.match(/\btype:\S*/g);
-    const extractedTypes = typeMatches == null ? [] : typeMatches.map(typeVal => typeVal.split(':')[1]);
+    const extractedTypes =
+      typeMatches == null ? [] : typeMatches.map((typeVal) => typeVal.split(':')[1]);
     advancedParams.types = getChoicesFromQuery(
-      {types: extractedTypes.join(';')},
+      { types: extractedTypes.join(';') },
       'types',
       this.searchTypesMap
     );
@@ -317,8 +353,13 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
       size: 'md',
     });
     // Get the starting options from the content search form query
-    modalRef.componentInstance.params = { q: this.queryString, folders: this.params.folders } as ContentSearchOptions;
-    modalRef.componentInstance.typeChoices = this.searchTypes.concat().sort((a, b) => a.name.localeCompare(b.name));
+    modalRef.componentInstance.params = {
+      q: this.queryString,
+      folders: this.params.folders,
+    } as ContentSearchOptions;
+    modalRef.componentInstance.typeChoices = this.searchTypes
+      .concat()
+      .sort((a, b) => a.name.localeCompare(b.name));
     modalRef.result
       // Advanced search was triggered
       .then((params: ContentSearchOptions) => {
@@ -340,11 +381,12 @@ export class ContentSearchComponent extends PaginatedResultListComponent<Content
     modalRef.result
       // Synonym search was submitted
       .then((expressionsToAdd: string[]) => {
-        this.queryString = ((isNil(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')).trim();
+        this.queryString = (
+          (isNil(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')
+        ).trim();
       })
       // Synonym search dialog was dismissed or rejected
-      .catch(() => {
-      });
+      .catch(() => {});
   }
 
   /**

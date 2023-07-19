@@ -9,7 +9,7 @@ from neo4japp.services.annotations import (
     AnnotationDBService,
     LMDBService,
     ManualAnnotationService,
-    Tokenizer
+    Tokenizer,
 )
 from neo4japp.services.annotations.constants import (
     OrganismCategory,
@@ -22,7 +22,7 @@ from neo4japp.services.annotations.constants import (
     PHENOMENAS_LMDB,
     PHENOTYPES_LMDB,
     PROTEINS_LMDB,
-    SPECIES_LMDB
+    SPECIES_LMDB,
 )
 from neo4japp.services.annotations.data_transfer_objects import GeneOrProteinToOrganism
 from neo4japp.services.annotations.utils.lmdb import (
@@ -35,7 +35,7 @@ from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_phenomena,
     create_ner_type_phenotype,
     create_ner_type_protein,
-    create_ner_type_species
+    create_ner_type_species,
 )
 from neo4japp.util import normalize_str
 
@@ -66,7 +66,8 @@ def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
         for entity in entity_objs:
             transaction.put(
                 normalize_str(entity['synonym']).encode('utf-8'),
-                json.dumps(entity).encode('utf-8'))
+                json.dumps(entity).encode('utf-8'),
+            )
 
 
 @pytest.fixture(scope='function')
@@ -112,8 +113,8 @@ def get_lmdb_service(request):
             super().__init__(dirpath, **kwargs)
 
     return MockLMDBService(
-        f'{directory}/lmdb/',
-        **{db_name: path for db_name, path in configs})
+        f'{directory}/lmdb/', **{db_name: path for db_name, path in configs}
+    )
 
 
 @pytest.fixture(scope='function')
@@ -559,7 +560,10 @@ def lmdb_setup_test_can_find_anatomy_entities(app):
 
 @pytest.fixture(scope='function')
 def lmdb_setup_test_assume_human_gene_after_finding_virus(app):
-    ace2 = create_ner_type_gene(name='ACE2', synonym='ACE2',)
+    ace2 = create_ner_type_gene(
+        name='ACE2',
+        synonym='ACE2',
+    )
 
     covid_19 = create_ner_type_disease(
         id='MESH:C000657245',
@@ -647,7 +651,9 @@ def lmdb_setup_test_protein_organism_escherichia_coli_pdf(app):
 
 
 @pytest.fixture(scope='function')
-def lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(app):
+def lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
+    app,
+):
     edem3 = create_ner_type_gene(name='Edem3', synonym='Edem3')
     edem3_caps = create_ner_type_gene(name='EDEM3', synonym='EDEM3')
 
@@ -655,14 +661,11 @@ def lmdb_setup_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
         id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='human',
-        synonym='human'
+        synonym='human',
     )
 
     rat = create_ner_type_species(
-        id='10116',
-        category=OrganismCategory.EUKARYOTA.value,
-        name='rat',
-        synonym='rat'
+        id='10116', category=OrganismCategory.EUKARYOTA.value, name='rat', synonym='rat'
     )
 
     entities = [
@@ -689,14 +692,14 @@ def lmdb_setup_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(a
         id='31033',
         category=OrganismCategory.EUKARYOTA.value,
         name='Tetraodon rubripes',
-        synonym='Tetraodon rubripes'
+        synonym='Tetraodon rubripes',
     )
 
     coelacanth = create_ner_type_species(
         id='7897',
         category=OrganismCategory.EUKARYOTA.value,
         name='coelacanth',
-        synonym='coelacanth'
+        synonym='coelacanth',
     )
 
     entities = [
@@ -718,7 +721,7 @@ def lmdb_setup_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(a
 def vascular_cell_adhesion_lmdb_setup(app):
     vascular = create_ner_type_protein(
         name='Vascular cell adhesion protein 1',
-        synonym='Vascular cell adhesion protein 1'
+        synonym='Vascular cell adhesion protein 1',
     )
 
     entities = [
@@ -746,21 +749,21 @@ def lmdb_setup_test_new_gene_organism_matching_algorithm(app):
         id='9685',
         category=OrganismCategory.EUKARYOTA.value,
         name='Felis Catus',
-        synonym='Felis Catus'
+        synonym='Felis Catus',
     )
 
     homo = create_ner_type_species(
         id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='Homo Sapiens',
-        synonym='Homo Sapiens'
+        synonym='Homo Sapiens',
     )
 
     human = create_ner_type_species(
         id='9606',
         category=OrganismCategory.EUKARYOTA.value,
         name='Human',
-        synonym='Human'
+        synonym='Human',
     )
 
     entities = [
@@ -806,7 +809,11 @@ def lmdb_setup_test_prioritize_primary_name_that_equals_synonym(app):
 
     entities = [
         (ANATOMY_LMDB, 'anatomy', []),
-        (CHEMICALS_LMDB, 'chemicals', [halite_sodium, halite, atomoxetine, atomoxetine_hydro]),
+        (
+            CHEMICALS_LMDB,
+            'chemicals',
+            [halite_sodium, halite, atomoxetine, atomoxetine_hydro],
+        ),
         (COMPOUNDS_LMDB, 'compounds', []),
         (DISEASES_LMDB, 'diseases', []),
         (FOODS_LMDB, 'foods', []),
@@ -827,15 +834,10 @@ def lmdb_setup_test_prioritize_primary_name_that_equals_synonym(app):
 def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
     def get_match_result(*args, **kwargs):
         return GeneOrProteinToOrganism(
-            matches={
-                'BOLA3': {'BOLA3': {'9606': '388962'}}
-            },
-            data_sources={
-                'BOLA39606': 'NCBI Gene'
-            },
-            primary_names={
-                '388962': 'BOLA3'
-            })
+            matches={'BOLA3': {'BOLA3': {'9606': '388962'}}},
+            data_sources={'BOLA39606': 'NCBI Gene'},
+            primary_names={'388962': 'BOLA3'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -849,18 +851,11 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
         return GeneOrProteinToOrganism(
             matches={
                 'hyp27': {'hyp27': {'221103': '2846957'}},
-                'SERPINA1': {
-                    'SERPINA1': {'9606': '5265'}
-                }
+                'SERPINA1': {'SERPINA1': {'9606': '5265'}},
             },
-            data_sources={
-                'hyp27221103': 'NCBI Gene',
-                'SERPINA19606': 'NCBI Gene'
-            },
-            primary_names={
-                '2846957': 'hyp27',
-                '5265': 'SERPINA1'
-            })
+            data_sources={'hyp27221103': 'NCBI Gene', 'SERPINA19606': 'NCBI Gene'},
+            primary_names={'2846957': 'hyp27', '5265': 'SERPINA1'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -869,20 +864,15 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(monkeypatch):
+def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
+    monkeypatch,
+):
     def get_match_result(*args, **kwargs):
         return GeneOrProteinToOrganism(
-            matches={
-                'il-7': {
-                    'il-7': {'31033': '99999'}
-                }
-            },
-            data_sources={
-                'il-731033': 'NCBI Gene'
-            },
-            primary_names={
-                '99999': 'il-7'
-            })
+            matches={'il-7': {'il-7': {'31033': '99999'}}},
+            data_sources={'il-731033': 'NCBI Gene'},
+            primary_names={'99999': 'il-7'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -896,15 +886,11 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
         return GeneOrProteinToOrganism(
             matches={
                 'ACE2': {'ACE2': {'9606': '59272'}},
-                'Fake_ACE2': {'ACE2': {'9606': '59272'}}
+                'Fake_ACE2': {'ACE2': {'9606': '59272'}},
             },
-            data_sources={
-                'ACE29606': 'NCBI Gene',
-                'Fake_ACE29606': 'NCBI Gene'
-            },
-            primary_names={
-                '59272': 'ACE2'
-            })
+            data_sources={'ACE29606': 'NCBI Gene', 'Fake_ACE29606': 'NCBI Gene'},
+            primary_names={'59272': 'ACE2'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -916,15 +902,10 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
 def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
     def get_match_result(*args, **kwargs):
         return GeneOrProteinToOrganism(
-            matches={
-                'gene-(12345)': {'ACE2': {'9606': '59272'}}
-            },
-            data_sources={
-                'gene-(12345)9606': 'NCBI Gene'
-            },
-            primary_names={
-                '59272': 'ACE2'
-            })
+            matches={'gene-(12345)': {'ACE2': {'9606': '59272'}}},
+            data_sources={'gene-(12345)9606': 'NCBI Gene'},
+            primary_names={'59272': 'ACE2'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -938,15 +919,11 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
         return GeneOrProteinToOrganism(
             matches={
                 'IL8': {'CXCL8': {'9606': '3576'}},
-                'IL-8': {'CXCL8': {'9606': '3576'}}
+                'IL-8': {'CXCL8': {'9606': '3576'}},
             },
-            data_sources={
-                'IL89606': 'NCBI Gene',
-                'IL-89606': 'NCBI Gene'
-            },
-            primary_names={
-                '3576': 'CXCL8'
-            })
+            data_sources={'IL89606': 'NCBI Gene', 'IL-89606': 'NCBI Gene'},
+            primary_names={'3576': 'CXCL8'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -955,20 +932,15 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
 
 
 @pytest.fixture(scope='function')
-def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(monkeypatch):
+def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
+    monkeypatch,
+):
     def get_match_result(*args, **kwargs):
         return GeneOrProteinToOrganism(
-            matches={
-                'EDEM3': {
-                    'EDEM3': {'9606': '80267'}
-                }
-            },
-            data_sources={
-                'EDEM39606': 'NCBI Gene'
-            },
-            primary_names={
-                '80267': 'EDEM3'
-            })
+            matches={'EDEM3': {'EDEM3': {'9606': '80267'}}},
+            data_sources={'EDEM39606': 'NCBI Gene'},
+            primary_names={'80267': 'EDEM3'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -992,15 +964,16 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
                 'purB562': 'NCBI Gene',
                 'purC562': 'NCBI Gene',
                 'purD562': 'NCBI Gene',
-                'purF562': 'NCBI Gene'
+                'purF562': 'NCBI Gene',
             },
             primary_names={
                 '948695': 'purA',
                 '945695': 'purB',
                 '946957': 'purC',
                 '948504': 'purD',
-                '946794': 'purF'
-            })
+                '946794': 'purF',
+            },
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -1014,16 +987,11 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
         return GeneOrProteinToOrganism(
             matches={
                 'PPP': {'PPP': {'9606': '80267'}},
-                'PAH': {'PAH': {'9606': '289085'}}
+                'PAH': {'PAH': {'9606': '289085'}},
             },
-            data_sources={
-                'PPP9606': 'NCBI Gene',
-                'PAH9606': 'NCBI Gene'
-            },
-            primary_names={
-                '80267': 'PPP',
-                '289085': 'PAH'
-            })
+            data_sources={'PPP9606': 'NCBI Gene', 'PAH9606': 'NCBI Gene'},
+            primary_names={'80267': 'PPP', '289085': 'PAH'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -1039,14 +1007,9 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
                 'YdhC': {'562': 'P37597'},
                 'YdhB': {'562': 'P0ACR2'},
             },
-            data_sources={
-                'YdhC562': 'NCBI Gene',
-                'YdhB562': 'NCBI Gene'
-            },
-            primary_names={
-                'P37597': 'YdhC',
-                'P0ACR2': 'YdhB'
-            })
+            data_sources={'YdhC562': 'NCBI Gene', 'YdhB562': 'NCBI Gene'},
+            primary_names={'P37597': 'YdhC', 'P0ACR2': 'YdhB'},
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_proteins_to_organisms',
@@ -1061,7 +1024,7 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
             matches={
                 'PTGS2': {'PTGS2': {'9606': '5743', '9685': '100126581'}},
                 'BDNF': {'BDNF': {'9606': '627', '9685': '493690'}},
-                'BST2': {'BST2': {'9606': '684', '9685': '100652388'}}
+                'BST2': {'BST2': {'9606': '684', '9685': '100652388'}},
             },
             data_sources={
                 'PTGS29606': 'NCBI Gene',
@@ -1069,7 +1032,7 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
                 'BDNF9606': 'NCBI Gene',
                 'BDNF9685': 'NCBI Gene',
                 'BST29606': 'NCBI Gene',
-                'BST29685': 'NCBI Gene'
+                'BST29685': 'NCBI Gene',
             },
             primary_names={
                 '5743': 'PTGS2',
@@ -1077,8 +1040,9 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
                 '627': 'BDNF',
                 '493690': 'BDNF',
                 '684': 'BST2',
-                '100652388': 'BST2'
-            })
+                '100652388': 'BST2',
+            },
+        )
 
     monkeypatch.setattr(
         'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
@@ -1094,13 +1058,15 @@ def mock_global_chemical_inclusion_annotation():
             'entity_name': 'fake-chemical-(12345)',
             'synonym': 'fake-chemical-(12345)',
             'data_source': 'ChEBI',
-            'hyperlinks': []
+            'hyperlinks': [],
         }
     ]
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_chemical(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_chemical(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = inc['hyperlinks']
         retval[normalize_str(inc['synonym'])] = [entity]
@@ -1115,13 +1081,15 @@ def mock_global_compound_inclusion_annotation():
             'entity_name': 'compound-(12345)',
             'synonym': 'compound-(12345)',
             'data_source': 'BioCyc',
-            'hyperlinks': []
+            'hyperlinks': [],
         }
     ]
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_compound(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_compound(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = inc['hyperlinks']
         retval[normalize_str(inc['synonym'])] = [entity]
@@ -1135,7 +1103,7 @@ def mock_global_gene_inclusion_annotation():
             'entity_id': '59272',
             'entity_name': 'gene-(12345)',
             'synonym': 'gene-(12345)',
-            'data_source': 'NCBI Gene'
+            'data_source': 'NCBI Gene',
         },
     ]
 
@@ -1155,7 +1123,7 @@ def mock_global_inclusion_normalized_already_in_lmdb():
             'entity_id': '3576',
             'entity_name': 'CXCL8',
             'synonym': 'IL-8',
-            'data_source': 'NCBI Gene'
+            'data_source': 'NCBI Gene',
         }
     ]
 
@@ -1181,7 +1149,9 @@ def mock_global_disease_inclusion_annotation():
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_disease(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_disease(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = []
         retval[normalize_str(inc['synonym'])] = [entity]
@@ -1201,7 +1171,9 @@ def mock_global_phenomena_inclusion_annotation():
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_phenomena(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_phenomena(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = []
         retval[normalize_str(inc['synonym'])] = [entity]
@@ -1221,7 +1193,9 @@ def mock_global_phenotype_inclusion_annotation():
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_phenotype(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_phenotype(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = []
         retval[normalize_str(inc['synonym'])] = [entity]
@@ -1261,7 +1235,9 @@ def mock_global_species_inclusion_annotation():
 
     retval = {}
     for inc in inclusions:
-        entity = create_ner_type_species(inc['entity_id'], inc['entity_name'], inc['synonym'])
+        entity = create_ner_type_species(
+            inc['entity_id'], inc['entity_name'], inc['synonym']
+        )
         entity['id_type'] = inc['data_source']
         entity['id_hyperlinks'] = []
         retval[normalize_str(inc['synonym'])] = [entity]

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import Blueprint, request, jsonify
 import numpy as np
 from pandas import DataFrame
@@ -50,4 +52,4 @@ def get_ncbi_enrichment_domains():
     else:
         nodes = {}
 
-    return jsonify({'result': nodes}), 200
+    return jsonify({'result': nodes}), HTTPStatus.OK

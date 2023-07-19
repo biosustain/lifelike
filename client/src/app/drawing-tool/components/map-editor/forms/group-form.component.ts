@@ -9,25 +9,24 @@ import { RecursivePartial } from 'app/shared/utils/types';
 
 import { EntityForm } from './entity-form';
 
-
 @Component({
   selector: 'app-group-form',
   styleUrls: ['./entity-form.component.scss'],
-  templateUrl: './group-form.component.html'
+  templateUrl: './group-form.component.html',
 })
-export class GroupFormComponent extends EntityForm  {
-
-
+export class GroupFormComponent extends EntityForm {
   originalGroup: UniversalGraphGroup;
   updatedGroup: UniversalGraphGroup;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphGroup>,
-    updatedData: RecursivePartial<UniversalGraphGroup>,
+    originalData: RecursivePartial<UniversalGraphGroup>;
+    updatedData: RecursivePartial<UniversalGraphGroup>;
   }>();
 
-  constructor(protected readonly workspaceManager: WorkspaceManager,
-              protected readonly internalSearch: InternalSearchService) {
+  constructor(
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly internalSearch: InternalSearchService
+  ) {
     super(workspaceManager);
   }
 
@@ -48,6 +47,11 @@ export class GroupFormComponent extends EntityForm  {
     this.updatedGroup.data.sources = this.updatedGroup.data.sources || [];
     this.updatedGroup.data.hyperlinks = this.updatedGroup.data.hyperlinks || [];
     this.updatedGroup.style = this.updatedGroup.style || {};
+
+    // Anytime the view is changed (i.e. when a new group is selected) re-focus the label field.
+    if (this.viewInited) {
+      this.focus();
+    }
   }
 
   doSave() {
@@ -70,7 +74,7 @@ export class GroupFormComponent extends EntityForm  {
           lineWidthScale: this.originalGroup.style.lineWidthScale,
           showDetail: this.originalGroup.style.showDetail,
         },
-        margin: this.originalGroup.margin
+        margin: this.originalGroup.margin,
       },
       updatedData: {
         data: {
@@ -90,12 +94,11 @@ export class GroupFormComponent extends EntityForm  {
           lineWidthScale: this.updatedGroup.style.lineWidthScale,
           showDetail: this.updatedGroup.style.showDetail,
         },
-        margin: this.updatedGroup.margin
+        margin: this.updatedGroup.margin,
       },
     });
     this.originalGroup = cloneDeep(this.updatedGroup);
   }
-
 
   // TODO: Refactor it into its own component?
   updateMargin(event: Event) {
