@@ -2,10 +2,10 @@ import json
 from http import HTTPStatus
 
 import requests
-
 from flask import Blueprint, Response, current_app, request
 
 from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
+from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import config
 
 bp = Blueprint(
@@ -84,3 +84,38 @@ def forward_request():
 @wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()
+
+
+def composePrompt(organism, term, context, geneName):
+    if organism and term and context and geneName:
+        return (
+            f'For {organism}, what function does {geneName} have in {term},'
+            f' in context of {context}?'
+        )
+    if organism and term and geneName:
+        return f'For {organism}, what function does {geneName} have in {term}?'
+    elif organism and term and context:
+        return f'For {organism}, what is the relationship between {term} and {context}?'
+    elif organism and term:
+        return f'What is the ralationship between {organism} and {term}?'
+    else:
+        list_str = ", ".join(filter(lambda a: a, (organism, term, context, geneName)))
+        return f'What is the ralationship between {list_str}?'
+
+
+@bp.route('/enrich-with-context', methods=['POST'])
+def enrich_context():
+    data = request.get_json()
+    organism = data.get('organism', '')
+    term = data.get('term', '')
+    context = data.get('context', '')
+    gene_name = data.get('geneName', '')
+    print(request.get_json())
+    response = ChatGPT.Completion.create(
+        model="text-davinci-003",
+        prompt=composePrompt(organism, term, context, gene_name),
+        temperature=0,
+        max_tokens=500,
+    )
+    for choice in response.get('choices'):
+        return {"result": choice.get('text').strip()}

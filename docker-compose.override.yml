@@ -39,6 +39,7 @@ x-appserver: &appserver
     - DOMAIN=http://localhost:4200
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
     - ASSETS_FOLDER=/home/n4j/assets/
+    # - OPENAI_API_KEY="<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
   volumes:
     - ./appserver:/home/n4j
     # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb

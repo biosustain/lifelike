@@ -22,6 +22,7 @@ import { LegendComponent } from './components/legend.component';
 import { MessageDialogComponent } from './components/dialog/message-dialog.component';
 import { NodeRelationshipComponent } from './components/node-relationship-display.component';
 import { ProgressDialogComponent } from './components/dialog/progress-dialog.component';
+import { PromptComponent } from './components/prompt/prompt.component';
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
@@ -71,10 +72,7 @@ import {
   DataTransferDataService,
 } from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import {
-  HighlightTextService,
-  HIGHLIGHT_TEXT_TAG_HANDLER,
-} from './services/highlight-text.service';
+import { HIGHLIGHT_TEXT_TAG_HANDLER } from './services/highlight-text.service';
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
 import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
@@ -97,6 +95,7 @@ import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotatio
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
+import { PlaygroundComponent } from './components/prompt/playground.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -192,6 +191,8 @@ const components = [
     ModuleHeaderComponent,
     PasswordInputComponent,
     XMLAnnotationComponent,
+    PromptComponent,
+    PlaygroundComponent,
   ],
   providers: [
     TruncatePipe,
@@ -258,6 +259,8 @@ const components = [
     NgbModule,
     AddStatusPipe,
     ModuleHeaderComponent,
+    PromptComponent,
+    PlaygroundComponent,
   ],
 })
 export class SharedModule {}

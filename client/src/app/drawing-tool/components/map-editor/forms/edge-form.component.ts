@@ -1,13 +1,33 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep, isNil } from 'lodash-es';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter, map, switchMap, startWith } from 'rxjs/operators';
+import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 
 import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
 import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
 import { RecursivePartial } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
+import { PALETTE_COLORS } from 'app/drawing-tool/services/palette';
+import { InfoPanel } from 'app/drawing-tool/models/info-panel';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { ExplainService } from 'app/shared/services/explain.service';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 
+import { getTermsFromEdge, getTermsFromGraphEntityArray } from '../../../utils/terms';
 import { EntityForm } from './entity-form';
 
 @Component({
@@ -15,7 +35,8 @@ import { EntityForm } from './entity-form';
   styleUrls: ['./entity-form.component.scss'],
   templateUrl: './edge-form.component.html',
 })
-export class EdgeFormComponent extends EntityForm {
+export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestroy {
+  @Input() graphView: CanvasGraphView;
   lineHeadTypeChoices = [
     [
       null,
@@ -29,16 +50,43 @@ export class EdgeFormComponent extends EntityForm {
   originalEdge: UniversalGraphEdge;
   updatedEdge: UniversalGraphEdge;
 
+  change$ = new ReplaySubject<SimpleChanges>(1);
+  entities$: Observable<Iterable<string>> = this.change$.pipe(
+    map(_pick(['edge', 'graphView'])),
+    filter(_flow(_values, _some(Boolean))),
+    map(
+      () =>
+        new Set<string>(
+          getTermsFromEdge.call(
+            // We might run into situation when only one of them is beeing changed
+            // therefore it is safe to address them this way
+            this.graphView,
+            this.edge
+          )
+        )
+    )
+  );
+
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphEdge>;
     updatedData: RecursivePartial<UniversalGraphEdge>;
   }>();
+  @Output() delete = new EventEmitter<object>();
+  @Output() sourceOpen = new EventEmitter<string>();
 
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
-    protected readonly internalSearch: InternalSearchService
+    protected readonly explainService: ExplainService
   ) {
     super(workspaceManager);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.change$.next(changes);
+  }
+
+  ngOnDestroy() {
+    this.change$.complete();
   }
 
   get hyperlinks() {

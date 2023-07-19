@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
@@ -19,6 +19,7 @@ import {
   mergeMap,
   mergeScan,
   shareReplay,
+  startWith,
   switchMap,
   take,
   tap,
@@ -100,25 +101,24 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
       filter((fileId) => !!fileId)
     )
   );
-  load$ = new BehaviorSubject<void>(null);
-  loadFileId$ = combineLatest([this.fileId$, this.load$]).pipe(
-    map(([fileId]) => fileId),
-    shareReplay()
-  );
-  object$: Observable<FilesystemObject> = this.loadFileId$.pipe(
+  object$: Observable<FilesystemObject> = this.fileId$.pipe(
     switchMap((fileId) => this.enrichmentService.get(fileId)),
     shareReplay()
   );
-  document$: Observable<EnrichmentDocument> = this.loadFileId$.pipe(
+  document$: Observable<EnrichmentDocument> = this.fileId$.pipe(
     switchMap((fileId) =>
-      this.enrichmentService
-        .getContent(fileId)
-        .pipe(
-          mergeScan(
-            (document, blob) => document.loadResult(blob, fileId),
-            new EnrichmentDocument(this.worksheetViewerService)
+      this.enrichmentService.getContent(fileId).pipe(
+        mergeScan(
+          (document, blob) => document.loadResult(blob, fileId),
+          new EnrichmentDocument(this.worksheetViewerService)
+        ),
+        switchMap((document) =>
+          document.changed$.pipe(
+            map(() => document),
+            startWith(document)
           )
         )
+      )
     ),
     shareReplay()
   );
@@ -293,10 +293,6 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
       ...(this.queuedChanges$.value || {}),
       ...change,
     });
-  }
-
-  objectUpdate(update) {
-    this.load$.next();
   }
 
   switchToTextFind() {

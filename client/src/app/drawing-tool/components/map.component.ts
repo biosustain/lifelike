@@ -32,6 +32,7 @@ import { SelectableEntityBehavior } from 'app/graph-viewer/renderers/canvas/beha
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -42,6 +43,7 @@ import { GraphViewDirective } from '../directives/graph-view.directive';
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
+  providers: [OpenFileProvider],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
@@ -93,13 +95,15 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly dataTransferDataService: DataTransferDataService,
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
-    readonly graphActionsService: GraphActionsService
+    readonly graphActionsService: GraphActionsService,
+    readonly openFileProvider: OpenFileProvider
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(
       ({ result: [mapFile, mapBlob, backupBlob], value }) => {
         this.map = mapFile;
+        this.openFileProvider.object = mapFile;
 
         if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
           this.workspaceManager.navigate([

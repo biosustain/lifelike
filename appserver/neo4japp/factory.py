@@ -25,6 +25,7 @@ from neo4japp.database import (
 from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException, ServerWarning
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
+from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import current_username
 from neo4japp.utils.logger import ErrorLog, WarningLog
 from neo4japp.utils.transaction_id import transaction_id
@@ -125,6 +126,7 @@ def create_app(name='neo4japp', config_package='config.Development'):
     db.init_app(app)
     ma.init_app(app)
     migrate.init_app(app, db)
+    ChatGPT.init_app(app)
 
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
