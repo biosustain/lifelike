@@ -1,8 +1,11 @@
+import { NgZone } from '@angular/core';
+
 import { first, partial } from 'lodash-es';
 
 import { REGEX } from 'app/shared/regex';
 import { wrapText } from 'app/shared/utils/canvas';
 import { ExtendedMap, ExtendedWeakMap } from 'app/shared/utils/types';
+import { inDevMode } from 'app/shared/utils/debug';
 
 interface TextboxOptions {
   width?: number;
@@ -26,6 +29,10 @@ interface TextboxOptions {
 
 export const cachedMeasureText = (() => {
   const textMetrics = new ExtendedMap<string, TextMetrics>();
+  inDevMode(NgZone.assertNotInAngularZone);
+  // Initially overlooked the fact that fonts can be loaded asynchronously, so
+  // we need to clear the cache when a font is loaded.
+  (document as any).fonts.addEventListener('loadingdone', () => textMetrics.clear());
   return (ctx: CanvasRenderingContext2D, staticText: string): TextMetrics =>
     textMetrics.getSetLazily(`${ctx.font}-${staticText}`, () => ctx.measureText(staticText));
 })();
