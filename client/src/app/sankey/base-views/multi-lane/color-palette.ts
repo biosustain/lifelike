@@ -1,6 +1,7 @@
 import { isDevMode } from '@angular/core';
 
 import { cubehelix } from 'd3-color';
+import { CubehelixColor } from 'd3';
 
 import { mapIterable } from 'app/shared/utils';
 
@@ -243,5 +244,5 @@ export const linkPalettes: LINK_PALETTES = {
 export const createMapToColor = (arr, params, generator = colorPaletteGenerator) => {
   const uniq = arr instanceof Set ? arr : new Set(arr);
   const palette = generator(uniq.size, params);
-  return mapIterable(uniq, (v, i) => [v, palette(i)], Map);
+  return mapIterable(uniq, (v, i) => [v, palette(i)], Map) as Map<any, string>;
 };

@@ -31,27 +31,35 @@
               maxlength="5000"
             ></textarea>
           </div>
-        </div>
 
-        <div class="mb-4">
-          <app-links-panel
-            title="Sources"
-            singularTitle="Source"
-            fontAwesomeIcon="far fa-book"
-            [(ngModel)]="edge.data.sources"
-            (ngModelChange)="doSave()"
-          ></app-links-panel>
-        </div>
+          <ng-content></ng-content>
 
-        <div class="mb-4">
-          <app-links-panel
-            title="Hyperlinks"
-            singularTitle="Hyperlink"
-            [(ngModel)]="edge.data.hyperlinks"
-            (ngModelChange)="doSave()"
-          ></app-links-panel>
+          <div class="mb-4">
+            <app-links-panel
+              title="Sources"
+              singularTitle="Source"
+              fontAwesomeIcon="far fa-book"
+              [(ngModel)]="edge.data.sources"
+              (ngModelChange)="doSave()"
+            ></app-links-panel>
+          </div>
+
+          <div class="mb-4">
+            <app-links-panel
+              title="Hyperlinks"
+              singularTitle="Hyperlink"
+              [(ngModel)]="edge.data.hyperlinks"
+              (ngModelChange)="doSave()"
+            ></app-links-panel>
+          </div>
+          <ng-container [ngTemplateOutlet]="delete"></ng-container>
         </div>
-        <ng-container [ngTemplateOutlet]="delete"></ng-container>
+      </ng-template>
+    </li>
+    <li ngbNavItem="explanation">
+      <a ngbNavLink>Explanation</a>
+      <ng-template ngbNavContent>
+        <app-prompt [entities]="entities$ | async"></app-prompt>
       </ng-template>
     </li>
     <li ngbNavItem="style">

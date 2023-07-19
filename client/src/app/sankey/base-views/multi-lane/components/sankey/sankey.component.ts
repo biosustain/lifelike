@@ -1,18 +1,18 @@
 import {
   AfterViewInit,
   Component,
-  OnDestroy,
-  ViewEncapsulation,
-  OnInit,
-  NgZone,
   ElementRef,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewEncapsulation,
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Selection as d3_Selection } from 'd3-selection';
-import { flatMap, groupBy, uniq, mapValues, isEmpty, assign } from 'lodash-es';
+import { assign, flatMap, groupBy, isEmpty, mapValues, uniq } from 'lodash-es';
 import { combineLatest, forkJoin } from 'rxjs';
-import { switchMap, map, tap, takeUntil, publish, first } from 'rxjs/operators';
+import { first, map, publish, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { EntityType } from 'app/sankey/interfaces/search';
 import { SelectionType } from 'app/sankey/interfaces/selection';
@@ -275,7 +275,7 @@ export class SankeyMultiLaneComponent
                   if (difference.size === 1) {
                     return traceColorPaletteMap.get(difference.values().next().value.trace.group);
                   } else {
-                    return color;
+                    return String(color);
                   }
                 });
             })

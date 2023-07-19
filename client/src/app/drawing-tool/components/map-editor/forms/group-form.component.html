@@ -52,6 +52,14 @@
         </div>
 
         <ng-container *ngIf="overflow" [ngTemplateOutlet]="delete"></ng-container>
+
+        <ng-content></ng-content>
+      </ng-template>
+    </li>
+    <li ngbNavItem="explanation">
+      <a ngbNavLink>Explanation</a>
+      <ng-template ngbNavContent>
+        <app-prompt [entities]="entities$ | async"></app-prompt>
       </ng-template>
     </li>
     <li ngbNavItem="style">

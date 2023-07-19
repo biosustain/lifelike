@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { FormArray, FormControl, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compact as _compact, isNil as _isNil, has as _has } from 'lodash/fp';
+import { compact as _compact, isNil as _isNil, has as _has, omit as _omit } from 'lodash/fp';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
@@ -130,8 +130,14 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
       documentChanges.fileId = objectChanges.fileId || this.fileId;
     }
 
+    // Finally, update the document with new params
+    this.document.setParameters(documentChanges);
+
     return {
       ...parentValue,
+      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(
+        objectChanges
+      ),
       documentChanges,
       document: this.document,
     };
@@ -158,6 +164,20 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         i++;
       });
     }
+    formArray.markAsDirty();
+  }
+
+  contextFormControlFactory = (context = '') =>
+    new FormControl(context, [Validators.minLength(3), Validators.maxLength(1000)]);
+
+  removeControl(controlList: FormArray, control: AbstractControl) {
+    const index = controlList.controls.indexOf(control);
+    controlList.markAsDirty();
+    return index >= 0 && controlList.removeAt(index);
+  }
+
+  addControl(controlList: FormArray, control: AbstractControl) {
+    controlList.push(control);
   }
 }
 
