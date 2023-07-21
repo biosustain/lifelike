@@ -52,9 +52,8 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   constructor(
     private readonly openFileProvider: OpenFileProvider,
     private readonly explainService: ExplainService,
-    private readonly modal: NgbActiveModal,
-  ) {
-  }
+    private readonly modal: NgbActiveModal
+  ) {}
 
   @Input() entities: Iterable<string>;
   @Input() temperature: number;
@@ -70,10 +69,10 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
 
   private destroy$: Subject<void> = new Subject();
   contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
-    map(({contexts}) => contexts),
+    map(({ contexts }) => contexts),
     startWith([]),
     distinctUntilChanged(),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   requestParams$ = new ReplaySubject<CompletitionsParams>(1);
@@ -92,7 +91,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
           loading$.complete();
           error$.complete();
         }),
-        shareReplay({bufferSize: 1, refCount: true}),
+        shareReplay({ bufferSize: 1, refCount: true })
       );
 
       return {
@@ -102,69 +101,68 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
         result$,
       };
     }),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   result$ = this.request$.pipe(
-    switchMap(({result$, params}) =>
+    switchMap(({ result$, params }) =>
       iif(
         () => params.stream,
         result$.pipe(
           tap((result) => console.log(result)),
-          filter(({partialText}) => Boolean(partialText)),
-          mergeMap(({partialText}) =>
+          filter(({ partialText }) => Boolean(partialText)),
+          mergeMap(({ partialText }) =>
             from(partialText.split('\n').filter(_identity)).pipe(
               map((partialTextLine: string) => JSON.parse(partialTextLine)),
               scan((acc, partial) =>
                 _mergeWith((a, b, key, obj) =>
                   key === 'choices'
                     ? _values(
-                      _mergeWith((ca, cb, ckey) =>
-                        ckey === 'text' ? `${ca ?? ''}${cb ?? ''}` : undefined,
-                      )(_keyBy('index')(a), _keyBy('index')(b)),
-                    )
-                    : undefined,
-                )(acc, partial),
-              ),
-            ),
+                        _mergeWith((ca, cb, ckey) =>
+                          ckey === 'text' ? `${ca ?? ''}${cb ?? ''}` : undefined
+                        )(_keyBy('index')(a), _keyBy('index')(b))
+                      )
+                    : undefined
+                )(acc, partial)
+              )
+            )
           ),
           tap((result) => console.log(result)),
-          map((result) => ({result, cached: false})),
+          map((result) => ({ result, cached: false }))
         ),
-        result$,
-      ),
+        result$
+      )
     ),
     takeUntil(this.destroy$),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   requestCost$ = this.result$.pipe(
     withLatestFrom(this.requestParams$),
     map(
-      ([{result}, params]) =>
-        ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens,
-    ),
+      ([{ result }, params]) =>
+        ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens
+    )
   );
 
-  cached$ = this.result$.pipe(map(({cached}) => cached));
+  cached$ = this.result$.pipe(map(({ cached }) => cached));
 
   resultJSON$: Observable<any> = this.result$.pipe(
     map((result) => JSON.stringify(result.result ?? result, null, 2)),
     catchError((error) => of(`Error: ${error}`)),
-    takeUntil(this.destroy$),
+    takeUntil(this.destroy$)
   );
 
   resultChoices$ = this.result$.pipe(
-    map(({result}) => result?.choices ?? []),
-    catchError((error) => of(`Error: ${error}`)),
+    map(({ result }) => result?.choices ?? []),
+    catchError((error) => of(`Error: ${error}`))
   );
 
   prompt: string;
 
+  trackByIndex = ({ index }) => index;
 
-  trackByIndex = ({index}) => index;
-
-  ngOnChanges({entities, context, temperature}: SimpleChanges) {
+  ngOnChanges({ entities, context, temperature }: SimpleChanges) {
     if (entities) {
       this.formInput.controls.entities.setValue(Array.from(entities.currentValue));
     }
@@ -179,7 +177,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
 
   programaticChange(inputs) {
     Object.assign(this, inputs);
-    this.ngOnChanges(_mapValues((currentValue) => ({currentValue}))(inputs) as SimpleChanges);
+    this.ngOnChanges(_mapValues((currentValue) => ({ currentValue }))(inputs) as SimpleChanges);
   }
 
   ngOnDestroy(): void {
@@ -200,7 +198,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   onSubmitPropmptComposer() {
     this.prompt = this.parseEntitiesToPropmpt(
       this.formInput.controls.entities.value,
-      this.formInput.controls.context.value,
+      this.formInput.controls.context.value
     );
   }
 

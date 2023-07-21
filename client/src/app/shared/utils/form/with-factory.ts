@@ -7,21 +7,18 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 
-import {
-  keys as _keys,
-  difference as _difference
-} from 'lodash/fp';
+import { keys as _keys, difference as _difference } from 'lodash/fp';
 
 export class FormArrayWithFactory<T = any> extends FormArray {
   constructor(
     private readonly factory: () => AbstractControl,
     values: T[] = [],
     validatorOrOpts?: ValidatorFn | AbstractControlOptions | ValidatorFn[],
-    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[],
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[]
   ) {
     super([], validatorOrOpts, asyncValidator);
     if (values) {
-      this.setValue(values, {emitEvent: false});
+      this.setValue(values, { emitEvent: false });
     }
   }
 
@@ -47,7 +44,7 @@ export class FormArrayWithFactory<T = any> extends FormArray {
 
   add(value: T) {
     const control = this.factory();
-    control.setValue(value, {emitEvent: false});
+    control.setValue(value, { emitEvent: false });
     super.push(control);
   }
 
@@ -61,11 +58,11 @@ export class FormGroupWithFactory<V = any> extends FormGroup {
     private readonly factory: () => AbstractControl,
     mapping?: Record<string, V>,
     validatorOrOpts?: ValidatorFn | AbstractControlOptions | ValidatorFn[],
-    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[],
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[]
   ) {
     super(mapping ? {} : null, validatorOrOpts, asyncValidator);
     if (mapping) {
-      this.setValue(mapping, {emitEvent: false});
+      this.setValue(mapping, { emitEvent: false });
     }
   }
 
@@ -87,8 +84,7 @@ export class FormGroupWithFactory<V = any> extends FormGroup {
 
   add(key: string, value?: V) {
     const control = this.factory();
-    control.setValue(value, {emitEvent: false});
+    control.setValue(value, { emitEvent: false });
     super.addControl(key, control);
   }
 }
-
