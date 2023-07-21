@@ -9,9 +9,7 @@
         class="model-group"
         [activeIds]="getModelGroup(modelControl.value)"
       >
-        <ng-container
-          *ngFor="let modelGroup of groupedModels$ | async | keyvalue; let last = last"
-        >
+        <ng-container *ngFor="let modelGroup of groupedModels$ | async | keyvalue; let last = last">
           <ngb-panel
             *ngIf="modelGroup.value.length > 0"
             [id]="modelGroup.key"
@@ -45,23 +43,11 @@
   <div class="form-row">
     <div class="form-group col-auto">
       <label [for]="input.uid"> Timeout </label>
-      <input
-        class="form-control"
-        type="number"
-        formControlName="timeout"
-        appUid
-        #input="uid"
-      />
+      <input class="form-control" type="number" formControlName="timeout" appUid #input="uid" />
     </div>
     <div class="form-group col-auto">
       <label [for]="input.uid"> Max Tokens </label>
-      <input
-        class="form-control"
-        type="number"
-        formControlName="maxTokens"
-        appUid
-        #input="uid"
-      />
+      <input class="form-control" type="number" formControlName="maxTokens" appUid #input="uid" />
     </div>
   </div>
   <div class="form-row">
@@ -78,7 +64,7 @@
     </div>
     <div class="form-group col-auto">
       <label [for]="input.uid"> Top P </label>
-      <input class="form-control" type="number" formControlName="topP" appUid #input="uid"/>
+      <input class="form-control" type="number" formControlName="topP" appUid #input="uid" />
     </div>
   </div>
   <div class="form-row">
@@ -95,13 +81,7 @@
     </div>
     <div class="form-group col-auto">
       <label [for]="input.uid"> Best Of </label>
-      <input
-        class="form-control"
-        type="number"
-        formControlName="bestOf"
-        appUid
-        #input="uid"
-      />
+      <input class="form-control" type="number" formControlName="bestOf" appUid #input="uid" />
     </div>
   </div>
   <div class="form-row">
@@ -132,25 +112,15 @@
   </div>
   <div class="form-group">
     <label [for]="input.uid"> Logprobs</label>
-    <input
-      class="form-control"
-      type="number"
-      formControlName="logprobs"
-      appUid
-      #input="uid"
-    />
+    <input class="form-control" type="number" formControlName="logprobs" appUid #input="uid" />
   </div>
   <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
     <label>Stop Sequences</label>
     <ng-container *ngFor="let control of stopControl.controls; let i = index">
       <div class="input-group input-border rounded mb-2 flex-shrink-0">
-        <input type="text" class="form-control border-0" [formControl]="control"/>
+        <input type="text" class="form-control border-0" [formControl]="control" />
         <div class="input-group-append">
-          <button
-            class="form-control border-0"
-            type="button"
-            (click)="stopControl.removeAt(i)"
-          >
+          <button class="form-control border-0" type="button" (click)="stopControl.removeAt(i)">
             <i class="fa fa-fw fa-times"></i>
           </button>
         </div>
@@ -183,10 +153,7 @@
       />
     </div>
   </div>
-  <div
-    class="form-group"
-    [formGroup]="logitBiasControl"
-  >
+  <div class="form-group" [formGroup]="logitBiasControl">
     <label>Logit Bias</label>
     <div class="form-group">
       <ng-container *ngFor="let record of logitBiasControl.controls | keyvalue">
@@ -210,7 +177,7 @@
         </div>
       </ng-container>
       <div class="input-group input-border rounded mb-2">
-        <input type="text" class="form-control border-0" #newKeyInput/>
+        <input type="text" class="form-control border-0" #newKeyInput />
         <div class="input-group-append">
           <button
             class="btn btn-secondary"
@@ -231,8 +198,8 @@
       <app-cost-estimate-tooltip></app-cost-estimate-tooltip>
     </ng-template>
     <span [ngbTooltip]="costEstimateTooltip"
-    >{{ estimatedCost[0] | currency : 'USD' : '' : '1.2-7' }} -{{
-      estimatedCost[1] | currency : 'USD' : 'symbol' : '1.2-7'
+      >{{ estimatedCost[0] | currency : 'USD' : '' : '1.2-7' }} -{{
+        estimatedCost[1] | currency : 'USD' : 'symbol' : '1.2-7'
       }}</span
     >
   </small>

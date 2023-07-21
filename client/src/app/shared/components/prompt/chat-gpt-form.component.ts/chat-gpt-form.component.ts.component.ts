@@ -24,11 +24,7 @@ import { ChatGPT, CompletitionsParams } from '../ChatGPT';
   templateUrl: './chat-gpt-form.component.ts.component.html',
 })
 export class ChatGptFormComponent implements OnChanges {
-
-  constructor(
-    private readonly explainService: ExplainService,
-  ) {
-  }
+  constructor(private readonly explainService: ExplainService) {}
 
   @Input() temparature: number;
   @Input() prompt: string;
@@ -38,7 +34,7 @@ export class ChatGptFormComponent implements OnChanges {
     .models()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
   form = new FormGroup({
@@ -50,10 +46,10 @@ export class ChatGptFormComponent implements OnChanges {
         (control: AbstractControl) =>
           this.models$.pipe(
             map((models) =>
-              models.includes(control.value) ? null : {notAvailable: control.value},
-            ),
+              models.includes(control.value) ? null : { notAvailable: control.value }
+            )
           ),
-      ],
+      ]
     ),
     prompt: new FormControl('', [Validators.required]),
     maxTokens: new FormControl(200),
@@ -61,12 +57,12 @@ export class ChatGptFormComponent implements OnChanges {
     topP: new FormControl(1),
     n: new FormControl(1, [
       CustomValidators.isInteger,
-      ({value}: FormControl) => {
+      ({ value }: FormControl) => {
         const bestOf = this.form?.controls.bestOf?.value;
         if (!bestOf) {
           return null;
         }
-        return value < bestOf ? {nSmallerThanBestOf: {value, bestOf}} : null;
+        return value < bestOf ? { nSmallerThanBestOf: { value, bestOf } } : null;
       },
     ]),
     stream: new FormControl(false, [CustomValidators.isBoolean]),
@@ -80,7 +76,7 @@ export class ChatGptFormComponent implements OnChanges {
     bestOf: new FormControl(1, [CustomValidators.isInteger]),
     logitBias: new FormGroupWithFactory(
       () => new FormControl(0, [Validators.min(-100), Validators.max(100)]),
-      {},
+      {}
     ),
   });
   // region Typed form controls to use in template
@@ -89,19 +85,19 @@ export class ChatGptFormComponent implements OnChanges {
   // endregion
 
   estimatedCost$ = defer(() =>
-    this.form.valueChanges.pipe(startWith(this.form.value), map(ChatGPT.estimateCost)),
+    this.form.valueChanges.pipe(startWith(this.form.value), map(ChatGPT.estimateCost))
   );
 
   groupedModels$: Observable<Record<string, string[]>> = this.models$.pipe(
     map(_flow(_groupBy(ChatGPT.getModelGroup), _mapValues(_sortBy(_identity)))),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   onSubmit(): void {
     this.ngSubmit.emit(this.parseFormValueToParams(this.form.value));
   }
 
-  ngOnChanges({temparature, prompt}: SimpleChanges): void {
+  ngOnChanges({ temparature, prompt }: SimpleChanges): void {
     if (temparature) {
       this.form.controls.temperature.reset(temparature.currentValue);
     }
