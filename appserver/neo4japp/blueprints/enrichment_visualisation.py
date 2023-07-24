@@ -112,7 +112,7 @@ def enrich_context():
     gene_name = data.get('geneName', '')
     print(request.get_json())
     response = ChatGPT.Completion.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo",
         prompt=composePrompt(organism, term, context, gene_name),
         temperature=0,
         max_tokens=500,

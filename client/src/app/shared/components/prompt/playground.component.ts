@@ -189,7 +189,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges, OnInit {
   form = new FormGroup({
     timeout: new FormControl(60),
     model: new FormControl(
-      'text-davinci-003',
+      'gpt-3.5-turbo',
       [Validators.required],
       [
         (control: AbstractControl) =>
