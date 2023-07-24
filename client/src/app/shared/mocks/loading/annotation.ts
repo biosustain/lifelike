@@ -20,7 +20,7 @@ import {
 import { freezeDeep } from '../../utils';
 import { ResultList } from '../../schemas/common';
 import { appUserLoadingMock } from './user';
-import { LOADING, loadingText, INDEX } from './utils';
+import { LOADING, loadingText, INDEX, DATE } from './utils';
 
 export const globalAnnotationListItemLoadingMock: () => GlobalAnnotationListItem = () => ({
   globalId: INDEX,
@@ -84,7 +84,7 @@ export const annotationExclusionChangeDataLoadingMock: () => AnnotationExclusion
   });
 
 export const fileAnnotationChangeDataLoadingMock: () => FileAnnotationChangeData = () => ({
-  date: 'XX/XX/XX XX:XX XX',
+  date: DATE.toString(),
   user: appUserLoadingMock(),
   cause: 'user',
   inclusionChanges: [
