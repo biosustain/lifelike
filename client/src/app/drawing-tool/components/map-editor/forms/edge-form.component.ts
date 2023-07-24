@@ -37,6 +37,7 @@ import { EntityForm } from './entity-form';
 })
 export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestroy {
   @Input() graphView: CanvasGraphView;
+  protected readonly TABS = ['properties', 'explanation', 'style'];
   lineHeadTypeChoices = [
     [
       null,
