@@ -1,0 +1,60 @@
+<form [formGroup]="formInput" (ngSubmit)="onSubmitPropmptComposer()">
+  <h6 class="mb-4"><strong>Input data</strong></h6>
+  <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
+    <label>Entities</label>
+    <ng-container *ngFor="let control of entitiesControl.controls; let i = index">
+      <div class="input-group input-border rounded mb-2 w-100 flex-shrink-0">
+        <input type="text" class="form-control border-0" [formControl]="control"/>
+        <div class="input-group-append">
+          <button
+            class="form-control border-0"
+            type="button"
+            (click)="entitiesControl.removeAt(i)"
+          >
+            <i class="fa fa-fw fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+    <button class="btn btn-secondary" type="button" (click)="entitiesControl.add()">
+      <i class="fa fa-fw fa-plus"></i>
+      Add entity
+    </button>
+  </div>
+  <div class="form-group">
+    <label>Context</label>
+    <div
+      ngbDropdown
+      class="input-group input-border rounded"
+      placement="bottom-left"
+      container="body"
+      *ngIf="formInput.controls.context as contextControl"
+    >
+      <input
+        #contextDropdown="uid"
+        appUid
+        autocomplete="off"
+        class="form-control border-0"
+        type="text"
+        container="body"
+        ngbDropdownToggle
+        formControlName="context"
+        appAutoGrow
+      />
+
+      <div ngbDropdownMenu [attr.aria-labelledby]="contextDropdown" class="w-100">
+        <ng-container *ngFor="let context of contexts$ | async">
+          <button
+            class="dropdown-item"
+            type="button"
+            placement="right"
+            (click)="contextControl.setValue(context)"
+          >
+            <ngb-highlight [result]="context" [term]="contextControl.value"></ngb-highlight>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Compose prompt</button>
+</form>
