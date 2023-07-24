@@ -84,6 +84,7 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
 
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+    super.ngOnChanges(changes);
   }
 
   ngOnDestroy() {

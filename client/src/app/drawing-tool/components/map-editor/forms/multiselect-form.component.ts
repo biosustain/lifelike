@@ -70,7 +70,7 @@ export class MultiselectFormComponent extends EntityForm implements OnChanges, O
   @Input() graphView: CanvasGraphView;
   @Input() selected: GraphEntity[];
   doSave() {
-    throw new Error('Method not implemented.');
+      throw new Error("Method not implemented.");
   }
 
   ngOnChanges(changes: SimpleChanges) {
