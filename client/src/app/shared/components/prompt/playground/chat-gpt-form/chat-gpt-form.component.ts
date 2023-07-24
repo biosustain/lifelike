@@ -14,28 +14,23 @@ import {
 import { defer, Observable } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
-import { ChatGPTModel, ExplainService } from '../../../services/explain.service';
-import * as CustomValidators from '../../../utils/form/custom-validators';
-import { FormArrayWithFactory, FormGroupWithFactory } from '../../../utils/form/with-factory';
+import { ChatGPTModel, ExplainService } from '../../../../services/explain.service';
+import * as CustomValidators from '../../../../utils/form/custom-validators';
+import { FormArrayWithFactory, FormGroupWithFactory } from '../../../../utils/form/with-factory';
 import { ChatGPT, CompletitionsParams } from '../ChatGPT';
 
 @Component({
   selector: 'app-chat-gpt-form',
-  templateUrl: './chat-gpt-form.component.ts.component.html',
+  templateUrl: './chat-gpt-form.component.html',
 })
 export class ChatGptFormComponent implements OnChanges {
-  constructor(private readonly explainService: ExplainService) {}
+  constructor(private readonly chatGPT: ChatGPT) {}
 
+  readonly models$: Observable<string[]> = this.chatGPT.models$;
   @Input() temparature: number;
   @Input() prompt: string;
   @Output() readonly ngSubmit = new EventEmitter<CompletitionsParams>();
 
-  models$: Observable<string[]> = this.explainService
-    .models()
-    .pipe(
-      map(_map((model: ChatGPTModel) => model.id)),
-      shareReplay({ bufferSize: 1, refCount: true })
-    );
 
   form = new FormGroup({
     timeout: new FormControl(60),

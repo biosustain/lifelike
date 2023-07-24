@@ -95,7 +95,9 @@ import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotatio
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
-import { PlaygroundComponent } from './components/prompt/playground.component';
+import { ChatGptFormComponent } from './components/prompt/playground/chat-gpt-form/chat-gpt-form.component';
+import { CostEstimateTooltipComponent } from './components/prompt/playground/cost-estimate-tooltip.component';
+import { PlaygroundComponent } from './components/prompt/playground/playground.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -122,6 +124,9 @@ const components = [
   ModalHeaderComponent,
   ModalBodyComponent,
   ModalFooterComponent,
+  ChatGptFormComponent,
+  CostEstimateTooltipComponent,
+  PlaygroundComponent,
   ContentProgressComponent,
   LoadingIndicatorComponent,
   ColorChooserComponent,

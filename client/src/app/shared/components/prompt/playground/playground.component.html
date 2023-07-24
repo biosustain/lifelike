@@ -1,0 +1,66 @@
+<app-modal-header (cancel)="this.close()"> ChatGPT Playground</app-modal-header>
+
+<app-modal-body>
+  <ng-template #costEstimateTooltip>
+    <app-cost-estimate-tooltip></app-cost-estimate-tooltip>
+  </ng-template>
+  <as-split class="align-items-stretch">
+    <as-split-area>
+      <app-drawing-tool-prompt-form></app-drawing-tool-prompt-form>
+    </as-split-area>
+    <as-split-area>
+      <app-chat-gpt-form
+        [temparature]="temperature"
+        [prompt]="prompt$ | async"
+        (ngSubmit)="onSubmitRequest($event)"
+      ></app-chat-gpt-form>
+    </as-split-area>
+    <as-split-area class="d-flex h-100 flex-column">
+      <h6 class="mb-4"><strong>Output</strong></h6>
+      <ng-container *ngIf="request$ | async as request; else noRequest">
+        <app-loading-indicator *ngIf="request.loading$ | async"></app-loading-indicator>
+        <app-module-error
+          *ngIf="request.error$ | async as error"
+          [error]="error"
+        ></app-module-error>
+        <ng-container *ngIf="result$ | async as result">
+          <ng-container *ngIf="resultChoices$ | async as choices">
+            <label>Text response{{ choices?.length > 1 ? 's' : '' }}</label>
+            <samp
+              *ngFor="let choice of choices; trackBy: trackByIndex"
+              class="card bg-light overflow-auto flex-grow-1 mb-2"
+              [style.whiteSpace]="'pre-wrap'"
+            >
+              {{ choice.text }}
+            </samp>
+          </ng-container>
+          <div class="mb-2">
+            Estimated cost
+            <span [ngbTooltip]="costEstimateTooltip" *ngIf="requestCost$ | async as cost">{{
+              cost | currency : 'USD' : 'symbol' : '1.2-7'
+            }}</span>
+            <ng-container *ngIf="cached$ | async"> (cached)</ng-container>
+          </div>
+          <details>
+            <summary><label [for]="raw.uid">Raw response</label></summary>
+            <samp
+              appUid
+              #raw="uid"
+              class="card bg-light overflow-auto flex-grow-1 mb-2"
+              [style.whiteSpace]="'pre-wrap'"
+            >
+              {{ resultJSON$ | async }}
+            </samp>
+          </details>
+        </ng-container>
+      </ng-container>
+      <ng-template #noRequest>No request has been submitted</ng-template>
+    </as-split-area>
+  </as-split>
+</app-modal-body>
+
+<app-modal-footer>
+  <div class="alert alert-warning w-100">
+    This feature should be only exposed in testing enviroment.
+  </div>
+</app-modal-footer>

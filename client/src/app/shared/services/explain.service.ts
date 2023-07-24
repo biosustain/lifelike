@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
 
-import { CompletitionsParams } from '../components/prompt/ChatGPT';
+import { CompletitionsParams } from '../components/prompt/playground/ChatGPT';
 
 interface ExplainRelationshipOptions {
   temperature?: number;

@@ -1,3 +1,5 @@
+import { Injectable } from '@angular/core';
+
 import {
   difference as _difference,
   flow as _flow,
@@ -12,6 +14,10 @@ import {
   sortBy as _sortBy,
   find as _find,
 } from 'lodash/fp';
+import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
+
+import { ChatGPTModel, ExplainService } from '../../../services/explain.service';
 
 interface CompletitionsTokenParams {
   prompt: string;
@@ -26,7 +32,11 @@ export interface CompletitionsParams extends CompletitionsTokenParams {
   stream: boolean;
 }
 
+@Injectable()
 export class ChatGPT {
+
+  constructor(private readonly explainService: ExplainService) {}
+
   static lastUpdate = new Date(2023, 7, 17);
 
   static modelGroupTokenCostMap = new Map<string, (model: string) => number>([
@@ -37,6 +47,13 @@ export class ChatGPT {
     ['gpt-3.5-turbo', (model) => (model.includes('16K') ? 0.004 / 1e3 : 0.002 / 1e3)],
     ['whisper', () => 0.006 / 1e3],
   ]);
+
+  models$: Observable<string[]> = this.explainService
+    .models()
+    .pipe(
+      map(_map((model: ChatGPTModel) => model.id)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
   static getModelGroup(id: string) {
     return (
