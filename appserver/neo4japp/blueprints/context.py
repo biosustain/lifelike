@@ -24,7 +24,7 @@ def relationship(params):
     context = params.get('context_')
     options = params.get('options', {})
     response = ChatGPT.Completion.create(
-        model="text-davinci-003",
+        model="gpt-3.5-turbo",
         prompt=(
             'What is the relationship between '
             + ', '.join(entities)
