@@ -1,3 +1,5 @@
+import json
+
 import attr
 import hashlib
 import itertools
@@ -357,3 +359,8 @@ class Enumd(Enum):
             return cls(key)
         except ValueError:
             return default
+
+
+def stream_to_json_lines(stream):
+    for chunk in stream:
+        yield json.dumps(chunk) + '\n'
