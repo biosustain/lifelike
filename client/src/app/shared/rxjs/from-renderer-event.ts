@@ -7,6 +7,11 @@ export const fromRendererEvent = <E extends Event>(renderer: Renderer2, element:
     renderer.listen(
       element,
       eventName,
+
+
+
+
+
       (n) => subscriber.next(n),
     ),
   );

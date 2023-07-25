@@ -73,6 +73,10 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
           this.fromCanvasEvent<DragEvent>('dragover').pipe(
             startWith(dragStartEvent),
             tap(event => {
+
+
+
+
               event.dataTransfer.dropEffect = dropEffect;
               event.preventDefault();
             }),
