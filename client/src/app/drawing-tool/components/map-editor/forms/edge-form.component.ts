@@ -108,11 +108,6 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
     this.updatedEdge.data.sources = this.updatedEdge.data.sources || [];
     this.updatedEdge.data.hyperlinks = this.updatedEdge.data.hyperlinks || [];
     this.updatedEdge.style = this.updatedEdge.style || {};
-
-    // Anytime the view is changed (i.e. when a new edge is selected) re-focus the label field.
-    if (this.viewInited) {
-      this.focus();
-    }
   }
 
   doSave() {
