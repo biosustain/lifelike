@@ -25,6 +25,7 @@ import { Behavior, BehaviorList } from './behaviors';
 import { CacheGuardedEntityList } from '../utils/cache-guarded-entity-list';
 import { RenderTree } from './render-tree';
 import { BoundingBox, isPointIntersecting, Point } from '../utils/canvas/shared';
+import { GroupNode } from '../utils/canvas/graph-groups/group-node';
 
 /**
  * A rendered view of a graph.
@@ -146,6 +147,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Stream of events when history changes in any way.
    */
   historyChanges$ = new Subject<void>();
+
+  /**
+   * Stream of events when a graph entity needs to be focused.
+   */
+  editorPanelFocus$ = new Subject<void>();
 
   /**
    * Defines how close to the node we have to click to terminate the node search early.
@@ -874,6 +880,16 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   // ========================================
   // Rendering
   // ========================================
+
+  /**
+   * Focus on the element.
+   */
+  abstract focus(): void;
+
+  /**
+   * Focus the selected entity (aka focus on the related sidebar for the selection).
+   */
+  abstract focusEditorPanel(): void;
 
   /**
    * Get the current transform object that is based on the current

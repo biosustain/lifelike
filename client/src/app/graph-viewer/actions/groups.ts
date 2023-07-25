@@ -14,7 +14,8 @@ export class GroupCreation implements GraphAction {
   constructor(
     public description: string,
     public group: UniversalGraphGroup,
-    public readonly select = false
+    public readonly select = false,
+    public readonly focus = false
   ) {}
   apply(component: GraphActionReceiver) {
     component.addGroup(this.group);
@@ -25,6 +26,9 @@ export class GroupCreation implements GraphAction {
           entity: this.group,
         },
       ]);
+    }
+    if (this.focus) {
+      component.focusEditorPanel();
     }
   }
   rollback(component: GraphActionReceiver) {
