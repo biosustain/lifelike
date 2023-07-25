@@ -29,7 +29,6 @@ export class LockService implements OnDestroy {
     private errorHandler: ErrorHandler,
     private ngZone: NgZone
   ) {
-    inDevMode(NgZone.assertInAngularZone);
     this.ngZone.runOutsideAngular(() => {
       // ensure we keep watching
       this.lastActivityTime$.subscribe();
@@ -80,7 +79,6 @@ export class LockService implements OnDestroy {
   private lastLockCheckTime = window.performance.now();
 
   ngOnDestroy() {
-    inDevMode(NgZone.assertInAngularZone);
     this.ngZone.runOutsideAngular(() => {
       this.destroy$.next();
       this.clearLockInterval();
@@ -154,7 +152,6 @@ export class LockService implements OnDestroy {
   }
 
   clearLockInterval() {
-    inDevMode(NgZone.assertInAngularZone);
     this.ngZone.runOutsideAngular(() => {
       if (this.lockStartIntervalId != null) {
         clearInterval(this.lockStartIntervalId);
