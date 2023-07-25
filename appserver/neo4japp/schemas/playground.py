@@ -34,7 +34,36 @@ class DeferedOneOf(marshmallow.validate.OneOf):
         return ", ".join(str(choice) for choice in self.choices)
 
 
-class ContextPlaygroundRequestSchema(CamelCaseSchema):
+class CompletionsRequestSchema(CamelCaseSchema):
+    timeout = fields.Float()
+    model = fields.String(
+        validate=DeferedOneOf(
+            lambda: tuple(map(lambda model: model['id'], ChatGPT.Model.list()['data']))
+        ),
+        required=True,
+    )
+    prompt = fields.String(required=True)
+    max_tokens = fields.Integer()
+    temperature = fields.Float(validate=marshmallow.validate.Range(min=0, max=2))
+    top_p = fields.Float()
+    n = fields.Integer()
+    stream = fields.Boolean()
+    logprobs = fields.Integer(
+        validate=marshmallow.validate.Range(min=0, max=5), allow_none=True
+    )
+    echo = fields.Boolean()
+    stop = fields.List(
+        fields.String(required=True), validate=marshmallow.validate.Length(min=0, max=4)
+    )
+    presence_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))
+    frequency_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))
+    best_of = fields.Integer()
+    logit_bias = fields.Dict(
+        keys=fields.String(),
+        values=fields.Float(validate=marshmallow.validate.Range(min=-100, max=100)),
+    )
+
+class ChatCompletionsRequestSchema(CamelCaseSchema):
     timeout = fields.Float()
     model = fields.String(
         validate=DeferedOneOf(
