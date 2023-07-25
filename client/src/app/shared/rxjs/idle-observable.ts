@@ -11,7 +11,7 @@ export function idle(idleRequestOptions = { timeout: 100 }) {
         observer.next();
         observer.complete();
       }, idleRequestOptions);
-      return (window as any).cancelIdleCallback(handle);
+      return () => (window as any).cancelIdleCallback(handle);
     }
     observer.next();
     observer.complete();
