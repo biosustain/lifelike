@@ -129,7 +129,7 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
         this.canvasElem.nativeElement,
         'drop-target'
       );
-    }),
+    })
   );
 
   // Hook to convas events outside of angular zone
