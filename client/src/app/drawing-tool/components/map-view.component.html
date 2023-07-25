@@ -74,7 +74,7 @@
     <as-split unit="pixel" direction="horizontal" [gutterSize]="2">
       <as-split-area [order]="0" class="overflow-hidden">
         <div class="graph-container">
-          <canvas appGraphView></canvas>
+          <canvas appGraphView [disableDragAndDrop]="true"></canvas>
         </div>
       </as-split-area>
       <as-split-area size="250" [order]="1">
