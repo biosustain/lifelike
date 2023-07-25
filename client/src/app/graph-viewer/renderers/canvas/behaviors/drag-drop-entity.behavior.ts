@@ -42,6 +42,7 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
               y: hoverPosition.y,
             },
           }),
+          true,
           true
         )
       );
