@@ -120,16 +120,16 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
     ).pipe(map((event) => false /*drop area not targeted*/))
   ).pipe(
     distinctUntilChanged(),
+    catchError((error) => {
+      this.errorHandler.logError(error);
+      return of(false);
+    }),
     tap((dropTargeted) => {
       this.renderer[dropTargeted ? 'addClass' : 'removeClass'](
         this.canvasElem.nativeElement,
         'drop-target'
       );
     }),
-    catchError((error) => {
-      this.errorHandler.logError(error);
-      return of(false);
-    })
   );
 
   // Hook to convas events outside of angular zone
