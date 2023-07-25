@@ -4,7 +4,8 @@ import {
   Input,
   NgZone,
   OnChanges,
-  OnDestroy, OnInit,
+  OnDestroy,
+  OnInit,
   Renderer2,
   SimpleChanges,
 } from '@angular/core';
@@ -37,7 +38,7 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
     private readonly graphActionsService: GraphActionsService,
     private readonly renderer: Renderer2,
     private readonly ngZone: NgZone,
-    private readonly errorHandler: ErrorHandler,
+    private readonly errorHandler: ErrorHandler
   ) {
     ngZone.runOutsideAngular(() => {
       const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
@@ -56,35 +57,34 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
 
   private readonly dragAndDrop$ = merge(
     this.fromCanvasEvent<DragEvent>('dragenter').pipe(
-      switchMap(dragStartEvent => {
-        const dropEffect = dragStartEvent.dataTransfer && (
-          someInIterable(
-            dragStartEvent.dataTransfer.items as any as Iterable<DataTransferItem> ?? [],
-            item => item.type.startsWith('image/'),
-          ) || isNotEmpty(
+      switchMap((dragStartEvent) => {
+        const dropEffect =
+          dragStartEvent.dataTransfer &&
+          (someInIterable(
+            (dragStartEvent.dataTransfer.items as any as Iterable<DataTransferItem>) ?? [],
+            (item) => item.type.startsWith('image/')
+          ) ||
+          isNotEmpty(
             this.dataTransferDataService
               .extract(dragStartEvent.dataTransfer)
-              .filter((item) => item.token === GRAPH_ENTITY_TOKEN),
-          ) ? 'link' : null
-        );
+              .filter((item) => item.token === GRAPH_ENTITY_TOKEN)
+          )
+            ? 'link'
+            : null);
         return iif(
           () => dropEffect != null,
           // If needed this event onwards we overwrite the dropEffect in dragover event
           this.fromCanvasEvent<DragEvent>('dragover').pipe(
             startWith(dragStartEvent),
-            tap(event => {
-
-
-
-
+            tap((event) => {
               event.dataTransfer.dropEffect = dropEffect;
               event.preventDefault();
-            }),
+            })
           ),
-          of(dragStartEvent),
+          of(dragStartEvent)
         );
       }),
-      map((event) => true /*drop area targeted*/),
+      map((event) => true /*drop area targeted*/)
     ),
     merge(
       this.fromCanvasEvent<DragEvent>('dragleave'),
@@ -99,7 +99,10 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
             if (isNotEmpty(items)) {
               this.canvasGraphView.selection.replace([]);
             }
-            const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
+            const actionPromise = this.graphActionsService.fromDataTransferItems(
+              items,
+              hoverPosition
+            );
 
             this.ngZone.runOutsideAngular(() => {
               actionPromise.then((actions) => {
@@ -111,33 +114,27 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
               });
             });
           }
-        }),
+        })
       ),
-      this.fromCanvasEvent<DragEvent>('dragend'),
-    ).pipe(
-      map((event) => false /*drop area not targeted*/),
-    ),
+      this.fromCanvasEvent<DragEvent>('dragend')
+    ).pipe(map((event) => false /*drop area not targeted*/))
   ).pipe(
     distinctUntilChanged(),
     tap((dropTargeted) => {
       this.renderer[dropTargeted ? 'addClass' : 'removeClass'](
         this.canvasElem.nativeElement,
-        'drop-target',
+        'drop-target'
       );
     }),
     catchError((error) => {
       this.errorHandler.logError(error);
       return of(false);
-    }),
+    })
   );
 
   // Hook to convas events outside of angular zone
   private fromCanvasEvent<E extends Event>(eventName: string): Observable<E> {
-    return fromRendererEvent<E>(
-      this.renderer,
-      this.canvasElem.nativeElement,
-      eventName,
-    );
+    return fromRendererEvent<E>(this.renderer, this.canvasElem.nativeElement, eventName);
   }
 
   ngOnDestroy() {
@@ -145,23 +142,23 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
     this.canvasGraphView.destroy();
   }
 
-  ngOnChanges({disableDragAndDrop}: SimpleChanges): void {
+  ngOnChanges({ disableDragAndDrop }: SimpleChanges): void {
     if (disableDragAndDrop) {
       this.updateDragAndDrop();
     }
   }
 
   updateDragAndDrop(): void {
-      if (this.disableDragAndDrop) {
-        this.dragAndDropSubscription?.unsubscribe();
-      } else {
-        this.ngZone.runOutsideAngular(() => {
-          this.dragAndDropSubscription = this.dragAndDrop$.subscribe();
-        });
-      }
+    if (this.disableDragAndDrop) {
+      this.dragAndDropSubscription?.unsubscribe();
+    } else {
+      this.ngZone.runOutsideAngular(() => {
+        this.dragAndDropSubscription = this.dragAndDrop$.subscribe();
+      });
+    }
   }
 
   ngOnInit(): void {
-    this.updateDragAndDrop()
+    this.updateDragAndDrop();
   }
 }
