@@ -134,6 +134,19 @@ export class MapEditorComponent
     return super.locator;
   }
 
+  private focusSidebar() {
+    // Focus the input on the sidebar
+    setTimeout(() => {
+      const initialFocusElement = this.infoPanelSidebarElementRef.nativeElement.querySelector(
+        '.map-editor-initial-focus'
+      );
+      if (initialFocusElement) {
+        initialFocusElement.focus();
+        initialFocusElement.select();
+      }
+    }, 100);
+  }
+
   ngOnInit() {
     this.autoSaveSubscription = this.unsavedChanges$
       .pipe(auditTime(this.autoSaveDelay))
@@ -152,6 +165,11 @@ export class MapEditorComponent
     this.subscriptions.add(
       this.graphCanvas.historyChanges$.subscribe(() => {
         this.unsavedChanges$.next(true);
+      })
+    );
+    this.subscriptions.add(
+      this.graphCanvas.editorPanelFocus$.subscribe(() => {
+        this.focusSidebar();
       })
     );
   }
@@ -370,6 +388,7 @@ export class MapEditorComponent
           createGroupNode({
             members,
           }),
+          true,
           true
         )
       );

@@ -54,11 +54,6 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
     this.updatedGroup.data.sources = this.updatedGroup.data.sources || [];
     this.updatedGroup.data.hyperlinks = this.updatedGroup.data.hyperlinks || [];
     this.updatedGroup.style = this.updatedGroup.style || {};
-
-    // Anytime the view is changed (i.e. when a new group is selected) re-focus the label field.
-    if (this.viewInited) {
-      this.focus();
-    }
   }
 
   change$ = new ReplaySubject<SimpleChanges>(1);
