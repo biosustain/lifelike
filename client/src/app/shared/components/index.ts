@@ -56,6 +56,10 @@ import { WarningPillComponent } from './warning-pill/warning-pill.component';
 import { PlaygroundComponent } from './prompt/playground.component';
 import { PromptComponent } from './prompt/prompt.component';
 import { XMLAnnotationComponent } from '../providers/highlight-text/xml-annotation/xml-annotation.component';
+import { ModuleErrorComponent } from './module-error/module-error.component';
+import { ModuleHeaderComponent } from './module-header/module-header.component';
+import { ModuleMenuComponent } from './module-menu/module-menu.component';
+import { ModuleProgressComponent } from './module-progress/module-progress.component';
 
 export default [
   WithPlaceholderComponent,
@@ -117,4 +121,8 @@ export default [
   WarningPillComponent,
   PasswordInputComponent,
   XMLAnnotationComponent,
+  ModuleErrorComponent,
+  ModuleHeaderComponent,
+  ModuleMenuComponent,
+  ModuleProgressComponent,
 ];

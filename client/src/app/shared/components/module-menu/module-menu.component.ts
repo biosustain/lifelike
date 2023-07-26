@@ -12,16 +12,16 @@ import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-ob
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ViewService } from 'app/file-browser/services/view.service';
 
-import { ObjectMenuComponent } from '../../../../components/object-menu/object-menu.component';
-import { ClipboardService } from '../../../../services/clipboard.service';
-import { ModuleContext } from '../../../../services/module-context.service';
+import { ObjectMenuComponent } from '../object-menu/object-menu.component';
+import { ClipboardService } from '../../services/clipboard.service';
+import { ModuleContext } from '../../services/module-context.service';
 
 /**
  * app-object-menu in module context
  */
 @Component({
   selector: 'app-module-menu',
-  templateUrl: '../../../../components/object-menu/object-menu.component.html',
+  templateUrl: '../object-menu/object-menu.component.html',
 })
 export class ModuleMenuComponent extends ObjectMenuComponent implements OnChanges {
   constructor(

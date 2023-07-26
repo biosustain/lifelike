@@ -10,11 +10,10 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { EffectsModule } from '@ngrx/effects';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
-import { LinksPanelComponent } from 'app/drawing-tool/components/links-panel.component';
 
 import { AngularSplitModule } from 'angular-split';
 import { MessageDialogComponent } from './components/dialog/message-dialog.component';
@@ -26,22 +25,15 @@ import { AccountsService } from './services/accounts.service';
 import { DataTransferDataService } from './services/data-transfer-data.service';
 import { SessionStorageService } from './services/session-storage.service';
 import { InternalSearchService } from './services/internal-search.service';
-import { ModuleModule } from './modules/module/module.module';
 import components from './components';
 import directives from './directives';
 import pipes, { TruncatePipe } from './pipes';
 import providers from './providers';
-import modules from './modules';
 
 @NgModule({
-  entryComponents: [
-    MessageDialogComponent,
-    ProgressDialogComponent,
-    CopyLinkDialogComponent,
-    LinksPanelComponent,
-  ],
+  entryComponents: [MessageDialogComponent, ProgressDialogComponent, CopyLinkDialogComponent],
   imports: [
-    ...modules,
+    MatTooltipModule,
     CommonModule,
     HttpClientModule,
     FlexLayoutModule,
@@ -54,11 +46,7 @@ import modules from './modules';
     TextFieldModule,
     NgbModule,
   ],
-  declarations: [
-    ...directives,
-    ...components,
-    ...pipes,
-  ],
+  declarations: [...directives, ...components, ...pipes],
   providers: [
     TruncatePipe,
     MatSnackBar,
@@ -68,13 +56,12 @@ import modules from './modules';
     InternalSearchService,
     AccountsService,
     DataTransferDataService,
-    ...providers
+    ...providers,
   ],
   // exported modules are visible to modules that import this one
   exports: [
     // Modules
     CommonModule,
-    ModuleModule,
     HttpClientModule,
     FlexLayoutModule,
     FormsModule,

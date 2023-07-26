@@ -1,4 +1,4 @@
-import { compileFind } from '../find';
+import { compileFind } from './index';
 
 export enum MatchPriority {
   NONE,

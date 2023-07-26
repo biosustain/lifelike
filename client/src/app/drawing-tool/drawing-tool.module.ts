@@ -50,6 +50,7 @@ import { DrawingToolPromptComponent } from './components/prompt/prompt.component
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
     MapComponent,
+    LinksPanelComponent,
     InfoViewPanelComponent,
     LinkEditDialogComponent,
   ],

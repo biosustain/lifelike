@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
@@ -89,7 +90,7 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     ObjectTableComponent,
     AppCdkTableColgroupBackportComponent,
   ],
-  imports: [SharedModule],
+  imports: [MatMenuModule, SharedModule],
   entryComponents: [
     ObjectDeleteDialogComponent,
     ProjectEditDialogComponent,

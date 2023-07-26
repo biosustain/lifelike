@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { MatTreeModule } from '@angular/material/tree';
 
 import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -33,7 +34,7 @@ const components = [
 ];
 
 @NgModule({
-  imports: [SharedModule, DrawingToolModule, FileBrowserModule],
+  imports: [SharedModule, DrawingToolModule, FileBrowserModule, MatTreeModule],
   entryComponents: [
     AdvancedSearchDialogComponent,
     RejectedOptionsDialogComponent,

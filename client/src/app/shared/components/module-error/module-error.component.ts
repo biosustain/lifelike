@@ -5,8 +5,8 @@ import { Observable, of } from 'rxjs';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
-import { UserError } from '../../../../exceptions';
-import { ErrorHandler } from '../../../../services/error-handler.service';
+import { UserError } from '../../exceptions';
+import { ErrorHandler } from '../../services/error-handler.service';
 
 @Component({
   selector: 'app-module-error',
