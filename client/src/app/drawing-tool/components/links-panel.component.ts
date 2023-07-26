@@ -14,7 +14,7 @@ import {
   URIData,
 } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { VISUALIZER_URI_TOKEN } from 'app/visualization/providers/visualizer-object-data.provider';

@@ -12,7 +12,7 @@ import {
 
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 

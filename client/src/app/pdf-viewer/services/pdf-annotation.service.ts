@@ -34,7 +34,8 @@ import {
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 

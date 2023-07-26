@@ -1,4 +1,4 @@
-import { ReferenceType } from 'app/shared/references';
+import { ReferenceType } from 'app/shared/schemas/references';
 import { WithOptional, WithRequired } from 'app/shared/utils/types';
 
 export interface UniversalGraphRelationship {

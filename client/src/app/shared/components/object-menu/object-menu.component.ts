@@ -22,7 +22,6 @@ import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 @Component({
   selector: 'app-object-menu',

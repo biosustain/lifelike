@@ -1,6 +1,6 @@
 import { first } from 'lodash-es';
 
-import { REGEX } from '../regex';
+import { REGEX } from './regex';
 
 type TextWrappingMetrics = Pick<TextMetrics, 'width'>;
 

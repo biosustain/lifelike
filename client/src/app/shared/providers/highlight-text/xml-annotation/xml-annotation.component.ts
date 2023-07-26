@@ -9,7 +9,8 @@ import {
 
 import Color from 'color';
 
-import { ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
+import { EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import {
   Hyperlink,
   Reference,
@@ -19,11 +20,11 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
-import { SEARCH_LINKS } from '../../../links';
-import { annotationTypesMap } from '../../../annotation-styles';
+import { SEARCH_LINKS } from '../../../constants/links';
+import { annotationTypesMap } from '../../../styles/annotation/annotation-styles';
 import { HighlightTextService, XMLTag } from '../../../services/highlight-text.service';
-import { WorkspaceManager } from '../../../workspace-manager';
 
 @Component({
   selector: 'app-xml-annotation',

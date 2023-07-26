@@ -4,10 +4,11 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable, Subject } from 'rxjs';
 import { map, mergeMap, scan, shareReplay } from 'rxjs/operators';
 
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
+
 import { BackgroundTask } from '../../rxjs/background-task';
 import { ResultList, ResultQuery } from '../../schemas/common';
 import { CollectionModel } from '../../utils/collection-model';
-import { WorkspaceManager } from '../../workspace-manager';
 
 export abstract class ResultListComponent<O, R, RL extends ResultList<R> = ResultList<R>>
   implements OnInit, OnDestroy

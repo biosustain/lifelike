@@ -8,8 +8,8 @@ import { finalize, tap } from 'rxjs/operators';
 
 import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ModelList } from 'app/shared/models';
-import { nonEmptyList } from 'app/shared/validators';
+import { ModelList } from 'app/shared/utils/models';
+import { nonEmptyList } from 'app/shared/utils/forms/validators';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';

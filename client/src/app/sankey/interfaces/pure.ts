@@ -1,5 +1,5 @@
 /**
- * Separated from interfaces.ts so it can be imported in webworker enviroment
+ * Separated from graph-type.ts so it can be imported in webworker enviroment
  */
 import { Color } from 'd3-color';
 

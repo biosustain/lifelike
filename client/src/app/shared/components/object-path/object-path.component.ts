@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
 
 @Component({

@@ -5,7 +5,7 @@ import { first as _first } from 'lodash/fp';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { EdgeDeletion } from 'app/graph-viewer/actions/edges';
 import { NodeDeletion } from 'app/graph-viewer/actions/nodes';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { GraphAction } from 'app/graph-viewer/actions/actions';
 import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { GroupDeletion } from 'app/graph-viewer/actions/groups';

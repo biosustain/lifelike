@@ -13,8 +13,8 @@ import {
 } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';

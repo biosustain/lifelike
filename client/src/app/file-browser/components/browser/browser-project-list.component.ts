@@ -6,7 +6,7 @@ import { mergeMap, shareReplay, startWith, switchMap, map } from 'rxjs/operators
 import { select } from '@ngrx/store';
 import { isNil } from 'lodash-es';
 
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PaginatedRequestOptions } from 'app/shared/schemas/common';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';

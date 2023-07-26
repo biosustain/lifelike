@@ -21,7 +21,10 @@ import {
 import { RectangleNode } from 'app/graph-viewer/utils/canvas/graph-nodes/rectangle-node';
 import { TextAlignment, TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FontIconNode } from 'app/graph-viewer/utils/canvas/graph-nodes/font-icon-node';
-import { AnnotationStyle, annotationTypesMap } from 'app/shared/annotation-styles';
+import {
+  AnnotationStyle,
+  annotationTypesMap,
+} from 'app/shared/styles/annotation/annotation-styles';
 import { LineEdge } from 'app/graph-viewer/utils/canvas/graph-edges/line-edge';
 import { LINE_HEAD_TYPES, LineHeadType } from 'app/drawing-tool/services/line-head-types';
 import {

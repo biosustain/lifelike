@@ -5,7 +5,7 @@ import { switchMap, map, shareReplay, takeUntil } from 'rxjs/operators';
 import { of, Observable, defer, iif } from 'rxjs';
 
 import { ViewBase } from 'app/sankey/interfaces';
-import EdgeColorCodes from 'app/shared/styles/EdgeColorCode';
+import EdgeColorCodes from 'app/shared/styles/edge-color-code/EdgeColorCode';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { ControllerService } from 'app/sankey/services/controller.service';
 import { BaseControllerService } from 'app/sankey/services/base-controller.service';

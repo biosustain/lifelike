@@ -1,7 +1,13 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Component, Input } from '@angular/core';
 
-import { Pane, PaneIDs, Tab, TabDefaults, WorkspaceManager } from 'app/shared/workspace-manager';
+import {
+  Pane,
+  PaneIDs,
+  Tab,
+  TabDefaults,
+  WorkspaceManager,
+} from 'app/workspace/services/workspace-manager';
 
 @Component({
   selector: 'app-workspace-pane',

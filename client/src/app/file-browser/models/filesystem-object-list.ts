@@ -1,4 +1,4 @@
-import { ModelList } from 'app/shared/models';
+import { ModelList } from 'app/shared/utils/models';
 
 import { FilesystemObject } from './filesystem-object';
 

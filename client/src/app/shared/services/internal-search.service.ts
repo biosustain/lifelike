@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
+import {
+  WorkspaceManager,
+  WorkspaceNavigationExtras,
+} from 'app/workspace/services/workspace-manager';
 import { GraphSearchParameters } from 'app/search/graph-search';
 import { getGraphQueryParams, getContentSearchQueryParams } from 'app/search/utils/search';
 

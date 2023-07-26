@@ -1,6 +1,6 @@
 import { startCase } from 'lodash-es';
 
-import { ModelList } from 'app/shared/models';
+import { ModelList } from 'app/shared/utils/models';
 import { AnnotationChangeExclusionMeta, Meta } from 'app/pdf-viewer/annotation-type';
 import { AppUser } from 'app/interfaces';
 

@@ -16,7 +16,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';

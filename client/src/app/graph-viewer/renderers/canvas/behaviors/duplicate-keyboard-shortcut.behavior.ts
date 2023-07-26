@@ -8,7 +8,7 @@ import {
   UniversalGraphNodeTemplate,
 } from 'app/drawing-tool/services/interfaces';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
+import { isCtrlOrMetaPressed } from 'app/shared/utils/dom';
 import { createNode, createGroupNode } from 'app/graph-viewer/utils/objects';
 
 import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../behaviors';

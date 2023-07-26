@@ -28,7 +28,7 @@ import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { SankeyId, TypeContext, SankeyLinkInterface } from 'app/sankey/interfaces';
 import { debug } from 'app/shared/rxjs/debug';
 import { d3Callback, d3EventCallback } from 'app/shared/utils/d3';
-import { closePopups } from 'app/shared/DOMutils';
+import { closePopups } from 'app/shared/utils/dom';
 
 import { positiveNumber } from '../utils';
 import { SankeySelectionService } from '../services/selection.service';

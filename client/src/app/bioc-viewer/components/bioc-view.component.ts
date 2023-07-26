@@ -16,17 +16,18 @@ import { BehaviorSubject, combineLatest, defer, Observable, of, Subject, Subscri
 import { map } from 'rxjs/operators';
 import jQueryType from 'jquery';
 
-import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { BiocFile } from 'app/interfaces/bioc-files.interface';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
-import { SearchControlComponent } from 'app/shared/components/search-control.component';
+import { SearchControlComponent } from 'app/shared/components/search-control/search-control.component';
 import { BiocAnnotationLocation, Location } from 'app/pdf-viewer/annotation-type';
-import { SEARCH_LINKS } from 'app/shared/links';
+import { SEARCH_LINKS } from 'app/shared/constants/links';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';

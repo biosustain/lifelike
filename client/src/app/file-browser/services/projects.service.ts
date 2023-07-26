@@ -10,7 +10,7 @@ import {
   ResultMapping,
   SingleResult,
 } from 'app/shared/schemas/common';
-import { ModelList } from 'app/shared/models';
+import { ModelList } from 'app/shared/utils/models';
 import { serializePaginatedParams } from 'app/shared/utils/params';
 
 import { ProjectList } from '../models/project-list';

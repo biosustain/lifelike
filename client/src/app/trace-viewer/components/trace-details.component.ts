@@ -3,7 +3,7 @@ import { Component, Input, ViewEncapsulation, SimpleChanges, OnChanges } from '@
 import { isNil } from 'lodash-es';
 import { Options } from 'vis-network';
 
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/styles/annotation/annotation-styles';
 import { networkEdgeSmoothers } from 'app/shared/components/vis-js-network/vis-js-network.constants';
 
 @Component({

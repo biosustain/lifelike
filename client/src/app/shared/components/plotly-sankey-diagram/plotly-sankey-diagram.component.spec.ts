@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 import { MockComponents } from 'ng-mocks';
 
-import { LegendComponent } from '../legend.component';
+import { LegendComponent } from '../legend/legend.component';
 import { PlotlySankeyDiagramComponent } from './plotly-sankey-diagram.component';
 
 describe('PlotlySankeyDiagramComponent', () => {

@@ -27,7 +27,7 @@ import {
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { TrackingService } from 'app/shared/services/tracking.service';
-import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/constants/tracking';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import {

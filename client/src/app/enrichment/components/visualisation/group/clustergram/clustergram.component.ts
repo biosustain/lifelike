@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { KeyValue } from '@angular/common';
 
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/styles/annotation/annotation-styles';
 import {
   EnrichWithGOTermsResult,
   EnrichmentVisualisationService,

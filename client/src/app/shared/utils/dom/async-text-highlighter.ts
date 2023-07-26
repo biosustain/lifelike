@@ -19,7 +19,7 @@ import {
   NodeTextRange,
   nonStaticPositionPredicate,
   walkParentElements,
-} from '../dom';
+} from './index';
 import { createResizeObservable } from '../../rxjs/resize-observable';
 import { ExtendedMap } from '../types';
 import { intersection } from '../../rxjs/intersection-observable';

@@ -3,8 +3,9 @@ import { Router } from '@angular/router';
 
 import { assign, escapeRegExp as _escapeRegExp, first, merge as _merge, unary } from 'lodash-es';
 
-import { SEARCH_LINKS } from 'app/shared/links';
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
+import { SEARCH_LINKS } from 'app/shared/constants/links';
+import { DatabaseLink, EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 

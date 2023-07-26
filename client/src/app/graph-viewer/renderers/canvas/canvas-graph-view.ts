@@ -31,7 +31,7 @@ import { SolidLine } from 'app/graph-viewer/utils/canvas/lines/solid';
 import { GROUP_LABEL, IMAGE_LABEL } from 'app/shared/constants';
 import { compileFind, FindOptions } from 'app/shared/utils/find';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
-import { closePopups } from 'app/shared/DOMutils';
+import { closePopups } from 'app/shared/utils/dom';
 import { inDevMode } from 'app/shared/utils/debug';
 
 import { CanvasBehavior, DragBehaviorEvent, isStopResult } from '../behaviors';

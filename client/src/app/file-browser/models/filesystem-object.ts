@@ -11,7 +11,7 @@ import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/styles/annotation/annotation-styles';
 import { FAClass, MimeTypes, Unicodes } from 'app/shared/constants';
 import { CollectionModel, ObservableObject } from 'app/shared/utils/collection-model';
 import { DragImage } from 'app/shared/utils/drag';

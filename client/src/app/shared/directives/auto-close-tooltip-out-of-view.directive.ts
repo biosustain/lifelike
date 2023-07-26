@@ -4,7 +4,7 @@ import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { map, switchMap, takeUntil, takeWhile, tap } from 'rxjs/operators';
 import { fromEvent, Subscription } from 'rxjs';
 
-import { enclosingScrollableView, isWithinScrollableView } from '../DOMutils';
+import { enclosingScrollableView, isWithinScrollableView } from '../utils/dom';
 
 /**
  * Auto-focus the given element on load.

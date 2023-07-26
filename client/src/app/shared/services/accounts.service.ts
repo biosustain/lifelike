@@ -7,8 +7,8 @@ import { map } from 'rxjs/operators';
 import { AppUser } from 'app/interfaces';
 
 import { ResultList } from '../schemas/common';
-import { ModelList } from '../models';
-import { AccountSearchRequest } from '../schema/accounts';
+import { ModelList } from '../utils/models';
+import { AccountSearchRequest } from '../schemas/accounts';
 
 @Injectable()
 export class AccountsService {

@@ -42,13 +42,17 @@ import {
 } from 'rxjs';
 import { assign, isNil, omitBy, zip } from 'lodash-es';
 
-import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
+import {
+  ModuleAwareComponent,
+  ModuleProperties,
+  ShouldConfirmUnload,
+} from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphFile } from 'app/shared/schemas/graph-type/graph-type';
 import { SankeyState, ViewBase } from 'app/sankey/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';

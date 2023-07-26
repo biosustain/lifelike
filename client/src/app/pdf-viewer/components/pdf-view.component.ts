@@ -18,15 +18,16 @@ import {
 import { distinctUntilChanged, first, map, switchMap, tap } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ENTITY_TYPE_MAP, ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { mapBlobToBuffer } from 'app/shared/utils/files';
-import { SearchControlComponent } from 'app/shared/components/search-control.component';
+import { SearchControlComponent } from 'app/shared/components/search-control/search-control.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';

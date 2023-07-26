@@ -18,7 +18,7 @@ import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-
 import { ExplainService } from 'app/shared/services/explain.service';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { RecursivePartial } from 'app/shared/utils/types';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
 import { getTermsFromGroup } from '../../../utils/terms';
 import { EntityForm } from './entity-form';

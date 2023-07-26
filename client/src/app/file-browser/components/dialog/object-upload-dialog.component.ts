@@ -7,7 +7,7 @@ import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
-import { ENTITY_TYPE_MAP } from 'app/shared/annotation-types';
+import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';
 
 import { ObjectEditDialogComponent } from './object-edit-dialog.component';

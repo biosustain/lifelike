@@ -11,7 +11,7 @@ import { omit, slice, isObject, uniq, flatMap, pullAt, first } from 'lodash-es';
 
 import { ExtendedWeakMap, ExtendedMap } from 'app/shared/utils/types';
 import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/prioritised-find';
-import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTrace } from 'app/shared/schemas/graph-type/graph-type';
 import { isNotEmpty } from 'app/shared/utils';
 
 import { indexByProperty } from '..';

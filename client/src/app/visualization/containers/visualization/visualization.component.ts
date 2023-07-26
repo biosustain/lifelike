@@ -22,7 +22,7 @@ import {
   VisNode,
 } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import {
   createGraphSearchParamsFromQuery,
   getGraphQueryParams,
@@ -34,7 +34,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { GraphSearchParameters } from 'app/search/graph-search';
 import { TrackingService } from 'app/shared/services/tracking.service';
-import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/constants/tracking';
 import { getURLFromSnapshot } from 'app/shared/utils/router';
 
 import { VisualizationService } from '../../services/visualization.service';

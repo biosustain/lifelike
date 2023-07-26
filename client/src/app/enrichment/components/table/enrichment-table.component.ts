@@ -5,7 +5,7 @@ import { filter, map, shareReplay, switchMap, takeUntil, withLatestFrom } from '
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GenericTableComponent } from 'app/shared/components/table/generic-table.component';
-import { closePopups, relativePosition } from 'app/shared/DOMutils';
+import { closePopups, relativePosition } from 'app/shared/utils/dom';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
 import { NodeTextRange } from 'app/shared/utils/dom';
 

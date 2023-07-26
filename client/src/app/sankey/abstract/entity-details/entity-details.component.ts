@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import * as CryptoJS from 'crypto-js';
 import { map } from 'rxjs/operators';
 
-import { GraphNode } from 'app/shared/providers/graph-type/interfaces';
+import { GraphNode } from 'app/shared/schemas/graph-type/graph-type';
 
 import { parseForRendering } from '../../utils';
 import { ControllerService } from '../../services/controller.service';

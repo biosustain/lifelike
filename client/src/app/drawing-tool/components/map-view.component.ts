@@ -7,10 +7,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
 
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';

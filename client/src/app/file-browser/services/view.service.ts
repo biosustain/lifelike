@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { from, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 import { removeViewModeIfPresent } from 'app/shared/utils/browser';
 import { AppURL } from 'app/shared/utils/url';
 

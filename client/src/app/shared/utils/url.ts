@@ -1,6 +1,6 @@
 import { assign, filter, isEmpty, isMatch, startsWith, isArray } from 'lodash-es';
 
-import { findEntriesKey, findEntriesValue, isNotEmpty } from '../utils';
+import { findEntriesKey, findEntriesValue, isNotEmpty } from './';
 import { InternalURIType, Unicodes } from '../constants';
 
 // tslint:disable-next-line:class-name

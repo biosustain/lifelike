@@ -15,7 +15,7 @@ import { compact, concat } from 'lodash-es';
 
 import { Source, UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ViewService } from 'app/file-browser/services/view.service';
-import { Tab } from 'app/shared/workspace-manager';
+import { Tab } from 'app/workspace/services/workspace-manager';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { CdkNativeDragItegration } from 'app/shared/utils/drag';
 import { MapComponent } from 'app/drawing-tool/components/map.component';

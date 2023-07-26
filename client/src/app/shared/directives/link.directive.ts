@@ -11,9 +11,13 @@ import { LocationStrategy } from '@angular/common';
 
 import { Subscription } from 'rxjs';
 
+import {
+  WorkspaceManager,
+  WorkspaceNavigationExtras,
+} from 'app/workspace/services/workspace-manager';
+
 import { openInternalLink, toValidUrl } from '../utils/browser';
 import { assignDefined } from '../utils/types';
-import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
 /**
  * Implements a version of [routerLink] that works with the workspace manager to load

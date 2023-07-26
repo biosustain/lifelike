@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
 import { ViewService } from 'app/file-browser/services/view.service';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
-import { WorkspaceManager } from '../workspace-manager';
 import { getURLFromSnapshot } from '../utils/router';
 
 @Injectable()

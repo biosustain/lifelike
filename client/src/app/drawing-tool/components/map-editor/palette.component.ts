@@ -1,7 +1,7 @@
 import { Component, OnChanges } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
+import { AnnotationStyle, annotationTypes } from 'app/shared/styles/annotation/annotation-styles';
 
 import { UniversalGraphNode, UniversalGraphNodeTemplate } from '../../services/interfaces';
 import { createNodeDragImage } from '../../utils/drag';

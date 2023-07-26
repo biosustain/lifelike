@@ -4,7 +4,7 @@ import { Color } from 'd3-color';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
 import { shareReplay, map, first } from 'rxjs/operators';
 
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/schemas/graph-type/graph-type';
 import { isNotEmpty } from 'app/shared/utils';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';

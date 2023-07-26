@@ -3,9 +3,12 @@ import { escapeRegExp } from 'lodash-es';
 import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
+import {
+  WorkspaceManager,
+  WorkspaceNavigationExtras,
+} from 'app/workspace/services/workspace-manager';
 
 import { FileTypeShorthand } from '../constants';
-import { WorkspaceManager, WorkspaceNavigationExtras } from '../workspace-manager';
 
 /**
  * Create a valid url string suitable for <a> tag href usage.

@@ -1,7 +1,7 @@
 import { ZoomTransform } from 'd3-zoom';
 
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
-import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
+import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils/dom';
 
 import { CanvasGraphView } from '../canvas-graph-view';
 import {

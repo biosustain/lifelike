@@ -10,7 +10,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { GraphEntityUpdate } from 'app/graph-viewer/actions/graph';
 import { CompoundAction, GraphAction } from 'app/graph-viewer/actions/actions';
-import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/DOMutils';
+import { isCtrlOrMetaPressed, isShiftPressed } from 'app/shared/utils/dom';
 import { GROUP_LABEL } from 'app/shared/constants';
 
 import { CanvasGraphView } from '../canvas-graph-view';

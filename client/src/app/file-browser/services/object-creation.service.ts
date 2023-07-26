@@ -66,7 +66,7 @@ import { Progress, ProgressArguments, ProgressMode } from 'app/interfaces/common
 import { isNotEmpty } from 'app/shared/utils';
 import { idle } from 'app/shared/rxjs/idle-observable';
 import { objectToMixedFormData } from 'app/shared/utils/forms';
-import GraphNS from 'app/shared/providers/graph-type/interfaces';
+import GraphNS from 'app/shared/schemas/graph-type/graph-type';
 
 import {
   ObjectCreateRequest,

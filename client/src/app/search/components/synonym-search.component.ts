@@ -4,7 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { ENTITY_TYPES } from 'app/shared/annotation-types';
+import { ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { ORGANISM_SHORTLIST } from 'app/shared/constants';
 import { uuidv4 } from 'app/shared/utils';
 

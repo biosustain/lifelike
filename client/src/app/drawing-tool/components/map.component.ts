@@ -27,11 +27,11 @@ import {
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { runInContext } from 'lodash';
 
-import { ModuleProperties } from 'app/shared/modules';
+import { ModuleProperties } from 'app/shared/schemas/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { tokenizeQuery } from 'app/shared/utils/find';
 import { mapBlobToBuffer, mapBufferToJson, mapJsonToGraph } from 'app/shared/utils/files';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';

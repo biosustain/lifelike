@@ -13,7 +13,7 @@ import {
   OrderDirection,
 } from 'app/interfaces/annotation-filter.interface';
 import { SortingAlgorithm } from 'app/word-cloud/sorting/sorting-algorithms';
-import { REGEX } from 'app/shared/regex';
+import { REGEX } from 'app/shared/utils/regex';
 
 @Component({
   selector: 'app-annotation-filter',

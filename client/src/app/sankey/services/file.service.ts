@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { GraphFile } from 'app/shared/providers/graph-type/interfaces';
+import { GraphFile } from 'app/shared/schemas/graph-type/graph-type';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 
 import { SankeyFile } from '../model/sankey-document';

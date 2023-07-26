@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash-es';
 
 import { RecursivePartial } from 'app/shared/utils/types';
-import { ModelList } from 'app/shared/models';
+import { ModelList } from 'app/shared/utils/models';
 import { AppUser } from 'app/interfaces';
 
 import { ObjectVersionData } from '../schema';

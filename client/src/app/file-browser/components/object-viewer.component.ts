@@ -9,7 +9,7 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';

@@ -14,7 +14,7 @@ import {
   first,
 } from 'lodash-es';
 
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/schemas/graph-type/graph-type';
 
 import { ControllerService } from '../../services/controller.service';
 import { NotImplemented } from '../../utils/error';

@@ -1,4 +1,4 @@
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/schemas/graph-type/graph-type';
 import { MatchPriority } from 'app/shared/utils/find/prioritised-find';
 
 import { SankeyId } from './pure';

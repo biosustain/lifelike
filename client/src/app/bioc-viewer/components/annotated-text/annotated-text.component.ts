@@ -7,7 +7,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 
-import { SEARCH_LINKS } from 'app/shared/links';
+import { SEARCH_LINKS } from 'app/shared/constants/links';
 
 import { Annotation, Infon } from '../bioc.format';
 

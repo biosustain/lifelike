@@ -6,13 +6,13 @@ import { VisualizationComponent } from 'app/visualization/containers/visualizati
 import { GraphSearchComponent } from 'app/search/components/graph-search.component';
 import { ObjectBrowserComponent } from 'app/file-browser/components/object-browser.component';
 import { LoginComponent } from 'app/auth/components/login.component';
-import { DashboardComponent } from 'app/dashboard.component';
+import { DashboardComponent } from 'app/dashboard/dashboard.component';
 import { AdminGuard } from 'app/admin/services/admin-guard.service';
 import { LoginGuard } from 'app/auth/guards/login-guard.service';
 import { LifelikeAuthGuard } from 'app/auth/guards/auth-guard.service';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { UserSettingsComponent } from 'app/users/components/user-settings.component';
-import { KgStatisticsComponent } from 'app/kg-statistics.component';
+import { KgStatisticsComponent } from 'app/kg-statistics/kg-statistics.component';
 import { TermsOfServiceComponent } from 'app/users/components/terms-of-service.component';
 import { WorkspaceComponent } from 'app/workspace/components/workspace.component';
 import { UnloadConfirmationGuard } from 'app/shared/guards/UnloadConfirmation.guard';

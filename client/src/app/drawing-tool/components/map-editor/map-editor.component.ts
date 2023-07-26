@@ -30,15 +30,15 @@ import { ImageUploadBehavior } from 'app/graph-viewer/renderers/canvas/behaviors
 import { GroupCreation, GroupExtension } from 'app/graph-viewer/actions/groups';
 import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entity-move.behavior';
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
-import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
+import { isCtrlOrMetaPressed } from 'app/shared/utils/dom';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { ShouldConfirmUnload } from 'app/shared/modules';
+import { ShouldConfirmUnload } from 'app/shared/schemas/modules';
 import { ImageBlob } from 'app/shared/utils/forms';
 import { createGroupNode } from 'app/graph-viewer/utils/objects';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { GraphActionsService } from 'app/drawing-tool/services/graph-actions.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';

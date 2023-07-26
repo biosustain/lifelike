@@ -25,10 +25,12 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
+import { LinksPanelComponent } from './components/links-panel.component';
 import { DrawingToolPromptComponent } from './components/prompt/prompt.component';
 
 @NgModule({
   declarations: [
+    LinksPanelComponent,
     DrawingToolPromptComponent,
     MapEditorComponent,
     PaletteComponent,

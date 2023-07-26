@@ -15,9 +15,12 @@ import { Observable, ReplaySubject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 
-import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
+import {
+  annotationTypes,
+  annotationTypesMap,
+} from 'app/shared/styles/annotation/annotation-styles';
 import { RecursivePartial } from 'app/shared/utils/types';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
 import {

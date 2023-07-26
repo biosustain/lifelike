@@ -19,7 +19,7 @@ import { flow as _flow, pick as _pick, some as _some, values as _values } from '
 import { UniversalGraphEdge } from 'app/drawing-tool/services/interfaces';
 import { LINE_HEAD_TYPES } from 'app/drawing-tool/services/line-head-types';
 import { RecursivePartial } from 'app/shared/utils/types';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { PALETTE_COLORS } from 'app/drawing-tool/services/palette';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';

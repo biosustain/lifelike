@@ -3,10 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 
 import { map } from 'rxjs/operators';
 
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/styles/annotation/annotation-styles';
 import { EnrichWithGOTermsResult } from 'app/enrichment/services/enrichment-visualisation.service';
 import { WordCloudNode } from 'app/shared/components/word-cloud/word-cloud.component';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
 import {
   paramsToEnrichmentTableLink,

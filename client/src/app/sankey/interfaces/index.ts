@@ -1,4 +1,4 @@
-import { GraphTraceNetwork } from 'app/shared/providers/graph-type/interfaces';
+import { GraphTraceNetwork } from 'app/shared/schemas/graph-type/graph-type';
 
 import { PRESCALERS } from './prescalers';
 import { ALIGN_ID, ALIGNS } from './align';

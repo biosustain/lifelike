@@ -1,7 +1,7 @@
 import { isNil } from 'lodash-es';
 
 import { GraphData } from 'app/interfaces/vis-js.interface';
-import { annotationTypesMap } from 'app/shared/annotation-styles';
+import { annotationTypesMap } from 'app/shared/styles/annotation/annotation-styles';
 
 import { TraceNode, TraceData } from './interfaces';
 

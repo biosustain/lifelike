@@ -29,7 +29,7 @@ import {
 } from 'rxjs/operators';
 import { max } from 'd3';
 
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/schemas/graph-type/graph-type';
 import {
   SankeyState,
   SankeyFileOptions,
@@ -45,7 +45,7 @@ import { $freezeInDev } from 'app/shared/rxjs/development';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { TrackingService } from 'app/shared/services/tracking.service';
-import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
+import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/constants/tracking';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { isNotEmpty } from 'app/shared/utils';
 

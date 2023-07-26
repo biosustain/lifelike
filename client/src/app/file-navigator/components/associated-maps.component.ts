@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';

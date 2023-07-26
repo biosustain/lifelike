@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 import { CollectionModel } from 'app/shared/utils/collection-model';
-import { WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
+import { WorkspaceNavigationExtras } from 'app/workspace/services/workspace-manager';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectListService } from '../services/object-list.service';

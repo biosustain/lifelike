@@ -7,10 +7,10 @@ import { filter, map, shareReplay, startWith, take, tap } from 'rxjs/operators';
 import { FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { fTSQueryRecordLoadingMock } from 'app/shared/mocks/loading/graph-search';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { LegendService } from 'app/shared/services/legend.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { promiseOfOne } from 'app/shared/rxjs/to-promise';
 
 import { GraphSearchParameters } from '../graph-search';

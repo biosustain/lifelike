@@ -1,6 +1,6 @@
 import visNetwork from 'vis-network';
 
-import Graph from 'app/shared/providers/graph-type/interfaces';
+import Graph from 'app/shared/schemas/graph-type/graph-type';
 
 /**
  * visNetwork.Node interface extended with:

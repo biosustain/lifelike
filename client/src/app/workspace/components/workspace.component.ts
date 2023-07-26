@@ -12,8 +12,8 @@ import {
 
 import { Observable } from 'rxjs';
 
-import { Pane, PaneIDs, WorkspaceManager } from 'app/shared/workspace-manager';
-import { ShouldConfirmUnload } from 'app/shared/modules';
+import { Pane, PaneIDs, WorkspaceManager } from 'app/workspace/services/workspace-manager';
+import { ShouldConfirmUnload } from 'app/shared/schemas/modules';
 
 import { SplitComponent } from 'angular-split';
 

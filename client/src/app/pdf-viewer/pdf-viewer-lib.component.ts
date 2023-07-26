@@ -43,7 +43,8 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 
-import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
+import { EntityType } from 'app/shared/schemas/annotation-types';
+import { ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
