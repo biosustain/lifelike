@@ -24,7 +24,7 @@ import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } fro
 
 import { timeoutPromise } from 'app/shared/utils/promise';
 
-import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
+import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './module_interfaces';
 import {
   TabData,
   WorkspaceSessionLoader,

@@ -24,7 +24,7 @@ import {
 } from 'lodash/fp';
 import { isEmpty } from 'lodash-es';
 
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/module_interfaces';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {

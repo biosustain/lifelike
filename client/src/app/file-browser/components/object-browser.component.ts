@@ -14,7 +14,7 @@ import {
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/module_interfaces';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';

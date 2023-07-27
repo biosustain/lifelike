@@ -10,7 +10,7 @@ import {
   Meta,
 } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
-import { ImageBlob } from 'app/shared/utils/forms';
+import { ImageBlob } from 'app/shared/utils/form';
 
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 

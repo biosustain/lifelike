@@ -15,7 +15,7 @@ import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/module_interfaces';
 import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';

@@ -32,8 +32,8 @@ import { MovableEntity } from 'app/graph-viewer/renderers/canvas/behaviors/entit
 import { DuplicateKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/duplicate-keyboard-shortcut.behavior';
 import { isCtrlOrMetaPressed } from 'app/shared/DOMutils';
 import { ModuleContext } from 'app/shared/services/module-context.service';
-import { ShouldConfirmUnload } from 'app/shared/modules';
-import { ImageBlob } from 'app/shared/utils/forms';
+import { ShouldConfirmUnload } from 'app/shared/module_interfaces';
+import { ImageBlob } from 'app/shared/utils/form';
 import { createGroupNode } from 'app/graph-viewer/utils/objects';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
