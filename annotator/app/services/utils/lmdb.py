@@ -1,16 +1,12 @@
 from app.services.constants import DatabaseType, EntityIdStr
 
 
-def create_ner_type_anatomy(
-    id: str,
-    name: str,
-    synonym: str
-) -> dict:
+def create_ner_type_anatomy(id: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.ANATOMY.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }
 
 
@@ -41,23 +37,17 @@ def create_ner_type_disease(id: str, name: str, synonym: str) -> dict:
     }
 
 
-def create_ner_type_food(
-    id: str,
-    name: str,
-    synonym: str
-) -> dict:
+def create_ner_type_food(id: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.FOOD.value: id,
         'id_type': DatabaseType.MESH.value,
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }
 
 
 def create_ner_type_gene(
-    name: str,
-    synonym: str,
-    data_source: str = DatabaseType.NCBI_GENE.value
+    name: str, synonym: str, data_source: str = DatabaseType.NCBI_GENE.value
 ) -> dict:
     return {
         'id_type': data_source,
@@ -66,11 +56,7 @@ def create_ner_type_gene(
     }
 
 
-def create_ner_type_phenomena(
-    id: str,
-    name: str,
-    synonym: str
-) -> dict:
+def create_ner_type_phenomena(id: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.PHENOMENA.value: id,
         'id_type': DatabaseType.MESH.value,
@@ -79,11 +65,7 @@ def create_ner_type_phenomena(
     }
 
 
-def create_ner_type_phenotype(
-    id: str,
-    name: str,
-    synonym: str
-) -> dict:
+def create_ner_type_phenotype(id: str, name: str, synonym: str) -> dict:
     return {
         EntityIdStr.PHENOTYPE.value: id,
         'id_type': DatabaseType.CUSTOM.value,
@@ -128,7 +110,7 @@ def create_ner_type_company(id: str, name: str, synonym: str) -> dict:
         EntityIdStr.COMPANY.value: id,
         'id_type': '',
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }
 
 
@@ -137,7 +119,7 @@ def create_ner_type_entity(id: str, name: str, synonym: str) -> dict:
         EntityIdStr.ENTITY.value: id,
         'id_type': '',
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }
 
 
@@ -146,7 +128,7 @@ def create_ner_type_lab_sample(id: str, name: str, synonym: str) -> dict:
         EntityIdStr.LAB_SAMPLE.value: id,
         'id_type': '',
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }
 
 
@@ -155,5 +137,5 @@ def create_ner_type_lab_strain(id: str, name: str, synonym: str) -> dict:
         EntityIdStr.LAB_STRAIN.value: id,
         'id_type': '',
         'name': name,
-        'synonym': synonym
+        'synonym': synonym,
     }

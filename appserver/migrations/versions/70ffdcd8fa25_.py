@@ -15,6 +15,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files, GlobalList
 
@@ -66,19 +67,21 @@ def data_upgrades():
         'UNIPROT': DatabaseType.UNIPROT.value,
         'NCBI Gene': DatabaseType.NCBI_GENE.value,
         'NCBI Species': DatabaseType.NCBI_TAXONOMY.value,
-        'PUBCHEM': DatabaseType.PUBCHEM.value
+        'PUBCHEM': DatabaseType.PUBCHEM.value,
     }
 
     tableclause1 = table(
         'files',
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB))
+        column('custom_annotations', postgresql.JSONB),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id,
-        tableclause1.c.custom_annotations
-    ]).where(tableclause1.c.custom_annotations != '[]'))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause1.c.id, tableclause1.c.custom_annotations]).where(
+            tableclause1.c.custom_annotations != '[]'
+        )
+    )
 
     """Setting window chunk to 1 because we were having OOM issues
     since the JSONs can be very big (on PROD)
@@ -111,10 +114,11 @@ def data_upgrades():
             session.rollback()
             raise
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id,
-        tableclause1.c.annotations
-    ]).where(tableclause1.c.annotations != '[]'))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause1.c.id, tableclause1.c.annotations]).where(
+            tableclause1.c.annotations != '[]'
+        )
+    )
 
     for chunk in window_chunk(files, 1):
         need_to_update = []
@@ -123,10 +127,14 @@ def data_upgrades():
 
             if type(annotations_json) is list:
                 # stage has bad data from previous bad implementation
-                annotations = annotations_json[0]['documents'][0]['passages'][0]['annotations']
+                annotations = annotations_json[0]['documents'][0]['passages'][0][
+                    'annotations'
+                ]
             else:
                 try:
-                    annotations = annotations_json['documents'][0]['passages'][0]['annotations']
+                    annotations = annotations_json['documents'][0]['passages'][0][
+                        'annotations'
+                    ]
                 except Exception:
                     # odd that the where clause above failed to filter this out
                     # is it possible '[]' in an update is different from default '[]'?
@@ -152,9 +160,13 @@ def data_upgrades():
 
             if type(annotations_json) is list:
                 # stage has bad data from previous bad implementation
-                annotations_json[0]['documents'][0]['passages'][0]['annotations'] = new_annotations  # noqa
+                annotations_json[0]['documents'][0]['passages'][0][
+                    'annotations'
+                ] = new_annotations  # noqa
             else:
-                annotations_json['documents'][0]['passages'][0]['annotations'] = new_annotations
+                annotations_json['documents'][0]['passages'][0][
+                    'annotations'
+                ] = new_annotations
             need_to_update.append({'id': fid, 'annotations': annotations_json})
         try:
             session.bulk_update_mappings(Files, need_to_update)
@@ -171,12 +183,14 @@ def data_upgrades():
         'global_list',
         column('id', sa.Integer),
         column('type', sa.String),
-        column('annotation', postgresql.JSONB))
+        column('annotation', postgresql.JSONB),
+    )
 
-    globals = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause2.c.id,
-        tableclause2.c.annotation
-    ]).where(tableclause2.c.type == 'inclusion'))
+    globals = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause2.c.id, tableclause2.c.annotation]).where(
+            tableclause2.c.type == 'inclusion'
+        )
+    )
 
     for chunk in window_chunk(globals, 1):
         need_to_update = []

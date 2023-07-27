@@ -16,6 +16,14 @@ ATTR_NAMES = {
 
 class SpeciesParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'species.dat', NODE_SPECIES, ATTR_NAMES, {})
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_GENOME, PROP_TAX_ID, PROP_STRAIN_NAME, PROP_SYNONYMS]
-
+        DataFileParser.__init__(
+            self, db_name, tarfile, 'species.dat', NODE_SPECIES, ATTR_NAMES, {}
+        )
+        self.attrs = [
+            PROP_BIOCYC_ID,
+            PROP_NAME,
+            PROP_GENOME,
+            PROP_TAX_ID,
+            PROP_STRAIN_NAME,
+            PROP_SYNONYMS,
+        ]

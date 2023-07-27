@@ -20,7 +20,8 @@ def _call_nlp_service(model: str, text: str) -> dict:
             NLP_SERVICE_ENDPOINT,
             json={'model': model, 'sentence': text},
             headers={'secret': NLP_SERVICE_SECRET},
-            timeout=REQUEST_TIMEOUT)
+            timeout=REQUEST_TIMEOUT,
+        )
         req.raise_for_status()
         return req.json()
 
@@ -30,27 +31,31 @@ def _call_nlp_service(model: str, text: str) -> dict:
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
             additional_msgs=(f'Status: {e.response.status_code}, Body: {e.response.text}',),
-            code=e.response.status_code)
+            code=e.response.status_code
+        ) from e
 
     # Timeout either when connecting or reading response
     except requests.exceptions.Timeout:
         raise ServerException(
             'NLP Service timeout',
             'Request to NLP service timed out.',
-            code=HTTPStatus.GATEWAY_TIMEOUT)
+            code=HTTPStatus.GATEWAY_TIMEOUT
+        ) from e
 
     # Could not decode JSON response
     except ValueError:
         raise ServerException(
             'NLP Service Error',
-            'Error while parsing JSON response from NLP Service')
+            'Error while parsing JSON response from NLP Service'
+        ) from e
 
     # Other request errors
     except requests.exceptions.RequestException:
         raise ServerException(
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
-            code=HTTPStatus.SERVICE_UNAVAILABLE)
+            code=HTTPStatus.SERVICE_UNAVAILABLE
+        ) from e
 
 
 def predict(text: str, entities: Set[str]):
@@ -66,14 +71,14 @@ def predict(text: str, entities: Set[str]):
         EntityType.GENE.value: 'bc2gm_v1_gene',
         # TODO: disease has two models
         # for now use ncbi because it has better results
-        EntityType.DISEASE.value: 'bc2gm_v1_ncbi_disease'
+        EntityType.DISEASE.value: 'bc2gm_v1_ncbi_disease',
     }
 
     nlp_model_types = {
         'bc2gm_v1_chem': EntityType.CHEMICAL.value,
         'bc2gm_v1_gene': EntityType.GENE.value,
         'bc2gm_v1_ncbi_disease': EntityType.DISEASE.value,
-        'bc2gm_v1_bc5cdr_disease': EntityType.DISEASE.value
+        'bc2gm_v1_bc5cdr_disease': EntityType.DISEASE.value,
     }
 
     entity_results: Dict[str, set] = {
@@ -86,7 +91,7 @@ def predict(text: str, entities: Set[str]):
         EntityType.PHENOMENA.value: set(),
         EntityType.PHENOTYPE.value: set(),
         EntityType.PROTEIN.value: set(),
-        EntityType.SPECIES.value: set()
+        EntityType.SPECIES.value: set(),
     }
 
     models = []
@@ -95,15 +100,18 @@ def predict(text: str, entities: Set[str]):
     else:
         with mp.Pool(processes=4) as pool:
             models = pool.starmap(
-                _call_nlp_service, [(
-                    nlp_models[model],
-                    text
-                ) for model in entities if nlp_models.get(model)])
+                _call_nlp_service,
+                [
+                    (nlp_models[model], text)
+                    for model in entities
+                    if nlp_models.get(model)
+                ],
+            )
 
     for model in models:
         for results in model['results']:
             for token in results['annotations']:
-                token_offset = (token['start_pos'], token['end_pos']-1)
+                token_offset = (token['start_pos'], token['end_pos'] - 1)
                 entity_results[nlp_model_types[results['model']]].add(token_offset)
 
     return NLPResults(

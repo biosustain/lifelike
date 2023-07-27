@@ -44,6 +44,7 @@ x-appserver: &appserver
     - DOMAIN=http://localhost:4200
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
     - ASSETS_FOLDER=/home/n4j/assets/
+    # - OPENAI_API_KEY="<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
   volumes:
     - ./appserver:/home/n4j
     # - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
@@ -275,7 +276,7 @@ services:
     ports:
       - 8529:8529
     volumes:
-      - ./arangodb/bin:/home/dbuser/bin  # the /home/dbuser directory is setup in the Dockerfile
+      - ./arangodb/bin:/home/dbuser/bin # the /home/dbuser directory is setup in the Dockerfile
       - ./arangodb/data:/var/lib/arangodb3
       - ./arangodb/apps:/var/lib/arangodb3-apps
     networks:

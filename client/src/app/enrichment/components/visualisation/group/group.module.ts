@@ -11,9 +11,7 @@ import { ClustergramModule } from './clustergram/clustergram.module';
 import { CloudViewerModule } from './word-cloud/cloud-viewer.module';
 
 @NgModule({
-  declarations: [
-    GroupComponent
-  ],
+  declarations: [GroupComponent],
   imports: [
     CommonModule,
     SharedModule,
@@ -21,11 +19,8 @@ import { CloudViewerModule } from './word-cloud/cloud-viewer.module';
     WordCloudModule,
     TableCompleteComponentModule,
     ClustergramModule,
-    CloudViewerModule
+    CloudViewerModule,
   ],
-  exports: [
-    GroupComponent
-  ]
+  exports: [GroupComponent],
 })
-export class GroupModule {
-}
+export class GroupModule {}

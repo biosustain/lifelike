@@ -7,8 +7,12 @@
       name="file"
       hidden
       [accept]="accept"
-      (change)="onFileChange($event)">
+      (change)="onFileChange($event)"
+    />
     <div class="ml-3 text-truncate" *ngIf="fileName">{{ fileName }}</div>
   </div>
-  <div>Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute or two to parse.</div>
+  <div>
+    Select the excel file to upload; allowed file extensions (.xlsx). Large files may take a minute
+    or two to parse.
+  </div>
 </div>

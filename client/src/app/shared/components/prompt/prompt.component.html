@@ -1,0 +1,84 @@
+<div class="d-flex">
+  <div
+    ngbDropdown
+    class="d-inline-block flex-grow-1"
+    placement="bottom end"
+    *ngIf="contextsController$ | async as controller"
+  >
+    <button
+      class="btn btn-secondary w-100 text-truncate"
+      ngbDropdownToggle
+      [disabled]="!controller.entities.length"
+    >
+      Context
+      <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
+    </button>
+    <div ngbDropdownMenu class="w-100">
+      <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+        Empty
+      </button>
+      <button
+        ngbDropdownItem
+        class="text-truncate"
+        *ngFor="let context of controller.entities; let i = index"
+        (click)="controller.currentIdx$.next(i)"
+      >
+        {{ context }}
+      </button>
+    </div>
+  </div>
+  <div ngbDropdown class="d-inline-block flex-grow-0" placement="bottom-right" container="body">
+    <button class="btn btn" ngbDropdownToggle>
+      <i class="fas fa-cog fa-fw"></i>
+    </button>
+    <div ngbDropdownMenu class="p-4">
+      <label [for]="temperature.uid"> Temperature: </label>
+      <div class="d-flex" appUid #temperature="uid" [style.gap.rem]="0.75">
+        <input
+          class="flex-grow-1 form-control"
+          ngbButton
+          type="range"
+          min="0"
+          max="1"
+          step="any"
+          [ngModel]="tempertaure$ | async"
+          (ngModelChange)="tempertaure$.next($event)"
+          [style.width.px]="128"
+        />
+        <input
+          class="flex-grow-0 flex-shrink-0 form-control"
+          ngbButton
+          type="number"
+          min="0"
+          max="1"
+          step="any"
+          [ngModel]="tempertaure$ | async | number : '1.2-2'"
+          (ngModelChange)="tempertaure$.next($event)"
+          [style.width.px]="64"
+        />
+      </div>
+    </div>
+  </div>
+  <button
+    class="d-inline-block btn btn-sm flex-grow-0"
+    (click)="openPlayground()"
+    *ngIf="showPlayground"
+  >
+    <i class="fas fa-flask"></i>
+  </button>
+</div>
+<ng-content></ng-content>
+<div
+  class="mt-4 card"
+  style="white-space: pre-line"
+  *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
+>
+  <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+    {{ possibleExplanation }}
+  </div>
+</div>
+<ng-template #loading>
+  <div class="mt-4">
+    <i class="fa fa-spinner fa-spin"></i>
+  </div>
+</ng-template>

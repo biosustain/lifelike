@@ -14,8 +14,7 @@ import { MessageArguments, MessageDialog } from '../../services/message-dialog.s
 export class CopyLinkDialogComponent {
   @Input() url: string;
 
-  constructor(public readonly modal: NgbActiveModal) {
-  }
+  constructor(public readonly modal: NgbActiveModal) {}
 
   close(): void {
     this.modal.close();

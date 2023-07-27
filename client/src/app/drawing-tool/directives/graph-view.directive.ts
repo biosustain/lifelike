@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostBinding, HostListener, ViewChild } from '@angular/core';
+import { Directive, ElementRef, HostBinding, HostListener, NgZone, OnDestroy } from '@angular/core';
 
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { KnowledgeMapStyle } from 'app/graph-viewer/styles/knowledge-map-style';
@@ -14,21 +14,24 @@ import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
 @Directive({
   selector: 'canvas[appGraphView]',
 })
-export class GraphViewDirective extends CanvasGraphView {
+export class GraphViewDirective implements OnDestroy {
   @HostBinding('class.drop-target') dropTargeted;
+  public canvasGraphView: CanvasGraphView;
 
-  // @ts-ignore
   constructor(
     protected readonly canvasElem: ElementRef,
     protected readonly mapImageProviderService: MapImageProviderService,
     private readonly dataTransferDataService: DataTransferDataService,
     private readonly graphActionsService: GraphActionsService,
+    private readonly ngZone: NgZone
   ) {
-    const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
-    super(canvasElem.nativeElement as HTMLCanvasElement, {
-      nodeRenderStyle: style,
-      edgeRenderStyle: style,
-      groupRenderStyle: style,
+    ngZone.runOutsideAngular(() => {
+      const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
+      this.canvasGraphView = new CanvasGraphView(canvasElem.nativeElement as HTMLCanvasElement, {
+        nodeRenderStyle: style,
+        edgeRenderStyle: style,
+        groupRenderStyle: style,
+      });
     });
   }
 
@@ -53,13 +56,16 @@ export class GraphViewDirective extends CanvasGraphView {
 
     // As this event fire continuously, and we only need to check that once, do not re-check after the first one
     if (event.dataTransfer.dropEffect !== 'link') {
-      if (event.dataTransfer.items[0]?.type.startsWith('image/') ||
-        this.dataTransferDataService.extract(event.dataTransfer).filter(item => item.token === GRAPH_ENTITY_TOKEN).length) {
+      if (
+        event.dataTransfer.items[0]?.type.startsWith('image/') ||
+        this.dataTransferDataService
+          .extract(event.dataTransfer)
+          .filter((item) => item.token === GRAPH_ENTITY_TOKEN).length
+      ) {
         event.dataTransfer.dropEffect = 'link';
         event.preventDefault();
       }
     }
-
   }
 
   @HostListener('drop', ['$event'])
@@ -68,21 +74,27 @@ export class GraphViewDirective extends CanvasGraphView {
 
     this.dropTargeted = false;
 
-    const hoverPosition = this.hoverPosition;
+    const hoverPosition = this.canvasGraphView.hoverPosition;
     if (hoverPosition != null) {
       const items = this.dataTransferDataService.extract(event.dataTransfer);
       if (isNotEmpty(items)) {
-        this.selection.replace([]);
+        this.canvasGraphView.selection.replace([]);
       }
       const actionPromise = this.graphActionsService.fromDataTransferItems(items, hoverPosition);
 
-      actionPromise.then(actions => {
-        if (actions.length) {
-          this.execute(new CompoundAction('Drag to map', actions));
-          this.focus();
-        }
+      this.ngZone.runOutsideAngular(() => {
+        actionPromise.then((actions) => {
+          if (actions.length) {
+            NgZone.assertNotInAngularZone();
+            this.canvasGraphView.execute(new CompoundAction('Drag to map', actions));
+            this.canvasGraphView.focus();
+          }
+        });
       });
     }
   }
 
+  ngOnDestroy() {
+    this.canvasGraphView.destroy();
+  }
 }

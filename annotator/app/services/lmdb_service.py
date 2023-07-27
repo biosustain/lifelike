@@ -17,7 +17,7 @@ from .constants import (
     SPECIES_LMDB,
     FOODS_LMDB,
     ANATOMY_LMDB,
-    EntityType
+    EntityType,
 )
 from .lmdb_connection import LMDBConnection
 from .utils.lmdb import (
@@ -85,9 +85,7 @@ class LMDBService(LMDBConnection):
 
     def _lmdb_open(self, file):
         return lmdb.open(
-            path.join(directory, 'lmdb', file),
-            map_size=self.map_size,
-            max_dbs=2
+            path.join(directory, 'lmdb', file), map_size=self.map_size, max_dbs=2
         )
 
     def create_lmdb_genes_database(self):
@@ -107,7 +105,8 @@ class LMDBService(LMDBConnection):
                         data_source = line[3]
 
                         gene = create_ner_type_gene(
-                            name=gene_name, synonym=synonym, data_source=data_source)
+                            name=gene_name, synonym=synonym, data_source=data_source
+                        )
 
                         try:
                             transaction.put(
@@ -223,7 +222,8 @@ class LMDBService(LMDBConnection):
                         # changed protein_id to protein_name for now (JIRA LL-671)
                         # will eventually change back to protein_id
                         protein = create_ner_type_protein(
-                            name=protein_name, synonym=protein_name)
+                            name=protein_name, synonym=protein_name
+                        )
 
                         try:
                             transaction.put(
@@ -257,7 +257,9 @@ class LMDBService(LMDBConnection):
 
                         species = create_ner_type_species(
                             id=species_id,
-                            category=species_category if species_category else 'Uncategorized',
+                            category=species_category
+                            if species_category
+                            else 'Uncategorized',
                             name=species_name,
                             synonym=species_name,
                         )
@@ -265,7 +267,8 @@ class LMDBService(LMDBConnection):
                         try:
                             transaction.put(
                                 normalize_str(species_name).encode('utf-8'),
-                                json.dumps(species).encode('utf-8'))
+                                json.dumps(species).encode('utf-8'),
+                            )
                         except lmdb.BadValsizeError:
                             # ignore any keys that are too large
                             # LMDB has max key size 512 bytes
@@ -289,12 +292,14 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     disease = create_ner_type_disease(
-                        id=disease_id, name=disease_name, synonym=synonym)
+                        id=disease_id, name=disease_name, synonym=synonym
+                    )
 
                     try:
                         transaction.put(
                             normalize_str(synonym).encode('utf-8'),
-                            json.dumps(disease).encode('utf-8'))
+                            json.dumps(disease).encode('utf-8'),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
@@ -318,9 +323,7 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     phenomena = create_ner_type_phenomena(
-                        id=phenomena_id,
-                        name=phenomena_name,
-                        synonym=synonym
+                        id=phenomena_id, name=phenomena_name, synonym=synonym
                     )
 
                     try:
@@ -351,9 +354,7 @@ class LMDBService(LMDBConnection):
                     synonym = line[2]
 
                     phenotype = create_ner_type_phenotype(
-                        id=phenotype_id,
-                        name=phenotype_name,
-                        synonym=synonym
+                        id=phenotype_id, name=phenotype_name, synonym=synonym
                     )
 
                     try:
@@ -392,7 +393,8 @@ class LMDBService(LMDBConnection):
                     try:
                         transaction.put(
                             normalize_str(foods_synonym).encode('utf-8'),
-                            json.dumps(foods).encode('utf-8'))
+                            json.dumps(foods).encode('utf-8'),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
@@ -424,7 +426,8 @@ class LMDBService(LMDBConnection):
                     try:
                         transaction.put(
                             normalize_str(anatomy_synonym).encode('utf-8'),
-                            json.dumps(anatomy).encode('utf-8'))
+                            json.dumps(anatomy).encode('utf-8'),
+                        )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
@@ -443,7 +446,7 @@ class LMDBService(LMDBConnection):
             EntityType.PHENOMENA.value: self.create_lmdb_phenomenas_database,
             EntityType.PHENOTYPE.value: self.create_lmdb_phenotypes_database,
             EntityType.PROTEIN.value: self.create_lmdb_proteins_database,
-            EntityType.SPECIES.value: self.create_lmdb_species_database
+            EntityType.SPECIES.value: self.create_lmdb_species_database,
         }
 
         if file_type is None:

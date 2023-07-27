@@ -1,3 +1,8 @@
+import functools
+
+from typing import Tuple, Union, Type
+
+
 class ServerException(Exception):
     def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
         """
@@ -54,3 +59,29 @@ class ServerException(Exception):
         retval['title'] = self.title
         retval['message'] = self.message
         return retval
+
+
+def wrap_exceptions(
+    wrapping_exception,
+    wrapped_exceptions: Union[
+        Type[Exception], Tuple[Type[Exception], ...]
+    ] = ServerException,
+    **exception_kwargs
+):
+    """Decorator that reraises wrapping exception in case given exception occurs"""
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except wrapped_exceptions as e:
+                raise wrapping_exception(**exception_kwargs) from e
+
+        wrapper.__wrapped__ = func
+        return wrapper
+
+    return decorator
+
+
+__all__ = ["wrap_exceptions"]

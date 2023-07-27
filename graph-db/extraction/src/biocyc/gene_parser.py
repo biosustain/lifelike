@@ -11,17 +11,29 @@ ATTR_NAMES = {
     'ACCESSION-2': (PROP_ACCESSION2, 'str'),
     'LEFT-END-POSITION': (PROP_POS_LEFT, 'str'),
     'RIGHT-END-POSITION': (PROP_POS_RIGHT, 'str'),
-    'TRANSCRIPTION-DIRECTION':(PROP_STRAND, 'str'),
-    'SYNONYMS': (PROP_SYNONYMS, 'str')
+    'TRANSCRIPTION-DIRECTION': (PROP_STRAND, 'str'),
+    'SYNONYMS': (PROP_SYNONYMS, 'str'),
 }
+
 
 class GeneParser(DataFileParser):
     def __init__(self, db_name, tarfile):
-        DataFileParser.__init__(self, db_name, tarfile, 'genes.dat', NODE_GENE,ATTR_NAMES, dict())
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_URL, PROP_ACCESSION2, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
+        DataFileParser.__init__(
+            self, db_name, tarfile, 'genes.dat', NODE_GENE, ATTR_NAMES, dict()
+        )
+        self.attrs = [
+            PROP_BIOCYC_ID,
+            PROP_NAME,
+            PROP_ACCESSION,
+            PROP_URL,
+            PROP_ACCESSION2,
+            PROP_POS_LEFT,
+            PROP_POS_RIGHT,
+            PROP_STRAND,
+        ]
         self.logger = logging.getLogger(__name__)
 
-    def extrace_synonyms(self, df:pd.DataFrame):
+    def extrace_synonyms(self, df: pd.DataFrame):
         """
         extract synonyms from 'synonyms' column, combine with name, return dataframe for id-synonym (columns[ID, NAME])
         """
@@ -29,9 +41,14 @@ class GeneParser(DataFileParser):
         if PROP_SYNONYMS in df.columns:
             df_syn = df[[PROP_ID, PROP_SYNONYMS]].dropna()
             df_syn = df_syn[df_syn[PROP_SYNONYMS] != '']
-            df_syn = df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
-            df_syn = df_syn.reset_index().rename(columns={0: PROP_NAME}).loc[:,
-                     [PROP_ID, PROP_NAME]]
+            df_syn = (
+                df_syn.set_index(PROP_ID).synonyms.str.split('|', expand=True).stack()
+            )
+            df_syn = (
+                df_syn.reset_index()
+                .rename(columns={0: PROP_NAME})
+                .loc[:, [PROP_ID, PROP_NAME]]
+            )
         else:
             df_syn = pd.DataFrame()
         df_name = df[[PROP_ID, PROP_NAME]]

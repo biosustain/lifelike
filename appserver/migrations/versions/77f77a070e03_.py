@@ -47,12 +47,13 @@ t_project = sa.Table(
     sa.Column('description', sa.Text),
     sa.Column('date_modified', sa.DateTime),
     sa.Column('graph', sa.JSON),
-  	sa.Column('author', sa.String(240), nullable=False),
-  	sa.Column('public', sa.Boolean(), default=False),
+    sa.Column('author', sa.String(240), nullable=False),
+    sa.Column('public', sa.Boolean(), default=False),
     sa.Column('user_id', sa.Integer, sa.ForeignKey(t_app_user.c.id)),
     sa.Column('hash_id', sa.String(50), unique=True),
-  	sa.Column('search_vector', TSVectorType('label'))
+    sa.Column('search_vector', TSVectorType('label')),
 )
+
 
 def upgrade():
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -72,13 +73,10 @@ def data_upgrades():
     """Add optional data upgrade migrations here"""
 
     conn = op.get_bind()
-    projs = conn.execute(sa.select([
-        t_project.c.id,
-        t_project.c.graph
-    ])).fetchall()
+    projs = conn.execute(sa.select([t_project.c.id, t_project.c.graph])).fetchall()
 
     def process_node(n):
-        """ Reformat node data structure
+        """Reformat node data structure
         (1) Adds the hyperlinks key
         (2) Adds the sources key
         """
@@ -95,13 +93,15 @@ def data_upgrades():
         if 'sources' not in node_data:
             # Reformat existing source if it exists
             if node_data.get('source'):
-                node_data['sources'] = [dict(type='', domain='', url=node_data['source'])]
+                node_data['sources'] = [
+                    dict(type='', domain='', url=node_data['source'])
+                ]
             else:
                 node_data['sources'] = []
         return n
 
     def process_edge(e):
-        """ Reformat edge data structure
+        """Reformat edge data structure
         (1) Adds the hyperlinks key
         (2) Adds the sources key
         """
@@ -109,13 +109,17 @@ def data_upgrades():
             edge_data = e['data']
             if 'hyperlinks' not in e['data']:
                 if edge_data.get('hyperlink'):
-                    edge_data['hyperlinks'] = [dict(domain='', url=edge_data['hyperlink'])]
+                    edge_data['hyperlinks'] = [
+                        dict(domain='', url=edge_data['hyperlink'])
+                    ]
                 else:
                     edge_data['hyperlinks'] = []
 
             if 'sources' not in e['data']:
                 if edge_data.get('source'):
-                    edge_data['sources'] = [dict(type='', domain='', url=edge_data['source'])]
+                    edge_data['sources'] = [
+                        dict(type='', domain='', url=edge_data['source'])
+                    ]
                 else:
                     edge_data['sources'] = []
         else:
@@ -128,8 +132,9 @@ def data_upgrades():
         edges_copy = copy.deepcopy(graph['edges'])
         graph['nodes'] = [process_node(n) for n in nodes_copy]
         graph['edges'] = [process_edge(e) for e in edges_copy]
-        conn.execute(t_project.update().where(t_project.c.id == proj_id).values(graph=graph))
-
+        conn.execute(
+            t_project.update().where(t_project.c.id == proj_id).values(graph=graph)
+        )
 
 
 def data_downgrades():

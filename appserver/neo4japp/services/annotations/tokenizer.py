@@ -5,7 +5,9 @@ from .constants import (
     ABBREVIATION_WORD_LENGTH,
     COMMON_WORDS,
     MAX_ENTITY_WORD_LENGTH,
-    PDF_NEW_LINE_THRESHOLD, WORD_CHECK_REGEX, MIN_ENTITY_LENGTH
+    PDF_NEW_LINE_THRESHOLD,
+    WORD_CHECK_REGEX,
+    MIN_ENTITY_LENGTH,
 )
 from .data_transfer_objects import PDFWord
 
@@ -70,7 +72,9 @@ class Tokenizer:
                 # to avoid function calls, ~7-10 sec faster
                 normalized = word.keyword.lower()
                 normalized = normalized.translate(str.maketrans('', '', punctuation))
-                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
+                normalized_keyword = normalized.translate(
+                    str.maketrans('', '', whitespace)
+                )
                 new_token = PDFWord(
                     keyword=word.keyword,
                     normalized_keyword=normalized_keyword,
@@ -80,7 +84,7 @@ class Tokenizer:
                     coordinates=word.coordinates,
                     heights=word.heights,
                     widths=word.widths,
-                    previous_words=word.previous_words
+                    previous_words=word.previous_words,
                 )
                 new_tokens.append(new_token)
                 prev_token = new_token
@@ -103,10 +107,12 @@ class Tokenizer:
                     for j, coords in enumerate(word.coordinates):
                         lower_x, lower_y, upper_x, upper_y = coords
 
-                        if (start_lower_x == 0.0 and
-                                start_lower_y == 0.0 and
-                                end_upper_x == 0.0 and
-                                end_upper_y == 0.0):
+                        if (
+                            start_lower_x == 0.0
+                            and start_lower_y == 0.0
+                            and end_upper_x == 0.0
+                            and end_upper_y == 0.0
+                        ):
                             start_lower_x = lower_x
                             start_lower_y = lower_y
                             end_upper_x = upper_x
@@ -120,7 +126,13 @@ class Tokenizer:
                                 # then part of keyword is on a new line
                                 if diff > prev_height * PDF_NEW_LINE_THRESHOLD:
                                     coordinates.append(
-                                        [start_lower_x, start_lower_y, end_upper_x, end_upper_y])
+                                        [
+                                            start_lower_x,
+                                            start_lower_y,
+                                            end_upper_x,
+                                            end_upper_y,
+                                        ]
+                                    )
 
                                     start_lower_x = lower_x
                                     start_lower_y = lower_y
@@ -142,13 +154,17 @@ class Tokenizer:
 
                     heights += word.heights
                     widths += word.widths
-                coordinates.append([start_lower_x, start_lower_y, end_upper_x, end_upper_y])
+                coordinates.append(
+                    [start_lower_x, start_lower_y, end_upper_x, end_upper_y]
+                )
 
                 # copied from def normalize_str
                 # to avoid function calls, ~7-10 sec faster
                 normalized = curr_keyword.lower()
                 normalized = normalized.translate(str.maketrans('', '', punctuation))
-                normalized_keyword = normalized.translate(str.maketrans('', '', whitespace))
+                normalized_keyword = normalized.translate(
+                    str.maketrans('', '', whitespace)
+                )
                 new_token = PDFWord(
                     keyword=curr_keyword,
                     normalized_keyword=normalized_keyword,
@@ -175,12 +191,12 @@ class Tokenizer:
         tokens_to_use = []
         for token in new_tokens:
             if (
-                    token.keyword.lower() in COMMON_WORDS or
-                    self.token_word_check_regex.match(token.keyword) or
-                    token.keyword in ascii_letters or
-                    token.keyword in digits or
-                    len(token.normalized_keyword) <= MIN_ENTITY_LENGTH or
-                    self._is_abbrev(token)
+                token.keyword.lower() in COMMON_WORDS
+                or self.token_word_check_regex.match(token.keyword)
+                or token.keyword in ascii_letters
+                or token.keyword in digits
+                or len(token.normalized_keyword) <= MIN_ENTITY_LENGTH
+                or self._is_abbrev(token)
             ):
                 continue
             else:
@@ -189,6 +205,7 @@ class Tokenizer:
 
     def create(self, words: List[PDFWord]) -> List[PDFWord]:
         return [
-            current_token for idx, token in enumerate(words)
-            for current_token in self._create(words[idx:MAX_ENTITY_WORD_LENGTH + idx])
+            current_token
+            for idx, token in enumerate(words)
+            for current_token in self._create(words[idx : MAX_ENTITY_WORD_LENGTH + idx])
         ]

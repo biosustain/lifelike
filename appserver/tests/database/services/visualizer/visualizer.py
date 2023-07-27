@@ -58,9 +58,15 @@ def test_get_snippets_for_edge(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet2.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet1.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     else:
         assert False
 
@@ -148,9 +154,15 @@ def test_get_snippets_for_cluster(
 
     # Both snippets come from the same publication, so can't guarantee the order
     if snippet1.reference.data['sentence'] == sentences[0]:
-        assert snippet2.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet2.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     elif snippet2.reference.data['sentence'] == sentences[0]:
-        assert snippet1.reference.data['sentence'] == '...suppresses toxins and rapidly kills bacteria...'  # noqa
+        assert (
+            snippet1.reference.data['sentence']
+            == '...suppresses toxins and rapidly kills bacteria...'
+        )  # noqa
     else:
         assert False
 

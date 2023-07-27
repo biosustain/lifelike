@@ -7,8 +7,7 @@ export interface NodeWithCustomParameters extends Node {
 }
 
 // tslint:disable-next-line:no-empty-interface
-export interface EdgeWithCustomParameters extends Edge {
-}
+export interface EdgeWithCustomParameters extends Edge {}
 
 export interface GraphData {
   nodes: NodeWithCustomParameters[];

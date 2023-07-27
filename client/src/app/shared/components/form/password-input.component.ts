@@ -4,7 +4,7 @@ import { FormGroup } from '@angular/forms';
 @Component({
   selector: 'app-password-input',
   templateUrl: './password-input.component.html',
-  styleUrls: ['./password-input.component.scss']
+  styleUrls: ['./password-input.component.scss'],
 })
 export class PasswordInputComponent {
   @Input() controlId: string;

@@ -1,7 +1,9 @@
 from os import environ
 
-class Base():
+
+class Base:
     """Default values"""
+
     JWKS_URL = environ.get('JWKS_URL', None)
     JWT_SECRET = environ.get('JWT_SECRET', 'secrets')
     JWT_ALGORITHM = environ.get('JWT_ALGORITHM', 'HS256')

@@ -26,14 +26,10 @@ const components = [
 ];
 
 @NgModule({
-  imports: [
-    EffectsModule.forFeature([UserEffects]),
-    SharedModule,
-  ],
+  imports: [EffectsModule.forFeature([UserEffects]), SharedModule],
   declarations: components,
   providers: [AccountService, KeycloakAccountService],
   entryComponents: [TermsOfServiceDialogComponent, ChangePasswordDialogComponent],
   exports: components,
 })
-export class UserModule {
-}
+export class UserModule {}

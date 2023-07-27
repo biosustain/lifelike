@@ -164,4 +164,4 @@ jobs:
             --extra-vars github_run_id=${{ github.run_id }}
             --extra-vars postgres_host=${{ steps.database-host.outputs.ip_address }}
             --user ansible
-            --verbose
+            -vvvv

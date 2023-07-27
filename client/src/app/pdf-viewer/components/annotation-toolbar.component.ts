@@ -25,24 +25,23 @@ import { PDFAnnotationService } from '../services/pdf-annotation.service';
   selector: 'app-annotation-toolbar',
   styleUrls: ['./annotation-toolbar.component.scss'],
   templateUrl: './annotation-toolbar.component.html',
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class AnnotationToolbarComponent {
-
-  constructor(protected readonly elementRef: ElementRef,
-              protected readonly modalService: NgbModal,
-              protected readonly zone: NgZone,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly pdfAnnotation: PDFAnnotationService
-  ) {
-  }
+  constructor(
+    protected readonly elementRef: ElementRef,
+    protected readonly modalService: NgbModal,
+    protected readonly zone: NgZone,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly pdfAnnotation: PDFAnnotationService
+  ) {}
 
   @Input() set position(position) {
     this.style = {
       visibility: 'visible',
       top: position.top + 'px',
-      left: position.left + 'px'
+      left: position.left + 'px',
     };
   }
 
@@ -56,15 +55,18 @@ export class AnnotationToolbarComponent {
 
   copySelectionText(event) {
     event.preventDefault();
-    navigator.clipboard.writeText(window.getSelection().toString()).then(() => {
-      this.snackBar.open('Copied text to clipboard.', null, {
-        duration: 2000,
-      });
-    }, () => {
-      this.snackBar.open('Failed to copy text.', null, {
-        duration: 2000,
-      });
-    });
+    navigator.clipboard.writeText(window.getSelection().toString()).then(
+      () => {
+        this.snackBar.open('Copied text to clipboard.', null, {
+          duration: 2000,
+        });
+      },
+      () => {
+        this.snackBar.open('Failed to copy text.', null, {
+          duration: 2000,
+        });
+      }
+    );
   }
 
   getPageNumber(page: Element): number {
@@ -88,14 +90,15 @@ export class AnnotationToolbarComponent {
   }
 
   openAnnotationDialog(text, pageNumber, ranges) {
-      const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
-      dialogRef.componentInstance.allText = text;
-      dialogRef.componentInstance.keywords = [text];
-      dialogRef.componentInstance.coords = this.toPDFRelativeRects(pageNumber, ranges.map(range => range.getBoundingClientRect()));
-      dialogRef.componentInstance.pageNumber = pageNumber;
-      return dialogRef.result.then(
-        annotation => this.pdfAnnotation.annotationCreated(annotation)
-      );
+    const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
+    dialogRef.componentInstance.allText = text;
+    dialogRef.componentInstance.keywords = [text];
+    dialogRef.componentInstance.coords = this.toPDFRelativeRects(
+      pageNumber,
+      ranges.map((range) => range.getBoundingClientRect())
+    );
+    dialogRef.componentInstance.pageNumber = pageNumber;
+    return dialogRef.result.then((annotation) => this.pdfAnnotation.annotationCreated(annotation));
   }
 
   async openAnnotationPanel(event) {
@@ -114,7 +117,7 @@ export class AnnotationToolbarComponent {
       if (!annotationPage) {
         annotationPage = page;
       }
-      if ((page !== annotationPage) || multipage) {
+      if (page !== annotationPage || multipage) {
         if (await limitSelectionToOnePage()) {
           selection.removeRange(range);
           if (page !== annotationPage) {
@@ -132,25 +135,23 @@ export class AnnotationToolbarComponent {
           }
           selection.addRange(range);
         } else {
-          return this.snackBar.open(
-            'Annotation creation has been cancelled.',
-            'Close',
-            {duration: 3000}
-          );
+          return this.snackBar.open('Annotation creation has been cancelled.', 'Close', {
+            duration: 3000,
+          });
         }
       }
       ranges.push(range);
     }
     if (isEmpty(ranges)) {
-     return this.errorHandler.showError(
-       new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer')
-     );
+      return this.errorHandler.showError(
+        new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer')
+      );
     }
     const text = selection.toString().trim();
     const pageNumber = this.getPageNumber(annotationPage);
     return this.openAnnotationDialog(text, pageNumber, ranges).then(
       () => window.getSelection().empty(),
-      () => ranges.forEach(r => window.getSelection().addRange(r))
+      () => ranges.forEach((r) => window.getSelection().addRange(r))
     );
   }
 
@@ -160,8 +161,11 @@ export class AnnotationToolbarComponent {
     const pageRect = pdfPageView.canvas.getClientRects()[0];
     const ret: Rect[] = [];
     for (const r of rects) {
-      ret.push(viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
-        .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top)));
+      ret.push(
+        viewport
+          .convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
+          .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top))
+      );
     }
     return ret;
   }
@@ -180,7 +184,10 @@ export class AnnotationToolbarComponent {
     const container = this.containerRef.nativeElement;
     for (let i = 0; i < selection.rangeCount; i++) {
       const range = selection.getRangeAt(i);
-      if (!range.collapsed && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
+      if (
+        !range.collapsed &&
+        (container.contains(range.startContainer) || container.contains(range.endContainer))
+      ) {
         yield range;
       }
     }

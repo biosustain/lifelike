@@ -7,7 +7,7 @@ from app.services.annotation_graph_service import get_entity_inclusions
 from app.services.constants import EntityType
 from app.services.data_transfer_objects.dto import (
     SpecifiedOrganismStrain,
-    GlobalInclusions
+    GlobalInclusions,
 )
 from app.services.pipeline import Pipeline
 from app.services.utils.parsing import process_parsed_content
@@ -40,18 +40,22 @@ file system schema, as that gets changed.
 @pytest.mark.parametrize(
     'index, annotations',
     [
-        (1, [
-            ('Test', 'Test', 5, 8, EntityType.GENE.value),
-            ('Test a long word', 'Test a long word', 5, 20, EntityType.GENE.value)
-        ]),
-        (2, [
-            ('word', 'word', 17, 20, EntityType.GENE.value)
-        ]),
+        (
+            1,
+            [
+                ('Test', 'Test', 5, 8, EntityType.GENE.value),
+                ('Test a long word', 'Test a long word', 5, 20, EntityType.GENE.value),
+            ],
+        ),
+        (2, [('word', 'word', 17, 20, EntityType.GENE.value)]),
         # adjacent intervals
-        (3, [
-            ('word a', 'word', 17, 22, EntityType.CHEMICAL.value),
-            ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value)
-        ])
+        (
+            3,
+            [
+                ('word a', 'word', 17, 22, EntityType.CHEMICAL.value),
+                ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value),
+            ],
+        ),
     ],
 )
 def test_fix_conflicting_annotations_same_types(
@@ -89,36 +93,69 @@ def test_fix_conflicting_annotations_same_types(
 @pytest.mark.parametrize(
     'index, annotations',
     [
-        (1, [
-            ('Test', 'test', 5, 8, EntityType.GENE.value),
-            ('Test', 'test', 5, 8, EntityType.CHEMICAL.value)
-        ]),
-        (2, [
-            ('Test', 'test', 35, 38, EntityType.GENE.value),
-            ('Test a long word', 'word', 5, 20, EntityType.CHEMICAL.value),
-        ]),
-        (3, [
-            ('word', 'word', 17, 20, EntityType.GENE.value),
-            ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value)
-        ]),
-        (4, [
-            ('word', 'word', 17, 20, EntityType.GENE.value),
-            ('Test a long word', 'test a long word', 5, 20, EntityType.CHEMICAL.value),
-            ('long word', 'long word', 55, 63, EntityType.CHEMICAL.value)
-        ]),
+        (
+            1,
+            [
+                ('Test', 'test', 5, 8, EntityType.GENE.value),
+                ('Test', 'test', 5, 8, EntityType.CHEMICAL.value),
+            ],
+        ),
+        (
+            2,
+            [
+                ('Test', 'test', 35, 38, EntityType.GENE.value),
+                ('Test a long word', 'word', 5, 20, EntityType.CHEMICAL.value),
+            ],
+        ),
+        (
+            3,
+            [
+                ('word', 'word', 17, 20, EntityType.GENE.value),
+                (
+                    'Test a long word',
+                    'test a long word',
+                    5,
+                    20,
+                    EntityType.CHEMICAL.value,
+                ),
+            ],
+        ),
+        (
+            4,
+            [
+                ('word', 'word', 17, 20, EntityType.GENE.value),
+                (
+                    'Test a long word',
+                    'test a long word',
+                    5,
+                    20,
+                    EntityType.CHEMICAL.value,
+                ),
+                ('long word', 'long word', 55, 63, EntityType.CHEMICAL.value),
+            ],
+        ),
         # adjacent intervals
-        (5, [
-            ('word a', 'word a', 17, 22, EntityType.GENE.value),
-            ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value)
-        ]),
-        (6, [
-            ('IL7', 'IL-7', 5, 8, EntityType.GENE.value),
-            ('IL-7', 'IL-7', 5, 8, EntityType.PROTEIN.value)
-        ]),
-        (7, [
-            ('IL7', 'il-7', 5, 8, EntityType.GENE.value),
-            ('IL-7', 'il-7', 5, 8, EntityType.PROTEIN.value)
-        ]),
+        (
+            5,
+            [
+                ('word a', 'word a', 17, 22, EntityType.GENE.value),
+                ('a long word', 'a long word', 22, 32, EntityType.CHEMICAL.value),
+            ],
+        ),
+        (
+            6,
+            [
+                ('IL7', 'IL-7', 5, 8, EntityType.GENE.value),
+                ('IL-7', 'IL-7', 5, 8, EntityType.PROTEIN.value),
+            ],
+        ),
+        (
+            7,
+            [
+                ('IL7', 'il-7', 5, 8, EntityType.GENE.value),
+                ('IL-7', 'il-7', 5, 8, EntityType.PROTEIN.value),
+            ],
+        ),
     ],
 )
 def test_fix_conflicting_annotations_different_types(
@@ -193,7 +230,7 @@ def test_gene_organism_escherichia_coli_pdf(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
@@ -233,7 +270,7 @@ def test_protein_organism_escherichia_coli_pdf(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     keywords = {o.keyword: o.meta.id for o in annotations}
@@ -252,7 +289,8 @@ def test_local_inclusion_affect_gene_organism_matching(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_local_inclusion_affect_gene_organism_matching.json')
+        'pdf_samples/annotations_test/test_local_inclusion_affect_gene_organism_matching.json',
+    )
 
     custom_annotation = {
         'meta': {
@@ -306,28 +344,24 @@ def test_local_exclusion_affect_gene_organism_matching(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_local_exclusion_affect_gene_organism_matching.json')
+        'pdf_samples/annotations_test/test_local_exclusion_affect_gene_organism_matching.json',
+    )
 
     excluded_annotation = {
         'id': '37293',
         'text': 'aotus nancymaae',
         'type': 'Species',
-        'rects': [
-            [
-                381.21680400799994,
-                706.52786608,
-                473.9653966747998,
-                718.27682008
-            ]
-        ],
+        'rects': [[381.21680400799994, 706.52786608, 473.9653966747998, 718.27682008]],
         'reason': 'Other',
         'comment': '',
         'user_id': 1,
         'pageNumber': 1,
-        'idHyperlinks': ['https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=37293'],
+        'idHyperlinks': [
+            'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=37293'
+        ],
         'exclusion_date': '2020-11-10 17:39:27.050845+00:00',
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     with open(pdf, 'rb') as f:
@@ -352,7 +386,8 @@ def test_assume_human_gene_after_finding_virus(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_assume_human_gene_after_finding_virus.json')
+        'pdf_samples/annotations_test/test_assume_human_gene_after_finding_virus.json',
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -361,7 +396,7 @@ def test_assume_human_gene_after_finding_virus(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
@@ -383,8 +418,8 @@ def test_can_find_food_entities(
     test_arango_db
 ):
     pdf = path.join(
-        directory,
-        'pdf_samples/annotations_test/test_can_find_food_entities.json')
+        directory, 'pdf_samples/annotations_test/test_can_find_food_entities.json'
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -393,7 +428,7 @@ def test_can_find_food_entities(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
@@ -412,8 +447,8 @@ def test_can_find_anatomy_entities(
     test_arango_db
 ):
     pdf = path.join(
-        directory,
-        'pdf_samples/annotations_test/test_can_find_anatomy_entities.json')
+        directory, 'pdf_samples/annotations_test/test_can_find_anatomy_entities.json'
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -422,7 +457,7 @@ def test_can_find_anatomy_entities(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     keywords = {o.keyword: o.meta.type for o in annotations}
@@ -438,7 +473,7 @@ def test_can_find_anatomy_entities(
     'index, fpath',
     [
         (1, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_1.json'),
-        (2, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_2.json')
+        (2, 'pdf_samples/annotations_test/test_genes_vs_proteins/test_2.json'),
     ],
 )
 def test_genes_vs_proteins(
@@ -448,7 +483,7 @@ def test_genes_vs_proteins(
     get_annotation_service,
     test_arango_db,
     index,
-    fpath
+    fpath,
 ):
     pdf = path.join(directory, fpath)
 
@@ -459,7 +494,7 @@ def test_genes_vs_proteins(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     if index == 1:
@@ -490,15 +525,24 @@ def test_genes_vs_proteins(
 @pytest.mark.parametrize(
     'index, annotations',
     [
-        (1, [
-            ('casE', 'case', 5, 8, EntityType.GENE.value),
-        ]),
-        (2, [
-            ('ADD', 'add', 5, 7, EntityType.GENE.value),
-        ]),
-        (3, [
-            ('CpxR', 'CpxR', 5, 7, EntityType.GENE.value),
-        ])
+        (
+            1,
+            [
+                ('casE', 'case', 5, 8, EntityType.GENE.value),
+            ],
+        ),
+        (
+            2,
+            [
+                ('ADD', 'add', 5, 7, EntityType.GENE.value),
+            ],
+        ),
+        (
+            3,
+            [
+                ('CpxR', 'CpxR', 5, 7, EntityType.GENE.value),
+            ],
+        ),
     ],
 )
 def test_fix_false_positive_gene_annotations(
@@ -523,18 +567,30 @@ def test_fix_false_positive_gene_annotations(
 @pytest.mark.parametrize(
     'index, annotations',
     [
-        (1, [
-            ('SidE', 'side', 5, 8, EntityType.PROTEIN.value),
-        ]),
-        (2, [
-            ('Tir', 'TIR', 5, 7, EntityType.PROTEIN.value),
-        ]),
-        (3, [
-            ('TraF', 'TraF', 5, 7, EntityType.PROTEIN.value),
-        ]),
-        (4, [
-            ('NS2A', 'NS2A', 5, 8, EntityType.PROTEIN.value),
-        ])
+        (
+            1,
+            [
+                ('SidE', 'side', 5, 8, EntityType.PROTEIN.value),
+            ],
+        ),
+        (
+            2,
+            [
+                ('Tir', 'TIR', 5, 7, EntityType.PROTEIN.value),
+            ],
+        ),
+        (
+            3,
+            [
+                ('TraF', 'TraF', 5, 7, EntityType.PROTEIN.value),
+            ],
+        ),
+        (
+            4,
+            [
+                ('NS2A', 'NS2A', 5, 8, EntityType.PROTEIN.value),
+            ],
+        ),
     ],
 )
 def test_fix_false_positive_protein_annotations(
@@ -569,7 +625,8 @@ def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_id_changes_to_result_from_kg_if_matched_with_organism.json')  # noqa
+        'pdf_samples/annotations_test/test_gene_id_changes_to_result_from_kg_if_matched_with_organism.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -578,7 +635,7 @@ def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     assert annotations[0].keyword == 'il-7'
@@ -594,7 +651,8 @@ def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_human_is_prioritized_if_equal_distance_in_gene_organism_matching.json')  # noqa
+        'pdf_samples/annotations_test/test_human_is_prioritized_if_equal_distance_in_gene_organism_matching.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -603,7 +661,7 @@ def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     assert annotations[1].keyword == 'EDEM3'
@@ -618,7 +676,8 @@ def test_global_excluded_chemical_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_chemical_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_chemical_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -627,7 +686,7 @@ def test_global_excluded_chemical_annotations(
         'text': 'hypofluorite',
         'type': EntityType.CHEMICAL.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -649,7 +708,8 @@ def test_global_excluded_compound_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_compound_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_compound_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -658,7 +718,7 @@ def test_global_excluded_compound_annotations(
         'text': 'guanosine',
         'type': EntityType.COMPOUND.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -680,7 +740,8 @@ def test_global_excluded_disease_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_disease_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_disease_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -689,7 +750,7 @@ def test_global_excluded_disease_annotations(
         'text': 'cold sore',
         'type': EntityType.DISEASE.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -712,7 +773,8 @@ def test_global_excluded_gene_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_gene_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_gene_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -721,7 +783,7 @@ def test_global_excluded_gene_annotations(
         'text': 'BOLA3',
         'type': EntityType.GENE.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -743,7 +805,8 @@ def test_global_excluded_phenotype_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_phenotype_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_phenotype_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -752,7 +815,7 @@ def test_global_excluded_phenotype_annotations(
         'text': 'whey proteins',
         'type': EntityType.PHENOTYPE.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -774,7 +837,8 @@ def test_global_excluded_protein_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_protein_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_protein_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -783,7 +847,7 @@ def test_global_excluded_protein_annotations(
         'text': 'Wasabi receptor toxin',
         'type': EntityType.PROTEIN.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -807,7 +871,8 @@ def test_global_excluded_species_annotations(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_excluded_species_annotations.json')  # noqa
+        'pdf_samples/annotations_test/test_global_excluded_species_annotations.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -816,7 +881,7 @@ def test_global_excluded_species_annotations(
         'text': 'human',
         'type': EntityType.SPECIES.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -838,7 +903,8 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_exclusions_does_not_interfere_with_other_entities.json')  # noqa
+        'pdf_samples/annotations_test/test_global_exclusions_does_not_interfere_with_other_entities.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -847,7 +913,7 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
         'text': 'adenosine',
         'type': EntityType.CHEMICAL.value,
         'excludeGlobally': False,
-        'isCaseInsensitive': True
+        'isCaseInsensitive': True,
     }
 
     _, parsed = process_parsed_content(parsed)
@@ -870,7 +936,8 @@ def test_global_chemical_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_chemical_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_chemical_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -881,7 +948,9 @@ def test_global_chemical_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_chemicals=mock_global_chemical_inclusion_annotation))
+            included_chemicals=mock_global_chemical_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'fake-chemical-(12345)'
@@ -896,7 +965,8 @@ def test_global_compound_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_compound_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_compound_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -907,7 +977,9 @@ def test_global_compound_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_compounds=mock_global_compound_inclusion_annotation))
+            included_compounds=mock_global_compound_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'compound-(12345)'
@@ -924,7 +996,8 @@ def test_global_gene_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_gene_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_gene_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -935,7 +1008,9 @@ def test_global_gene_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_genes=mock_global_gene_inclusion_annotation))
+            included_genes=mock_global_gene_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 2
     assert annotations[0].keyword == 'gene-(12345)'
@@ -950,7 +1025,8 @@ def test_global_disease_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_disease_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_disease_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -961,7 +1037,9 @@ def test_global_disease_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_diseases=mock_global_disease_inclusion_annotation))
+            included_diseases=mock_global_disease_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'disease-(12345)'
@@ -976,7 +1054,8 @@ def test_global_phenomena_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_phenomena_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_phenomena_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -987,7 +1066,9 @@ def test_global_phenomena_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_phenomenas=mock_global_phenomena_inclusion_annotation))
+            included_phenomenas=mock_global_phenomena_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'fake-phenomena'
@@ -1002,7 +1083,8 @@ def test_global_phenotype_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_phenotype_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_phenotype_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1013,7 +1095,9 @@ def test_global_phenotype_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_phenotypes=mock_global_phenotype_inclusion_annotation))
+            included_phenotypes=mock_global_phenotype_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'phenotype-(12345)'
@@ -1028,7 +1112,8 @@ def test_global_protein_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_protein_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_protein_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1039,7 +1124,9 @@ def test_global_protein_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_proteins=mock_global_protein_inclusion_annotation))
+            included_proteins=mock_global_protein_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'protein-(12345)'
@@ -1054,7 +1141,8 @@ def test_global_species_inclusion_annotation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_species_inclusion_annotation.json')  # noqa
+        'pdf_samples/annotations_test/test_global_species_inclusion_annotation.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1065,7 +1153,9 @@ def test_global_species_inclusion_annotation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_species=mock_global_species_inclusion_annotation))
+            included_species=mock_global_species_inclusion_annotation
+        ),
+    )
 
     assert len(annotations) == 1
     assert annotations[0].keyword == 'species-(12345)'
@@ -1081,7 +1171,8 @@ def test_no_annotation_for_abbreviation(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_no_annotation_for_abbreviation.json')
+        'pdf_samples/annotations_test/test_no_annotation_for_abbreviation.json',
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1092,9 +1183,8 @@ def test_no_annotation_for_abbreviation(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         specified_organism=SpecifiedOrganismStrain(
-            synonym='Homo sapiens',
-            organism_id='9606',
-            category='EUKARYOTA')
+            synonym='Homo sapiens', organism_id='9606', category='EUKARYOTA'
+        ),
     )
 
     assert len(annotations) == 3
@@ -1113,8 +1203,8 @@ def test_delta_gene_deletion_detected(
     test_arango_db
 ):
     pdf = path.join(
-        directory,
-        'pdf_samples/annotations_test/test_delta_gene_deletion_detected.json')
+        directory, 'pdf_samples/annotations_test/test_delta_gene_deletion_detected.json'
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1123,7 +1213,7 @@ def test_delta_gene_deletion_detected(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed
+        parsed=parsed,
     )
 
     assert len(annotations) == 4
@@ -1187,7 +1277,8 @@ def test_global_inclusion_normalized_already_in_lmdb(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_inclusion_normalized_already_in_lmdb.json')  # noqa
+        'pdf_samples/annotations_test/test_global_inclusion_normalized_already_in_lmdb.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1198,7 +1289,9 @@ def test_global_inclusion_normalized_already_in_lmdb(
         lmdb_service=get_lmdb_service,
         parsed=parsed,
         inclusions=GlobalInclusions(
-            included_genes=mock_global_inclusion_normalized_already_in_lmdb))
+            included_genes=mock_global_inclusion_normalized_already_in_lmdb
+        ),
+    )
 
     assert annotations[1].primary_name == 'CXCL8'
 
@@ -1212,7 +1305,8 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_matched_to_organism_before_if_closest_is_too_far.json')  # noqa
+        'pdf_samples/annotations_test/test_gene_matched_to_organism_before_if_closest_is_too_far.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1221,7 +1315,8 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed)
+        parsed=parsed,
+    )
 
     assert len(annotations) == 5
 
@@ -1240,7 +1335,8 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism.json')  # noqa
+        'pdf_samples/annotations_test/test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism.json',
+    )  # noqa
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1249,7 +1345,8 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed)
+        parsed=parsed,
+    )
 
     assert len(annotations) == 8
 
@@ -1267,7 +1364,8 @@ def test_prioritize_primary_name_that_equals_synonym(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_prioritize_primary_name_that_equals_synonym.json')
+        'pdf_samples/annotations_test/test_prioritize_primary_name_that_equals_synonym.json',
+    )
 
     with open(pdf, 'rb') as f:
         parsed = json.load(f)
@@ -1276,7 +1374,8 @@ def test_prioritize_primary_name_that_equals_synonym(
     annotations = annotate_pdf_for_testing(
         annotation_service=get_annotation_service,
         lmdb_service=get_lmdb_service,
-        parsed=parsed)
+        parsed=parsed,
+    )
 
     assert len(annotations) == 2
 

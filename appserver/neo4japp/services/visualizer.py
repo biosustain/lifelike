@@ -12,7 +12,7 @@ from neo4japp.constants import (
     TYPE_GENE,
     TYPE_LITERATURE_CHEMICAL,
     TYPE_LITERATURE_DISEASE,
-    TYPE_LITERATURE_GENE
+    TYPE_LITERATURE_GENE,
 )
 from neo4japp.data_transfer_objects.visualization import (
     Direction,

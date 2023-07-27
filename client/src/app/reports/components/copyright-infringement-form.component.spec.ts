@@ -16,16 +16,9 @@ describe('CopyrightInfringementFormComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        HttpClientModule,
-        RootStoreModule,
-        RouterTestingModule,
-        SharedModule,
-      ],
-      declarations: [ CopyrightInfringementFormComponent ],
-      providers: [
-        ReportsService
-      ]
+      imports: [HttpClientModule, RootStoreModule, RouterTestingModule, SharedModule],
+      declarations: [CopyrightInfringementFormComponent],
+      providers: [ReportsService],
     });
   });
 

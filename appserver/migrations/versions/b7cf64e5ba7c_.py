@@ -24,14 +24,20 @@ def upgrade():
     op.alter_column('project', 'date_modified', new_column_name='modified_date')
     op.alter_column('project_backup', 'date_modified', new_column_name='modified_date')
     op.alter_column('project_version', 'date_modified', new_column_name='modified_date')
-    op.alter_column('project_version', 'creation_date',
-            existing_type=postgresql.TIMESTAMP(),
-            type_=sa.TIMESTAMP(timezone=True),
-            nullable=False)
-    op.alter_column('project_version', 'modified_date',
-               existing_type=postgresql.TIMESTAMP(),
-               type_=sa.TIMESTAMP(timezone=True),
-               nullable=False)
+    op.alter_column(
+        'project_version',
+        'creation_date',
+        existing_type=postgresql.TIMESTAMP(),
+        type_=sa.TIMESTAMP(timezone=True),
+        nullable=False,
+    )
+    op.alter_column(
+        'project_version',
+        'modified_date',
+        existing_type=postgresql.TIMESTAMP(),
+        type_=sa.TIMESTAMP(timezone=True),
+        nullable=False,
+    )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
         data_upgrades()
@@ -42,14 +48,20 @@ def downgrade():
     op.alter_column('project', 'modified_date', new_column_name='date_modified')
     op.alter_column('project_backup', 'modified_date', new_column_name='date_modified')
     op.alter_column('project_version', 'modified_date', new_column_name='date_modified')
-    op.alter_column('project_version', 'modified_date',
-               existing_type=sa.TIMESTAMP(timezone=True),
-               type_=postgresql.TIMESTAMP(),
-               nullable=True)
-    op.alter_column('project_version', 'creation_date',
-               existing_type=sa.TIMESTAMP(timezone=True),
-               type_=postgresql.TIMESTAMP(),
-               nullable=True)
+    op.alter_column(
+        'project_version',
+        'modified_date',
+        existing_type=sa.TIMESTAMP(timezone=True),
+        type_=postgresql.TIMESTAMP(),
+        nullable=True,
+    )
+    op.alter_column(
+        'project_version',
+        'creation_date',
+        existing_type=sa.TIMESTAMP(timezone=True),
+        type_=postgresql.TIMESTAMP(),
+        nullable=True,
+    )
     # ### end Alembic commands ###
     # NOTE: In practice perfect downgrades are difficult and in some cases
     # impossible! It is more practical to use database backups/snapshots to

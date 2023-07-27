@@ -7,7 +7,9 @@ from zipfile import ZipFile
 
 class GoChangeLogsGenerator(ChangeLogFileGenerator):
     def __init__(self, author, zip_data_file: str, initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_GO, None, initial_load)
+        ChangeLogFileGenerator.__init__(
+            self, author, zip_data_file, DB_GO, None, initial_load
+        )
         self.index_quieries = []
         self.logger = logging.getLogger(__name__)
 
@@ -26,9 +28,14 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
                 namespaces = df[PROP_NAMESPACE].drop_duplicates()
                 for namespace in namespaces:
                     entity_label = namespace.title().replace('_', '')
-                    node_changeset = self.get_node_changeset(df, filename, entity_label, NODE_GO,
-                                                             row_filter_col=PROP_NAMESPACE,
-                                                             row_filter_val=namespace)
+                    node_changeset = self.get_node_changeset(
+                        df,
+                        filename,
+                        entity_label,
+                        NODE_GO,
+                        row_filter_col=PROP_NAMESPACE,
+                        row_filter_val=namespace,
+                    )
                     self.change_sets.append(node_changeset)
 
     def add_synonym_changesets(self):
@@ -47,7 +54,9 @@ class GoChangeLogsGenerator(ChangeLogFileGenerator):
             if file in filenames:
                 with zip.open(file) as f:
                     df = pd.read_csv(f, sep='\t')
-                    changesets = self.get_relationships_changesets(df, file, NODE_GO, NODE_GO)
+                    changesets = self.get_relationships_changesets(
+                        df, file, NODE_GO, NODE_GO
+                    )
                     self.change_sets += changesets
 
 
@@ -59,4 +68,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

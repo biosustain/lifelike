@@ -19,17 +19,18 @@ const SANKEY_STATE_KEYS: Array<keyof SankeyState> = [
   'fontSizeScale',
   'viewName',
   'baseViewName',
-  'alignId'
+  'alignId',
 ];
 
 // Have had problem with lodash pick in here, so used object transformation instead
-export const getCommonState = state => transform(
-  state,
-  (result, value, key: keyof SankeyState) => {
-    if (SANKEY_STATE_KEYS.includes(key)) {
-      result[key] = value;
-    }
-  },
-  {}
-);
-export const getBaseState = state => omit(state, SANKEY_STATE_KEYS);
+export const getCommonState = (state) =>
+  transform(
+    state,
+    (result, value, key: keyof SankeyState) => {
+      if (SANKEY_STATE_KEYS.includes(key)) {
+        result[key] = value;
+      }
+    },
+    {}
+  );
+export const getBaseState = (state) => omit(state, SANKEY_STATE_KEYS);

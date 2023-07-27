@@ -9,6 +9,7 @@ from .exceptions import JWTTokenException
 auth = HTTPTokenAuth('Bearer')
 jwt_client = jwt.PyJWKClient(environ.get('JWKS_URL', ''))
 
+
 def login_exempt(f):
     """
     Decorator used to specify endpoints that do not require user authentication. For example,
@@ -35,10 +36,7 @@ class TokenService:
     def decode_token(self, token: str, **options):
         try:
             return jwt.decode(
-                token,
-                key=self._get_key(token),
-                algorithms=[self.algorithm],
-                **options
+                token, key=self._get_key(token), algorithms=[self.algorithm], **options
             )
         # default to generic error message
         # NOTE: is this better than avoiding to
@@ -47,19 +45,20 @@ class TokenService:
         except InvalidTokenError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session is invalid, please try logging back in.')  # noqa
+                message='The current authentication session is invalid, please try logging back in.',
+            )  # noqa
         except ExpiredSignatureError:
             raise JWTTokenException(
                 title='Failed to Authenticate',
-                message='The current authentication session has expired, please try logging back in.')  # noqa
+                message='The current authentication session has expired, please try logging back in.',
+            )  # noqa
 
 
 @auth.verify_token
 def verify_token(token):
-    """ Verify JWT """
+    """Verify JWT"""
     token_service = TokenService(
-        current_app.config['JWT_SECRET'],
-        current_app.config['JWT_ALGORITHM']
+        current_app.config['JWT_SECRET'], current_app.config['JWT_ALGORITHM']
     )
     token_service.decode_token(token, audience=current_app.config['JWT_AUDIENCE'])
     return True

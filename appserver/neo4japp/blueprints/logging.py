@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import current_app, g, Blueprint, jsonify
 from webargs.flaskparser import use_args
 
@@ -11,7 +13,7 @@ bp = Blueprint('logging', __name__, url_prefix='/logging')
 @bp.route('/', methods=['POST'])
 @use_args(ClientErrorSchema())
 def client_logging(args):
-    """ NOTE: This API endpoint is potentially a vulnerable point.
+    """NOTE: This API endpoint is potentially a vulnerable point.
     This has to be paired with an API throttle on the webserver
     and carefully monitored for abuse. We could also reduce the abuse
     through proper CORS settings.
@@ -31,10 +33,6 @@ def client_logging(args):
         url=args.get('url', 'not specified'),
     )
     current_app.logger.error(
-        args.get('detail', 'No further details'),
-        extra={
-            **err.to_dict(),
-            **{'to_sentry': False}
-        }
+        args.get('detail', 'No further details'), extra=err.to_dict()
     )
-    return jsonify(dict(result='success')), 200
+    return jsonify(dict(result='success')), HTTPStatus.OK

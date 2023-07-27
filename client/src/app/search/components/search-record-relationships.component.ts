@@ -17,7 +17,6 @@ import { GraphSearchParameters } from '../graph-search';
   styleUrls: ['./search-record-relationships.component.scss'],
 })
 export class SearchRecordRelationshipsComponent {
-
   PUBMED_URL: string = PUBMED_URL;
 
   // TODO: We should come up with a consistent way to mark variables as private without using '_', or
@@ -59,8 +58,7 @@ export class SearchRecordRelationshipsComponent {
     return this.prvNode;
   }
 
-  constructor() {
-  }
+  constructor() {}
 
   setChemicalDataStrings(chemical: GraphNode) {
     this.chemicalDisplayName = isNil(chemical.displayName) ? '' : chemical.displayName;
@@ -75,21 +73,28 @@ export class SearchRecordRelationshipsComponent {
   dragStarted(event: DragEvent) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     dataTransfer.setData('text/plain', this.node.node.displayName);
-    dataTransfer.setData('application/***ARANGO_DB_NAME***-node', JSON.stringify({
-      display_name: this.node.node.displayName,
-      label: this.node.node.label.toLowerCase(),
-      sub_labels: [],
-      data: {
-        hyperlinks: [{
-          domain: '',
-          url: getLink(this.node),
-        }],
-        references: [{
-          type: 'DATABASE',
-          id: getLink(this.node),
-        }],
-      },
-    } as Partial<UniversalGraphNode>));
+    dataTransfer.setData(
+      'application/***ARANGO_DB_NAME***-node',
+      JSON.stringify({
+        display_name: this.node.node.displayName,
+        label: this.node.node.label.toLowerCase(),
+        sub_labels: [],
+        data: {
+          hyperlinks: [
+            {
+              domain: '',
+              url: getLink(this.node),
+            },
+          ],
+          references: [
+            {
+              type: 'DATABASE',
+              id: getLink(this.node),
+            },
+          ],
+        },
+      } as Partial<UniversalGraphNode>)
+    );
   }
 
   getVisualizerQueryParams(params) {

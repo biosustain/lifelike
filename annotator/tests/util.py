@@ -6,7 +6,7 @@ from app.services.data_transfer_objects.dto import (
     Annotation,
     GeneAnnotation,
     NLPResults,
-    SpecifiedOrganismStrain
+    SpecifiedOrganismStrain,
 )
 from app.services.constants import EntityType, OrganismCategory
 from app.services.data_transfer_objects.dto import GlobalExclusions, GlobalInclusions
@@ -22,7 +22,7 @@ class MockEntityRecognitionService(EntityRecognitionService):
         self,
         exclusions: GlobalExclusions,
         inclusions: GlobalInclusions,
-        lmdb: LMDBService
+        lmdb: LMDBService,
     ):
         super().__init__(exclusions, inclusions, lmdb)
 
@@ -39,9 +39,7 @@ def get_recognition_service(get_lmdb_service, exclusions=None, inclusions=None):
         inclusions = GlobalInclusions()
 
     return MockEntityRecognitionService(
-        exclusions=exclusions,
-        inclusions=inclusions,
-        lmdb=get_lmdb_service
+        exclusions=exclusions, inclusions=inclusions, lmdb=get_lmdb_service
     )
 
 
@@ -108,7 +106,7 @@ def annotate_pdf_for_testing(
     exclusions=None,
     inclusions=None,
     nlp_results=None,
-    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category='')
+    specified_organism=SpecifiedOrganismStrain(synonym='', organism_id='', category=''),
 ):
     tokenizer = get_annotation_tokenizer()
     entity_recognition = get_recognition_service(lmdb_service, exclusions, inclusions)
@@ -117,12 +115,11 @@ def annotate_pdf_for_testing(
         nlp_results = NLPResults()
 
     entity_results = entity_recognition.identify(
-        tokens=tokenizer.create(parsed),
-        nlp_results=nlp_results
+        tokens=tokenizer.create(parsed), nlp_results=nlp_results
     )
     return annotation_service.create_annotations(
         custom_annotations=custom_annotations,
         entity_results=entity_results,
         entity_type_and_id_pairs=annotation_service.get_entities_to_annotate(),
-        specified_organism=specified_organism
+        specified_organism=specified_organism,
     )

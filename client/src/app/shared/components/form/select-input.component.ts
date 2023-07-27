@@ -25,18 +25,18 @@ import { MouseNavigableDirective } from '../../directives/mouse-navigable.direct
 @Component({
   selector: 'app-select-input',
   templateUrl: './select-input.component.html',
-  styleUrls: [
-    './select-input.component.scss',
+  styleUrls: ['./select-input.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: SelectInputComponent,
+      multi: true,
+    },
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: SelectInputComponent,
-    multi: true,
-  }],
 })
 export class SelectInputComponent<T extends { label?: string }>
-  implements OnDestroy, OnChanges, AfterViewInit, AfterViewChecked, ControlValueAccessor {
-
+  implements OnDestroy, OnChanges, AfterViewInit, AfterViewChecked, ControlValueAccessor
+{
   // TODO: Handle wrapping
 
   @Input() choices: T[] = [];
@@ -47,16 +47,18 @@ export class SelectInputComponent<T extends { label?: string }>
   @Input() loading = false;
   @Output() choiceListRequest = new EventEmitter<ChoiceListRequest>();
 
-  @ViewChild('inputContainer', {static: true}) inputContainerElement: ElementRef;
-  @ViewChild('input', {static: true}) inputElement: ElementRef;
-  @ViewChild('dropdown', {static: true}) dropdownElement: ElementRef;
+  @ViewChild('inputContainer', { static: true }) inputContainerElement: ElementRef;
+  @ViewChild('input', { static: true }) inputElement: ElementRef;
+  @ViewChild('dropdown', { static: true }) dropdownElement: ElementRef;
   @ViewChild(MouseNavigableDirective, {
     static: true,
     read: MouseNavigableDirective,
-  }) mouseNavigableDirective;
-  @ContentChild('inputChoiceTemplate', {static: false}) inputChoiceTemplateRef: TemplateRef<any>;
-  @ContentChild('dropdownChoiceTemplate', {static: false}) dropdownChoiceTemplateRef: TemplateRef<any>;
-  @ContentChild('noResultsTemplate', {static: false}) noResultsTemplateRef: TemplateRef<any>;
+  })
+  mouseNavigableDirective;
+  @ContentChild('inputChoiceTemplate', { static: false }) inputChoiceTemplateRef: TemplateRef<any>;
+  @ContentChild('dropdownChoiceTemplate', { static: false })
+  dropdownChoiceTemplateRef: TemplateRef<any>;
+  @ContentChild('noResultsTemplate', { static: false }) noResultsTemplateRef: TemplateRef<any>;
 
   selection: Map<any, T> = new Map<any, T>();
   unselectedChoices: T[] = [];
@@ -68,9 +70,7 @@ export class SelectInputComponent<T extends { label?: string }>
   protected touchCallback: (() => any) | undefined;
   protected readonly subscriptions = new Subscription();
 
-  constructor(protected readonly element: ElementRef,
-              protected readonly renderer: Renderer2) {
-  }
+  constructor(protected readonly element: ElementRef, protected readonly renderer: Renderer2) {}
 
   // Lifecycle
   // ---------------------------------
@@ -94,21 +94,28 @@ export class SelectInputComponent<T extends { label?: string }>
     this.dropdownController = new DropdownController(
       this.renderer,
       this.element.nativeElement,
-      this.dropdownElement.nativeElement, {
+      this.dropdownElement.nativeElement,
+      {
         viewportSpacing: 5,
         fixedAnchorPoint: true,
-      },
+      }
     );
 
-    this.subscriptions.add(fromEvent(document.body, 'contextmenu', {
-      capture: true,
-    }).subscribe(this.onInteractionEvent.bind(this)));
-    this.subscriptions.add(fromEvent(document.body, 'click', {
-      capture: true,
-    }).subscribe(this.onInteractionEvent.bind(this)));
-    this.subscriptions.add(fromEvent(document.body, 'focusin', {
-      capture: true,
-    }).subscribe(this.onInteractionEvent.bind(this)));
+    this.subscriptions.add(
+      fromEvent(document.body, 'contextmenu', {
+        capture: true,
+      }).subscribe(this.onInteractionEvent.bind(this))
+    );
+    this.subscriptions.add(
+      fromEvent(document.body, 'click', {
+        capture: true,
+      }).subscribe(this.onInteractionEvent.bind(this))
+    );
+    this.subscriptions.add(
+      fromEvent(document.body, 'focusin', {
+        capture: true,
+      }).subscribe(this.onInteractionEvent.bind(this))
+    );
 
     this.updatePlaceholder();
   }
@@ -155,8 +162,11 @@ export class SelectInputComponent<T extends { label?: string }>
       const textSelection = window.getSelection();
       if (textSelection.rangeCount) {
         const range = textSelection.getRangeAt(0);
-        if (range.commonAncestorContainer === this.inputElement.nativeElement
-          && range.startOffset === 0 && range.endOffset === 0) {
+        if (
+          range.commonAncestorContainer === this.inputElement.nativeElement &&
+          range.startOffset === 0 &&
+          range.endOffset === 0
+        ) {
           if (this.selection.size) {
             const selection = this.selectedChoices;
             this.deselect(selection[selection.length - 1]);
@@ -213,15 +223,16 @@ export class SelectInputComponent<T extends { label?: string }>
   }
 
   protected updateUnselectedChoices(choices: T[]) {
-    this.unselectedChoices = (choices as T[])
-      .filter(choice => !this.isSelected(choice));
+    this.unselectedChoices = (choices as T[]).filter((choice) => !this.isSelected(choice));
   }
 
   protected updatePlaceholder() {
-    const escapedPlaceholder = window.CSS && CSS.escape ? CSS.escape(this.placeholder) :
-      this.placeholder.replace(/'/g, '');
-    this.inputElement.nativeElement.style.setProperty('--placeholder-text',
-      `'${escapedPlaceholder}'`);
+    const escapedPlaceholder =
+      window.CSS && CSS.escape ? CSS.escape(this.placeholder) : this.placeholder.replace(/'/g, '');
+    this.inputElement.nativeElement.style.setProperty(
+      '--placeholder-text',
+      `'${escapedPlaceholder}'`
+    );
   }
 
   // Dropdown control
@@ -246,8 +257,10 @@ export class SelectInputComponent<T extends { label?: string }>
 
   private closeDropdownIfNotFocused(target: EventTarget | null) {
     if (target != null) {
-      if (target !== this.inputElement.nativeElement &&
-        !this.dropdownElement.nativeElement.contains(target)) {
+      if (
+        target !== this.inputElement.nativeElement &&
+        !this.dropdownElement.nativeElement.contains(target)
+      ) {
         this.focusOut();
       }
     }

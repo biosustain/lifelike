@@ -1,9 +1,9 @@
 from arango import ArangoClient
 from arango.database import StandardDatabase
 from datetime import datetime
-from flask import current_app
 from typing import Any, Dict, List, Optional
 
+from neo4japp.utils.globals import config
 
 # Helpers
 
@@ -31,12 +31,12 @@ def get_db(
     arango_client: ArangoClient,
     name: Optional[str] = None,
     username: Optional[str] = None,
-    password: Optional[str] = None
+    password: Optional[str] = None,
 ):
     return arango_client.db(
-        name=name or current_app.config.get('ARANGO_DB_NAME'),
-        username=username or current_app.config.get('ARANGO_USERNAME'),
-        password=password or current_app.config.get('ARANGO_PASSWORD'),
+        name=name or config.get('ARANGO_DB_NAME'),
+        username=username or config.get('ARANGO_USERNAME'),
+        password=password or config.get('ARANGO_PASSWORD'),
     )
 
 

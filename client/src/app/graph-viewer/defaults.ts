@@ -8,8 +8,8 @@ export const NODE_DEFAULTS_FACTORY = () => ({
   sub_labels: [],
   data: {
     x: 0,
-    y: 0
-  }
+    y: 0,
+  },
 });
 
 // Use factory so it might contain muttable parameters

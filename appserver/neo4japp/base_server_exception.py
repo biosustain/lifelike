@@ -4,11 +4,11 @@ from typing import Optional, Tuple
 
 from pipenv.vendor.ruamel import yaml
 
-from neo4japp.utils.transaction import get_transaction_id
 from neo4japp.utils.string import indent_lines, compose_lines
+from neo4japp.utils.transaction_id import transaction_id
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, eq=False, frozen=True)
 class BaseServerException(ABC):
     title: str
     message: Optional[str] = None
@@ -24,7 +24,7 @@ class BaseServerException(ABC):
 
     @property
     def transaction_id(self):
-        return get_transaction_id()
+        return transaction_id
 
     @property
     def type(self):
@@ -41,12 +41,26 @@ class BaseServerException(ABC):
             self.__repr__(),
             *indent_lines(
                 # Additional msgs wrapped with new lines, or just singular newline
-                *(('', *self.additional_msgs, '') if len(self.additional_msgs) else ('',)),
+                *(
+                    ('', *self.additional_msgs, '')
+                    if len(self.additional_msgs)
+                    else ('',)
+                ),
                 *yaml.dump(
-                    {k: v for k, v in self.to_dict().items() if v and k not in (
-                        # Already printed above
-                        'type', 'transaction_id', 'title', 'message', 'additional_msgs'
-                    )}
-                ).splitlines()
-            )
+                    {
+                        k: v
+                        for k, v in self.to_dict().items()
+                        if v
+                        and k
+                        not in (
+                            # Already printed above
+                            'type',
+                            'transaction_id',
+                            'title',
+                            'message',
+                            'additional_msgs',
+                        )
+                    }
+                ).splitlines(),
+            ),
         )

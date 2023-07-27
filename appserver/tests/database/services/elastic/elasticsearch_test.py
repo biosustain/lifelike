@@ -1,8 +1,9 @@
 import base64
 import pytest
 
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE
+from neo4japp.constants import FRAGMENT_SIZE
 from neo4japp.services.elastic.constants import ATTACHMENT_PIPELINE_ID
+from neo4japp.utils.globals import config
 
 
 @pytest.fixture(scope='function')
@@ -58,7 +59,7 @@ def return_fields():
 @pytest.fixture(scope='function')
 def pdf_document(elastic_service):
     elastic_service.elastic_client.create(
-        index=FILE_INDEX_ID,
+        index=config.get('ELASTIC_FILE_INDEX_ID'),
         pipeline=ATTACHMENT_PIPELINE_ID,
         id='1',
         body={
@@ -73,17 +74,17 @@ def pdf_document(elastic_service):
             'doi': None,
             'public': True,
             'id': '1',
-            'type': 'pdf'
+            'type': 'pdf',
         },
         # This option is MANDATORY! Otherwise the document won't be immediately visible to search.
-        refresh='true'
+        refresh='true',
     )
 
 
 @pytest.fixture(scope='function')
 def map_document(elastic_service):
     elastic_service.elastic_client.create(
-        index=FILE_INDEX_ID,
+        index=config.get('ELASTIC_FILE_INDEX_ID'),
         pipeline=ATTACHMENT_PIPELINE_ID,
         id='2',
         body={
@@ -98,10 +99,10 @@ def map_document(elastic_service):
             'doi': None,
             'public': True,
             'id': '2',
-            'type': 'pdf'
+            'type': 'pdf',
         },
         # This option is MANDATORY! Otherwise the document won't be immediately visible to search.
-        refresh='true'
+        refresh='true',
     )
 
 
@@ -111,10 +112,10 @@ def test_should_not_get_results_from_empty_db(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BOLA3',
         offset=0,
         limit=1,
@@ -122,7 +123,7 @@ def test_should_not_get_results_from_empty_db(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -136,10 +137,10 @@ def test_can_get_results_from_pdf(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BOLA3',
         offset=0,
         limit=1,
@@ -147,7 +148,7 @@ def test_can_get_results_from_pdf(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
 
     res = res['hits']['hits']
@@ -162,10 +163,10 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BO*A3',
         offset=0,
         limit=1,
@@ -173,7 +174,7 @@ def test_can_get_results_from_pdf_with_asterisk_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -187,10 +188,10 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='BO?A3',
         offset=0,
         limit=1,
@@ -198,7 +199,7 @@ def test_can_get_results_from_pdf_with_question_mark_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -212,10 +213,10 @@ def test_can_get_results_from_map(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='COVID',
         offset=0,
         limit=1,
@@ -223,7 +224,7 @@ def test_can_get_results_from_map(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -237,10 +238,10 @@ def test_can_get_results_from_map_with_wildcard_phrase(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='CO*ID',
         offset=0,
         limit=1,
@@ -248,7 +249,7 @@ def test_can_get_results_from_map_with_wildcard_phrase(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -262,10 +263,10 @@ def test_can_get_results_with_quoted_phrase(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='"mock map document"',
         offset=0,
         limit=1,
@@ -273,7 +274,7 @@ def test_can_get_results_with_quoted_phrase(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
     res = res['hits']['hits']
 
@@ -287,10 +288,10 @@ def test_using_wildcard_in_phrase_does_not_work(
     query_filter_map_and_pdf,
     text_fields,
     text_field_boosts,
-    return_fields
+    return_fields,
 ):
     res, _ = elastic_service.search(
-        index_id=FILE_INDEX_ID,
+        index_id=config.get('ELASTIC_FILE_INDEX_ID'),
         user_search_query='"BO*A3"',
         offset=0,
         limit=1,
@@ -298,7 +299,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         text_field_boosts=text_field_boosts,
         filter_=query_filter_map_and_pdf,
         highlight=highlight,
-        return_fields=return_fields
+        return_fields=return_fields,
     )
 
     res = res['hits']['hits']
@@ -324,7 +325,6 @@ def test_using_wildcard_in_phrase_does_not_work(
         (
             'p q or r',
             'p and q or r',
-
         ),
         (
             'p or q r',
@@ -424,11 +424,7 @@ def test_using_wildcard_in_phrase_does_not_work(
         ),
     ],
 )
-def test_pre_process_query(
-    elastic_service,
-    test,
-    expected
-):
+def test_pre_process_query(elastic_service, test, expected):
     res = elastic_service._pre_process_query(test)
     assert res == expected
 
@@ -446,7 +442,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -460,7 +456,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -477,7 +473,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -488,9 +484,9 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -508,7 +504,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -519,7 +515,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -536,7 +532,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -553,7 +549,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -567,12 +563,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     }
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -590,7 +586,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -604,12 +600,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -630,7 +626,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     }
                                 ]
@@ -656,7 +652,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -667,7 +663,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
@@ -693,7 +689,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -704,9 +700,9 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
-                                    }
+                                    },
                                 ]
                             }
                         }
@@ -727,7 +723,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -747,7 +743,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -758,7 +754,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -778,7 +774,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -792,12 +788,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -815,7 +811,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -832,7 +828,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                             ]
@@ -846,12 +842,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
-                                    }
+                                    },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -869,7 +865,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -886,7 +882,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                             ]
@@ -900,12 +896,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -923,7 +919,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -934,7 +930,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -945,7 +941,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -965,7 +961,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -976,7 +972,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -987,7 +983,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1007,7 +1003,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1018,7 +1014,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1029,7 +1025,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1049,7 +1045,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1063,7 +1059,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
@@ -1080,12 +1076,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1103,7 +1099,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1120,7 +1116,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                                 {
@@ -1131,7 +1127,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                             ]
@@ -1139,7 +1135,7 @@ def test_pre_process_query(
                                     }
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1157,7 +1153,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1174,7 +1170,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                                 {
@@ -1185,7 +1181,7 @@ def test_pre_process_query(
                                                             'description^1',
                                                             'data.content^1',
                                                             'filename^3',
-                                                        ]
+                                                        ],
                                                     }
                                                 },
                                             ]
@@ -1193,7 +1189,7 @@ def test_pre_process_query(
                                     }
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1211,7 +1207,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1222,7 +1218,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1236,7 +1232,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1247,12 +1243,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1270,7 +1266,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1281,7 +1277,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1295,7 +1291,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1306,12 +1302,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1332,7 +1328,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1343,7 +1339,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1354,7 +1350,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
@@ -1368,7 +1364,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1391,7 +1387,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1402,7 +1398,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1413,7 +1409,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
@@ -1427,7 +1423,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1447,7 +1443,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1458,7 +1454,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1472,12 +1468,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1495,7 +1491,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1509,12 +1505,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1532,7 +1528,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1546,12 +1542,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1569,7 +1565,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1583,7 +1579,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1594,12 +1590,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1617,7 +1613,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1631,7 +1627,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1642,12 +1638,12 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1665,7 +1661,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1676,7 +1672,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1687,7 +1683,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1698,7 +1694,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1721,7 +1717,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
@@ -1732,7 +1728,7 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                 ]
@@ -1746,7 +1742,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -1763,7 +1759,7 @@ def test_pre_process_query(
                                 'description': {
                                     'value': 'co*id',
                                     'boost': 1,
-                                    'case_insensitive': True
+                                    'case_insensitive': True,
                                 },
                             }
                         },
@@ -1772,7 +1768,7 @@ def test_pre_process_query(
                                 'data.content': {
                                     'value': 'co*id',
                                     'boost': 1,
-                                    'case_insensitive': True
+                                    'case_insensitive': True,
                                 },
                             }
                         },
@@ -1781,13 +1777,13 @@ def test_pre_process_query(
                                 'filename': {
                                     'value': 'co*id',
                                     'boost': 3,
-                                    'case_insensitive': True
+                                    'case_insensitive': True,
                                 }
                             }
                         },
                     ]
                 }
-            }
+            },
         ),
         (
             'human type:map',
@@ -1802,10 +1798,10 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
-                        {'term': {'mime_type': 'vnd.***ARANGO_DB_NAME***.document/map'}}
+                        {'term': {'mime_type': 'vnd.***ARANGO_DB_NAME***.document/map'}},
                     ]
                 }
             },
@@ -1823,7 +1819,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -1837,14 +1833,14 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
                                         'term': {
                                             'description': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 1
+                                                'boost': 1,
                                             }
                                         }
                                     },
@@ -1852,7 +1848,7 @@ def test_pre_process_query(
                                         'term': {
                                             'data.content': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 1
+                                                'boost': 1,
                                             }
                                         }
                                     },
@@ -1860,13 +1856,13 @@ def test_pre_process_query(
                                         'term': {
                                             'filename': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 3
+                                                'boost': 3,
                                             }
                                         }
-                                    }
+                                    },
                                 ]
                             }
-                        }
+                        },
                     ]
                 }
             },
@@ -1884,7 +1880,7 @@ def test_pre_process_query(
                                             'description': {
                                                 'value': 'co*id',
                                                 'boost': 1,
-                                                'case_insensitive': True
+                                                'case_insensitive': True,
                                             },
                                         }
                                     },
@@ -1893,7 +1889,7 @@ def test_pre_process_query(
                                             'data.content': {
                                                 'value': 'co*id',
                                                 'boost': 1,
-                                                'case_insensitive': True
+                                                'case_insensitive': True,
                                             },
                                         }
                                     },
@@ -1902,7 +1898,7 @@ def test_pre_process_query(
                                             'filename': {
                                                 'value': 'co*id',
                                                 'boost': 3,
-                                                'case_insensitive': True
+                                                'case_insensitive': True,
                                             }
                                         }
                                     },
@@ -1920,14 +1916,14 @@ def test_pre_process_query(
                                                 'description^1',
                                                 'data.content^1',
                                                 'filename^3',
-                                            ]
+                                            ],
                                         }
                                     },
                                     {
                                         'term': {
                                             'description': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 1
+                                                'boost': 1,
                                             }
                                         }
                                     },
@@ -1935,7 +1931,7 @@ def test_pre_process_query(
                                         'term': {
                                             'data.content': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 1
+                                                'boost': 1,
                                             }
                                         }
                                     },
@@ -1943,17 +1939,17 @@ def test_pre_process_query(
                                         'term': {
                                             'filename': {
                                                 'value': 'benzene-1,2-diol;hydrochloride',
-                                                'boost': 3
+                                                'boost': 3,
                                             }
                                         }
-                                    }
+                                    },
                                 ]
                             }
                         },
-                        {'term': {'mime_type': 'vnd.***ARANGO_DB_NAME***.document/map'}}
+                        {'term': {'mime_type': 'vnd.***ARANGO_DB_NAME***.document/map'}},
                     ]
                 }
-            }
+            },
         ),
         (
             '"(dog and cat)"',
@@ -1965,7 +1961,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -1979,7 +1975,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -1993,7 +1989,7 @@ def test_pre_process_query(
                         'description^1',
                         'data.content^1',
                         'filename^3',
-                    ]
+                    ],
                 }
             },
         ),
@@ -2010,7 +2006,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -2021,7 +2017,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -2041,7 +2037,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -2052,7 +2048,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
@@ -2072,7 +2068,7 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                         {
@@ -2083,20 +2079,16 @@ def test_pre_process_query(
                                     'description^1',
                                     'data.content^1',
                                     'filename^3',
-                                ]
+                                ],
                             }
                         },
                     ]
                 }
             },
-        )
+        ),
     ],
 )
-def test_user_query_parser(
-    elastic_service,
-    test,
-    expected
-):
+def test_user_query_parser(elastic_service, test, expected):
     text_fields = ['description', 'data.content', 'filename']
     text_field_boosts = {'description': 1, 'data.content': 1, 'filename': 3}
 
@@ -2124,11 +2116,7 @@ def test_user_query_parser(
         ),
     ],
 )
-def test_strip_unmatched_quotations(
-    elastic_service,
-    test,
-    expected
-):
+def test_strip_unmatched_quotations(elastic_service, test, expected):
     res = elastic_service._strip_unmatched_quotations(test)
     assert res == expected
 
@@ -2136,85 +2124,27 @@ def test_strip_unmatched_quotations(
 @pytest.mark.parametrize(
     'test, expected',
     [
-        (
-            '()',
-            '()'
-        ),
-        (
-            '(())',
-            '(())'
-        ),
-        (
-            '() ()',
-            '() ()'
-        ),
-        (
-            '(()) ()',
-            '(()) ()'
-        ),
-        (
-            '(',
-            ''
-        ),
-        (
-            '(()',
-            '()'
-        ),
-        (
-            '() (',
-            '() '
-        ),
-        (
-            '(() ()',
-            '() ()'
-        ),
-        (
-            '( ()',
-            ' ()'
-        ),
-        (
-            '(()) (',
-            '(()) '
-        ),
-        (
-            ')(',
-            ''
-        ),
-        (
-            ')',
-            ''
-        ),
-        (
-            '())',
-            '()'
-        ),
-        (
-            '()) ()',
-            '() ()'
-        ),
-        (
-            ')))',
-            ''
-        ),
-        (
-            '(((',
-            ''
-        ),
-        (
-            '())))',
-            '()'
-        ),
-        (
-            '((()',
-            '()'
-        ),
+        ('()', '()'),
+        ('(())', '(())'),
+        ('() ()', '() ()'),
+        ('(()) ()', '(()) ()'),
+        ('(', ''),
+        ('(()', '()'),
+        ('() (', '() '),
+        ('(() ()', '() ()'),
+        ('( ()', ' ()'),
+        ('(()) (', '(()) '),
+        (')(', ''),
+        (')', ''),
+        ('())', '()'),
+        ('()) ()', '() ()'),
+        (')))', ''),
+        ('(((', ''),
+        ('())))', '()'),
+        ('((()', '()'),
     ],
 )
-def test_strip_unmatched_parens(
-    elastic_service,
-    test,
-    expected
-):
+def test_strip_unmatched_parens(elastic_service, test, expected):
     res = elastic_service._strip_unmatched_parens(test)
     assert res == expected
 
@@ -2222,40 +2152,27 @@ def test_strip_unmatched_parens(
 @pytest.mark.parametrize(
     'test, expected',
     [
-        (
-            '"(p and q"',
-            ['(p and q']
-        ),
-        (
-            'cat or not (dog AND mouse)',
-            ['cat', 'dog', 'mouse']
-        ),
-        (
-            '(cat or "dog or mouse") "AND fish"',
-            ['cat', 'dog or mouse', 'AND fish']
-        ),
+        ('"(p and q"', ['(p and q']),
+        ('cat or not (dog AND mouse)', ['cat', 'dog', 'mouse']),
+        ('(cat or "dog or mouse") "AND fish"', ['cat', 'dog or mouse', 'AND fish']),
         (
             'epinephrine benzene-1,2-diol;hydrochloride',
-            ['epinephrine', 'benzene-1,2-diol;hydrochloride']
+            ['epinephrine', 'benzene-1,2-diol;hydrochloride'],
         ),
         (
             '"epinephrine benzene-1,2-diol;hydrochloride"',
-            ['epinephrine benzene-1,2-diol;hydrochloride']
+            ['epinephrine benzene-1,2-diol;hydrochloride'],
         ),
         (
             '"epinephrine benzene-1,2-diol;hydrochloride',
-            ['epinephrine', 'benzene-1,2-diol;hydrochloride']
+            ['epinephrine', 'benzene-1,2-diol;hydrochloride'],
         ),
         (
             'co*id benzene-1,2-diol;hydrochloride',
-            ['co*id', 'benzene-1,2-diol;hydrochloride']
+            ['co*id', 'benzene-1,2-diol;hydrochloride'],
         ),
-    ]
+    ],
 )
-def test_get_words_phrases_and_wildcards(
-    elastic_service,
-    test,
-    expected
-):
+def test_get_words_phrases_and_wildcards(elastic_service, test, expected):
     res = elastic_service._get_words_phrases_and_wildcards(test)
     assert set(res) == set(expected)

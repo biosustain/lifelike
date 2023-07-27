@@ -8,11 +8,11 @@ from neo4japp.constants import (
     COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
     LIFELIKE_EMAIL_ACCOUNT,
     MESSAGE_SENDER_IDENTITY,
-    SEND_GRID_API_CLIENT,
 )
 from neo4japp.database import db
 from neo4japp.models.reports import CopyrightInfringementRequest
 from neo4japp.schemas.reports import CopyrightInfringementRequestSchema
+from neo4japp.services.send_grid import get_send_grid_service
 
 bp = Blueprint('reports', __name__, url_prefix='/reports')
 
@@ -63,7 +63,7 @@ class CopyrightInfringementReportView(MethodView):
         )
         message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
         try:
-            SEND_GRID_API_CLIENT.send(message)
+            get_send_grid_service().send(message)
         except Exception as e:
             with db.session.begin_nested():
                 # If for some reason we cannot send a confirmation email, delete the row we just

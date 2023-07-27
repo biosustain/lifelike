@@ -4,6 +4,10 @@ import sys
 import unicodedata
 
 
+def sub_whitespace(text: str, sub=" ") -> str:
+    return re.sub(r"\s+", sub, text)
+
+
 def is_nice_word_boundary_char(ch):
     return not unicodedata.category(ch)[0] in ('C', 'Z')
 
@@ -19,9 +23,9 @@ def is_nice_filename_char(ch):
 
 all_unicode_chars = ''.join(chr(c) for c in range(sys.maxunicode + 1))
 unicode_whitespace = ''.join(re.findall(r'\s', all_unicode_chars))
-stripped_characters = ''.join(ch for ch in all_unicode_chars if (
-        unicodedata.category(ch)[0] in ('C', 'Z')
-))
+stripped_characters = ''.join(
+    ch for ch in all_unicode_chars if (unicodedata.category(ch)[0] in ('C', 'Z'))
+)
 
 
 def extract_text(d):

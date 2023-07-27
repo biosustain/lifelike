@@ -21,15 +21,19 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
 
   readonly form: FormGroup = new FormGroup({
     name: new FormControl('', [
-      Validators.required, noStartOrEndWhitespaceValidator, filenameValidator
+      Validators.required,
+      noStartOrEndWhitespaceValidator,
+      filenameValidator,
     ]),
     description: new FormControl(),
     public: new FormControl(false),
   });
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog);
   }
 
@@ -57,13 +61,13 @@ export class ProjectEditDialogComponent extends CommonFormDialogComponent<Projec
     const projectChanges = {
       name: value.name,
       description: value.description,
-      public: value.public
+      public: value.public,
     };
 
     const request: ProjectCreateRequest = {
       name: value.name,
       description: value.description,
-      public: value.public
+      public: value.public,
     };
 
     return {

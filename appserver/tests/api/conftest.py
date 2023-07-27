@@ -26,7 +26,10 @@ from neo4japp.services.elastic import ElasticService
 #################
 # Service mocks
 ################
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    PDFTypeProvider,
+)
 
 
 @pytest.fixture(scope='function')
@@ -36,7 +39,7 @@ def mock_global_compound_inclusion(session):
             'id': 'BIOC:Fake',
             'type': EntityType.COMPOUND.value,
         },
-        'keyword': 'compound-(12345)'
+        'keyword': 'compound-(12345)',
     }
 
     file_content = FileContent(raw_file=b'', checksum_sha256=b'')
@@ -62,7 +65,7 @@ def mock_global_gene_exclusion(session):
             'id': '59272',
             'type': EntityType.GENE.value,
         },
-        'keyword': 'fake-gene'
+        'keyword': 'fake-gene',
     }
 
     file_content = FileContent(raw_file=b'', checksum_sha256=b'')
@@ -103,9 +106,9 @@ def mock_global_list(fix_admin_user, fix_project, session):
         'meta': {
             'id': 'BIOC:Fake',
             'type': EntityType.COMPOUND.value,
-            'allText': 'compound-(12345)'
+            'allText': 'compound-(12345)',
         },
-        'user_id': fix_admin_user.id
+        'user_id': fix_admin_user.id,
     }
     # inclusion = GlobalList(
     #     annotation=annotation,
@@ -121,7 +124,7 @@ def mock_global_list(fix_admin_user, fix_project, session):
         'id': '59272',
         'type': EntityType.GENE.value,
         'text': 'fake-gene',
-        'user_id': fix_admin_user.id
+        'user_id': fix_admin_user.id,
     }
     exclusion = GlobalList(
         annotation=annotation,
@@ -184,6 +187,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
 ####################
 # End service mocks
 ####################
+
 
 @pytest.fixture(scope='function')
 def fix_admin_role(account_service: AccountService) -> AppRole:
@@ -257,7 +261,7 @@ def fix_directory(session, test_user: AppUser) -> Files:
         filename='/',
         mime_type=DirectoryTypeProvider.MIME_TYPE,
         user=test_user,
-        path='/Lifelike'
+        path='/Lifelike',
     )
 
     session.add(dir)
@@ -267,11 +271,7 @@ def fix_directory(session, test_user: AppUser) -> Files:
 
 
 @pytest.fixture(scope='function')
-def fix_project(
-    session,
-    fix_directory: Files,
-    test_user: AppUser
-) -> Projects:
+def fix_project(session, fix_directory: Files, test_user: AppUser) -> Projects:
     project = Projects(
         name='Lifelike',
         description='Test project',
@@ -281,17 +281,17 @@ def fix_project(
     session.add(project)
     session.flush()
 
-    role = AppRole.query.filter(
-        AppRole.name == 'project-admin'
-    ).one()
+    role = AppRole.query.filter(AppRole.name == 'project-admin').one()
 
     session.execute(
         projects_collaborator_role.insert(),
-        [{
-            'appuser_id': test_user.id,
-            'app_role_id': role.id,
-            'projects_id': project.id,
-        }]
+        [
+            {
+                'appuser_id': test_user.id,
+                'app_role_id': role.id,
+                'projects_id': project.id,
+            }
+        ],
     )
     session.flush()
     return project
@@ -299,10 +299,7 @@ def fix_project(
 
 @pytest.fixture(scope='function')
 def test_user_with_pdf(
-        session,
-        test_user: AppUser,
-        fix_project: Projects,
-        pdf_dir: str
+    session, test_user: AppUser, fix_project: Projects, pdf_dir: str
 ) -> Files:
     pdf_path = os.path.join(pdf_dir, 'example3.pdf')
 
@@ -324,7 +321,7 @@ def test_user_with_pdf(
             parent_id=fix_project.***ARANGO_USERNAME***_id,
             organism_name='Homo sapiens',
             organism_synonym='Homo sapiens',
-            organism_taxonomy_id='9606'
+            organism_taxonomy_id='9606',
         )
 
         session.add(file_content)
@@ -335,7 +332,7 @@ def test_user_with_pdf(
 
 
 def login_as_user(self, email, password) -> AppUser:
-    """ Returns the authenticated JWT tokens """
+    """Returns the authenticated JWT tokens"""
     credentials = {'email': email, 'password': password}
     login_resp = self.post(
         '/auth/login',
@@ -355,21 +352,25 @@ def client(app: Flask):
 
 @pytest.fixture(scope='function')
 def user_client(client, test_user: AppUser):
-    """ Returns an authenticated client as well as the JWT information """
+    """Returns an authenticated client as well as the JWT information"""
     auth = client.login_as_user('test@***ARANGO_DB_NAME***.bio', 'password')
     return client, auth
 
 
 @pytest.fixture(scope='function')
 def uri_fixture(client, session) -> DomainURLsMap:
-    uri1 = DomainURLsMap(domain="CHEBI",
-                         base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}")  # noqa
-    uri2 = DomainURLsMap(domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}")
+    uri1 = DomainURLsMap(
+        domain="CHEBI", base_URL="https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}"
+    )  # noqa
+    uri2 = DomainURLsMap(
+        domain="MESH", base_URL="https://www.ncbi.nlm.nih.gov/mesh/?term={}"
+    )
 
     session.add(uri1)
     session.add(uri2)
     session.flush()
 
     return uri1
+
 
 # TODO: Need to create actual mock data for these

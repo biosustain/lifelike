@@ -9,7 +9,6 @@ import { of } from 'rxjs';
 import { DataSet } from 'vis-data';
 
 import {
-  ExpandNodeRequest,
   GraphNode,
   GraphRelationship,
   Neo4jResults,

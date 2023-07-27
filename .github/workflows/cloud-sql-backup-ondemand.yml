@@ -34,4 +34,3 @@ jobs:
           backup_description: "${{ github.event.inputs.backup_description }}"
       - run: |
           echo "## Backup created: ${{ steps.backup.outputs.backup_id }}" >> $GITHUB_STEP_SUMMARY
-

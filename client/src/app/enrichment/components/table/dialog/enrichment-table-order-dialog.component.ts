@@ -12,23 +12,21 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
   templateUrl: './enrichment-table-order-dialog.component.html',
   styleUrls: ['./enrichment-table-order-dialog.component.scss'],
 })
-export class EnrichmentTableOrderDialogComponent extends CommonFormDialogComponent<string[]> implements OnInit {
+export class EnrichmentTableOrderDialogComponent
+  extends CommonFormDialogComponent<string[]>
+  implements OnInit
+{
   @Input() domains: string[];
 
   form: FormGroup = new FormGroup({
     domainsList: new FormArray([]),
   });
 
-  constructor(
-    modal: NgbActiveModal,
-    messageDialog: MessageDialog,
-  ) {
+  constructor(modal: NgbActiveModal, messageDialog: MessageDialog) {
     super(modal, messageDialog);
   }
 
-  ngOnInit() {
-
-  }
+  ngOnInit() {}
 
   getValue() {
     return this.domains;

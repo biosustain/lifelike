@@ -1,7 +1,10 @@
 import pytest
 
 from neo4japp.models import AppUser, Projects, Files, FileContent
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, MapTypeProvider
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    MapTypeProvider,
+)
 
 
 @pytest.fixture(scope='function')

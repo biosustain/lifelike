@@ -30,7 +30,10 @@ def setup_before_request_callbacks(app: Flask):
     def default_login_required():
         # exclude 404 errors and static routes
         # uses split to handle blueprint static routes as well
-        if not flask_request.endpoint or flask_request.endpoint.rsplit('.', 1)[-1] == 'static':
+        if (
+            not flask_request.endpoint
+            or flask_request.endpoint.rsplit('.', 1)[-1] == 'static'
+        ):
             return
 
         view = app.view_functions[flask_request.endpoint]
@@ -48,7 +51,9 @@ def setup_request_callbacks(app: Flask):
 @pytest.fixture(scope='function')
 def app(request) -> Flask:
     """Session-wide test Flask application."""
-    app: Flask = create_app('Functional Test Flask App', config='config.Testing')
+    app: Flask = create_app(
+        'Functional Test Flask App', config_package='config.Testing'
+    )
 
     setup_request_callbacks(app)
 
@@ -65,7 +70,7 @@ def app(request) -> Flask:
 
 @pytest.fixture(scope='function')
 def session(app, request):
-    """ Creates a new database session """
+    """Creates a new database session"""
     connection = db.engine.connect()
     transaction = connection.begin()
     options = {'bind': connection, 'binds': {}}
@@ -85,9 +90,7 @@ def session(app, request):
 # Arango fixtures
 @pytest.fixture(scope="function")
 def arango_client(app):
-    arango_client = create_arango_client(
-        hosts=app.config.get('ARANGO_HOST')
-    )
+    arango_client = create_arango_client(hosts=app.config.get('ARANGO_HOST'))
 
     yield arango_client
 
@@ -203,8 +206,10 @@ def elastic_service(app, session):
 
 @pytest.fixture(scope='session')
 def pdf_dir() -> str:
-    """ Returns the directory of the example PDFs """
-    return os.path.join(Path(__file__).parent, 'database', 'services', 'annotations', 'pdf_samples')
+    """Returns the directory of the example PDFs"""
+    return os.path.join(
+        Path(__file__).parent, 'database', 'services', 'annotations', 'pdf_samples'
+    )
 
 
 @pytest.fixture

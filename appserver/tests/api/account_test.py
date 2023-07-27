@@ -2,6 +2,7 @@ import json
 import pytest
 import re
 import responses
+
 from types import SimpleNamespace
 
 from neo4japp.models import AppUser

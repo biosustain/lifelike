@@ -4,8 +4,9 @@ from .common import RDBMSBase, TimestampMixin
 
 class CopyrightInfringementRequest(RDBMSBase, TimestampMixin):
     """
-        User models to tie ownership of resources to
+    User models to tie ownership of resources to
     """
+
     __tablename__ = 'copyright_infringement_request'
 
     id = db.Column(db.Integer, primary_key=True)

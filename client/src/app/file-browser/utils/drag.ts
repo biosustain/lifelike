@@ -4,7 +4,6 @@ import { DragImage } from 'app/shared/utils/drag';
 import { TextElement } from 'app/graph-viewer/utils/canvas/text-element';
 import { FA_CUSTOM_ICONS, Unicodes } from 'app/shared/constants';
 
-
 export function createDragImage(label: string, fontAwesomeIconCode: string): DragImage {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -18,7 +17,9 @@ export function createDragImage(label: string, fontAwesomeIconCode: string): Dra
   let height = paddingY * 2 + shadowSize;
 
   // Specifies the correct font to use depending on whether the icon is in our custom kit or not
-  const fontAwesomeFont = FA_CUSTOM_ICONS.includes(fontAwesomeIconCode as Unicodes) ? '"Font Awesome Kit"' : '"Font Awesome 5 Pro';
+  const fontAwesomeFont = FA_CUSTOM_ICONS.includes(fontAwesomeIconCode as Unicodes)
+    ? '"Font Awesome Kit"'
+    : '"Font Awesome 5 Pro';
   const iconTextElement = new TextElement(ctx, {
     text: fontAwesomeIconCode,
     font: `900 16px ${fontAwesomeFont}`,
@@ -39,25 +40,13 @@ export function createDragImage(label: string, fontAwesomeIconCode: string): Dra
   canvas.width = width;
   canvas.height = height;
 
-  (ctx as any).roundedRect(
-    1,
-    1,
-    width - shadowSize - 2,
-    height - shadowSize - 2,
-    5,
-  );
+  (ctx as any).roundedRect(1, 1, width - shadowSize - 2, height - shadowSize - 2, 5);
   ctx.fillStyle = '#fff';
   ctx.shadowColor = '#ccc';
   ctx.shadowBlur = shadowSize;
   ctx.fill();
 
-  (ctx as any).roundedRect(
-    1,
-    1,
-    width - shadowSize - 2,
-    height - shadowSize - 2,
-    5,
-  );
+  (ctx as any).roundedRect(1, 1, width - shadowSize - 2, height - shadowSize - 2, 5);
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#fff';
   ctx.fill();
@@ -70,4 +59,3 @@ export function createDragImage(label: string, fontAwesomeIconCode: string): Dra
 
   return new DragImage(canvas, 0, 0);
 }
-

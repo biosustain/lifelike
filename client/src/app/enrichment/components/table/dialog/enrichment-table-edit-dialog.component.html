@@ -6,71 +6,135 @@
 
     <app-modal-body>
       <ng-container *ngIf="promptObject">
-        <app-form-row for="parent" [label]="parentLabel" [control]="form.get('parent')"
-                      *ngIf="promptParent">
+        <app-form-row
+          for="parent"
+          [label]="parentLabel"
+          [control]="form.get('parent')"
+          *ngIf="promptParent"
+        >
           <div class="d-flex align-items-center text-truncate">
             <button type="button" class="btn btn-secondary mr-2" (click)="showParentDialog()">
               Browse...
             </button>
-            <div class="text-truncate"
-                 *ngIf="form.get('parent').value != null; else noParentChosen">
+            <div
+              class="text-truncate"
+              *ngIf="form.get('parent').value != null; else noParentChosen"
+            >
               <i class="fa fa-fw fa-folder text-icon"></i>
               {{ form.get('parent').value.effectiveName }}
             </div>
-            <ng-template #noParentChosen>
-            </ng-template>
+            <ng-template #noParentChosen></ng-template>
           </div>
         </app-form-row>
 
         <app-form-row for="filename" label="Filename" [control]="form.get('filename')">
-          <input type="text" formControlName="filename" id="filename"
-                 [appFormInput]="form.get('filename')"
-                 appAutoFocus [autoSelect]="true">
+          <input
+            type="text"
+            formControlName="filename"
+            id="filename"
+            [appFormInput]="form.get('filename')"
+            [pristineInvalid]="true"
+            appAutoFocus
+            [autoSelect]="true"
+          />
         </app-form-row>
 
         <app-form-row for="description" label="Description" [control]="form.get('description')">
-          <textarea formControlName="description" id="description"
-                    [appFormInput]="form.get('description')"
-                    rows="5"></textarea>
+          <textarea
+            formControlName="description"
+            id="description"
+            [appFormInput]="form.get('description')"
+            rows="10"
+          ></textarea>
         </app-form-row>
 
         <app-form-row [control]="form.get('public')">
           <div class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" id="public"
-                   formControlName="public">
-            <label class="custom-control-label" for="public">Publicly share with the
-              community</label>
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="public"
+              formControlName="public"
+            />
+            <label class="custom-control-label" for="public"
+              >Publicly share with the community</label
+            >
           </div>
         </app-form-row>
       </ng-container>
 
       <ng-template #enrichmentParamsFields>
         <app-form-row for="entitiesList" label="Genes" [control]="form.get('entitiesList')">
-          <textarea formControlName="entitiesList" id="entitiesList"
-                    [appFormInput]="form.get('entitiesList')"
-                    rows="5" placeholder="One gene per line"></textarea>
+          <textarea
+            formControlName="entitiesList"
+            id="entitiesList"
+            [appFormInput]="form.get('entitiesList')"
+            rows="5"
+            placeholder="One gene per line"
+          ></textarea>
         </app-form-row>
 
         <app-form-row
-          for="organism"
+          for="fallbackOrganism"
           label="Organism"
-          [control]="form.get('organism')"
+          [control]="form.get('fallbackOrganism')"
         >
           <app-organism-autocomplete
-            formId="organism"
-            [organismTaxId]="form.get('organism').value ? form.get('organism').value.tax_id : null"
+            formId="fallbackOrganism"
+            [organismTaxId]="
+              form.get('fallbackOrganism').value ? form.get('fallbackOrganism').value.tax_id : null
+            "
             (organismPicked)="organismChanged($event)"
           ></app-organism-autocomplete>
         </app-form-row>
 
         <app-form-row for="domainsList" label="Domains" [control]="form.get('domainsList')">
-          <div *ngFor="let choice of checks; let i=index">
+          <div *ngFor="let choice of checks; let i = index">
             <label>
-              <input type="checkbox" [value]="choice" (change)="onCheckChange($event)"
-                     [checked]="domains.includes(choice)">
-              {{choice}}
+              <input
+                type="checkbox"
+                [value]="choice"
+                (change)="onCheckChange($event)"
+                [checked]="domains.includes(choice)"
+              />
+              {{ choice }}
             </label>
           </div>
+        </app-form-row>
+
+        <app-form-row for="contexts" label="Contexts" [control]="contexts">
+          <ng-container *ngFor="let context of contexts.controls">
+            <div class="input-group input-border rounded mb-2">
+              <input
+                type="text"
+                class="form-control border-0"
+                [formControl]="context"
+                [value]="context.value"
+                (change)="setValueFromEvent(context, $event)"
+              />
+              <div class="input-group-append">
+                <button
+                  class="form-control border-0"
+                  type="button"
+                  (click)="removeControl(contexts, context)"
+                >
+                  <i class="fa fa-fw fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <app-form-input-feedback
+              *ngIf="context != null"
+              [control]="context"
+            ></app-form-input-feedback>
+          </ng-container>
+          <button
+            class="btn btn-secondary"
+            type="button"
+            (click)="addControl(contexts, contextFormControlFactory())"
+          >
+            <i class="fa fa-fw fa-plus"></i>
+            Add context
+          </button>
         </app-form-row>
       </ng-template>
 
@@ -79,7 +143,9 @@
         <ng-container *ngTemplateOutlet="enrichmentParamsFields"></ng-container>
       </fieldset>
 
-      <ng-container *ngTemplateOutlet="!promptObject ? enrichmentParamsFields : null"></ng-container>
+      <ng-container
+        *ngTemplateOutlet="!promptObject ? enrichmentParamsFields : null"
+      ></ng-container>
 
       <ng-container *ngIf="promptObject">
         <fieldset class="fieldset-properties mt-4">
@@ -92,7 +158,8 @@
                     [headers]="annotationMethods"
                     [models]="annotationModels"
                     [form]="form.get('annotationConfigs')"
-                    [fileType]="object.mimeType"></app-annotation-config-table>
+                    [fileType]="object.mimeType"
+                  ></app-annotation-config-table>
                 </ng-template>
               </ngb-panel>
             </ngb-accordion>
@@ -103,7 +170,9 @@
 
     <app-modal-footer>
       <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="form.invalid" >{{ submitButtonLabel }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+        {{ submitButtonLabel }}
+      </button>
     </app-modal-footer>
   </div>
 </form>

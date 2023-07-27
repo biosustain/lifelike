@@ -1,10 +1,12 @@
 # Consistent handling of data source + ID for entities (LL-3554)
-- Need to split data source and ID into their own properties.  
-- Rename ID to EID = entity ID to avoid confusion with Neo4j internal IDs.
+
+-   Need to split data source and ID into their own properties.
+-   Rename ID to EID = entity ID to avoid confusion with Neo4j internal IDs.
 
 ### 1. Drop id constraints
-``` 
-drop constraint constraint_association_id; 
+
+```
+drop constraint constraint_association_id;
 drop constraint constraint_biocyc_id ;
 drop constraint constraint_chebi_id;
 drop constraint constraint_chemical_id;
@@ -28,15 +30,16 @@ drop constraint constraint_string_id;
 drop constraint constraint_taxonomy_id;
 drop constraint constraint_uniprot_id;
 
-drop index index_ecocyc_id;  
+drop index index_ecocyc_id;
 drop index index_pseudomonascyc_id;
-drop index index_humancyc_id;  
+drop index index_humancyc_id;
 drop index index_yeastcyc_id;
 ```
 
-
 ### 2. Extract and set eid:
+
 For CHEBI, MESH and GO, remove the prefix from id
+
 ```
 match(n:db_CHEBI) with n, apoc.text.split(n.id, ':')[1] as eid set n.eid = eid;
 match(n:db_MESH) with n, apoc.text.split(n.id, ':')[1] as eid set n.eid = eid;
@@ -69,12 +72,14 @@ call apoc.periodic.iterate(
 match(n:db_RegulonDB) set n.eid = n.id, n.data_source = 'RegulonDB';
 match(n:db_STRING) set n.eid = n.id, n.data_source = 'STRING';
 match(n:db_UniProt) set n.eid = n.id;
- ```
+```
+
 #### remove node id property
-``` 
+
+```
 match(n:db_BioCyc) remove n.id;
 match(n:db_CHEBI) remove n.id;
-match(n:db_Enzyme) remove n.id; 
+match(n:db_Enzyme) remove n.id;
 match(n:db_GO) remove n.id;
 
 call apoc.periodic.iterate(
@@ -84,7 +89,7 @@ call apoc.periodic.iterate(
 );
 
 match(n:db_Lifelike) remove n.id;
-match(n:db_MESH) remove n.id; 
+match(n:db_MESH) remove n.id;
 
 call apoc.periodic.iterate(
 "match(n:db_NCBI) return n",
@@ -104,7 +109,8 @@ match(n:db_STRING) remove n.id;
 ```
 
 #### recreate constraint and indexes
-``` 
+
+```
 create constraint constraint_association_id on (n:Association) assert n.eid is unique;
 create constraint constraint_biocyc_id on (n:db_BioCyc) assert n.eid is unique;
 create constraint constraint_chebi_id on (n:db_CHEBI) assert n.eid is unique;
@@ -130,9 +136,8 @@ create constraint constraint_taxonomy_id on (n:Taxonomy) assert n.eid is unique;
 create constraint constraint_uniprot_id on (n:db_UniProt) assert n.eid is unique;
 
 
-create index index_ecocyc_id for (n:db_EcoCyc) on (n.eid);  
+create index index_ecocyc_id for (n:db_EcoCyc) on (n.eid);
 create index index_pseudomonascyc_id for (n:db_PseudomonasCyc) on (n.eid);
-create index index_humancyc_id for (n:db_HumanCyc) on (n.eid);  
-create index index_yeastcyc_id for (n:db_YeastCyc) on (n.eid); 
+create index index_humancyc_id for (n:db_HumanCyc) on (n.eid);
+create index index_yeastcyc_id for (n:db_YeastCyc) on (n.eid);
 ```
-

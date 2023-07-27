@@ -15,7 +15,7 @@ from .data_transfer_objects.dto import (
     Annotation,
     RecognizedEntities,
     LMDBMatch,
-    SpecifiedOrganismStrain
+    SpecifiedOrganismStrain,
 )
 from .data_transfer_objects.dto_func_params import CreateAnnotationObjParams
 
@@ -34,8 +34,7 @@ class EnrichmentAnnotationService(AnnotationService):
         super().__init__(arango_client=arango_client)
 
     def _annotate_type_gene(
-        self,
-        recognized_entities: RecognizedEntities
+        self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         matches_list: List[LMDBMatch] = recognized_entities.recognized_genes
 
@@ -47,15 +46,15 @@ class EnrichmentAnnotationService(AnnotationService):
             entities_set = set()
             for entity in match.entities:
                 gene_names.add(entity['synonym'])
-                entities_set.add((
-                    entity['synonym'],
-                    entity['id_type'],
-                    entity.get('hyperlinks', '')
-                ))
+                entities_set.add(
+                    (entity['synonym'], entity['id_type'], entity.get('hyperlinks', ''))
+                )
             for synonym, datasource, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
-                entity_token_pairs.append((synonym, datasource, hyperlinks, match.token))
+                entity_token_pairs.append(
+                    (synonym, datasource, hyperlinks, match.token)
+                )
 
         gene_names_list = list(gene_names)
 
@@ -74,14 +73,21 @@ class EnrichmentAnnotationService(AnnotationService):
         gene_data_sources = fallback_graph_results.data_sources
         gene_primary_names = fallback_graph_results.primary_names
 
-        for entity_synonym, entity_datasource, entity_hyperlinks, token in entity_token_pairs:
+        for (
+            entity_synonym,
+            entity_datasource,
+            entity_hyperlinks,
+            token,
+        ) in entity_token_pairs:
             gene_id = None
             category = None
             organism_id = self.specified_organism.organism_id
 
             organisms_to_match: Dict[str, str] = {}
             if entity_synonym in fallback_gene_organism_matches:
-                fallback_gene_organism_match = fallback_gene_organism_matches[entity_synonym]
+                fallback_gene_organism_match = fallback_gene_organism_matches[
+                    entity_synonym
+                ]
                 try:
                     # prioritize common name match over synonym
                     organisms_to_match = fallback_gene_organism_match[entity_synonym]
@@ -96,7 +102,10 @@ class EnrichmentAnnotationService(AnnotationService):
                 except KeyError:
                     continue
                 else:
-                    if entity_datasource != gene_data_sources[f'{entity_synonym}{organism_id}']:
+                    if (
+                        entity_datasource
+                        != gene_data_sources[f'{entity_synonym}{organism_id}']
+                    ):
                         continue
                     entities_to_create.append(
                         CreateAnnotationObjParams(
@@ -107,14 +116,13 @@ class EnrichmentAnnotationService(AnnotationService):
                             entity_id=gene_id,
                             entity_datasource=entity_datasource,
                             entity_hyperlinks=entity_hyperlinks,
-                            entity_category=category
+                            entity_category=category,
                         )
                     )
         return self._create_annotation_object(entities_to_create)
 
     def _annotate_type_protein(
-        self,
-        recognized_entities: RecognizedEntities
+        self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
         matches_list: List[LMDBMatch] = recognized_entities.recognized_proteins
 
@@ -126,16 +134,20 @@ class EnrichmentAnnotationService(AnnotationService):
             entities_set = set()
             for entity in match.entities:
                 protein_names.add(entity['synonym'])
-                entities_set.add((
-                    entity['synonym'],
-                    entity.get('category', ''),
-                    entity['id_type'],
-                    entity.get('hyperlinks', '')
-                ))
+                entities_set.add(
+                    (
+                        entity['synonym'],
+                        entity.get('category', ''),
+                        entity['id_type'],
+                        entity.get('hyperlinks', ''),
+                    )
+                )
             for synonym, datasource, category, hyperlinks in entities_set:
                 if hyperlinks == '':
                     hyperlinks = []
-                entity_token_pairs.append((synonym, datasource, category, hyperlinks, match.token))
+                entity_token_pairs.append(
+                    (synonym, datasource, category, hyperlinks, match.token)
+                )
 
         protein_names_list = list(protein_names)
 
@@ -155,13 +167,20 @@ class EnrichmentAnnotationService(AnnotationService):
         fallback_protein_organism_matches = fallback_graph_results.matches
         protein_primary_names = fallback_graph_results.primary_names
 
-        for entity_synonym, category, entity_datasource, entity_hyperlinks, token \
-                in entity_token_pairs:
+        for (
+            entity_synonym,
+            category,
+            entity_datasource,
+            entity_hyperlinks,
+            token,
+        ) in entity_token_pairs:
             # in LMDB we use the synonym as id and name, so do the same here
             protein_id = entity_synonym
             if entity_synonym in fallback_protein_organism_matches:
                 try:
-                    protein_id = fallback_protein_organism_matches[entity_synonym][organism_id]
+                    protein_id = fallback_protein_organism_matches[entity_synonym][
+                        organism_id
+                    ]
                     category = organism.category
                 except KeyError:
                     continue
@@ -175,7 +194,7 @@ class EnrichmentAnnotationService(AnnotationService):
                     entity_name=protein_primary_names.get(protein_id, entity_synonym),
                     entity_datasource=entity_datasource,
                     entity_hyperlinks=entity_hyperlinks,
-                    entity_category=category
+                    entity_category=category,
                 )
             )
         return self._create_annotation_object(entities_to_create)
@@ -186,7 +205,7 @@ class EnrichmentAnnotationService(AnnotationService):
         entity_results: RecognizedEntities,
         entity_type_and_id_pairs: List[Tuple[str, str]],
         specified_organism: SpecifiedOrganismStrain,
-        **kwargs
+        **kwargs,
     ) -> List[Annotation]:
         self.specified_organism = specified_organism
         self.enrichment_mappings = kwargs['enrichment_mappings']
@@ -194,7 +213,7 @@ class EnrichmentAnnotationService(AnnotationService):
         annotations = self._create_annotations(
             types_to_annotate=entity_type_and_id_pairs,
             custom_annotations=custom_annotations,
-            recognized_entities=entity_results
+            recognized_entities=entity_results,
         )
 
         start = time.time()
@@ -206,12 +225,10 @@ class EnrichmentAnnotationService(AnnotationService):
         )
         return cleaned
 
-    def _clean_annotations(
-        self,
-        annotations: List[Annotation]
-    ) -> List[Annotation]:
+    def _clean_annotations(self, annotations: List[Annotation]) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(
-            annotations_list=annotations)
+            annotations_list=annotations
+        )
 
         # need to split up the annotations otherwise
         # a text in a cell could be removed due to
@@ -224,7 +241,12 @@ class EnrichmentAnnotationService(AnnotationService):
             index = bisect.bisect_left(offsets, anno.hi_location_offset)
             split[offsets[index]].append(anno)
 
-        fixed_unified_annotations = list(itertools.chain.from_iterable(
-            [self.fix_conflicting_annotations(unified_annotations=v) for _, v in split.items()]
-        ))
+        fixed_unified_annotations = list(
+            itertools.chain.from_iterable(
+                [
+                    self.fix_conflicting_annotations(unified_annotations=v)
+                    for _, v in split.items()
+                ]
+            )
+        )
         return fixed_unified_annotations

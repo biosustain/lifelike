@@ -9,15 +9,18 @@ from .schemas import EnrichmentSchema
 from .services.enrichment.enrichment_visualisation import enrich_go
 from .services.rcache import redis_cached
 
-@app.route('/', methods=['GET','POST'])
+
+@app.route('/', methods=['GET', 'POST'])
 @login_exempt
 def enrich():
     raise Exception('No function provided!')
 
-@app.route('/healthz', methods=['GET','POST'])
+
+@app.route('/healthz', methods=['GET', 'POST'])
 @login_exempt
 def healthz():
     return "I am OK!"
+
 
 @app.route('/enrich-with-go-terms', methods=['POST'])
 @use_args(EnrichmentSchema)

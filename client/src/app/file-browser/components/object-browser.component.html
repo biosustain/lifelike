@@ -1,171 +1,244 @@
-<ng-container *ngIf="(object$ | addStatus | async) as result">
-    <app-module-error *ngIf="result.error; else notError" [error]="result.error" class="d-block p-4">
-        <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
-    </app-module-error>
+<ng-container *ngIf="objectWithStatus$ | async as result">
+  <app-module-error *ngIf="result.error; else notError" [error]="result.error" class="d-block p-4">
+    <a appLink="/projects">Go to Projects <i class="fa fa-fw fa-arrow-right"></i></a>
+  </app-module-error>
 
-    <ng-template #notError>
-        <div class="module" appContainerBreakpoints>
-            <!-- Header -->
-            <div class="module-header">
-                <!-- Breadcrumbs -->
-                <div class="module-breadcrumb-bar mb-1">
-                    <app-object-path [object]="result.value?.parent" (refreshRequest)="refresh()"></app-object-path>
-                </div>
-
-                <!-- Title bar -->
-                <div class="module-title-bar">
-                    <button type="button" class="module-title-bar-back mr-2" (click)="goUp(result.value)"
-                            *ngIf="result.value?.parent">
-                        <i class="fa fa-fw fa-arrow-left"></i>
-                    </button>
-                    <h1 class="module-title">
-                        <ng-template #titlePlaceholder>
-                            <span class="placeholder-box">Loading</span>
-                        </ng-template>
-                        <ng-container *ngIf="result.value; else titlePlaceholder">
-                            <app-project-icon [project]="result.value.project" size="24px" class="mr-1"
-                                              *ngIf="result.value.parent == null"></app-project-icon>
-                            {{ result.value.effectiveName }}
-                        </ng-container>
-                    </h1>
-
-                    <div ngbDropdown class="d-inline-block ml-1" container="body">
-                        <a href="#" class="dropdown-no-arrow" ngbDropdownToggle
-                           (click)="$event.preventDefault()">
-                            <i class="fas fa-chevron-down fa-fw text-icon"></i>
-                        </a>
-                        <div ngbDropdownMenu *ngIf="result.value">
-                            <ng-container *ngIf="result.value.parent; else noParentMenu">
-                                <app-object-menu [object]="result.value" [forEditing]="true"
-                                                 (objectOpen)="openObject($event)"
-                                                 (refreshRequest)="refresh()" [nameEntity]="true"
-                                                 [showOpen]="false">
-                                </app-object-menu>
-                            </ng-container>
-                            <ng-template #noParentMenu>
-                                <app-project-menu [project]="result.value.project"
-                                                  [nameEntity]="true"></app-project-menu>
-                            </ng-template>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Toolbar -->
-                <div class="module-toolbar mt-2">
-                    <div class="d-flex align-items-center flex-spaced-wrap">
-                        <div class="flex-fill text-nowrap overflow-x-hidden">
-                            <div ngbDropdown class="d-inline-block" container="body">
-                                <button class="btn btn-primary" ngbDropdownToggle
-                                        [disabled]="!result.value?.privileges.writable">
-                                    <i class="fa fa-fw fa-plus-circle"></i>
-                                    New
-                                </button>
-                                <div ngbDropdownMenu *ngIf="createActions$ | async as createActions">
-                                        <button ngbDropdownItem *ngFor="let action of createActions"
-                                                (click)="runCreateAction(action, {parent: result.value})">
-                                            New {{ action.label }}...
-                                        </button>
-                                        <div class="dropdown-divider"></div>
-                                    <button ngbDropdownItem (click)="openUploadDialog(result.value)">Upload File...
-                                    </button>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-primary ml-2"
-                                    (click)="openUploadDialog(result.value)"
-                                    [disabled]="!result.value?.privileges.writable">
-                                <i class="fa fa-fw fa-upload"></i> Upload
-                            </button>
-
-                            <button class="btn btn-primary ml-2"
-                                    (click)="openBulkUploadDialog(result.value)"
-                                    [disabled]="!result.value?.privileges.writable">
-                                <i class="fa fa-fw fa-upload"></i> PDF Bulk Upload
-                            </button>
-
-                            <ng-container *ngIf="result.value?.children.selection$ | async as selection">
-                                <div ngbDropdown class="d-inline-block ml-2" container="body"
-                                     *ngIf="selection.length &&
-                                     result.value.privileges.writable">
-                                    <button class="btn btn-secondary" ngbDropdownToggle>
-                                        Actions
-                                    </button>
-                                    <div ngbDropdownMenu>
-                                        <button ngbDropdownItem (click)="reannotate(selection)"
-                                                [disabled]="!isSelectionAnnotatable(selection)">
-                                            Re-annotate
-                                        </button>
-                                        <div class="dropdown-divider"></div>
-                                        <button ngbDropdownItem
-                                                (click)="openMoveDialog(selection)"
-                                                [disabled]="!isSelectionMovable(selection)">
-                                            Move to...
-                                        </button>
-                                        <button ngbDropdownItem
-                                                (click)="openDeleteDialog(selection)"
-                                                [disabled]="!isSelectionDeletable(selection)">
-                                            Delete...
-                                        </button>
-                                    </div>
-                                </div>
-                            </ng-container>
-
-                            <div ngbDropdown class="d-inline-block ml-2" container="body"
-                                 ngbTooltip="Entity Cloud">
-                                <button class="btn btn-secondary" ngbDropdownToggle [disabled]="!result.value">
-                                    <i class="fa fa-fw fa-cloud"></i>
-                                </button>
-                                <div ngbDropdownMenu *ngIf="result.value">
-                                    <button ngbDropdownItem
-                                            [appLink]="['/file-navigator', encodeURIComponent(result.value.project.name), result.value.***ARANGO_USERNAME***.hashId]"
-                                            [parentAddress]="['/projects', encodeURIComponent(result.value.project.name)]"
-                                            [newTab]="true" [sideBySide]="true" [forceWorkbench]="true"
-                                            [openParentFirst]="true">For entire project...
-                                    </button>
-                                    <button ngbDropdownItem
-                                            [appLink]="['/file-navigator', encodeURIComponent(result.value.project.name), result.value.hashId]"
-                                            [parentAddress]="['/folders', result.value.hashId]"
-                                            [newTab]="true" [sideBySide]="true" [forceWorkbench]="true"
-                                            [openParentFirst]="true"
-                                            *ngIf="result.value !== result.value.***ARANGO_USERNAME***">For this folder
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ml-auto d-flex">
-                            <div class="input-group"
-                                 [class.bg-highlight]="(result.value?.children.filter$ | async) != null">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text bg-transparent border-right-0">
-                                        <i class="fa fa-search"></i>
-                                    </div>
-                                </div>
-                                <input class="form-control py-2 pl-0 border-left-0 border bg-transparent"
-                                       [disabled]="!result.value"
-                                       (keyup)="applyFilter(result.value, $event.target.value)"
-                                       placeholder="Find" maxlength="40">
-                            </div>
-
-                            <button class="btn btn-secondary ml-2"
-                                    ngbTooltip="Reload List"
-                                    container="body"
-                                    placement="bottom top left right"
-                                    (click)="refresh()">
-                                <i class="fa fa-fw fa-sync"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Body -->
-            <div class="flex-fill overflow-auto">
-                <app-object-list [objects]="result.value?.children" [appLinks]="true"
-                                 [parent]="result.value" [showDescription]="false"
-                                 (refreshRequest)="refresh()"></app-object-list>
-            </div>
-
+  <ng-template #notError>
+    <div class="module" appContainerBreakpoints [appShowPlaceholders]="result.loading">
+      <!-- Header -->
+      <div class="module-header">
+        <!-- Breadcrumbs -->
+        <div class="module-breadcrumb-bar mb-1">
+          <app-object-path [object]="result.value?.parent" (refreshRequest)="refresh()">
+          </app-object-path>
         </div>
-    </ng-template>
+
+        <!-- Title bar -->
+        <div class="module-title-bar">
+          <button
+            type="button"
+            class="module-title-bar-back mr-2"
+            (click)="goUp(result.value)"
+            *ngIf="result.value?.parent"
+          >
+            <i class="fa fa-fw fa-arrow-left"></i>
+          </button>
+          <h1 class="module-title" appHasPlaceholder>
+            <app-project-icon
+              [project]="result.value.project"
+              size="24px"
+              class="mr-1"
+              *ngIf="result.value.parent == null"
+            ></app-project-icon>
+            {{ result.value.effectiveName }}
+          </h1>
+
+          <div ngbDropdown class="d-inline-block ml-1" container="body">
+            <a
+              href="#"
+              class="dropdown-no-arrow"
+              ngbDropdownToggle
+              (click)="$event.preventDefault()"
+            >
+              <i class="fas fa-chevron-down fa-fw text-icon"></i>
+            </a>
+            <div ngbDropdownMenu *ngIf="result.value">
+              <ng-container *ngIf="result.value.parent; else noParentMenu">
+                <app-object-menu
+                  [object]="result.value"
+                  [forEditing]="true"
+                  (objectOpen)="openObject($event)"
+                  (refreshRequest)="refresh()"
+                  [nameEntity]="true"
+                  [showOpen]="false"
+                >
+                </app-object-menu>
+              </ng-container>
+              <ng-template #noParentMenu>
+                <app-project-menu
+                  [project]="result.value.project"
+                  [nameEntity]="true"
+                ></app-project-menu>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="module-toolbar mt-2">
+          <div class="d-flex align-items-center flex-spaced-wrap">
+            <div class="flex-fill text-nowrap overflow-x-hidden">
+              <div ngbDropdown class="d-inline-block" container="body">
+                <button
+                  class="btn btn-primary"
+                  ngbDropdownToggle
+                  [disabled]="result.loading || !result.value?.privileges.writable"
+                >
+                  <i class="fa fa-fw fa-plus-circle"></i>
+                  New
+                </button>
+                <div ngbDropdownMenu *ngIf="createActions$ | async as createActions">
+                  <button
+                    ngbDropdownItem
+                    *ngFor="let action of createActions"
+                    (click)="runCreateAction(action, { parent: result.value })"
+                  >
+                    New {{ action.label }}...
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button ngbDropdownItem (click)="openUploadDialog(result.value)">
+                    Upload File...
+                  </button>
+                </div>
+              </div>
+
+              <button
+                class="btn btn-primary ml-2"
+                (click)="openUploadDialog(result.value)"
+                [disabled]="result.loading || !result.value?.privileges.writable"
+              >
+                <i class="fa fa-fw fa-upload"></i> Upload
+              </button>
+
+              <button
+                class="btn btn-primary ml-2"
+                (click)="openBulkUploadDialog(result.value)"
+                [disabled]="!result.value?.privileges.writable"
+              >
+                <i class="fa fa-fw fa-upload"></i> PDF Bulk Upload
+              </button>
+
+              <ng-container *ngIf="result.value?.children.selection$ | async as selection">
+                <div
+                  ngbDropdown
+                  class="d-inline-block ml-2"
+                  container="body"
+                  *ngIf="selection.length && result.value.privileges.writable"
+                >
+                  <button class="btn btn-secondary" ngbDropdownToggle>Actions</button>
+                  <div ngbDropdownMenu>
+                    <button
+                      ngbDropdownItem
+                      (click)="reannotate(selection)"
+                      [disabled]="!isSelectionAnnotatable(selection)"
+                    >
+                      Re-annotate
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button
+                      ngbDropdownItem
+                      (click)="openMoveDialog(selection)"
+                      [disabled]="!isSelectionMovable(selection)"
+                    >
+                      Move to...
+                    </button>
+                    <button
+                      ngbDropdownItem
+                      (click)="openDeleteDialog(selection)"
+                      [disabled]="!isSelectionDeletable(selection)"
+                    >
+                      Delete...
+                    </button>
+                  </div>
+                </div>
+              </ng-container>
+
+              <div
+                ngbDropdown
+                class="d-inline-block ml-2"
+                container="body"
+                ngbTooltip="Entity Cloud"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
+              >
+                <button
+                  class="btn btn-secondary"
+                  ngbDropdownToggle
+                  [disabled]="result.loading || !result.value"
+                >
+                  <i class="fa fa-fw fa-cloud"></i>
+                </button>
+                <div ngbDropdownMenu *ngIf="result.value">
+                  <button
+                    ngbDropdownItem
+                    [appLink]="[
+                      '/file-navigator',
+                      encodeURIComponent(result.value.project.name),
+                      result.value.***ARANGO_USERNAME***?.hashId
+                    ]"
+                    [parentAddress]="['/projects', encodeURIComponent(result.value.project.name)]"
+                    [newTab]="true"
+                    [sideBySide]="true"
+                    [forceWorkbench]="true"
+                    [openParentFirst]="true"
+                  >
+                    For entire project...
+                  </button>
+                  <button
+                    ngbDropdownItem
+                    [appLink]="[
+                      '/file-navigator',
+                      encodeURIComponent(result.value.project.name),
+                      result.value.hashId
+                    ]"
+                    [parentAddress]="['/folders', result.value.hashId]"
+                    [newTab]="true"
+                    [sideBySide]="true"
+                    [forceWorkbench]="true"
+                    [openParentFirst]="true"
+                    *ngIf="result.value !== result.value.***ARANGO_USERNAME***"
+                  >
+                    For this folder
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="ml-auto d-flex">
+              <div
+                class="input-group"
+                [class.bg-highlight]="(result.value?.children.filter$ | async) != null"
+              >
+                <div class="input-group-prepend">
+                  <div class="input-group-text bg-transparent border-right-0">
+                    <i class="fa fa-search"></i>
+                  </div>
+                </div>
+                <input
+                  class="form-control py-2 pl-0 border-left-0 border bg-transparent"
+                  [disabled]="result.loading || !result.value"
+                  (keyup)="applyFilter(result.value, $event.target.value)"
+                  placeholder="Find"
+                  maxlength="40"
+                />
+              </div>
+
+              <button
+                class="btn btn-secondary ml-2"
+                ngbTooltip="Reload List"
+                container="body"
+                #tooltipRef="ngbTooltip"
+                [appAutoCloseTooltipOutOfView]="tooltipRef"
+                placement="bottom top left right"
+                (click)="refresh()"
+              >
+                <i class="fa fa-fw fa-sync"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-fill overflow-auto">
+        <app-object-list
+          [objects]="result.value?.children"
+          [appLinks]="true"
+          [parent]="result.value"
+          [showDescription]="false"
+          (refreshRequest)="refresh()"
+        ></app-object-list>
+      </div>
+    </div>
+  </ng-template>
 </ng-container>

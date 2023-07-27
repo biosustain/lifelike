@@ -31,63 +31,72 @@ $warning: $yellow;
 $danger: $red;
 $light: $gray-100;
 $dark: $gray-800;
-$highlight: #FFF7E0;
+$highlight: #fff7e0;
 
 $theme-colors: ();
 // stylelint-disable-next-line scss/dollar-variable-default
 $theme-colors: map-merge(
-    (
-      "primary": $primary,
-      "secondary": $secondary,
-      "success": $success,
-      "info": $info,
-      "warning": $warning,
-      "danger": $danger,
-      "light": $light,
-      "dark": $dark,
-      "button": $gray-400,
-    ),
-    $theme-colors
+  (
+    'primary': $primary,
+    'secondary': $secondary,
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'button': $gray-400,
+  ),
+  $theme-colors
 );
 
 $spacer: 0.75rem;
 $spacers: ();
 // stylelint-disable-next-line scss/dollar-variable-default
 $spacers: map-merge(
-    (
-      0: 0,
-      1: ($spacer * .25),
-      2: ($spacer * .5),
-      3: $spacer,
-      4: ($spacer * 1.5),
-      5: ($spacer * 3)
+  (
+    0: 0,
+    1: (
+      $spacer * 0.25,
     ),
-    $spacers
+    2: (
+      $spacer * 0.5,
+    ),
+    3: $spacer,
+    4: (
+      $spacer * 1.5,
+    ),
+    5: (
+      $spacer * 3,
+    ),
+  ),
+  $spacers
 );
 
-$table-cell-padding: .45rem;
-$table-cell-padding-sm: .2rem;
+$table-cell-padding: 0.45rem;
+$table-cell-padding-sm: 0.2rem;
 
-$input-btn-padding-y:        .325rem;
-$input-btn-padding-x:        .65rem;
+$input-btn-padding-y: 0.325rem;
+$input-btn-padding-x: 0.65rem;
 
-$font-family-sans-serif: Roboto, "Helvetica Neue", Arial, Helvetica, sans-serif;
+$font-family-sans-serif: Roboto, 'Helvetica Neue', Arial, Helvetica, sans-serif;
 $font-family-base: $font-family-sans-serif;
 
 $font-size-base: 0.9rem;
 $font-size-lg: $font-size-base * 1.25;
-$font-size-sm: $font-size-base * .875;
+$font-size-sm: $font-size-base * 0.875;
 
 $form-group-margin-bottom: 0.5rem;
 
 $modal-md: 600px;
 
 // Add table-column for <col>
-$displays: none, inline, inline-block, block, table, table-row, table-cell, flex, inline-flex, table-column;
+$displays: none, inline, inline-block, block, table, table-row, table-cell, flex, inline-flex,
+  table-column;
 
 @import '~bootstrap/scss/variables';
 
-$active-bg: rgba($component-active-bg, .1);
+$active-bg: rgba($component-active-bg, 0.1);
 $focus-box-shadow: inset 0 0 0 $input-btn-focus-width $input-btn-focus-color;
 
 $table-border-color: $gray-200;
@@ -149,8 +158,8 @@ $floating-toolbar-border-radius: $border-radius;
 $dropdown-menu-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 $popover-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-$btn-border-radius-xs:        $border-radius-sm;
-$btn-padding-y-xs:            0.1rem;
-$btn-padding-x-xs:            0.3rem;
-$btn-font-size-xs:            $input-btn-font-size-sm * 0.8;
-$btn-line-height-xs:          $input-btn-line-height-sm;
+$btn-border-radius-xs: $border-radius-sm;
+$btn-padding-y-xs: 0.1rem;
+$btn-padding-x-xs: 0.3rem;
+$btn-font-size-xs: $input-btn-font-size-sm * 0.8;
+$btn-line-height-xs: $input-btn-line-height-sm;

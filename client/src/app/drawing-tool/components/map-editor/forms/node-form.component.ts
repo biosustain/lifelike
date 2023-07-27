@@ -7,7 +7,11 @@ import { RecursivePartial } from 'app/shared/utils/types';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { SearchType } from 'app/search/shared';
-import { DETAIL_NODE_LABELS, isCommonNodeDisplayName, UniversalGraphNode, } from 'app/drawing-tool/services/interfaces';
+import {
+  DETAIL_NODE_LABELS,
+  isCommonNodeDisplayName,
+  UniversalGraphNode,
+} from 'app/drawing-tool/services/interfaces';
 import { IMAGE_LABEL } from 'app/shared/constants';
 
 import { EntityForm } from './entity-form';
@@ -26,16 +30,18 @@ export class NodeFormComponent extends EntityForm {
   updatedNode: UniversalGraphNode;
 
   @Output() save = new EventEmitter<{
-    originalData: RecursivePartial<UniversalGraphNode>,
-    updatedData: RecursivePartial<UniversalGraphNode>,
+    originalData: RecursivePartial<UniversalGraphNode>;
+    updatedData: RecursivePartial<UniversalGraphNode>;
   }>();
 
   previousLabel: string;
 
   fixedType = false;
 
-  constructor(protected readonly workspaceManager: WorkspaceManager,
-              protected readonly internalSearch: InternalSearchService) {
+  constructor(
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly internalSearch: InternalSearchService
+  ) {
     super(workspaceManager);
   }
 
@@ -64,7 +70,6 @@ export class NodeFormComponent extends EntityForm {
     this.originalNode = cloneDeep(node);
     this.originalNode.style = this.originalNode.style || {};
 
-
     this.updatedNode = cloneDeep(node);
     this.updatedNode.data.sources = this.updatedNode.data.sources || [];
     this.updatedNode.data.hyperlinks = this.updatedNode.data.hyperlinks || [];
@@ -79,10 +84,12 @@ export class NodeFormComponent extends EntityForm {
     // Swap node display name and detail when switching to a Note or Link (LL-1946)
     if (!fromDetailNode && toDetailNode) {
       // If we are changing to a detail node, swap the detail and display name (sometimes)
-      if (!this.node.data.detail
+      if (
+        !this.node.data.detail &&
         // This should not be able to happen, right?
         // && this.node.display_name != null
-        && !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) {
+        !isCommonNodeDisplayName(this.previousLabel, this.node.display_name)
+      ) {
         this.node.style.showDetail = true;
         this.node.data.detail = this.node.display_name;
         this.node.display_name = startCase(this.node.label);
@@ -93,9 +100,11 @@ export class NodeFormComponent extends EntityForm {
       }
     } else if (fromDetailNode && !toDetailNode) {
       // If we are moving away from a detail node, restore the display name (sometimes)
-      if ((!this.node.display_name
-          || isCommonNodeDisplayName(this.previousLabel, this.node.display_name))
-        && this.node.data.detail?.length <= 50) {
+      if (
+        (!this.node.display_name ||
+          isCommonNodeDisplayName(this.previousLabel, this.node.display_name)) &&
+        this.node.data.detail?.length <= 50
+      ) {
         this.node.display_name = this.node.data.detail;
         this.node.data.detail = '';
       }
@@ -176,7 +185,7 @@ export class NodeFormComponent extends EntityForm {
   addHyperlink() {
     this.node.data.hyperlinks = this.node.data?.hyperlinks ?? [];
     const [domain, url] = ['', ''];
-    this.node.data.hyperlinks.push({url, domain});
+    this.node.data.hyperlinks.push({ url, domain });
   }
 
   mayShowDetailText() {
@@ -185,11 +194,11 @@ export class NodeFormComponent extends EntityForm {
 
   searchMapNodeInVisualizer(node) {
     return this.internalSearch.visualizer_tmp_fix(node.display_name, {
-      entities: [node.label]
+      entities: [node.label],
     });
   }
 
   searchMapNodeInContent(node, type: SearchType | string) {
-    return this.internalSearch.fileContents(node.display_name, {types: [type]});
+    return this.internalSearch.fileContents(node.display_name, { types: [type] });
   }
 }

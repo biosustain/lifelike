@@ -23,14 +23,14 @@ import { SplitComponent } from 'angular-split';
   styleUrls: ['./workspace.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class WorkspaceComponent implements OnInit, OnChanges, AfterContentChecked, ShouldConfirmUnload {
-  @ViewChild('container', {static: true, read: ElementRef}) container: ElementRef;
-  @ViewChild('splitComponent', {static: false}) splitComponent: SplitComponent;
+export class WorkspaceComponent
+  implements OnInit, OnChanges, AfterContentChecked, ShouldConfirmUnload
+{
+  @ViewChild('container', { static: true, read: ElementRef }) container: ElementRef;
+  @ViewChild('splitComponent', { static: false }) splitComponent: SplitComponent;
   panes$: Observable<Pane[]>;
 
-  constructor(
-    protected readonly workspaceManager: WorkspaceManager
-  ) {
+  constructor(protected readonly workspaceManager: WorkspaceManager) {
     this.panes$ = this.workspaceManager.panes$;
   }
 
@@ -63,7 +63,7 @@ export class WorkspaceComponent implements OnInit, OnChanges, AfterContentChecke
   }
 
   get shouldConfirmUnload(): Promise<boolean> {
-    return this.workspaceManager.shouldConfirmUnload().then(result => {
+    return this.workspaceManager.shouldConfirmUnload().then((result) => {
       if (result) {
         result.pane.activeTab = result.tab;
         return true;

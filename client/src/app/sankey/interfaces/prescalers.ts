@@ -12,7 +12,7 @@ export enum PRESCALER_ID {
   sqrt = 'sqrt',
   cbrt = 'cbrt',
   one_by_x = '1/x',
-  arctan = 'arctan'
+  arctan = 'arctan',
 }
 
 export type PRESCALERS = PropertyDictionary<PRESCALER_ID, Prescaler>;

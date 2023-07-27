@@ -33,15 +33,14 @@ with open(path.join(directory, '../upgrade_data/graph_v3.json'), 'r') as f:
     validate_graph = fastjsonschema.compile(json.load(f))
 
 t_files = table(
-        'files',
-        column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+    'files', column('content_id', sa.Integer), column('mime_type', sa.String)
+)
 
 t_files_content = table(
-        'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary),
-        column('checksum_sha256', sa.Binary)
+    'files_content',
+    column('id', sa.Integer),
+    column('raw_file', sa.LargeBinary),
+    column('checksum_sha256', sa.Binary),
 )
 
 
@@ -53,15 +52,14 @@ def modify_files_with_views(modification_callback):
     conn = op.get_bind()
     session = Session(conn)
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
             and_(
-                    t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
-                    t_files.c.content_id == t_files_content.c.id
+                t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/graph',
+                t_files.c.content_id == t_files_content.c.id,
             )
-    ))
+        )
+    )
 
     for chunk in window_chunk(files, 25):
         for id_, content in chunk:
@@ -79,12 +77,9 @@ def modify_files_with_views(modification_callback):
                     raw_file = json.dumps(data).encode('utf-8')
                     checksum_sha256 = hashlib.sha256(raw_file).digest()
                     session.execute(
-                            t_files_content.update().where(
-                                    t_files_content.c.id == id_
-                            ).values(
-                                    raw_file=raw_file,
-                                    checksum_sha256=checksum_sha256
-                            )
+                        t_files_content.update()
+                        .where(t_files_content.c.id == id_)
+                        .values(raw_file=raw_file, checksum_sha256=checksum_sha256)
                     )
         session.flush()
     session.commit()
@@ -97,13 +92,17 @@ def map_link_group_to_link_group_trace_idx(data, view):
     for trace_idx, trace in enumerate(traces):
         for edge in trace['edges']:
             link_group_id = '_'.join(map(str, (edge, trace['group'])))
-            link_group_trace_idx_id = '_'.join(map(str, (edge, trace['group'], trace_idx)))
+            link_group_trace_idx_id = '_'.join(
+                map(str, (edge, trace['group'], trace_idx))
+            )
             link_group_to_link_group_trace_idx[link_group_id] = link_group_trace_idx_id
 
     remapped_links = dict()
     for link_group_id, link_overwrites in view.get('links').items():
         if len(link_group_id.split('_')) == 2:
-            remapped_links[link_group_to_link_group_trace_idx[link_group_id]] = link_overwrites
+            remapped_links[
+                link_group_to_link_group_trace_idx[link_group_id]
+            ] = link_overwrites
     view['links'] = remapped_links
 
 
@@ -114,7 +113,9 @@ def map_link_group_trace_idx_to_link_group(data, view):
     for trace_idx, trace in enumerate(traces):
         for edge in trace['edges']:
             link_group_id = '_'.join(map(str, (edge, trace['group'])))
-            link_group_trace_idx_id = '_'.join(map(str, (edge, trace['group'], trace_idx)))
+            link_group_trace_idx_id = '_'.join(
+                map(str, (edge, trace['group'], trace_idx))
+            )
             link_group_trace_idx_to_link_group[link_group_trace_idx_id] = link_group_id
 
     remapped_links = dict()

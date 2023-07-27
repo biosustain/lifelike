@@ -5,9 +5,8 @@ export enum FindState {
   PENDING = 3,
 }
 
-
 export enum RenderTextMode {
   DISABLED,
   ENABLED,
-  ENHANCED
+  ENHANCED,
 }

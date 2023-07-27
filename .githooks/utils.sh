@@ -17,11 +17,19 @@ HEADER () {
 # Example:
 #   getStaged appserver '\.(py)$'
 getStaged () {
-  relative_dir=${1:='.'}
-  matching_pattern=${2:=''}
-  cd "${relative_dir}"\
-   && git diff --diff-filter=d --cached --name-only --relative\
-    | grep -E "${matching_pattern}"
+  relative_dir=${1:-'.'}
+  matching_pattern=${2:-''}
+  if [[ -n $RUN_HOOK_FOR_ALL_FILES ]]; then
+    cd "${relative_dir}" \
+     && git ls-files --cached --modified --other --exclude-standard \
+      | grep -E "${matching_pattern}" \
+      | sed 's/.*/"&"/'
+  else
+    cd "${relative_dir}" \
+     && git diff --diff-filter=d --cached --name-only --relative \
+      | grep -E "${matching_pattern}" \
+      | sed 's/.*/"&"/'
+  fi
 }
 
 # Printout system information
@@ -31,13 +39,57 @@ environmentInfo () {
   echo "OS:"
   cat /etc/os-release  2> /dev/null || systeminfo  2> /dev/null || sw_vers 2> /dev/null
   echo "Docker: $(docker --version)"
-  echo "Docker compose: $(docker-compose --version)"
+  echo "Docker compose: $(docker compose --version)"
 }
 
 # Provide debugging insight
 debug () {
   environmentInfo
   set -xv && echo $-
+}
+
+run_prettier () {
+  dir=${1:-'.'}
+  staged_files=$(getStaged $dir '\.(css|html|js|json|jsx|md|sass|scss|ts|tsx|vue|yaml|yml)$')
+  # shellcheck disable=SC2236
+  if [[ -n $staged_files ]];
+  then
+    (
+      echo "> Running prettier for $(echo "$staged_files" | wc -l) files..."
+      echo ${staged_files} | xargs docker run --rm -v $(pwd)/$dir:/work \
+        tmknom/prettier:2.8.7 --write --ignore-unknown \
+        --cache --cache-strategy metadata --cache-location=.cache/.prettier-cache
+    )
+  else
+    echo "> Skipping prettier run..."
+  fi
+}
+
+run_black () {
+  dir=${1:-'.'}
+  staged_files=$(getStaged $dir '\.(py)$')
+  # shellcheck disable=SC2236
+  if [[ -n $staged_files ]];
+  then
+    (
+    echo "> 🌽 Running black for $(echo "$staged_files" | wc -l) files..."
+    echo ${staged_files} | \
+      xargs docker run --rm \
+      -v $(pwd)/$dir:/data --workdir /data \
+      pyfound/black:23.3.0 \
+      black --fast --color --skip-string-normalization
+    )
+  else
+    echo "> Skipping black run..."
+  fi
+}
+
+checkExitCode () {
+  exit_code=$1
+  if [ $exit_code != 0 ]; then
+    echo "❌ Linting check has failed. You may use git commit --no-verify to skip."
+    exit $exit_code
+  fi
 }
 
 # Recurse hooks
@@ -68,12 +120,7 @@ recurseHook () {
       HEADER "🤖  Running hook ($hook_name) checks for $code_path"
       # Execute hook
       "$code_path/$hook_name"
-      exit_code=$?
-
-      if [ $exit_code != 0 ]; then
-        echo "❌ Linting check has failed. You may use git commit --no-verify to skip."
-        exit $exit_code
-      fi
+      checkExitCode $?
     fi
   done
 }

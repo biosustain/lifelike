@@ -1,4 +1,4 @@
-import { HttpEvent, HttpEventType, HttpUploadProgressEvent } from '@angular/common/http';
+import { HttpEventType } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,8 +10,6 @@ import {
   Subject,
   concat,
   EMPTY,
-  iif,
-  interval,
 } from 'rxjs';
 import {
   bufferWhen,
@@ -40,27 +38,26 @@ import {
   some,
   uniqWith,
   zip,
-  merge, last,
+  merge,
 } from 'lodash-es';
 
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import {
-  ErrorResponse,
-  InformationResponse,
-  ResultMapping,
-  SingleResult,
-  WarningResponse,
-} from 'app/shared/schemas/common';
-import { TransactionService } from 'app/shared/services/transactions.service';
-import { objectToMixedFormData } from 'app/shared/utils/forms';
-import { uuidv4 } from 'app/shared/utils/identifiers';
 import {
   Progress,
   ProgressArguments,
   ProgressMode
 } from 'app/interfaces/common-dialog.interface';
+import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ErrorHandler } from 'app/shared/services/error-handler.service';
+import {
+  ErrorResponse,
+  ResultMapping,
+  SingleResult,
+  StatusSchema,
+} from 'app/shared/schemas/common';
+import { TransactionService } from 'app/shared/services/transactions.service';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
+import { uuidv4 } from 'app/shared/utils/identifiers';
 import { idle } from 'app/shared/rxjs/idle-observable';
 
 import {
@@ -75,16 +72,13 @@ import { FilesystemService } from './filesystem.service';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
 import { ObjectBulkUploadDialogComponent } from '../components/dialog/object-bulk-upload-dialog.component';
 
-interface CreationResult {
+interface CreationResult extends StatusSchema {
   result?: FilesystemObject;
-  info?: InformationResponse[];
-  warnings?: WarningResponse[];
-  errors?: ErrorResponse[];
 }
 
 type AnnotationResult = AnnotationGenerationResultData & {
   error: ErrorResponse;
-  missing: boolean
+  missing: boolean;
 };
 
 interface CreationAnnotationResult {
@@ -101,17 +95,17 @@ interface PutTask {
   request: ObjectCreateRequest;
   creation: Task<SingleResult<FilesystemObject>>;
   annotation: Task<ResultMapping<AnnotationGenerationResultData> | { error: ErrorResponse }> & {
-    options: PDFAnnotationGenerationRequest,
-    call$: Subject<HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>
+    options: PDFAnnotationGenerationRequest;
+    call$: Subject<HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>;
   };
 }
 
 interface CreateToAnnotateStep {
   annotationTask?: HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>;
   creationTaskBatch: {
-    request: PutTask['request'],
-    creation: SingleResult<FilesystemObject>,
-    annotation: PutTask['annotation']
+    request: PutTask['request'];
+    creation: SingleResult<FilesystemObject>;
+    annotation: PutTask['annotation'];
   }[];
 }
 
@@ -123,28 +117,27 @@ export type CreateResultMapping = Map<ObjectCreateRequest, CreationAnnotationRes
 
 @Injectable()
 export class ObjectCreationService {
-
   private readonly MAX_PARALLEL_CREATIONS = 3;
   private readonly MAX_PARALLEL_ANNOTATIONS = 1;
 
-  constructor(protected readonly annotationsService: AnnotationsService,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly modalService: NgbModal,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly route: ActivatedRoute,
-              protected readonly messageDialog: MessageDialog,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly transactionService: TransactionService
+  constructor(
+    protected readonly annotationsService: AnnotationsService,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly modalService: NgbModal,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly route: ActivatedRoute,
+    protected readonly messageDialog: MessageDialog,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly transactionService: TransactionService
   ) {}
 
-
   private composeCreationTask(request: ObjectCreateRequest): Task<SingleResult<FilesystemObject>> {
-    const {progress$, body$} = this.filesystemService.create(request);
+    const { progress$, body$ } = this.filesystemService.create(request);
     return {
       body$,
       progress$: progress$.pipe(
-        map(event => {
+        map((event) => {
           switch (event.type) {
             /**
              * The request was sent out over the wire.
@@ -202,20 +195,20 @@ export class ObjectCreationService {
           mode: ProgressMode.Indeterminate,
           status: `Preparing ${request.filename || 'file'}`,
         }),
-        catchError(error =>
+        catchError((error) =>
           of({
             mode: ProgressMode.Determinate,
             status: `Error occurred during upload/parsing of ${request.filename || 'file'}!`,
             value: 0,
             errors: [error],
-          }),
+          })
         ),
         endWith({
           mode: ProgressMode.Determinate,
           status: `Done with ${request.filename || 'file'}...`,
           value: 1,
         }),
-        shareReplay({bufferSize: 1, refCount: true}),
+        shareReplay({ bufferSize: 1, refCount: true })
       ),
     } as Task<SingleResult<FilesystemObject>>;
   }
@@ -310,18 +303,17 @@ export class ObjectCreationService {
 
   private composeAnnotationTask(
     request,
-    annotationCall$: Observable<null | HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>,
+    annotationCall$: Observable<null | HttpObservableResponse<
+      ResultMapping<AnnotationGenerationResultData>
+    >>
   ): Task<ResultMapping<AnnotationGenerationResultData>> {
     return {
-      body$: annotationCall$.pipe(
-        switchMap(annotationCall =>
-          annotationCall?.body$ ?? of(null)
-        ),
-      ),
+      body$: annotationCall$.pipe(switchMap((annotationCall) => annotationCall?.body$ ?? of(null))),
       progress$: annotationCall$?.pipe(
-        switchMap(annotationCall =>
-          annotationCall?.progress$.pipe(
-              map(event => {
+        switchMap(
+          (annotationCall) =>
+            annotationCall?.progress$.pipe(
+              map((event) => {
                 switch (event.type) {
                   /**
                    * The request was sent out over the wire.
@@ -365,7 +357,9 @@ export class ObjectCreationService {
                     if (result.error) {
                       return {
                         mode: ProgressMode.Determinate,
-                        status: `${request.filename || 'File'} saved; Error occured while parsing and identifying annotations...`,
+                        status: `${
+                          request.filename || 'File'
+                        } saved; Error occured while parsing and identifying annotations...`,
                         value: 1,
                         errors: [
                           {
@@ -378,7 +372,9 @@ export class ObjectCreationService {
                     if (result.attempted) {
                       return {
                         mode: ProgressMode.Determinate,
-                        status: `${request.filename || 'File'} saved; Attempted parsing and identifying annotations...`,
+                        status: `${
+                          request.filename || 'File'
+                        } saved; Attempted parsing and identifying annotations...`,
                         value: 1,
                       };
                     }
@@ -412,41 +408,45 @@ export class ObjectCreationService {
               }),
               startWith({
                 mode: ProgressMode.Indeterminate,
-                status: `${request.filename || 'File'} saved; Parsing and identifying annotations...`,
+                status: `${
+                  request.filename || 'File'
+                } saved; Parsing and identifying annotations...`,
               }),
-              catchError(error =>
+              catchError((error) =>
                 of({
                   mode: ProgressMode.Determinate,
                   status: `Error occurred during annotating of ${request.filename || 'file'}!`,
                   value: 0,
                   errors: [error],
-                }),
+                })
               ),
               endWith({
                 mode: ProgressMode.Determinate,
                 status: `Done uploading and annotating ${request.filename || 'file'}...`,
                 value: 1,
               }),
-              shareReplay({bufferSize: 1, refCount: true}),
+              shareReplay({ bufferSize: 1, refCount: true })
             ) ?? EMPTY
-        ),
+        )
       ),
     };
   }
 
   private parseAnnotationStatus(
     annotationResult: ResultMapping<AnnotationGenerationResultData> | { error: ErrorResponse },
-    hashId: string,
-  ): (AnnotationGenerationResultData | {}) & { missing: boolean, error: ErrorResponse } {
+    hashId: string
+  ): (AnnotationGenerationResultData | {}) & { missing: boolean; error: ErrorResponse } {
     return assign(
       (annotationResult as ResultMapping<AnnotationGenerationResultData>)?.mapping?.[hashId] ?? {},
       {
-        missing: (annotationResult as ResultMapping<AnnotationGenerationResultData>)?.missing?.includes(hashId) ?? false,
+        missing:
+          (annotationResult as ResultMapping<AnnotationGenerationResultData>)?.missing?.includes(
+            hashId
+          ) ?? false,
       },
-      omit(annotationResult, 'mapping', 'missing') as { error: ErrorResponse },
+      omit(annotationResult, 'mapping', 'missing') as { error: ErrorResponse }
     );
   }
-
 
   /**
    * Handles the filesystem PUT request(s) with a progress dialog.
@@ -456,11 +456,13 @@ export class ObjectCreationService {
    */
   executePutWithProgressDialog(
     requests: ObjectCreateRequest[],
-    annotationOptions: PDFAnnotationGenerationRequest[],
+    annotationOptions: PDFAnnotationGenerationRequest[]
   ): Observable<CreateResultMapping> {
     const putTasks: PutTask[] = zip(requests, annotationOptions).map(([request, options]) => {
-      const annotationCall$ = new Subject<HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>>();
-      return ({
+      const annotationCall$ = new Subject<
+        HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>>
+      >();
+      return {
         request,
         creation: this.composeCreationTask(request),
         annotation: {
@@ -468,53 +470,45 @@ export class ObjectCreationService {
           options,
           call$: annotationCall$,
         },
-      });
+      };
     });
     const progressDialogRef = this.progressDialog.display({
       title: `Creating '${requests.length > 1 ? 'Files' : requests[0].filename}'`,
-      progressObservables: putTasks.map(({creation, annotation}) =>
+      progressObservables: putTasks.map(({ creation, annotation }) =>
         concat(creation.progress$, annotation.progress$).pipe(
           // Accumulate warnings and errors
           scan((prev, next) => ({
             ...next,
-            info: [
-              ...(prev.info ?? []),
-              ...(next.info ?? []),
-            ],
-            warnings: [
-              ...(prev.warnings ?? []),
-              ...(next.warnings ?? []),
-            ],
-            errors: [
-              ...(prev.errors ?? []),
-              ...(next.errors ?? []),
-            ],
+            info: [...(prev.info ?? []), ...(next.info ?? [])],
+            warnings: [...(prev.warnings ?? []), ...(next.warnings ?? [])],
+            errors: [...(prev.errors ?? []), ...(next.errors ?? [])],
           })),
-          map(args => new Progress(args)),
-        ),
+          map((args) => new Progress(args))
+        )
       ),
     });
     return from(putTasks).pipe(
       mergeMap(
-        ({request, creation, annotation}) => creation.body$.pipe(
-          this.errorHandler.create({label: 'Create object'}),
-          catchError(() => of(null as SingleResult<FilesystemObject> | null)),
-          map(creationResult => ({
-            request,
-            creation: creationResult,
-            annotation,
-          })),
-        ),
-        this.MAX_PARALLEL_CREATIONS,
+        ({ request, creation, annotation }) =>
+          creation.body$.pipe(
+            this.errorHandler.create({ label: 'Create object' }),
+            catchError(() => of(null as SingleResult<FilesystemObject> | null)),
+            map((creationResult) => ({
+              request,
+              creation: creationResult,
+              annotation,
+            }))
+          ),
+        this.MAX_PARALLEL_CREATIONS
       ),
       // Batch annotation generation requests
       bufferWhen(() => idle()),
-      concatMap(resultBatch => {
+      concatMap((resultBatch) => {
         const [resultsToAnnotate, resultsNotAnnotatable] = partition(
           resultBatch,
-          ({creation: {result, warnings}}) =>
+          ({ creation: { result, warnings } }) =>
             result?.isAnnotatable &&
-            !some(warnings, ({type}) => type === 'TextExtractionNotAllowedWarning'),
+            !some(warnings, ({ type }) => type === 'TextExtractionNotAllowedWarning')
         );
         const uniqeAnnotationConfigs = uniqWith(
           resultsToAnnotate.map(({annotation: {options}, creation: {result: {mimeType}}}) => [mimeType, options]),
@@ -542,37 +536,36 @@ export class ObjectCreationService {
             annotationTask: null,
             creationTaskBatch: resultsNotAnnotatable,
           } as CreateToAnnotateStep),
-          tap(({annotationTask, creationTaskBatch}) =>
-            forEach(creationTaskBatch, ({annotation: {call$}}) => call$.next(annotationTask)),
-          ),
+          tap(({ annotationTask, creationTaskBatch }) =>
+            forEach(creationTaskBatch, ({ annotation: { call$ } }) => call$.next(annotationTask))
+          )
         );
       }),
-      mergeMap(({annotationTask, creationTaskBatch}) =>
+      mergeMap(
+        ({ annotationTask, creationTaskBatch }) =>
           (annotationTask?.body$ ?? of(null)).pipe(
-            this.errorHandler.create({label: 'Annotate objects'}),
-            catchError((annotationError: ErrorResponse) =>
-              of({error: annotationError}),
-            ),
-            map(annotationResult => ({
-              annotationResult,
-              creationTaskBatch,
-            } as AnnotationResultStep)),
+            this.errorHandler.create({ label: 'Annotate objects' }),
+            catchError((annotationError: ErrorResponse) => of({ error: annotationError })),
+            map(
+              (annotationResult) =>
+                ({
+                  annotationResult,
+                  creationTaskBatch,
+                } as AnnotationResultStep)
+            )
           ),
-        this.MAX_PARALLEL_ANNOTATIONS,
+        this.MAX_PARALLEL_ANNOTATIONS
       ),
-      reduce(
-        (acc, {annotationResult, creationTaskBatch}) => {
-          forEach(creationTaskBatch, creationTask => {
-            const hashId = creationTask.creation.result?.hashId;
-            acc.set(creationTask.request, {
-              ...creationTask,
-              annotation: this.parseAnnotationStatus(annotationResult, hashId),
-            } as CreationAnnotationResult);
-          });
-          return acc;
-        },
-        new Map<ObjectCreateRequest, CreationAnnotationResult>(),
-      ),
+      reduce((acc, { annotationResult, creationTaskBatch }) => {
+        forEach(creationTaskBatch, (creationTask) => {
+          const hashId = creationTask.creation.result?.hashId;
+          acc.set(creationTask.request, {
+            ...creationTask,
+            annotation: this.parseAnnotationStatus(annotationResult, hashId),
+          } as CreationAnnotationResult);
+        });
+        return acc;
+      }, new Map<ObjectCreateRequest, CreationAnnotationResult>()),
       finalize(() => progressDialogRef.componentInstance?.close())
     );
   }
@@ -595,8 +588,10 @@ export class ObjectCreationService {
    * @param target the base object to start from
    * @param options options for the dialog
    */
-  openCreateDialog(target: FilesystemObject,
-                   options: CreateDialogOptions = {}): Promise<FilesystemObject> {
+  openCreateDialog(
+    target: FilesystemObject,
+    options: CreateDialogOptions = {}
+  ): Promise<FilesystemObject> {
     const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
@@ -612,14 +607,15 @@ export class ObjectCreationService {
         dialogRef.componentInstance[key] = options[key];
       }
     }
-    dialogRef.componentInstance.accept = ((requests: ObjectCreateRequest[]) => {
-      const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map(request => ({
+    dialogRef.componentInstance.accept = (requests: ObjectCreateRequest[]) => {
+      const annotationOptions: PDFAnnotationGenerationRequest[] = requests.map((request) => ({
         organism: request?.fallbackOrganism,
         annotationConfigs: request?.annotationConfigs,
       }));
-      return this.executePutWithProgressDialog(requests, annotationOptions).toPromise()
-        .then(resultsMapping => resultsMapping.values().next().value.creation.result);
-    });
+      return this.executePutWithProgressDialog(requests, annotationOptions)
+        .toPromise()
+        .then((resultsMapping) => resultsMapping.values().next().value.creation.result);
+    };
     return dialogRef.result;
   }
 

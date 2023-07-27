@@ -1,5 +1,5 @@
 import { Directive, Input } from '@angular/core';
-import {CdkCopyToClipboard, Clipboard} from '@angular/cdk/clipboard';
+import { CdkCopyToClipboard, Clipboard } from '@angular/cdk/clipboard';
 
 import { ClipboardService } from '../services/clipboard.service';
 
@@ -9,7 +9,7 @@ import { ClipboardService } from '../services/clipboard.service';
  */
 @Directive({
   selector: '[appCopyToClipboard]',
-  providers: [{provide: Clipboard, useExisting: ClipboardService}]
+  providers: [{ provide: Clipboard, useExisting: ClipboardService }],
 })
 export class CopyToClipboardDirective extends CdkCopyToClipboard {
   @Input('appCopyToClipboard') text = '';

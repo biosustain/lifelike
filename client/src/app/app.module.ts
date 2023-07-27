@@ -41,9 +41,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     DashboardComponent,
     KgStatisticsComponent,
   ],
-  entryComponents: [
-    AppVersionDialogComponent,
-  ],
+  entryComponents: [AppVersionDialogComponent],
   imports: [
     BrowserModule,
     PdfViewerLibModule,
@@ -69,7 +67,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     EnrichmentTablesModule,
     PoliciesModule,
     ReportsModule,
-    WorkspaceModule
+    WorkspaceModule,
   ],
   providers: [
     httpInterceptorProviders,
@@ -79,10 +77,9 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     {
       provide: ErrorHandler,
       useClass: GlobalErrorHandler,
-    }
+    },
   ],
   exports: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {
-}
+export class AppModule {}

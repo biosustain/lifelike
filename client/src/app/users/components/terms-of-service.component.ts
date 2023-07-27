@@ -5,6 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './terms-of-service.component.html',
 })
 export class TermsOfServiceComponent {
-  constructor() {
-  }
+  constructor() {}
 }

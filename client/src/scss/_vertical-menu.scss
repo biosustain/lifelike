@@ -9,7 +9,9 @@
     justify-content: center;
     cursor: pointer;
 
-    &, &:link, &:visited {
+    &,
+    &:link,
+    &:visited {
       color: $white;
       text-decoration: none;
     }

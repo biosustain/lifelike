@@ -16,10 +16,7 @@ down_revision = '0e90858dd367'
 branch_labels = None
 depends_on = None
 
-files_table = table(
-        'files',
-        column('mime_type', sa.String)
-)
+files_table = table('files', column('mime_type', sa.String))
 
 
 def upgrade():
@@ -34,13 +31,21 @@ def downgrade():
 
 def change_mime_type(from_, to_):
     conn = op.get_bind()
-    query = files_table.update().where(files_table.c.mime_type == from_).values(mime_type=to_)
+    query = (
+        files_table.update()
+        .where(files_table.c.mime_type == from_)
+        .values(mime_type=to_)
+    )
     return conn.execute(query)
 
 
 def data_upgrades():
-    return change_mime_type('vnd.***ARANGO_DB_NAME***.document/sankey', 'vnd.***ARANGO_DB_NAME***.document/graph')
+    return change_mime_type(
+        'vnd.***ARANGO_DB_NAME***.document/sankey', 'vnd.***ARANGO_DB_NAME***.document/graph'
+    )
 
 
 def data_downgrades():
-    return change_mime_type('vnd.***ARANGO_DB_NAME***.document/graph', 'vnd.***ARANGO_DB_NAME***.document/sankey')
+    return change_mime_type(
+        'vnd.***ARANGO_DB_NAME***.document/graph', 'vnd.***ARANGO_DB_NAME***.document/sankey'
+    )

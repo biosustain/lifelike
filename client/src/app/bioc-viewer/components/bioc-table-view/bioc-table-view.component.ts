@@ -3,14 +3,13 @@ import { Component, OnInit, Input } from '@angular/core';
 @Component({
   selector: 'app-bioc-table-view',
   templateUrl: './bioc-table-view.component.html',
-  styleUrls: ['./bioc-table-view.component.scss']
+  styleUrls: ['./bioc-table-view.component.scss'],
 })
 export class BiocTableViewComponent implements OnInit {
   @Input() passage;
-  constructor() { }
+  constructor() {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   tableCaption(passage) {
     const TYPES = ['table_caption'];
@@ -50,5 +49,4 @@ export class BiocTableViewComponent implements OnInit {
     }
     return false;
   }
-
 }

@@ -35,7 +35,6 @@ import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.c
 import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
 import { StarredBrowserComponent } from 'app/file-browser/components/starred-browser.component';
 
-
 const routes: Routes = [
   {
     path: '',
@@ -123,13 +122,14 @@ const routes: Routes = [
       fontAwesomeIcon: 'chart-bar',
     },
   },
-  { // Project name parameter is no longer used
+  {
+    // Project name parameter is no longer used
     path: 'projects/:project_name/sankey/:file_id',
     canActivate: [LifelikeAuthGuard],
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid'
+      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     },
     canDeactivate: [UnloadConfirmationGuard],
   },
@@ -137,7 +137,7 @@ const routes: Routes = [
     // Left as legacy link support
     // for a while now base view is decided by file content or fragment params
     path: 'projects/:project_name/sankey-many-to-many/:file_id',
-    redirectTo: 'projects/:project_name/sankey/:file_id'
+    redirectTo: 'projects/:project_name/sankey/:file_id',
   },
   {
     path: 'kg-visualizer',
@@ -357,19 +357,30 @@ const routes: Routes = [
     },
   },
   // Old links
-  {path: 'file-browser', redirectTo: 'projects', pathMatch: 'full'},
-  {path: 'pdf-viewer/:file_id', redirectTo: 'projects/beta-project/files/:file_id', pathMatch: 'full'},
-  {path: 'dt/map', redirectTo: 'projects', pathMatch: 'full'},
-  {path: 'dt/map/:hash_id', redirectTo: 'projects/beta-project/maps/maps/:hash_id', pathMatch: 'full'},
-  {path: 'dt/map/edit/:hash_id', redirectTo: 'projects/beta-project/maps/:hash_id/edit', pathMatch: 'full'},
-  {path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full'},
-  {path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full'},
-  {path: 'search', redirectTo: 'search/graph', pathMatch: 'full'},
+  { path: 'file-browser', redirectTo: 'projects', pathMatch: 'full' },
+  {
+    path: 'pdf-viewer/:file_id',
+    redirectTo: 'projects/beta-project/files/:file_id',
+    pathMatch: 'full',
+  },
+  { path: 'dt/map', redirectTo: 'projects', pathMatch: 'full' },
+  {
+    path: 'dt/map/:hash_id',
+    redirectTo: 'projects/beta-project/maps/maps/:hash_id',
+    pathMatch: 'full',
+  },
+  {
+    path: 'dt/map/edit/:hash_id',
+    redirectTo: 'projects/beta-project/maps/:hash_id/edit',
+    pathMatch: 'full',
+  },
+  { path: 'neo4j-upload', redirectTo: 'kg-visualizer/upload', pathMatch: 'full' },
+  { path: 'neo4j-visualizer', redirectTo: 'kg-visualizer', pathMatch: 'full' },
+  { path: 'search', redirectTo: 'search/graph', pathMatch: 'full' },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {
-}
+export class AppRoutingModule {}
