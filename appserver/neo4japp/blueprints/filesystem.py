@@ -1393,6 +1393,8 @@ class FileContentView(FilesystemBaseView):
             return filename if filename.endswith('.json') else f'{filename}.json'
         elif mime_type == FILE_MIME_TYPE_GRAPH:
             return filename if filename.endswith('.graph') else f'{filename}.graph'
+        elif mime_type == FILE_MIME_TYPE_DIRECTORY:
+            return f'{filename.split("/")[1]}.zip'
         else:
             return filename
 
@@ -1403,21 +1405,24 @@ class FileContentView(FilesystemBaseView):
         zipfile. Otherwise, it is the raw file.
         """
         current_user = g.current_user
-
         hash_ids = params['hash_ids']
+
+        # Default name for file downloads
+        download_filename = '***ARANGO_DB_NAME***.zip'
 
         if len(hash_ids) == 0:
             raise ServerException(
-                    title='Download Content Error',
-                    message='Content download request contained no file IDs.',
-                )
+                title='Download Content Error',
+                message='Content download request contained no file IDs.',
+            )
         elif len(hash_ids) == 1:
             hash_id = params['hash_ids'][0]
             file = self.get_nondeleted_recycled_file(
-                Files.hash_id == hash_id,
-                lazy_load_content=True
+                Files.hash_id == hash_id, lazy_load_content=True
             )
-            self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+            self.check_file_permissions(
+                [file], current_user, ['readable'], permit_recycled=True
+            )
 
             # If the given file is NOT a directory, we can just return its raw value immediately.
             # Otherwise, we fetch the children and zip them up in the below block.
@@ -1432,8 +1437,11 @@ class FileContentView(FilesystemBaseView):
                     content.getvalue(),
                     etag=hashlib.sha256(content.getvalue()).hexdigest(),
                     filename=self._get_special_filename(file.filename, file.mime_type),
-                    mime_type=file.mime_type
+                    mime_type=file.mime_type,
                 )
+
+            # If the file is a folder, then we can set the download file name to its name
+            download_filename = self._get_special_filename(file.path, file.mime_type)
 
         # If we reach this block, then there were either many hash ids, or a single folder hash id.
         response_data = FileContentBuffer()
@@ -1441,14 +1449,10 @@ class FileContentView(FilesystemBaseView):
             zip_***ARANGO_USERNAME***_dir = '/***ARANGO_DB_NAME***-download'
             for hash_id in hash_ids:
                 file = self.get_nondeleted_recycled_file(
-                    Files.hash_id == hash_id,
-                    lazy_load_content=True
+                    Files.hash_id == hash_id, lazy_load_content=True
                 )
                 self.check_file_permissions(
-                    [file],
-                    current_user,
-                    ['readable'],
-                    permit_recycled=True
+                    [file], current_user, ['readable'], permit_recycled=True
                 )
 
                 files_to_zip = []
@@ -1457,15 +1461,15 @@ class FileContentView(FilesystemBaseView):
                         and_(
                             Files.hash_id != hash_id,
                             Files.mime_type != FILE_MIME_TYPE_DIRECTORY,
-                            Files.path.startswith(f'{file.path}/')
+                            Files.path.startswith(f'{file.path}/'),
                         ),
-                        lazy_load_content=True
+                        lazy_load_content=True,
                     )
                     self.check_file_permissions(
                         non_folder_descendants,
                         current_user,
                         ['readable'],
-                        permit_recycled=True
+                        permit_recycled=True,
                     )
                     files_to_zip.extend(non_folder_descendants)
                 else:
@@ -1489,9 +1493,13 @@ class FileContentView(FilesystemBaseView):
                             length_to_trim = 0
                         else:
                             length_to_trim = len(file.path) - len(f'/{file.filename}')
-                        zip_filepath = f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
+                        zip_filepath = (
+                            f'{zip_***ARANGO_USERNAME***_dir}{file_to_zip.path[length_to_trim:]}'
+                        )
 
-                    zip_filepath = self._get_special_filename(zip_filepath, file.mime_type)
+                    zip_filepath = self._get_special_filename(
+                        zip_filepath, file.mime_type
+                    )
 
                     zip_file.writestr(zip_filepath, content.getvalue())
 
@@ -1499,8 +1507,8 @@ class FileContentView(FilesystemBaseView):
             request,
             response_data.getvalue(),
             etag=hashlib.sha256(response_data.getvalue()).hexdigest(),
-            filename='***ARANGO_DB_NAME***.zip',
-            mime_type='application.zip'
+            filename=download_filename,
+            mime_type='application.zip',
         )
 
 
@@ -2182,10 +2190,7 @@ bp.add_url_rule(
 )
 bp.add_url_rule('search', view_func=FileSearchView.as_view('file_search'))
 bp.add_url_rule('objects/<string:hash_id>', view_func=FileDetailView.as_view('file'))
-bp.add_url_rule(
-    'objects/<string:hash_id>/content',
-    view_func=FileContentView.as_view('file_content'),
-)
+bp.add_url_rule('objects/content', view_func=FileContentView.as_view('file_content'))
 bp.add_url_rule(
     'objects/<string:hash_id>/map-content',
     view_func=MapContentView.as_view('map_content'),
