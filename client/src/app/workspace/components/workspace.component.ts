@@ -13,7 +13,7 @@ import {
 import { Observable } from 'rxjs';
 
 import { Pane, PaneIDs, WorkspaceManager } from 'app/shared/workspace-manager';
-import { ShouldConfirmUnload } from 'app/shared/modules';
+import { ShouldConfirmUnload } from 'app/shared/module_interfaces';
 
 import { SplitComponent } from 'angular-split';
 

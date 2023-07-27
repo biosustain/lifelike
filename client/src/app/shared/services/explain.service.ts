@@ -6,7 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
 
-import { CompletitionsParams } from '../components/prompt/ChatGPT';
+import { CompletitionsParams } from '../modules/playground/ChatGPT';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
@@ -55,25 +55,5 @@ export class ExplainService {
         options,
       })
       .pipe(map(({ result }) => result));
-  }
-
-  playground(options: CompletitionsParams) {
-    return this.http.post<any>(
-      this.endpoint + 'playground',
-      options,
-      options.stream
-        ? {
-            reportProgress: true,
-            observe: 'events',
-            responseType: 'text',
-          }
-        : ({
-            responseType: 'json',
-          } as any)
-    );
-  }
-
-  models() {
-    return this.http.get<ChatGPTModel[]>(this.endpoint + 'models');
   }
 }

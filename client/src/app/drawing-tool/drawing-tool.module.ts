@@ -5,6 +5,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
+import { PromptModule } from 'app/shared/modules/prompt/prompt.module';
 
 import { MapEditorComponent } from './components/map-editor/map-editor.component';
 import { PaletteComponent } from './components/map-editor/palette.component';
@@ -48,7 +49,7 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     InfoViewPanelComponent,
     LinkEditDialogComponent,
   ],
-  imports: [SharedModule, FileBrowserModule],
+  imports: [SharedModule, FileBrowserModule, PromptModule],
   providers: [
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,

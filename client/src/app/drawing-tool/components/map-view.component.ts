@@ -7,7 +7,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep } from 'lodash-es';
 import { defaultIfEmpty } from 'rxjs/operators';
 
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/module_interfaces';
 import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
@@ -19,7 +19,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import { ImageBlob } from 'app/shared/utils/forms';
+import { ImageBlob } from 'app/shared/utils/form';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 

@@ -14,14 +14,14 @@ import {
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
-import { ExplainService } from '../../services/explain.service';
+import { OpenFileProvider } from '../../../providers/open-file/open-file.provider';
+import { ExplainService } from '../../../services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
-} from '../../utils/dropdown.controller.factory';
-import { PlaygroundComponent } from './playground.component';
-import { environment } from '../../../../environments/environment';
+} from '../../../utils/dropdown.controller.factory';
+import { PlaygroundComponent } from '../../playground/components/playground.component';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-prompt',
