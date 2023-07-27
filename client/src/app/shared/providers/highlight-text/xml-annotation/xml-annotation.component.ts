@@ -1,23 +1,16 @@
 import {
   Component,
-  HostBinding,
-  HostListener,
-  Injectable,
   Input,
   OnChanges,
-  RendererFactory2,
   ViewChild,
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { Router, UrlTree } from '@angular/router';
 
-import { escape, uniqueId, isString } from 'lodash-es';
+import { isString } from 'lodash-es';
 import Color from 'color';
 
-import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import { ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import {
   Hyperlink,
   Reference,
@@ -28,14 +21,10 @@ import {
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
 
-import { DropdownController } from '../../../utils/dom/dropdown-controller';
-import { GenericDataProvider } from '../../data-transfer-data/generic-data.provider';
 import { SEARCH_LINKS } from '../../../links';
 import { annotationTypesMap } from '../../../annotation-styles';
 import { HighlightTextService, XMLTag } from '../../../services/highlight-text.service';
-import { InternalSearchService } from '../../../services/internal-search.service';
-import { isCtrlOrMetaPressed } from '../../../DOMutils';
-import { composeInternalLink, WorkspaceManager } from '../../../workspace-manager';
+import { WorkspaceManager } from '../../../workspace-manager';
 
 @Component({
   selector: 'app-xml-annotation',
@@ -46,9 +35,7 @@ import { composeInternalLink, WorkspaceManager } from '../../../workspace-manage
 export class XMLAnnotationComponent extends XMLTag implements OnChanges {
   parsedMeta: Meta;
 
-  @Input() set meta(value) {
-    this.parsedMeta = isString(value) ? JSON.parse(value) as Meta : value;
-  }
+  @Input() meta: string;
 
   @Input() type;
   @ViewChild('annotation') annotation;
@@ -56,27 +43,30 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
   annoId: string;
   idLink: any;
   idHyperlinks: {
-    label: string,
-    url: string
+    label: string;
+    url: string;
   }[];
   searchLinks: {
-    label: string,
-    url: string
+    label: string;
+    url: string;
   }[];
   searchInternalLinks: {
-    label: string,
-    navigate: Parameters<WorkspaceManager['navigate']>
+    label: string;
+    navigate: Parameters<WorkspaceManager['navigate']>;
   }[];
   backgroundColor: string;
 
   update() {
-    const {id, type, idType, idHyperlinks, links, allText} = this.parsedMeta;
+    this.parsedMeta = JSON.parse(this.meta) as Meta;
+    const { id, type, idType, idHyperlinks, links, allText } = this.parsedMeta;
     const annoId = id.indexOf(':') !== -1 ? id.split(':')[1] : id;
     this.annoId = annoId.indexOf('NULL') === -1 ? annoId : undefined;
-    this.idLink = (ENTITY_TYPE_MAP[type] as EntityType)?.links.find(link => link.name === idType)?.url + this.annoId;
-    this.idHyperlinks = idHyperlinks.map(link => JSON.parse(link));
+    this.idLink =
+      (ENTITY_TYPE_MAP[type] as EntityType)?.links.find((link) => link.name === idType)?.url +
+      this.annoId;
+    this.idHyperlinks = idHyperlinks.map((link) => JSON.parse(link));
     // links should be sorted in the order that they appear in SEARCH_LINKS
-    this.searchLinks = SEARCH_LINKS.map(({domain, url}) => ({
+    this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
       url: links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(allText)),
       label: domain.replace('_', ' '),
     }));
@@ -86,12 +76,12 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
 
   constructor(
     protected readonly highlightTextService: HighlightTextService,
-    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly workspaceManager: WorkspaceManager
   ) {
     super();
   }
 
-  ngOnChanges({meta}: SimpleChanges) {
+  ngOnChanges({ meta }: SimpleChanges) {
     if (meta) {
       this.update();
     }
@@ -101,28 +91,27 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
     return this.annotation?.nativeElement?.textContent;
   }
 
-  @HostListener('dragStart', ['$event'])
   dragStart(event: DragEvent) {
-    const {meta} = this;
-    const text = meta.type === 'Link' ? 'Link' : meta.allText ?? this.textContent;
+    const { parsedMeta } = this;
+    const text = parsedMeta.type === 'Link' ? 'Link' : parsedMeta.allText ?? this.textContent;
 
     let search;
 
-    const sources: Source[] = this.highlightTextService.getSources(meta);
+    const sources: Source[] = this.highlightTextService.getSources(parsedMeta);
     const references: Reference[] = [];
     const hyperlinks: Hyperlink[] = [];
 
-    search = Object.keys(meta.links || []).map(k => {
+    search = Object.keys(parsedMeta.links || []).map((k) => {
       return {
         domain: k,
-        url: meta.links[k],
+        url: parsedMeta.links[k],
       };
     });
 
-    const hyperlink = meta.idHyperlinks || [];
+    const hyperlink = parsedMeta.idHyperlinks || [];
 
     for (const link of hyperlink) {
-      const {label, url} = JSON.parse(link);
+      const { label, url } = JSON.parse(link);
       hyperlinks.push({
         domain: label,
         url,
@@ -136,17 +125,17 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
 
     const copiedNode: UniversalGraphNodeTemplate = {
       display_name: text,
-      label: meta.type.toLowerCase(),
+      label: parsedMeta.type.toLowerCase(),
       sub_labels: [],
       data: {
         sources,
         search,
         references,
         hyperlinks,
-        detail: meta.type === 'Link' ? text : '',
+        detail: parsedMeta.type === 'Link' ? text : '',
       },
       style: {
-        showDetail: meta.type === 'Link',
+        showDetail: parsedMeta.type === 'Link',
       },
     };
 

@@ -28,8 +28,12 @@ def upgrade():
         sa.Column('file_id', sa.Integer(), nullable=False, index=True),
         sa.Column('reviewed', sa.Boolean(), default=False),
         sa.Column('approved', sa.Boolean(), default=False),
-        sa.ForeignKeyConstraint(['file_id'], ['files_content.id'], name=op.f('fk_global_list_file_id_files_content')),
-        sa.PrimaryKeyConstraint('id', name=op.f('pk_global_list'))
+        sa.ForeignKeyConstraint(
+            ['file_id'],
+            ['files_content.id'],
+            name=op.f('fk_global_list_file_id_files_content'),
+        ),
+        sa.PrimaryKeyConstraint('id', name=op.f('pk_global_list')),
     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):

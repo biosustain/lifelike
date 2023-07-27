@@ -23,17 +23,16 @@ import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.co
 @Component({
   selector: 'app-links-panel',
   templateUrl: './links-panel.component.html',
-  styleUrls: [
-    './links-panel.component.scss',
+  styleUrls: ['./links-panel.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: LinksPanelComponent,
+      multi: true,
+    },
   ],
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: LinksPanelComponent,
-    multi: true,
-  }],
 })
 export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | Hyperlink)[]> {
-
   @Input() title = 'Links';
   @Input() singularTitle = 'Link';
   @Input() showHeader = true;
@@ -45,10 +44,12 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
   dropTargeted = false;
   activeLinkIndex = -1;
 
-  constructor(protected readonly dataTransferData: DataTransferDataService,
-              protected readonly modalService: NgbModal,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly messageDialog: MessageDialog) {
+  constructor(
+    protected readonly dataTransferData: DataTransferDataService,
+    protected readonly modalService: NgbModal,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly messageDialog: MessageDialog
+  ) {
     super();
   }
 
@@ -111,36 +112,35 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
-  openCreateDialog(link: Source | Hyperlink = {
-    domain: '',
-    url: '',
-  }): Promise<Source> {
+  openCreateDialog(
+    link: Source | Hyperlink = {
+      domain: '',
+      url: '',
+    }
+  ): Promise<Source> {
     const dialogRef = this.modalService.open(LinkEditDialogComponent);
     dialogRef.componentInstance.title = `New ${this.singularTitle}`;
     dialogRef.componentInstance.link = link;
-    dialogRef.componentInstance.accept = ((value: (Source | Hyperlink)) => {
-      this.value = [
-        ...(this.value || []),
-        value,
-      ];
+    dialogRef.componentInstance.accept = (value: Source | Hyperlink) => {
+      this.value = [...(this.value || []), value];
       this.activeLinkIndex = -1;
       this.valueChange();
       return Promise.resolve(link);
-    });
+    };
     return dialogRef.result;
   }
 
-  openEditDialog(link: (Source | Hyperlink)): Promise<Source> {
+  openEditDialog(link: Source | Hyperlink): Promise<Source> {
     const dialogRef = this.modalService.open(LinkEditDialogComponent);
     dialogRef.componentInstance.title = `Edit ${this.singularTitle}`;
     dialogRef.componentInstance.link = cloneDeep(link);
-    dialogRef.componentInstance.accept = ((value: (Source | Hyperlink)) => {
+    dialogRef.componentInstance.accept = (value: Source | Hyperlink) => {
       for (const key of Object.keys(link)) {
         link[key] = value[key];
       }
       this.valueChange();
       return Promise.resolve(link);
-    });
+    };
     return dialogRef.result;
   }
 
@@ -181,7 +181,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
     }
   }
 
-  linkClick(event: Event, link: (Source | Hyperlink)) {
+  linkClick(event: Event, link: Source | Hyperlink) {
     try {
       openPotentialExternalLink(this.workspaceManager, link.url.toString(), {
         newTab: true,

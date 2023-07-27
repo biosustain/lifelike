@@ -40,12 +40,16 @@
         }
       }
 
-      &, a {
-        &, &:link, &:visited {
+      &,
+      a {
+        &,
+        &:link,
+        &:visited {
           color: $body-color;
         }
 
-        &:hover, &:active {
+        &:hover,
+        &:active {
           text-decoration: none;
         }
       }

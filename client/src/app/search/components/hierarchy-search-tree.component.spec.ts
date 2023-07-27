@@ -14,13 +14,9 @@ describe('HierarchySearchTreeComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule,
-        SharedModule,
-        BrowserAnimationsModule,
-      ],
-      declarations: [ HierarchySearchTreeComponent ],
-      providers: []
+      imports: [RootStoreModule, SharedModule, BrowserAnimationsModule],
+      declarations: [HierarchySearchTreeComponent],
+      providers: [],
     });
   });
 

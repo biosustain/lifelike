@@ -43,6 +43,7 @@ def downgrade():
     # (i.e. "downgrade forward"!)
     pass
 
+
 def data_upgrades():
     """Add optional data upgrade migrations here"""
     pass

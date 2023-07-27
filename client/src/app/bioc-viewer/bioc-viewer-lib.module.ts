@@ -27,7 +27,7 @@ import { BiocTableViewComponent } from './components/bioc-table-view/bioc-table-
     BiocViewComponent,
     InfonsComponent,
     AnnotatedTextComponent,
-    BiocTableViewComponent
+    BiocTableViewComponent,
   ],
   imports: [
     CommonModule,
@@ -47,12 +47,6 @@ import { BiocTableViewComponent } from './components/bioc-table-view/bioc-table-
     FileBrowserModule,
     RouterModule.forRoot([]),
   ],
-  exports: [
-    BiocViewComponent,
-    InfonsComponent,
-    AnnotatedTextComponent,
-    BiocTableViewComponent
-  ],
+  exports: [BiocViewComponent, InfonsComponent, AnnotatedTextComponent, BiocTableViewComponent],
 })
-export class BiocViewerLibModule {
-}
+export class BiocViewerLibModule {}

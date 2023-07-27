@@ -37,8 +37,8 @@ def upgrade():
             data_upgrades()
         else:
             logger.info(
-                'Detected non-prouction environment, skipping data upgrades for this' +
-                'migration'
+                'Detected non-prouction environment, skipping data upgrades for this'
+                + 'migration'
             )
 
 
@@ -52,16 +52,17 @@ def data_upgrades():
     session = Session(conn)
 
     t_files = table(
-            'files',
-            column('id', sa.Integer),
-            column('content_id', sa.Integer),
-            column('mime_type', sa.String))
+        'files',
+        column('id', sa.Integer),
+        column('content_id', sa.Integer),
+        column('mime_type', sa.String),
+    )
 
     t_files_content = table(
-            'files_content',
-            column('id', sa.Integer),
-            column('raw_file', sa.LargeBinary),
-            column('checksum_sha256', sa.Binary)
+        'files_content',
+        column('id', sa.Integer),
+        column('raw_file', sa.LargeBinary),
+        column('checksum_sha256', sa.Binary),
     )
 
     HASH_CONVERSION_MAP = {
@@ -79,31 +80,17 @@ def data_upgrades():
         'cb380810-8c11-47d4-9092-4f91870c2f5e': '92367577-ec4c-43cd-9d19-94bf6f0592ec',
         'a6c9ba6b-4e5b-4747-9646-960e8482612c': '0a526733-3f74-44c9-9b0f-3df989459a50',
     }
-    FILE_IDS = [
-        1117,
-        1222,
-        1350,
-        1367,
-        2010,
-        1128,
-        1228,
-        2007,
-        1353,
-        1366,
-        1634,
-        1555
-    ]
+    FILE_IDS = [1117, 1222, 1350, 1367, 2010, 1128, 1228, 2007, 1353, 1366, 1634, 1555]
 
-    raw_maps_to_fix = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files_content.c.id,
-        t_files_content.c.raw_file
-    ]).where(
-        and_(
-            t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/map',
-            t_files.c.content_id == t_files_content.c.id,
-            t_files.c.id.in_(FILE_IDS)
+    raw_maps_to_fix = conn.execution_options(stream_results=True).execute(
+        sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
+            and_(
+                t_files.c.mime_type == 'vnd.***ARANGO_DB_NAME***.document/map',
+                t_files.c.content_id == t_files_content.c.id,
+                t_files.c.id.in_(FILE_IDS),
+            )
         )
-    ))
+    )
 
     new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
     need_to_update = []
@@ -119,12 +106,11 @@ def data_upgrades():
                     hash_id = link_search.group(1)
                     if hash_id in HASH_CONVERSION_MAP:
                         logger.info(
-                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
-                            f'{HASH_CONVERSION_MAP[hash_id]}'
+                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
+                            + f'{HASH_CONVERSION_MAP[hash_id]}'
                         )
                         source['url'] = source['url'].replace(
-                            hash_id,
-                            HASH_CONVERSION_MAP[hash_id]
+                            hash_id, HASH_CONVERSION_MAP[hash_id]
                         )
 
         for edge in map_json['edges']:
@@ -135,12 +121,11 @@ def data_upgrades():
                         hash_id = link_search.group(1)
                         if hash_id in HASH_CONVERSION_MAP:
                             logger.info(
-                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with ' +
-                                f'{HASH_CONVERSION_MAP[hash_id]}'
+                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
+                                + f'{HASH_CONVERSION_MAP[hash_id]}'
                             )
                             source['url'] = source['url'].replace(
-                                hash_id,
-                                HASH_CONVERSION_MAP[hash_id]
+                                hash_id, HASH_CONVERSION_MAP[hash_id]
                             )
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
@@ -152,7 +137,9 @@ def data_upgrades():
             zip_file.writestr('graph.json', byte_graph)
         new_bytes = zip_bytes2.getvalue()
         new_hash = hashlib.sha256(new_bytes).digest()
-        need_to_update.append({'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
+        need_to_update.append(
+            {'id': fcid, 'raw_file': new_bytes, 'checksum_sha256': new_hash}
+        )  # noqa
 
     try:
         session.bulk_update_mappings(FileContent, need_to_update)

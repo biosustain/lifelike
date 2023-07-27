@@ -53,7 +53,8 @@
       box-shadow: $table-row-focus-box-shadow;
     }
 
-    &:focus, &.active:hover {
+    &:focus,
+    &.active:hover {
       box-shadow: $table-row-focus-box-shadow;
     }
   }

@@ -8,7 +8,10 @@ import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
 import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree.component';
 
-export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeComponent<T> implements OnDestroy {
+export abstract class ChecklistFlatTreeComponent<T>
+  extends GenericFlatTreeComponent<T>
+  implements OnDestroy
+{
   private _resetTree: Subject<boolean>;
   @Input() set resetTree(resetSubject: Subject<boolean>) {
     this.completeResetTreeSubject();
@@ -41,7 +44,9 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
 
   constructor() {
     super();
-    this.selectionChangedSubscription = this.checklistSelection.changed.subscribe(() => this.selectionChanged());
+    this.selectionChangedSubscription = this.checklistSelection.changed.subscribe(() =>
+      this.selectionChanged()
+    );
     this._initiallyCheckedNodesFilterFn = (t: FlatNode<T>) => false;
   }
 
@@ -85,9 +90,12 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
    */
   descendantsAllSelected(node: FlatNode<T>): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    return descendants.length > 0 && descendants.every(child => {
-      return this.checklistSelection.isSelected(child);
-    });
+    return (
+      descendants.length > 0 &&
+      descendants.every((child) => {
+        return this.checklistSelection.isSelected(child);
+      })
+    );
   }
 
   /**
@@ -97,7 +105,9 @@ export abstract class ChecklistFlatTreeComponent<T> extends GenericFlatTreeCompo
    */
   descendantsPartiallySelected(node: FlatNode<T>): boolean {
     const descendants = this.treeControl.getDescendants(node);
-    const selectedDescendants = descendants.filter(child => this.checklistSelection.isSelected(child));
+    const selectedDescendants = descendants.filter((child) =>
+      this.checklistSelection.isSelected(child)
+    );
     return selectedDescendants.length > 0 && selectedDescendants.length < descendants.length;
   }
 

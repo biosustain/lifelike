@@ -6,7 +6,7 @@ import {
   Validator,
   AbstractControl,
   ValidationErrors,
-  Validators
+  Validators,
 } from '@angular/forms';
 
 import { isEmpty } from 'lodash-es';
@@ -16,13 +16,13 @@ import { isNotEmpty } from '../../utils';
 export const PERCENT_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
   useExisting: forwardRef(() => PercentInputComponent),
-  multi: true
+  multi: true,
 };
 
 export const PERCENT_VALUE_VALIDATOR: any = {
   provide: NG_VALIDATORS,
   useExisting: forwardRef(() => PercentInputComponent),
-  multi: true
+  multi: true,
 };
 
 @Component({
@@ -50,9 +50,10 @@ export class PercentInputComponent implements ControlValueAccessor, Validator {
   /**
    * Object with format callback `{format}`
    */
-  @Input() readonly formatter: Intl.NumberFormat = new Intl.NumberFormat(
-    'en-US', {maximumFractionDigits: 2, useGrouping: false}
-  );
+  @Input() readonly formatter: Intl.NumberFormat = new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  });
 
   disabled = false;
   /**
@@ -68,17 +69,14 @@ export class PercentInputComponent implements ControlValueAccessor, Validator {
    * The registered callback function called when a change or input event occurs on the input
    * element.
    */
-  onChange = (_: any) => {
-  }
+  onChange = (_: any) => {};
 
   /**
    * The registered callback function called when a blur event occurs on the input element.
    */
-  onTouched = () => {
-  }
+  onTouched = () => {};
 
-  constructor(private renderer: Renderer2) {
-  }
+  constructor(private renderer: Renderer2) {}
 
   /**
    * Registers a function called when the control is touched.
@@ -110,8 +108,8 @@ export class PercentInputComponent implements ControlValueAccessor, Validator {
 
   validate(abs: AbstractControl): ValidationErrors | null {
     const errors = {
-      ...(this.min && Validators.min(this.min / 100)(abs) || {}),
-      ...(this.max && Validators.max(this.max / 100)(abs) || {})
+      ...((this.min && Validators.min(this.min / 100)(abs)) || {}),
+      ...((this.max && Validators.max(this.max / 100)(abs)) || {}),
     };
     this.errors = isNotEmpty(errors) ? errors : null;
     return errors;

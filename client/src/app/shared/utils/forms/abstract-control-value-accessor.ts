@@ -1,7 +1,6 @@
 import { ControlValueAccessor } from '@angular/forms';
 
 export abstract class AbstractControlValueAccessor<T> implements ControlValueAccessor {
-
   private changeCallback: any;
   private touchCallback: any;
 
@@ -35,11 +34,9 @@ export abstract class AbstractControlValueAccessor<T> implements ControlValueAcc
     this.focus();
   }
 
-  focus() {
-  }
+  focus() {}
 
-  select() {
-  }
+  select() {}
 
   registerOnChange(fn): void {
     this.changeCallback = fn;
@@ -52,5 +49,4 @@ export abstract class AbstractControlValueAccessor<T> implements ControlValueAcc
   writeValue(value: T): void {
     this.value = value;
   }
-
 }

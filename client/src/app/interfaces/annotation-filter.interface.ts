@@ -11,7 +11,7 @@ export interface AnnotationFilterEntity {
 export interface AnnotationVisibility {
   identifier: string;
   visible: boolean;
-  entity: AnnotationFilterEntity|WordCloudAnnotationFilterEntity;
+  entity: AnnotationFilterEntity | WordCloudAnnotationFilterEntity;
 }
 
 export interface WordCloudAnnotationFilterEntity extends AnnotationFilterEntity {
@@ -34,5 +34,5 @@ export enum DefaultOrderByOptions {
 
 export enum OrderDirection {
   ASCENDING = 'Ascending',
-  DESCENDING = 'Descending'
+  DESCENDING = 'Descending',
 }

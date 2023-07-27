@@ -20,10 +20,11 @@ import {
   selector: '[appMouseNavigableItem]',
 })
 export class MouseNavigableItemDirective {
-  constructor(@Inject(forwardRef(() => MouseNavigableDirective))
-              protected readonly container: MouseNavigableDirective,
-              protected readonly element: ElementRef) {
-  }
+  constructor(
+    @Inject(forwardRef(() => MouseNavigableDirective))
+    protected readonly container: MouseNavigableDirective,
+    protected readonly element: ElementRef
+  ) {}
 
   @HostListener('keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
@@ -46,17 +47,14 @@ export class MouseNavigableItemDirective {
 export class MouseNavigableDirective implements AfterViewInit, OnDestroy {
   @Input() navigationWrap = true;
   @Output() navigationEndReached = new EventEmitter<void>();
-  @ContentChildren(MouseNavigableItemDirective, {read: ElementRef})
+  @ContentChildren(MouseNavigableItemDirective, { read: ElementRef })
   protected childrenDirectives: QueryList<ElementRef>;
 
-  constructor(protected readonly element: ElementRef) {
-  }
+  constructor(protected readonly element: ElementRef) {}
 
-  ngAfterViewInit() {
-  }
+  ngAfterViewInit() {}
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 
   getFirst(): HTMLElement | null {
     const first = this.childrenDirectives.first;

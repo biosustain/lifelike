@@ -5,8 +5,8 @@ app-sankey-multi-lane-details-panel {
   .entity-type-legend {
     border-radius: 10rem;
     display: inline-block;
-    height: .75rem;
-    width: .75rem;
+    height: 0.75rem;
+    width: 0.75rem;
   }
 
   .invalid-input {
@@ -14,7 +14,7 @@ app-sankey-multi-lane-details-panel {
   }
 
   .invalid-input:focus {
-    box-shadow: 0 0 0 .2rem rgba(variables.$danger, .25);
+    box-shadow: 0 0 0 0.2rem rgba(variables.$danger, 0.25);
   }
 
   .small-font {

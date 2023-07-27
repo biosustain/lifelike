@@ -112,7 +112,7 @@ export class ExtendedArray<V> extends Array<V> implements GetSet<number, V> {
     if (existingValue !== undefined) {
       return existingValue;
     }
-    return this[index] = valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor;
+    return (this[index] = valueAccessor instanceof Function ? valueAccessor(index) : valueAccessor);
   }
 }
 
@@ -125,6 +125,14 @@ export function assignDefined(target, source) {
     }
   });
 
-
   return target;
+}
+
+export function someInIterable<T>(iterable: Iterable<T>, predicate: (item: T) => boolean) {
+  for (const item of iterable) {
+    if (predicate(item)) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -1,34 +1,30 @@
 <div class="module" appContainerBreakpoints>
   <div class="module-header">
     <div class="module-title-bar">
-      <div class="module-title">
-        Lifelike
-      </div>
+      <div class="module-title">Lifelike</div>
 
       <div class="ml-auto">
-        <ng-container *ngIf="(buildInfo$ | async) as buildInfo; else buildInfoLoading">
-          <span *ngIf="buildInfo.buildTimestamp !== 'undefined'; else undefinedTimestamp">
+        <ng-container *ngIf="buildInfoWithStatus$ | async as buildInfoWithStatus">
+          <span
+            *ngIf="
+              buildInfoWithStatus.value.buildTimestamp !== 'undefined';
+              else undefinedTimestamp
+            "
+            [appShowPlaceholders]="buildInfoWithStatus.loading"
+          >
             Version:
-            {{ buildInfo.buildTimestamp }}
+            <app-with-placeholder>{{
+              buildInfoWithStatus.value.buildTimestamp
+            }}</app-with-placeholder>
           </span>
-          <ng-template #undefinedTimestamp>
-            Version Not Available
-          </ng-template>
+          <ng-template #undefinedTimestamp> Version Not Available </ng-template>
         </ng-container>
-        <ng-template #buildInfoLoading>
-          <!-- Show placeholder while we load the build info -->
-          <span class="placeholder-box">
-            Version: Unknown
-          </span>
-        </ng-template>
       </div>
     </div>
   </div>
   <div class="module-body">
     <div class="jumbotron text-center">
-      <p>
-        Explore academic knowledge through interconnected graphs.
-      </p>
+      <p>Explore academic knowledge through interconnected graphs.</p>
     </div>
   </div>
 </div>

@@ -1,4 +1,5 @@
 import functools
+from http import HTTPStatus
 
 from neo4japp.database import (
     get_authorization_service,
@@ -7,7 +8,8 @@ from neo4japp.exceptions import NotAuthorized
 
 
 def requires_role(role: str):
-    """ Returns a check-role decorator """
+    """Returns a check-role decorator"""
+
     def check_role(f):
         @functools.wraps(f)
         def decorator(*args, **kwargs):
@@ -19,11 +21,13 @@ def requires_role(role: str):
                     raise NotAuthorized(
                         title='Unable to Process Request',
                         message=f'{principal} does not have the required role: {role}',
-                        code=400
+                        code=HTTPStatus.BAD_REQUEST,
                     )
                 retval = next(gen)
             finally:
                 gen.close()
             return retval
+
         return decorator
+
     return check_role

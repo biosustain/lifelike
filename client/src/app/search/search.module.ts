@@ -29,26 +29,18 @@ const components = [
   RejectedOptionsDialogComponent,
   SearchRecordNodeComponent,
   SearchRecordRelationshipsComponent,
-  SynonymSearchComponent
+  SynonymSearchComponent,
 ];
 
 @NgModule({
-  imports: [
-    SharedModule,
-    DrawingToolModule,
-    FileBrowserModule
-  ],
+  imports: [SharedModule, DrawingToolModule, FileBrowserModule],
   entryComponents: [
     AdvancedSearchDialogComponent,
     RejectedOptionsDialogComponent,
-    SynonymSearchComponent
+    SynonymSearchComponent,
   ],
   declarations: components,
-  providers: [
-    GraphSearchService,
-    ContentSearchService,
-  ],
+  providers: [GraphSearchService, ContentSearchService],
   exports: components,
 })
-export class SearchModule {
-}
+export class SearchModule {}

@@ -78,7 +78,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   protected renderingRequested = false;
 
-  abstract renderTree: RenderTree<UniversalGraphNode|UniversalGraphEdge|UniversalGraphGroup>;
+  abstract renderTree: RenderTree<UniversalGraphNode | UniversalGraphEdge | UniversalGraphGroup>;
 
   /**
    * Indicates where a mouse button is currently down.
@@ -165,9 +165,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   private savedImageHashes: Set<string> = new Set<string>();
 
-
-  constructor() {
-  }
+  constructor() {}
 
   /**
    * Start the background loop that updates the animation. If calling
@@ -214,12 +212,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getLinkedHashes(links: (Source | Hyperlink)[]): string[] {
     // Filter in links that point to desired files
-    return links.filter((source) => {
-      return ASSOCIATED_MAPS_REGEX.test(source.url);
-    // Return hashId of those files (last element of the url address)
-    }).map(source => {
-      return ASSOCIATED_MAPS_REGEX.exec(source.url)[1];
-    });
+    return links
+      .filter((source) => {
+        return ASSOCIATED_MAPS_REGEX.test(source.url);
+        // Return hashId of those files (last element of the url address)
+      })
+      .map((source) => {
+        return ASSOCIATED_MAPS_REGEX.exec(source.url)[1];
+      });
   }
 
   /**
@@ -229,7 +229,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   checkEntityForLinked(entity: UniversalGraphEntity): Set<string> {
     // NOTE: Should I check only sources?
     if (entity.data) {
-      const linkedInHyperlinks = entity.data.hyperlinks ? this.getLinkedHashes(entity.data.hyperlinks) : [];
+      const linkedInHyperlinks = entity.data.hyperlinks
+        ? this.getLinkedHashes(entity.data.hyperlinks)
+        : [];
       const linkedInSources = entity.data.sources ? this.getLinkedHashes(entity.data.sources) : [];
       return new Set(linkedInHyperlinks.concat(linkedInSources));
     }
@@ -242,9 +244,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   getHashesOfLinked(): Set<string> {
     const set = new Set<string>();
     // Note: Should I check only nodes?
-    this.nodes.forEach(node => this.checkEntityForLinked(node).forEach(val => set.add(val)));
-    this.groups.forEach(group => this.checkEntityForLinked(group).forEach(val => set.add(val)));
-    this.edges.forEach(edge => this.checkEntityForLinked(edge).forEach(val => set.add(val)));
+    this.nodes.forEach((node) => this.checkEntityForLinked(node).forEach((val) => set.add(val)));
+    this.groups.forEach((group) => this.checkEntityForLinked(group).forEach((val) => set.add(val)));
+    this.edges.forEach((edge) => this.checkEntityForLinked(edge).forEach((val) => set.add(val)));
     return set;
   }
 
@@ -260,7 +262,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getCurrentImageSet(): Set<string> {
     return new Set(
-      this.nodes.flatMap(node => node.image_id !== undefined ? [node.image_id] : [])
+      this.nodes.flatMap((node) => (node.image_id !== undefined ? [node.image_id] : []))
     );
   }
 
@@ -271,7 +273,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     const current = this.getCurrentImageSet();
     const deletedImages = setDifference(this.savedImageHashes, current);
     const newImageHashes = setDifference(current, this.savedImageHashes);
-    return {newImageHashes, deletedImages};
+    return { newImageHashes, deletedImages };
   }
 
   /**
@@ -294,26 +296,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.edges = [...graph.edges];
     this.groups = [...graph.groups];
 
-
     // We need O(1) lookup of nodes and groups
-    const nodelikeMap = graph.nodes.reduce(
-      (map, node) => map.set(node.hash, node),
-      new Map(),
-    );
+    const nodelikeMap = graph.nodes.reduce((map, node) => map.set(node.hash, node), new Map());
     this.nodelikeHashMap = graph.groups.reduce(
       (map, group) => map.set(group.hash, group),
-      nodelikeMap,
+      nodelikeMap
     );
 
-    this.groupHashMap = graph.groups.reduce(
-      (map, group) => {
-        group.members.forEach((member) => {
-          map.set(member.hash, group);
-        });
-        return map;
-      },
-      new Map(),
-    );
+    this.groupHashMap = graph.groups.reduce((map, group) => {
+      group.members.forEach((member) => {
+        map.set(member.hash, group);
+      });
+      return map;
+    }, new Map());
 
     this.requestRender();
   }
@@ -335,9 +330,9 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getExportableGraph(): KnowledgeMapGraph {
     return {
-      nodes: this.nodes.filter(node => !this.groupHashMap.has(node.hash)),
+      nodes: this.nodes.filter((node) => !this.groupHashMap.has(node.hash)),
       edges: this.edges,
-      groups: this.groups
+      groups: this.groups,
     };
   }
 
@@ -354,11 +349,14 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     this.requestRender();
   }
 
-  removeNodeLike<N extends UniversalGraphNodelike>(node: N, from: N[]): {
-    found: boolean,
-    removedEdges: UniversalGraphEdge[],
+  removeNodeLike<N extends UniversalGraphNodelike>(
+    node: N,
+    from: N[]
+  ): {
+    found: boolean;
+    removedEdges: UniversalGraphEdge[];
   } {
-    const removedNodes = remove(from, n => n === node);
+    const removedNodes = remove(from, (n) => n === node);
     const found = isNotEmpty(removedNodes);
 
     // Terminate early
@@ -371,15 +369,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
     const removedEdges = remove(
       this.edges,
-      edge =>
-        this.expectNodelikeByHash(edge.from) === node
-        || this.expectNodelikeByHash(edge.to) === node
+      (edge) =>
+        this.expectNodelikeByHash(edge.from) === node || this.expectNodelikeByHash(edge.to) === node
     );
 
     this.nodelikeHashMap.delete(node.hash);
-    (node as UniversalGraphGroup).members?.forEach(m =>
-      this.groupHashMap.delete(m.hash)
-    );
+    (node as UniversalGraphGroup).members?.forEach((m) => this.groupHashMap.delete(m.hash));
     this.tryRemoveNodeFromGroup(node.hash);
     this.invalidateNodelike(node);
 
@@ -401,8 +396,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @return true if the node was found
    */
   removeNode(node: UniversalGraphNode): {
-    found: boolean,
-    removedEdges: UniversalGraphEdge[],
+    found: boolean;
+    removedEdges: UniversalGraphEdge[];
   } {
     return this.removeNodeLike(node, this.nodes);
   }
@@ -509,7 +504,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
 
     if (group) {
       this.groupHashMap.delete(hash);
-      group.members = group.members.filter(node => node.hash !== hash);
+      group.members = group.members.filter((node) => node.hash !== hash);
       if (group.members.length > 1) {
         this.updateGroup(group);
       } else {
@@ -523,8 +518,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param group - group to be removed
    */
   removeGroup(group: UniversalGraphGroup): {
-    found: boolean,
-    removedEdges: UniversalGraphEdge[],
+    found: boolean;
+    removedEdges: UniversalGraphEdge[];
   } {
     return this.removeNodeLike(group, this.groups);
   }
@@ -549,7 +544,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     }
     this.updateGroup(group);
   }
-
 
   /**
    * Reverse the actions of addToGroup. No need to update the group, TryRemove does that
@@ -582,11 +576,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   abstract invalidateNode(d: UniversalGraphNode): void;
 
-    /**
-     * Invalidate any cache entries for the given edge. If changes are made
-     * that might affect how the edge is rendered, this method must be called.
-     * @param d the edge
-     */
+  /**
+   * Invalidate any cache entries for the given edge. If changes are made
+   * that might affect how the edge is rendered, this method must be called.
+   * @param d the edge
+   */
   abstract invalidateEdge(d: UniversalGraphEdge): void;
 
   /**
@@ -594,7 +588,6 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param d
    */
   abstract invalidateGroup(d: UniversalGraphGroup): void;
-
 
   /**
    * Sometimes we treat groups as nodes, but we always want to invalidate them accordingly.
@@ -613,7 +606,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * Get the current position (graph coordinates) where the user is currently
    * hovering over if the user is doing so, otherwise undefined.
    */
-  abstract get currentHoverPosition(): { x: number, y: number } | undefined;
+  abstract get currentHoverPosition(): { x: number; y: number } | undefined;
 
   // ========================================
   // Object accessors
@@ -625,7 +618,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param padding padding around all the entities
    */
   getEntityBoundingBox(entities: GraphEntity[], padding = 0) {
-    return this.getGroupBoundingBox(entities.map(entity => this.placeEntity(entity).getBoundingBox()), padding);
+    return this.getGroupBoundingBox(
+      entities.map((entity) => this.placeEntity(entity).getBoundingBox()),
+      padding
+    );
   }
 
   /**
@@ -634,7 +630,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param padding padding around all the nodes
    */
   getNodeBoundingBox(nodes: UniversalGraphNode[], padding = 0) {
-    return this.getGroupBoundingBox(nodes.map(node => this.placeNode(node).getBoundingBox()), padding);
+    return this.getGroupBoundingBox(
+      nodes.map((node) => this.placeNode(node).getBoundingBox()),
+      padding
+    );
   }
 
   /**
@@ -643,7 +642,10 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param padding padding around all the edges
    */
   getEdgeBoundingBox(edges: UniversalGraphEdge[], padding = 0) {
-    return this.getGroupBoundingBox(edges.map(edge => this.placeEdge(edge).getBoundingBox()), padding);
+    return this.getGroupBoundingBox(
+      edges.map((edge) => this.placeEdge(edge).getBoundingBox()),
+      padding
+    );
   }
 
   /**
@@ -651,8 +653,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param boundingBoxes bounding boxes to check
    * @param padding padding around all the bounding boxes
    */
-  getGroupBoundingBox(boundingBoxes: BoundingBox[],
-                      padding = 0) {
+  getGroupBoundingBox(boundingBoxes: BoundingBox[], padding = 0) {
     let minX = null;
     let minY = null;
     let maxX = null;
@@ -711,7 +712,11 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
     for (let i = nodes.length - 1; i >= 0; --i) {
       const d = nodes[i];
       const placedNode = this.placeNode(d);
-      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedNode, position);
+      const hookResult = this.behaviors.call(
+        'isPointIntersectingNodeHandles',
+        placedNode,
+        position
+      );
       if ((hookResult !== undefined && hookResult) || placedNode.isPointIntersecting(position)) {
         const distance = Math.hypot(position.x - d.data.x, position.y - d.data.y);
         // Node is so close, that we are sure it is it. Terminate early.
@@ -720,9 +725,8 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
         }
         possibleNodes.push({
           node: d,
-          distance
+          distance,
         });
-
       }
     }
     if (possibleNodes.length === 0) {
@@ -740,7 +744,7 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param position - {x, y} coordinated of the position
    */
   getEdgeAtPosition(edges: UniversalGraphEdge[], position: Point): UniversalGraphEdge | undefined {
-    let bestCandidate: { edge: UniversalGraphEdge, distanceUnsq: number } = null;
+    let bestCandidate: { edge: UniversalGraphEdge; distanceUnsq: number } = null;
     const distanceUnsqThreshold = 5 * 5;
 
     for (const d of edges) {
@@ -774,12 +778,19 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    * @param groups list of groups to search through
    * @param position - {x, y} coordinated of the position
    */
-  getGroupAtPosition(groups: UniversalGraphGroup[], position: Point): UniversalGraphGroup | undefined {
+  getGroupAtPosition(
+    groups: UniversalGraphGroup[],
+    position: Point
+  ): UniversalGraphGroup | undefined {
     for (const group of groups) {
       const placedGroup = this.placeGroup(group);
       const bbox = placedGroup.getBoundingBox();
       // This hook checks whether rescaling handles are created, and if so, if 'position' is within it.
-      const hookResult = this.behaviors.call('isPointIntersectingNodeHandles', placedGroup, position);
+      const hookResult = this.behaviors.call(
+        'isPointIntersectingNodeHandles',
+        placedGroup,
+        position
+      );
       if ((hookResult !== undefined && hookResult) || isPointIntersecting(bbox, position)) {
         return group;
       }
@@ -845,15 +856,15 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
    */
   getEntitiesWithinBBox(bbox: BoundingBox): GraphEntity[] {
     return [
-      ...this.getNodesWithinBBox(this.nodes, bbox).map(entity => ({
+      ...this.getNodesWithinBBox(this.nodes, bbox).map((entity) => ({
         type: GraphEntityType.Node,
         entity,
       })),
-      ...this.getEdgesWithinBBox(this.edges, bbox).map(entity => ({
+      ...this.getEdgesWithinBBox(this.edges, bbox).map((entity) => ({
         type: GraphEntityType.Edge,
         entity,
       })),
-      ...this.getGroupsWithinBBox(this.groups, bbox).map(entity => ({
+      ...this.getGroupsWithinBBox(this.groups, bbox).map((entity) => ({
         type: GraphEntityType.Group,
         entity,
       })),

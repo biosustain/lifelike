@@ -41,10 +41,7 @@ URL = 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/'
     For names.dmp, keep only names if name_class = synonym or 'scientific name'
 """
 
-PROP_MAP = {
-    'synonym': PROP_SYNONYMS,
-    'scientific name': PROP_SCIENTIFIC_NAME
-}
+PROP_MAP = {'synonym': PROP_SYNONYMS, 'scientific name': PROP_SCIENTIFIC_NAME}
 TOP_CLASS_TAXONOMY = ['Archaea', 'Bacteria', 'Eukaryota', 'Viruses']
 EXCLUDED_NAMES = ['environmental sample']
 
@@ -60,6 +57,7 @@ TAXONOMY_FILE = 'taxonomy.tsv'
 TAXONONYM_REL_FILE = 'taxonomy-rels.tsv'
 TAXONOMY_SYNONYM_FILE = 'taxonomy-synonym.tsv'
 
+
 class Taxonomy:
     def __init__(self, tax_id, name):
         self.tax_id = tax_id
@@ -68,7 +66,7 @@ class Taxonomy:
         self.rank = ''
         self.names = dict()
         self.children = set()
-        self.top_category:str = ''
+        self.top_category: str = ''
         self.orig_id = ''
 
     def add_name(self, name, name_class):
@@ -86,7 +84,7 @@ class Taxonomy:
 
 
 class TaxonomyParser(BaseParser):
-    def __init__(self, base_dir:str=None):
+    def __init__(self, base_dir: str = None):
         BaseParser.__init__(self, NODE_TAXONOMY.lower(), base_dir)
         self.zip_file = os.path.join(self.download_dir, 'new_taxdump.zip')
         self.top_class_nodes = []
@@ -154,7 +152,7 @@ class TaxonomyParser(BaseParser):
             self._label_top_class_for_children(top_tax)
         return nodes
 
-    def _label_top_class_for_children(self, tax:Taxonomy):
+    def _label_top_class_for_children(self, tax: Taxonomy):
         if not tax.top_category:
             tax.top_category = tax.name
         for child in tax.children:
@@ -176,7 +174,9 @@ class TaxonomyParser(BaseParser):
                 continue
             if tax.parent_tax_id == tax.tax_id:
                 tax.parent_tax_id = ''
-            tax_file.write('\t'.join([tax_id, tax.name, tax.rank, tax.top_category]) + '\n')
+            tax_file.write(
+                '\t'.join([tax_id, tax.name, tax.rank, tax.top_category]) + '\n'
+            )
             tax_rel_file.write('\t'.join([tax_id, tax.parent_tax_id]) + '\n')
             for name, type in tax.names.items():
                 synonym_file.write('\t'.join([tax_id, name, type]) + '\n')

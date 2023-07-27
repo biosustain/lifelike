@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -36,25 +44,27 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   typeProvider$: Observable<ObjectTypeProvider>;
   exporters$: Observable<Exporter[]>;
 
-  constructor(readonly router: Router,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly actions: FilesystemObjectActions,
-              protected readonly objectTypeService: ObjectTypeService) {
+  constructor(
+    readonly router: Router,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly actions: FilesystemObjectActions,
+    protected readonly objectTypeService: ObjectTypeService
+  ) {
     this.typeProvider$ = objectTypeService.getDefault();
   }
 
   private updateObjectObservables() {
     const object = this.object;
-    this.typeProvider$ = this.object ? this.objectTypeService.get(this.object).pipe(
-      shareReplay(),
-    ) : this.objectTypeService.getDefault();
+    this.typeProvider$ = this.object
+      ? this.objectTypeService.get(this.object).pipe(shareReplay())
+      : this.objectTypeService.getDefault();
     this.exporters$ = this.typeProvider$.pipe(
-      this.errorHandler.create({label: 'Get exporters'}),
-      mergeMap(typeProvider => typeProvider.getExporters(object)),
-      shareReplay(),
+      this.errorHandler.create({ label: 'Get exporters' }),
+      mergeMap((typeProvider) => typeProvider.getExporters(object)),
+      shareReplay()
     );
   }
 
@@ -69,43 +79,49 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   openEditDialog(target: FilesystemObject) {
-    return this.actions.openEditDialog(target)
-      .then(() => this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {duration: 5000}))
+    return this.actions
+      .openEditDialog(target)
+      .then((value) =>
+        this.snackBar.open(`Saved changes to ${getObjectLabel(target)}.`, 'Close', {
+          duration: 5000,
+        })
+      )
       .then(() => this.objectUpdate.emit(target));
   }
 
   openCloneDialog(target: FilesystemObject) {
     const newTarget: FilesystemObject = cloneDeep(target);
     newTarget.public = false;
-    return this.actions.openCloneDialog(newTarget)
-      .then(clone =>
+    return this.actions
+      .openCloneDialog(newTarget)
+      .then((clone) =>
         this.snackBar.open(
           `Copied ${getObjectLabel(target)} to ${getObjectLabel(clone)}.`,
           'Close',
-          {duration: 5000}
+          { duration: 5000 }
         )
       )
       .then(() => this.refreshRequest.emit());
   }
 
   openMoveDialog(targets: FilesystemObject[]) {
-    return this.actions.openMoveDialog(targets)
-      .then(({destination}) =>
+    return this.actions
+      .openMoveDialog(targets)
+      .then(({ destination }) =>
         this.snackBar.open(
           `Moved ${getObjectLabel(targets)} to ${getObjectLabel(destination)}.`,
-          'Close', {duration: 5000}
+          'Close',
+          { duration: 5000 }
         )
       )
       .then(() => this.refreshRequest.emit());
   }
 
   openDeleteDialog(targets: FilesystemObject[]) {
-    return this.actions.openDeleteDialog(targets)
+    return this.actions
+      .openDeleteDialog(targets)
       .then(() =>
-        this.snackBar.open(
-          `Deleted ${getObjectLabel(targets)}.`,
-          'Close', {duration: 5000}
-        )
+        this.snackBar.open(`Deleted ${getObjectLabel(targets)}.`, 'Close', { duration: 5000 })
       )
       .then(() => this.refreshRequest.emit());
   }
@@ -121,8 +137,11 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   reannotate(targets: FilesystemObject[]) {
-    return this.actions.reannotate(targets)
-      .then(() => this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', {duration: 5000}))
+    return this.actions
+      .reannotate(targets)
+      .then(() =>
+        this.snackBar.open(`${getObjectLabel(targets)} re-annotated.`, 'Close', { duration: 5000 })
+      )
       .then(() => this.refreshRequest.emit())
       .then(() => this.objectRefresh.emit());
   }
@@ -132,10 +151,12 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   openVersionRestoreDialog(target: FilesystemObject) {
-    return this.actions.openVersionRestoreDialog(target).then(version => {
-      this.objectRestore.emit(version);
-    }, () => {
-    });
+    return this.actions.openVersionRestoreDialog(target).then(
+      (version) => {
+        this.objectRestore.emit(version);
+      },
+      () => {}
+    );
   }
 
   openExportDialog(target: FilesystemObject) {
@@ -151,12 +172,10 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   updateStarred(hashId: string, starred: boolean) {
-    return this.actions.updateStarred(hashId, starred).then(
-      (result) => {
-        this.object.update(result);
-        this.objectUpdate.emit(this.object);
-      }
-    );
+    return this.actions.updateStarred(hashId, starred).then((result) => {
+      this.object.update(result);
+      this.objectUpdate.emit(this.object);
+    });
   }
 
   updatePinned(target: FilesystemObject) {

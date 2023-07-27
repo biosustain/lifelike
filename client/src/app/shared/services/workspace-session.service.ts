@@ -39,16 +39,18 @@ export interface WorkspaceSessionLoader {
 export class WorkspaceSessionService {
   save(panes: Pane[]) {
     const data: SessionData = {
-      panes: panes.map(pane => {
+      panes: panes.map((pane) => {
         return {
           id: pane.id,
           size: pane.size,
-          tabs: pane.tabs.map(tab => ({
+          tabs: pane.tabs.map((tab) => ({
             url: tab.url,
             title: tab.title,
             fontAwesomeIcon: tab.fontAwesomeIcon,
           })),
-          activeTabHistory: [...pane.activeTabHistory.values()].map((tab) => pane.tabs.indexOf(tab)),
+          activeTabHistory: [...pane.activeTabHistory.values()].map((tab) =>
+            pane.tabs.indexOf(tab)
+          ),
         };
       }),
     };

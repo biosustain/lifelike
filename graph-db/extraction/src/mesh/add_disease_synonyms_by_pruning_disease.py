@@ -10,7 +10,9 @@ def load_pruned_terms_as_disease_synonym(file, database):
     Since a lot of terms after pruning disease did not make a good disease name, Sharon manually checked each of the terms,
     and marked as status 'remove' if the term did not make sense.
     """
-    df = pd.read_csv(file, skiprows=1, names=['mesh_id', 'name', 'synonym', 'pruned_syn', 'status'])
+    df = pd.read_csv(
+        file, skiprows=1, names=['mesh_id', 'name', 'synonym', 'pruned_syn', 'status']
+    )
     print(len(df))
     df = df[df['status'].isna()]
     print(len(df))

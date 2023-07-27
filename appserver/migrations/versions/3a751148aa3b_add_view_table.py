@@ -16,14 +16,21 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('views',
-                    sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
-                    sa.Column('params', sa.JSON(), nullable=False),
-                    sa.Column('checksum_sha256', sa.Binary(32), nullable=False, index=True,
-                              unique=True),
-                    sa.Column('modification_date', sa.DateTime, nullable=False,
-                              default=sa.func.now(), onupdate=sa.func.current_timestamp())
-                    )
+    op.create_table(
+        'views',
+        sa.Column('id', sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column('params', sa.JSON(), nullable=False),
+        sa.Column(
+            'checksum_sha256', sa.Binary(32), nullable=False, index=True, unique=True
+        ),
+        sa.Column(
+            'modification_date',
+            sa.DateTime,
+            nullable=False,
+            default=sa.func.now(),
+            onupdate=sa.func.current_timestamp(),
+        ),
+    )
 
 
 def downgrade():

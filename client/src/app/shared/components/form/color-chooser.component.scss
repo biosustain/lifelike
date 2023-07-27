@@ -19,14 +19,14 @@
   width: 15%;
   margin: 0.25rem;
   flex: 1 0 auto;
-  height:auto;
+  height: auto;
   border-radius: $border-radius;
   cursor: pointer;
 
   &:before {
-    content:'';
-    float:left;
-    padding-top:100%;
+    content: '';
+    float: left;
+    padding-top: 100%;
   }
 
   &:focus {

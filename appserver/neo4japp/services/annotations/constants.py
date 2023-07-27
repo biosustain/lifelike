@@ -4,7 +4,7 @@ import os
 from string import punctuation
 from typing import Dict, Union
 
-from neo4japp.util import Enumd
+from neo4japp.constants import Enumd
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'
@@ -21,8 +21,8 @@ SPECIES_LMDB = 'species_lmdb'
 HOMO_SAPIENS_TAX_ID = '9606'
 
 ORGANISM_DISTANCE_THRESHOLD = 200
-PDF_NEW_LINE_THRESHOLD = .30
-PDF_CHARACTER_SPACING_THRESHOLD = .325
+PDF_NEW_LINE_THRESHOLD = 0.30
+PDF_CHARACTER_SPACING_THRESHOLD = 0.325
 
 ABBREVIATION_WORD_LENGTH = {3, 4}
 MAX_ABBREVIATION_WORD_LENGTH = 4
@@ -31,49 +31,144 @@ MIN_ENTITY_LENGTH = 2
 MAX_GENE_WORD_LENGTH = 1
 MAX_FOOD_WORD_LENGTH = 4
 
-NLP_SERVICE_ENDPOINT = os.getenv('NLP_SERVICE_ENDPOINT', 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict')
-NLP_SERVICE_SECRET = os.getenv('NLP_SERVICE_SECRET', '')
-REQUEST_TIMEOUT = int(os.getenv('SERVICE_REQUEST_TIMEOUT', '60'))
-PARSER_RESOURCE_PULL_ENDPOINT = 'http://appserver:5000/annotations/files'
-PARSER_PDF_ENDPOINT = 'http://pdfparser:7600/token/rect/json/'
-PARSER_TEXT_ENDPOINT = 'http://pdfparser:7600/token/rect/text/json'
-
 COMMON_TWO_LETTER_WORDS = {
-    'of', 'to', 'in', 'it', 'is', 'be', 'as', 'at',
-    'so', 'we', 'he', 'by', 'or', 'on', 'do', 'if',
-    'me', 'my', 'up', 'an', 'go', 'no', 'us', 'am',
-    'et', 'vs',
+    'of',
+    'to',
+    'in',
+    'it',
+    'is',
+    'be',
+    'as',
+    'at',
+    'so',
+    'we',
+    'he',
+    'by',
+    'or',
+    'on',
+    'do',
+    'if',
+    'me',
+    'my',
+    'up',
+    'an',
+    'go',
+    'no',
+    'us',
+    'am',
+    'et',
+    'vs',
 }
 
 COMMON_THREE_LETTER_WORDS = {
-    'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all',
-    'any', 'can', 'had', 'her', 'was', 'one', 'our', 'out',
-    'day', 'get', 'has', 'him', 'his', 'how', 'man', 'new',
-    'now', 'old', 'see', 'two', 'way', 'who', 'boy', 'did',
-    'its', 'let', 'put', 'say', 'she', 'too', 'use', 'end',
-    'min', 'far', 'set', 'key', 'tag', 'pdf', 'raw', 'low',
-    'med', 'men', 'led', 'add',
+    'the',
+    'and',
+    'for',
+    'are',
+    'but',
+    'not',
+    'you',
+    'all',
+    'any',
+    'can',
+    'had',
+    'her',
+    'was',
+    'one',
+    'our',
+    'out',
+    'day',
+    'get',
+    'has',
+    'him',
+    'his',
+    'how',
+    'man',
+    'new',
+    'now',
+    'old',
+    'see',
+    'two',
+    'way',
+    'who',
+    'boy',
+    'did',
+    'its',
+    'let',
+    'put',
+    'say',
+    'she',
+    'too',
+    'use',
+    'end',
+    'min',
+    'far',
+    'set',
+    'key',
+    'tag',
+    'pdf',
+    'raw',
+    'low',
+    'med',
+    'men',
+    'led',
+    'add',
 }
 
 COMMON_FOUR_LETTER_WORDS = {
-    'that', 'with', 'have', 'this', 'will', 'your', 'from',
-    'name', 'they', 'know', 'want', 'been', 'good', 'much',
-    'some', 'time', 'none', 'link', 'bond', 'acid', 'role',
-    'them', 'even', 'same',
+    'that',
+    'with',
+    'have',
+    'this',
+    'will',
+    'your',
+    'from',
+    'name',
+    'they',
+    'know',
+    'want',
+    'been',
+    'good',
+    'much',
+    'some',
+    'time',
+    'none',
+    'link',
+    'bond',
+    'acid',
+    'role',
+    'them',
+    'even',
+    'same',
 }
 
 COMMON_MISC_WORDS = {
-    'patch', 'membrane', 'walker', 'group', 'cluster',
-    'protein', 'transporter', 'toxin', 'molecule', 'vitamin',
-    'light', 'mixture', 'solution', 'other', 'unknown', 'damage',
+    'patch',
+    'membrane',
+    'walker',
+    'group',
+    'cluster',
+    'protein',
+    'transporter',
+    'toxin',
+    'molecule',
+    'vitamin',
+    'light',
+    'mixture',
+    'solution',
+    'other',
+    'unknown',
+    'damage',
 }
 
-COMMON_WORDS = set.union(*[
-    COMMON_TWO_LETTER_WORDS,
-    COMMON_THREE_LETTER_WORDS,
-    COMMON_FOUR_LETTER_WORDS,
-    COMMON_MISC_WORDS,
-])
+COMMON_WORDS = set.union(
+    *[
+        COMMON_TWO_LETTER_WORDS,
+        COMMON_THREE_LETTER_WORDS,
+        COMMON_FOUR_LETTER_WORDS,
+        COMMON_MISC_WORDS,
+    ]
+)
 
 GREEK_SYMBOLS = {916, 8710}  # just delta unicodes for now
 
@@ -177,11 +272,11 @@ ENTITY_HYPERLINKS: Dict[str, Union[str, Dict[str, str]]] = {
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
     DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
     DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
-    DatabaseType.NCBI_TAXONOMY.value:
-        'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=',
+    DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/'
+    + 'Taxonomy/Browser/wwwtax.cgi?id=',
     DatabaseType.BIOCYC.value: {
         EntityType.GENE.value: 'https://biocyc.org/gene?orgid=PPUT160488&id=',
-        EntityType.COMPOUND.value: 'https://biocyc.org/compound?orgid=META&id='
+        EntityType.COMPOUND.value: 'https://biocyc.org/compound?orgid=META&id=',
     },
     DatabaseType.CUSTOM.value: SEARCH_LINKS['google'],
 }
@@ -191,8 +286,8 @@ DEFAULT_ANNOTATION_CONFIGS = {
     'annotation_methods': {
         EntityType.CHEMICAL.value: {'nlp': False, 'rules_based': True},
         EntityType.DISEASE.value: {'nlp': False, 'rules_based': True},
-        EntityType.GENE.value: {'nlp': False, 'rules_based': True}
-    }
+        EntityType.GENE.value: {'nlp': False, 'rules_based': True},
+    },
 }
 
 WORD_CHECK_REGEX = re.compile(r'[\d{}]+$'.format(re.escape(punctuation)))

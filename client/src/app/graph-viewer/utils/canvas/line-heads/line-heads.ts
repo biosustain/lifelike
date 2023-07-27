@@ -33,11 +33,13 @@ export interface LineHead {
    * @param endY the end Y position
    * @return metrics about the drawn terminator
    */
-  draw(ctx: CanvasRenderingContext2D,
-       startX: number,
-       startY: number,
-       endX: number,
-       endY: number): DrawnLineHead;
+  draw(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): DrawnLineHead;
 }
 
 /**
@@ -80,11 +82,13 @@ export abstract class AbstractShapeHead implements LineHead {
   /**
    * Draw the path.
    */
-  abstract createPath(ctx: CanvasRenderingContext2D,
-                      startX: number,
-                      startY: number,
-                      endX: number,
-                      endY: number): void;
+  abstract createPath(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): void;
 
   /**
    * Get the start point.
@@ -95,19 +99,23 @@ export abstract class AbstractShapeHead implements LineHead {
    * @param endY the end Y position
    * @return metrics about the drawn terminator
    */
-  getStartPoint(ctx: CanvasRenderingContext2D,
-                startX: number,
-                startY: number,
-                endX: number,
-                endY: number): [number, number] {
+  getStartPoint(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): [number, number] {
     return transformControlPoint(startX, startY, endX, endY, ...this.getStartControlPoint());
   }
 
-  draw(ctx: CanvasRenderingContext2D,
-       startX: number,
-       startY: number,
-       endX: number,
-       endY: number): DrawnLineHead {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ): DrawnLineHead {
     ctx.beginPath();
 
     // Create path
@@ -133,7 +141,13 @@ export abstract class AbstractShapeHead implements LineHead {
     }
 
     // Get the returned metrics
-    const [terminatorStartX, terminatorStartY] = this.getStartPoint(ctx, startX, startY, endX, endY);
+    const [terminatorStartX, terminatorStartY] = this.getStartPoint(
+      ctx,
+      startX,
+      startY,
+      endX,
+      endY
+    );
     return {
       startX: terminatorStartX,
       startY: terminatorStartY,
@@ -155,16 +169,24 @@ export abstract class AbstractPathHead extends AbstractShapeHead {
    */
   abstract getControlPoints(): number[];
 
-  createPath(ctx: CanvasRenderingContext2D,
-             startX: number,
-             startY: number,
-             endX: number,
-             endY: number) {
+  createPath(
+    ctx: CanvasRenderingContext2D,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number
+  ) {
     // Create path
     ctx.beginPath();
     ctx.lineJoin = this.lineJoin;
     ctx.lineCap = this.lineCap;
-    for (const {x, y, i} of transformControlPoints(startX, startY, endX, endY, this.getControlPoints())) {
+    for (const { x, y, i } of transformControlPoints(
+      startX,
+      startY,
+      endX,
+      endY,
+      this.getControlPoints()
+    )) {
       if (i === 0) {
         ctx.moveTo(x, y);
       } else {

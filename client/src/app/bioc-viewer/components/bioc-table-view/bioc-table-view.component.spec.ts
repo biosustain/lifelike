@@ -11,9 +11,8 @@ describe('BiocTableViewComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ BiocTableViewComponent, AnnotatedTextComponent, NgbTooltip]
-    })
-    .compileComponents();
+      declarations: [BiocTableViewComponent, AnnotatedTextComponent, NgbTooltip],
+    }).compileComponents();
   }));
 
   beforeEach(() => {

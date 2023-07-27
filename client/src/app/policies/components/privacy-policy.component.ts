@@ -5,5 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './privacy-policy.component.html',
 })
 export class PrivacyPolicyComponent {
-  constructor() { }
+  constructor() {}
 }

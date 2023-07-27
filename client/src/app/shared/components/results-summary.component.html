@@ -1,7 +1,11 @@
-
-<div *ngIf="resultCountLimited; else notLimited">
-  Showing {{ startResultCount }}&ndash;{{ endResultCount }} of {{ collectionSize > resultLimit ? resultLimit + '+' : collectionSize}} result{{ collectionSize === 1 ? '' : 's' }}
-</div>
+<ng-container *ngIf="resultCountLimited; else notLimited">
+  Showing {{ startResultCount }}&ndash;{{ endResultCount }} of
+  {{ collectionSize > resultLimit ? resultLimit + '+' : collectionSize }} result{{
+    collectionSize === 1 ? '' : 's'
+  }}
+</ng-container>
 <ng-template #notLimited>
-  Showing {{ startResultCount }}&ndash;{{ endResultCount }} of {{ collectionSize }} result{{ collectionSize === 1 ? '' : 's' }}
+  Showing {{ startResultCount }}&ndash;{{ endResultCount }} of {{ collectionSize }} result{{
+    collectionSize === 1 ? '' : 's'
+  }}
 </ng-template>

@@ -15,9 +15,9 @@ frontend:
   - client/**/*
 
 dependencies:
-  - '**/package.json'
-  - '**/yarn.lock'
-  - '**/Pipfile*'
+  - "**/package.json"
+  - "**/yarn.lock"
+  - "**/Pipfile*"
 
 migrations:
   - appserver/migrations/versions/*
@@ -29,10 +29,10 @@ tests:
   - client/e2e/**/*
 
 docker:
-  - '**/Dockerfile'
-  - '**/*.Dockerfile'
-  - '**/*.dockerignore'
-  - '**/docker-compose*.yml'
+  - "**/Dockerfile"
+  - "**/*.Dockerfile"
+  - "**/*.dockerignore"
+  - "**/docker-compose*.yml"
 
 workflow:
   - .github/*
