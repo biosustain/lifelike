@@ -1,3 +1,4 @@
+import os
 import codecs
 import re
 import string
@@ -105,7 +106,7 @@ DATA_SOURCES = {
     'ChEBI': 'CHEBI',
     'GO': 'GO',
     'MeSH': 'MESH',
-    'UniProt': 'UniProt'
+    'UniProt': 'UniProt',
 }
 
 BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
@@ -462,6 +463,7 @@ COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
 ).read()
 
 # Start shared Elastic constants
+FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
 ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_PATH'))
@@ -515,7 +517,7 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'organism_name',
     'organism_synonym',
     'organism_taxonomy_id',
-    'deletion_date'
+    'deletion_date',
 ]
 
 SEED_FILE_KEY_FILES = 'neo4japp.models.Files'

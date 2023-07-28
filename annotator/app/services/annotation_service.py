@@ -12,7 +12,6 @@ from app.exceptions import wrap_exceptions, ServerException
 from app.logs import get_annotator_extras_obj, get_logger
 from app.utils import equal_number_of_words, normalize_str
 
-from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
 from .constants import (
@@ -50,7 +49,7 @@ class AnnotationService:
         # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
         # now, but I think we should slowly try to migrate away from the "service-as-an-object"
         # pattern
-        arango_client: ArangoClient
+        arango_client: ArangoClient,
     ) -> None:
         self.arango_client = arango_client
 
@@ -381,7 +380,7 @@ class AnnotationService:
             if organism not in self.organism_locations:
                 logger.error(
                     f'Organism ID {organism} does not exist in {self.organism_locations}.',
-                    extra=get_annotator_extras_obj()
+                    extra=get_annotator_extras_obj(),
                 )
                 continue
 
@@ -596,7 +595,7 @@ class AnnotationService:
         )
         logger.info(
             f'Gene organism KG query time {time.time() - gene_match_time}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
 
         gene_organism_matches = graph_results.matches
@@ -608,15 +607,14 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             gene_match_time = time.time()
-            fallback_graph_results = \
-                get_genes_to_organisms(
-                    arango_client=self.arango_client,
-                    genes=gene_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = get_genes_to_organisms(
+                arango_client=self.arango_client,
+                genes=gene_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
-                extra=get_annotator_extras_obj()
+                extra=get_annotator_extras_obj(),
             )
             fallback_gene_organism_matches = fallback_graph_results.matches
             gene_data_sources.update(fallback_graph_results.data_sources)
@@ -743,7 +741,7 @@ class AnnotationService:
         )
         logger.info(
             f'Protein organism KG query time {time.time() - protein_match_time}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
 
         protein_organism_matches = graph_results.matches
@@ -753,15 +751,14 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             protein_match_time = time.time()
-            fallback_graph_results = \
-                get_proteins_to_organisms(
-                    arango_client=self.arango_client,
-                    proteins=protein_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = get_proteins_to_organisms(
+                arango_client=self.arango_client,
+                proteins=protein_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             logger.info(
                 f'Protein fallback organism KG query time {time.time() - protein_match_time}',
-                extra=get_annotator_extras_obj()
+                extra=get_annotator_extras_obj(),
             )
 
             fallback_protein_organism_matches = fallback_graph_results.matches
@@ -1096,7 +1093,7 @@ class AnnotationService:
 
         logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         return cleaned
 
