@@ -10,7 +10,7 @@ from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.util import normalize_str, snake_to_camel_dict
 from neo4japp.utils.labels import (
     get_first_known_label_from_list,
-    get_known_domain_labels_from_data_source
+    get_known_domain_labels_from_data_source,
 )
 from neo4japp.utils.logger import EventLog
 
@@ -24,7 +24,7 @@ def _get_collection_filters(domains: List[str]):
         # Include "taxonomy" here in case no domains were selected by the user. It has no use in
         # the for loop below.
         'taxonomy',
-        'uniprot'
+        'uniprot',
     ]
 
     result_domains = []
@@ -45,15 +45,18 @@ def _get_collection_filters(domains: List[str]):
         else:
             current_app.logger.info(
                 f'Found an unexpected value in `domains` list: {domain}',
-                extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
+                extra=EventLog(
+                    event_type=LogEventType.VISUALIZER_SEARCH.value
+                ).to_dict(),
             )
 
     # If the domain list provided by the user is empty, then assume ALL domains/entities should be
     # used.
     result_domains = result_domains if len(result_domains) > 0 else domains_list
 
-    return 'FILTER ' + \
-           ' OR '.join([f'IS_SAME_COLLECTION("{domain}", entity._id)' for domain in result_domains])
+    return 'FILTER ' + ' OR '.join(
+        [f'IS_SAME_COLLECTION("{domain}", entity._id)' for domain in result_domains]
+    )
 
 
 def _get_labels_filter(entities: List[str]):
@@ -65,7 +68,7 @@ def _get_labels_filter(entities: List[str]):
         'gene': 'Gene',
         'molecularfunction': 'MolecularFunction',
         'protein': 'Protein',
-        'taxonomy': 'Taxonomy'
+        'taxonomy': 'Taxonomy',
     }
     result_entities = []
 
@@ -80,7 +83,9 @@ def _get_labels_filter(entities: List[str]):
         else:
             current_app.logger.info(
                 f'Found an unexpected value in `entities` list: {entity}',
-                extra=EventLog(event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
+                extra=EventLog(
+                    event_type=LogEventType.VISUALIZER_SEARCH.value
+                ).to_dict(),
             )
 
     # If the entity list provided by the user is empty, then assume ALL domains/entities should be
@@ -117,10 +122,9 @@ def _get_labels_match_string(types: List[str]):
 
 
 def _get_literature_match_string(domains: List[str]):
-    literature_in_selected_domains = any([
-        normalize_str(domain) == 'literature'
-        for domain in domains
-    ])
+    literature_in_selected_domains = any(
+        [normalize_str(domain) == 'literature' for domain in domains]
+    )
 
     base_search_string = """
         LET literature_id = FIRST(
@@ -137,9 +141,12 @@ def _get_literature_match_string(domains: List[str]):
         return "LET literature_id = null"
     # Return only nodes mapped to Literature nodes
     else:
-        return base_search_string + """
+        return (
+            base_search_string
+            + """
             \nFILTER literature_id != null
         """
+        )
 
 
 def _visualizer_search_result_formatter(result: dict) -> dict:
@@ -155,9 +162,9 @@ def _visualizer_search_result_formatter(result: dict) -> dict:
             entity_label = get_first_known_label_from_list(entity["labels"])
         except ValueError:
             current_app.logger.warning(
-                f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
-                f'{entity["labels"]}',
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                f'Node with ID {entity["id"]} had an unexpected list of labels: '
+                + f'{entity["labels"]}',
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
             )
             entity_label = 'Unknown'
 
@@ -168,31 +175,27 @@ def _visualizer_search_result_formatter(result: dict) -> dict:
             label=entity_label,
             sub_labels=entity['labels'],
             domain_labels=(
-                get_known_domain_labels_from_data_source(entity['data']['data_source']) +
-                (['Literature'] if literature_id is not None else [])
+                get_known_domain_labels_from_data_source(entity['data']['data_source'])
+                + (['Literature'] if literature_id is not None else [])
             ),
             display_name=entity['name'],
             data=snake_to_camel_dict(entity['data'], {}),
             url=None,
         )
-        formatted_results.append(FTSTaxonomyRecord(
-            node=graph_node,
-            taxonomy_id=taxonomy_id if taxonomy_id is not None
-            else 'N/A',
-            taxonomy_name=taxonomy_name if taxonomy_name is not None
-            else 'N/A',
-            go_class=go_class if go_class is not None
-            else 'N/A'
-        ))
+        formatted_results.append(
+            FTSTaxonomyRecord(
+                node=graph_node,
+                taxonomy_id=taxonomy_id if taxonomy_id is not None else 'N/A',
+                taxonomy_name=taxonomy_name if taxonomy_name is not None else 'N/A',
+                go_class=go_class if go_class is not None else 'N/A',
+            )
+        )
     return {'rows': formatted_results, 'count': result['count']}
 
 
 def get_organisms(arango_client: ArangoClient, term: str, limit: int) -> Dict[str, Any]:
     nodes = execute_arango_query(
-        db=get_db(arango_client),
-        query=get_organisms_query(),
-        term=term,
-        limit=limit
+        db=get_db(arango_client), query=get_organisms_query(), term=term, limit=limit
     )
     return {
         'limit': limit,
@@ -204,9 +207,7 @@ def get_organisms(arango_client: ArangoClient, term: str, limit: int) -> Dict[st
 
 def get_organism_with_tax_id(arango_client: ArangoClient, tax_id: str):
     result = execute_arango_query(
-        db=get_db(arango_client),
-        query=get_organism_with_tax_id_query(),
-        tax_id=tax_id
+        db=get_db(arango_client), query=get_organism_with_tax_id_query(), tax_id=tax_id
     )
     return result[0] if len(result) else None
 
@@ -230,26 +231,24 @@ def visualizer_search(
         literature_match_string,
         organism_required=True if organism else False,
         literature_required=(
-            len(domains) == 1 and
-            any([normalize_str(domain) == 'literature' for domain in domains])
-        )
+            len(domains) == 1
+            and any([normalize_str(domain) == 'literature' for domain in domains])
+        ),
     )
     query_args = {
         'term': term,
         'types': types,
         'skip': (page - 1) * limit,
-        'limit': limit
+        'limit': limit,
     }
 
     # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
     if organism:
         query_args['organism'] = organism
 
-    result = execute_arango_query(
-        db=get_db(arango_client),
-        query=query,
-        **query_args
-    )[0]
+    result = execute_arango_query(db=get_db(arango_client), query=query, **query_args)[
+        0
+    ]
 
     return _visualizer_search_result_formatter(result)
 
@@ -260,7 +259,7 @@ def get_synonyms(
     organisms: List[str],
     types: List[str],
     skip: int,
-    limit: int
+    limit: int,
 ) -> List[dict]:
     labels_match_str = _get_labels_match_string(types)
     organism_match_string = _get_organisms_match_string(organisms)
@@ -269,7 +268,7 @@ def get_synonyms(
         'search_term': search_term,
         'types': types,
         'skip': skip,
-        'limit': limit
+        'limit': limit,
     }
 
     # The call to arango needs to exclude the "organism" parameter if it isn't present in the query.
@@ -279,7 +278,7 @@ def get_synonyms(
     results = execute_arango_query(
         db=get_db(arango_client),
         query=get_synonyms_query(labels_match_str, organism_match_string),
-        **query_args
+        **query_args,
     )
 
     synonym_data = []
@@ -290,15 +289,17 @@ def get_synonyms(
             type = 'Unknown'
             current_app.logger.warning(
                 f"Node had an unexpected list of labels: {row['entity_labels']}",
-                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
+                extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict(),
             )
 
-        synonym_data.append({
-            'type': type,
-            'name': row['entity_name'],
-            'organism': row['taxonomy_name'],
-            'synonyms': row['synonyms'],
-        })
+        synonym_data.append(
+            {
+                'type': type,
+                'name': row['entity_name'],
+                'organism': row['taxonomy_name'],
+                'synonyms': row['synonyms'],
+            }
+        )
     return synonym_data
 
 
@@ -306,7 +307,7 @@ def get_synonyms_count(
     arango_client: ArangoClient,
     search_term: str,
     organisms: List[str],
-    types: List[str]
+    types: List[str],
 ) -> int:
     labels_match_str = _get_labels_match_string(types)
     organism_match_string = _get_organisms_match_string(organisms)
@@ -323,7 +324,7 @@ def get_synonyms_count(
     return execute_arango_query(
         db=get_db(arango_client),
         query=get_synonyms_count_query(labels_match_str, organism_match_string),
-        **query_args
+        **query_args,
     )[0]
 
 
@@ -358,7 +359,7 @@ def visualizer_search_query(
     organism_match_string: str,
     literature_match_filter: str,
     organism_required: bool,
-    literature_required: bool
+    literature_required: bool,
 ) -> str:
     """Need to collect synonyms because a gene node can have multiple
     synonyms. So it is possible to send duplicate internal node ids to

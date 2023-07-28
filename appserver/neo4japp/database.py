@@ -60,7 +60,6 @@ def get_jwt_client():
     return _jwt_client
 
 
-
 def get_redis_connection() -> Redis:
     if not hasattr(g, 'redis_conn'):
         g.redis_conn = Redis.from_url(config.get('RQ_REDIS_URL'))
@@ -89,7 +88,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
         verify_override=False,
-        http_client=CustomHTTPClient()
+        http_client=CustomHTTPClient(),
     )
 
 
@@ -165,6 +164,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
+
         g.enrichment_table_service = EnrichmentTableService(session=db.session)
     return g.enrichment_table_service
 
