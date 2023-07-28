@@ -9,7 +9,7 @@ from app.services.constants import (
     NLP_SERVICE_ENDPOINT,
     NLP_SERVICE_SECRET,
     REQUEST_TIMEOUT,
-    EntityType
+    EntityType,
 )
 from app.services.data_transfer_objects.dto import NLPResults
 
@@ -30,8 +30,10 @@ def _call_nlp_service(model: str, text: str) -> dict:
         raise ServerException(
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
-            additional_msgs=(f'Status: {e.response.status_code}, Body: {e.response.text}',),
-            code=e.response.status_code
+            additional_msgs=(
+                f'Status: {e.response.status_code}, Body: {e.response.text}',
+            ),
+            code=e.response.status_code,
         ) from e
 
     # Timeout either when connecting or reading response
@@ -39,14 +41,13 @@ def _call_nlp_service(model: str, text: str) -> dict:
         raise ServerException(
             'NLP Service timeout',
             'Request to NLP service timed out.',
-            code=HTTPStatus.GATEWAY_TIMEOUT
+            code=HTTPStatus.GATEWAY_TIMEOUT,
         ) from e
 
     # Could not decode JSON response
     except ValueError as e:
         raise ServerException(
-            'NLP Service Error',
-            'Error while parsing JSON response from NLP Service'
+            'NLP Service Error', 'Error while parsing JSON response from NLP Service'
         ) from e
 
     # Other request errors
@@ -54,7 +55,7 @@ def _call_nlp_service(model: str, text: str) -> dict:
         raise ServerException(
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
-            code=HTTPStatus.SERVICE_UNAVAILABLE
+            code=HTTPStatus.SERVICE_UNAVAILABLE,
         ) from e
 
 
