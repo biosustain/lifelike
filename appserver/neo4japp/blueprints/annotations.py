@@ -63,7 +63,7 @@ from ..schemas.filesystem import BulkFileRequestSchema
 from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
 from ..services.annotations.annotator_interface import (
     send_pdf_annotation_request,
-    send_et_annotation_request
+    send_et_annotation_request,
 )
 from ..services.annotations.globals_service import get_global_exclusion_annotations
 from ..services.annotations.constants import (
@@ -454,10 +454,11 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
         current_user = g.current_user
 
         files = self.get_nondeleted_recycled_files(
-            Files.hash_id.in_(targets['hash_ids']),
-            lazy_load_content=True
+            Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
         )
-        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+        self.check_file_permissions(
+            files, current_user, ['writable'], permit_recycled=False
+        )
 
         override_organism = params.get('organism', None) or dict()
         override_annotation_configs = params.get('annotation_configs', None)
@@ -468,7 +469,8 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
         global_exclusions = get_global_exclusion_annotations()
         for file in files:
             local_exclusions = [
-                exc for exc in file.excluded_annotations
+                exc
+                for exc in file.excluded_annotations
                 if not exc.get('meta', {}).get('excludeGlobally', False)
             ]
             local_inclusions = file.custom_annotations
@@ -481,7 +483,7 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
                     local_inclusions,
                     override_organism.get('synonym', None),
                     override_organism.get('tax_id', None),
-                    override_annotation_configs
+                    override_annotation_configs,
                 )
             except Exception as e:
                 results[file.hash_id] = {
@@ -496,16 +498,20 @@ class FilePDFAnnotationsGenerationView(FilesystemBaseView):
                 results[file.hash_id] = {
                     'attempted': True,
                     'success': True,
-                    'error': ''
+                    'error': '',
                 }
                 current_app.logger.info(
                     f'File annotation request successfully sent: {file.hash_id}, {file.filename}'
                 )
 
-        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
-            'mapping': results,
-            'missing': missing,
-        }))
+        return jsonify(
+            MultipleAnnotationGenerationResponseSchema().dump(
+                {
+                    'mapping': results,
+                    'missing': missing,
+                }
+            )
+        )
 
 
 class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
@@ -531,7 +537,8 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
         global_exclusions = get_global_exclusion_annotations()
         for file in files:
             local_exclusions = [
-                exc for exc in file.excluded_annotations
+                exc
+                for exc in file.excluded_annotations
                 if not exc.get('meta', {}).get('excludeGlobally', False)
             ]
             local_inclusions = file.custom_annotations
@@ -546,11 +553,13 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                 results[file.hash_id] = {
                     'attempted': False,
                     'success': False,
-                    'error': 'Enrichment table content is not valid JSON.'
+                    'error': 'Enrichment table content is not valid JSON.',
                 }
                 continue
             enrich_service = get_enrichment_table_service()
-            enrichment_mapping = enrich_service.create_annotation_mappings(raw_enrichment_data)
+            enrichment_mapping = enrich_service.create_annotation_mappings(
+                raw_enrichment_data
+            )
 
             try:
                 send_et_annotation_request(
@@ -562,13 +571,13 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                     local_inclusions,
                     override_organism.get('synonym', None),
                     override_organism.get('tax_id', None),
-                    override_annotation_configs
+                    override_annotation_configs,
                 )
             except Exception as e:
                 results[file.hash_id] = {
                     'attempted': True,
                     'success': False,
-                    'error': ''
+                    'error': '',
                 }
                 current_app.logger.error(
                     f'Could not annotate file: {file.hash_id}, {file.filename}, {e}'
@@ -577,7 +586,7 @@ class FileEnrichmentTableAnnotationsGenerationView(FilesystemBaseView):
                 results[file.hash_id] = {
                     'attempted': True,
                     'success': True,
-                    'error': ''
+                    'error': '',
                 }
                 current_app.logger.info(
                     f'File annotation request successfully sent: {file.hash_id}, {file.filename}'
@@ -809,7 +818,7 @@ class GlobalAnnotationListView(MethodView):
                 db=get_db(arango_client),
                 query=get_global_inclusions_paginated_query(),
                 skip=0 if page == 1 else (page - 1) * limit,
-                limit=limit
+                limit=limit,
             )
 
             file_uuids = {
@@ -821,35 +830,37 @@ class GlobalAnnotationListView(MethodView):
             ).filter(Files.hash_id.in_([fid for fid in file_uuids]))
 
             file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
-            data = [{
-                'global_id': i['node_internal_id'],
-                'synonym_id': i['syn_node_internal_id'],
-                'creator': i['creator'],
-                'file_uuid': i['file_reference'],
-                # if not in this something must've happened to the file
-                # since a global inclusion referenced it
-                # so mark it as deleted
-                # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
-                'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
-                'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': convert_datetime(i['creation_date']),
-                'text': i['synonym'],
-                'case_insensitive': True,
-                'entity_type': i['entity_type'],
-                'entity_id': i['entity_id'],
-                'reason': '',
-                'comment': ''
-            } for i in global_inclusions]
+            data = [
+                {
+                    'global_id': i['node_internal_id'],
+                    'synonym_id': i['syn_node_internal_id'],
+                    'creator': i['creator'],
+                    'file_uuid': i['file_reference'],
+                    # if not in this something must've happened to the file
+                    # since a global inclusion referenced it
+                    # so mark it as deleted
+                    # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+                    'file_deleted': True
+                    if file_uuids_map.get(i['file_reference'], True)
+                    else False,
+                    'type': ManualAnnotationType.INCLUSION.value,
+                    'creation_date': convert_datetime(i['creation_date']),
+                    'text': i['synonym'],
+                    'case_insensitive': True,
+                    'entity_type': i['entity_type'],
+                    'entity_id': i['entity_id'],
+                    'reason': '',
+                    'comment': '',
+                }
+                for i in global_inclusions
+            ]
 
             query_total = execute_arango_query(
                 db=get_db(arango_client),
                 query=get_global_inclusions_count_query(),
             )[0]['total']
 
-        results = {
-            'total': query_total,
-            'results': data
-        }
+        results = {'total': query_total, 'results': data}
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())
@@ -979,12 +990,15 @@ filesystem_bp.add_url_rule(
 )
 filesystem_bp.add_url_rule(
     'annotations/generate/pdf',
-    view_func=FilePDFAnnotationsGenerationView.as_view('file_pdf_annotation_generation'))
+    view_func=FilePDFAnnotationsGenerationView.as_view(
+        'file_pdf_annotation_generation'
+    ),
+)
 filesystem_bp.add_url_rule(
     'annotations/generate/enrichment-table',
     view_func=FileEnrichmentTableAnnotationsGenerationView.as_view(
         'file_enrichment_table_annotation_generation'
-    )
+    ),
 )
 filesystem_bp.add_url_rule(
     'annotations/refresh',
