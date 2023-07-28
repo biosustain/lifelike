@@ -625,7 +625,8 @@ def test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_id_changes_to_result_from_kg_if_matched_with_organism.json',
+        'pdf_samples/annotations_test/'
+        + 'test_gene_id_changes_to_result_from_kg_if_matched_with_organism.json',
     )  # noqa
 
     with open(pdf, 'rb') as f:
@@ -651,7 +652,8 @@ def test_human_is_prioritized_if_equal_distance_in_gene_organism_matching(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_human_is_prioritized_if_equal_distance_in_gene_organism_matching.json',
+        'pdf_samples/annotations_test/'
+        + 'test_human_is_prioritized_if_equal_distance_in_gene_organism_matching.json',
     )  # noqa
 
     with open(pdf, 'rb') as f:
@@ -903,7 +905,8 @@ def test_global_exclusions_does_not_interfere_with_other_entities(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_global_exclusions_does_not_interfere_with_other_entities.json',
+        'pdf_samples/annotations_test/'
+        + 'test_global_exclusions_does_not_interfere_with_other_entities.json',
     )  # noqa
 
     with open(pdf, 'rb') as f:
@@ -1305,7 +1308,8 @@ def test_gene_matched_to_organism_before_if_closest_is_too_far(
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_matched_to_organism_before_if_closest_is_too_far.json',
+        'pdf_samples/annotations_test/'
+        + 'test_gene_matched_to_organism_before_if_closest_is_too_far.json',
     )  # noqa
 
     with open(pdf, 'rb') as f:
@@ -1335,7 +1339,9 @@ def test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_
 ):
     pdf = path.join(
         directory,
-        'pdf_samples/annotations_test/test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism.json',
+        'pdf_samples/annotations_test/'
+        + 'test_gene_matched_to_most_freq_organism_if_closest_is_too_far_and_no_before_organism'
+        + '.json',
     )  # noqa
 
     with open(pdf, 'rb') as f:

@@ -35,7 +35,7 @@ def _call_nlp_service(model: str, text: str) -> dict:
         ) from e
 
     # Timeout either when connecting or reading response
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
         raise ServerException(
             'NLP Service timeout',
             'Request to NLP service timed out.',
@@ -43,14 +43,14 @@ def _call_nlp_service(model: str, text: str) -> dict:
         ) from e
 
     # Could not decode JSON response
-    except ValueError:
+    except ValueError as e:
         raise ServerException(
             'NLP Service Error',
             'Error while parsing JSON response from NLP Service'
         ) from e
 
     # Other request errors
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
         raise ServerException(
             'NLP Service Error',
             'An unexpected error occurred with the NLP service.',
