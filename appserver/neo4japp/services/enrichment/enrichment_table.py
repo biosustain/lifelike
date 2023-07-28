@@ -9,7 +9,6 @@ from neo4japp.constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain, L
 from neo4japp.exceptions import AnnotationError, ServerException, ServerWarning, wrap_exceptions
 from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.util import compact
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog

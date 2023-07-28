@@ -7,8 +7,8 @@ from neo4japp.constants import FILE_MIME_TYPE_PDF
 from neo4japp.exceptions import ServerException
 from neo4japp.utils.globals import config
 
-from ..constants import MAX_ABBREVIATION_WORD_LENGTH
-from ..data_transfer_objects import PDFWord
+from neo4japp.services.annotations.constants import MAX_ABBREVIATION_WORD_LENGTH
+from neo4japp.services.annotations.data_transfer_objects import PDFWord
 
 
 def process_parsed_content(resp: dict) -> Tuple[str, List[PDFWord]]:

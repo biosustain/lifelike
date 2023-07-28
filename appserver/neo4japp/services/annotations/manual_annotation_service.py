@@ -340,8 +340,8 @@ class ManualAnnotationService:
             raise
         except Exception as e:
             current_app.logger.error(
-                f'Failed executing AQL: {get_delete_global_inclusion_query()}.\n' +
-                f'PARAMETERS: <pairs: {pairs}>.',
+                f'Failed executing AQL: {get_delete_global_inclusion_query()}.\n'
+                + f'PARAMETERS: <pairs: {pairs}>.',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
             )
             raise ServerException(
@@ -417,8 +417,8 @@ class ManualAnnotationService:
                     raise
                 except Exception:
                     current_app.logger.error(
-                        f'Failed executing AQL: {query}.\n' +
-                        f'PARAMETERS: <node_id: {result["node_id"]}>.',
+                        f'Failed executing AQL: {query}.\n'
+                        + f'PARAMETERS: <node_id: {result["node_id"]}>.',
                         extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict()
                     )
                     raise ServerException(

@@ -155,8 +155,8 @@ def _visualizer_search_result_formatter(result: dict) -> dict:
             entity_label = get_first_known_label_from_list(entity["labels"])
         except ValueError:
             current_app.logger.warning(
-                f'Node with ID {entity["id"]} had an unexpected list of labels: ' +
-                f'{entity["labels"]}',
+                f'Node with ID {entity["id"]} had an unexpected list of labels: '
+                + f'{entity["labels"]}',
                 extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
             )
             entity_label = 'Unknown'
@@ -168,8 +168,8 @@ def _visualizer_search_result_formatter(result: dict) -> dict:
             label=entity_label,
             sub_labels=entity['labels'],
             domain_labels=(
-                get_known_domain_labels_from_data_source(entity['data']['data_source']) +
-                (['Literature'] if literature_id is not None else [])
+                get_known_domain_labels_from_data_source(entity['data']['data_source'])
+                + (['Literature'] if literature_id is not None else [])
             ),
             display_name=entity['name'],
             data=snake_to_camel_dict(entity['data'], {}),
@@ -230,8 +230,8 @@ def visualizer_search(
         literature_match_string,
         organism_required=True if organism else False,
         literature_required=(
-            len(domains) == 1 and
-            any([normalize_str(domain) == 'literature' for domain in domains])
+            len(domains) == 1
+            and any([normalize_str(domain) == 'literature' for domain in domains])
         )
     )
     query_args = {

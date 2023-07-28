@@ -79,11 +79,11 @@ def _get_uri_of_node_data(id: str, label: str, entity_id: str):
             url = DOMAIN_URLS_MAP['NCBI_Gene'].format(entity_id)
     except KeyError:
         current_app.logger.warning(
-            f'url_map did not contain the expected key value for node with:\n' +
-            f'\tID: {id}\n'
-            f'\tLabel: {label}\n' +
-            f'\tURI: {entity_id}\n'
-            'There may be something wrong in the database.',
+            f'url_map did not contain the expected key value for node with:\n'
+            + f'\tID: {id}\n'
+            + f'\tLabel: {label}\n'
+            + f'\tURI: {entity_id}\n'
+            + 'There may be something wrong in the database.',
             extra=EventLog(event_type=LogEventType.KNOWLEDGE_GRAPH.value).to_dict()
         )
     finally:

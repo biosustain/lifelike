@@ -257,8 +257,8 @@ def after_project_insert(mapper: Mapper, connection: Connection, target: Project
     except Exception as e:
         raise ServerException(
             title='Failed to Update Project',
-            message='Something unexpected occurred while updating your file! Please try again ' +
-                    'later.'
+            message='Something unexpected occurred while updating your file! Please try again '
+                    + 'later.'
         ) from e
 
 
@@ -289,8 +289,8 @@ def _after_project_update(target: Projects):
         }
 
         current_app.logger.info(
-            f'Attempting to update files in elastic with hash_ids: ' +
-            f'{list(files_to_update.keys())}',
+            f'Attempting to update files in elastic with hash_ids: '
+            + f'{list(files_to_update.keys())}',
             extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
         )
 

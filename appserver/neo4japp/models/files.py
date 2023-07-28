@@ -768,13 +768,13 @@ def _after_file_update(target: Files, changes: dict):
 
         # Only delete a file when it changes from "not-deleted" to "deleted"
         if (
-                'deletion_date' in changes and
-                changes['deletion_date'][0] is None and
-                changes['deletion_date'][1] is not None
+            'deletion_date' in changes
+            and changes['deletion_date'][0] is None
+            and changes['deletion_date'][1] is not None
         ):
             current_app.logger.info(
-                f'Attempting to delete files in elastic with hash_ids: ' +
-                f'{list(updated_files.keys())}',
+                f'Attempting to delete files in elastic with hash_ids: '
+                + f'{list(updated_files.keys())}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
             )
             send_delete_file_request(list(updated_files.keys()))
@@ -800,8 +800,8 @@ def _after_file_update(target: Files, changes: dict):
             # request anyway.
             if len(updated_files):
                 current_app.logger.info(
-                    f'Attempting to update files in elastic with hash_ids: ' +
-                    f'{list(updated_files.keys())}',
+                    f'Attempting to update files in elastic with hash_ids: '
+                    + f'{list(updated_files.keys())}',
                     extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
                 )
 

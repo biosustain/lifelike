@@ -60,7 +60,6 @@ def get_jwt_client():
     return _jwt_client
 
 
-
 def get_redis_connection() -> Redis:
     if not hasattr(g, 'redis_conn'):
         g.redis_conn = Redis.from_url(config.get('RQ_REDIS_URL'))
