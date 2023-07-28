@@ -236,21 +236,21 @@ def before_project_update(mapper: Mapper, connection: Connection, target: Projec
 def after_project_insert(mapper: Mapper, connection: Connection, target: Projects):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.models.files import Files
-    from neo4japp.services.elastic.elastic_indexer_interface import send_update_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import (
+        send_update_file_request,
+    )
 
     try:
-        file_hash_id = db.session.query(
-            Files.hash_id
-        ).filter(
-            Files.id == target.***ARANGO_USERNAME***_id
-        ).scalar()
+        file_hash_id = (
+            db.session.query(Files.hash_id).filter(Files.id == target.***ARANGO_USERNAME***_id).scalar()
+        )
 
         send_update_file_request(
             {
                 file_hash_id: {
                     'project_id': target.id,
                     'project_hash_id': target.hash_id,
-                    'project_name': target.name
+                    'project_name': target.name,
                 }
             }
         )
@@ -258,23 +258,24 @@ def after_project_insert(mapper: Mapper, connection: Connection, target: Project
         raise ServerException(
             title='Failed to Update Project',
             message='Something unexpected occurred while updating your file! Please try again '
-                    + 'later.'
+            + 'later.',
         ) from e
 
 
 def _after_project_update(target: Projects):
     from neo4japp.models.files import Files
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.elastic.elastic_indexer_interface import send_update_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import (
+        send_update_file_request,
+    )
+
     # This will be called by the Redis queue service outside of the normal flask app context, so
     # here we manually ensure there is a context.
     try:
         family = get_nondeleted_recycled_children_query(
             Files.id == target.***ARANGO_USERNAME***_id,
-            children_filter=and_(
-                Files.recycling_date.is_(None)
-            ),
-            lazy_load_content=True
+            children_filter=and_(Files.recycling_date.is_(None)),
+            lazy_load_content=True,
         ).all()
         files_to_update = {
             member.hash_id: {
@@ -282,8 +283,10 @@ def _after_project_update(target: Projects):
                 # returned by the above query. This is despite the fact that the path has
                 # definitely just been updated in the "before_update" event above. Manually setting
                 # it here as a workaround.
-                'path': f'/{target.name}' if member.id == target.***ARANGO_USERNAME***_id else member.path,
-                'project_name': target.name
+                'path': f'/{target.name}'
+                if member.id == target.***ARANGO_USERNAME***_id
+                else member.path,
+                'project_name': target.name,
             }
             for member in family
         }
@@ -291,7 +294,7 @@ def _after_project_update(target: Projects):
         current_app.logger.info(
             f'Attempting to update files in elastic with hash_ids: '
             + f'{list(files_to_update.keys())}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
         )
 
         send_update_file_request(files_to_update)
@@ -299,7 +302,7 @@ def _after_project_update(target: Projects):
         current_app.logger.error(
             f'Elastic search update failed for project with ***ARANGO_USERNAME***_id: {target.***ARANGO_USERNAME***_id}',
             exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
         )
         raise
 
@@ -314,5 +317,6 @@ def after_project_update(mapper: Mapper, connection: Connection, target: Project
             message='Something unexpected occurred while updating your file! Please try again '
             + 'later.',
         ) from e
+
 
 # TODO: Need to implement some kind of deletion handler if we ever allow deletion of projects.

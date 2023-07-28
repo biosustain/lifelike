@@ -437,14 +437,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             ValueError: if a new (reasonable) filename cannot be found
         """
         # First, check if there even is another file with the same name
-        matching_files = db.session.query(
-            Files
-        ).filter(
-            and_(
-                Files.filename == filename,
-                Files.parent_id == parent_id
-            )
-        ).all()
+        matching_files = (
+            db.session.query(Files)
+            .filter(and_(Files.filename == filename, Files.parent_id == parent_id))
+            .all()
+        )
 
         if len(matching_files) == 0:
             # The given filename is acceptable, so return it without calculating a new one
@@ -613,9 +610,7 @@ def _get_file_indexable_content(file: Files, file_content: FileContent):
         if file_content:
             content = file_content.raw_file
             file_type_service = get_file_type_service()
-            indexable_content = file_type_service.get(
-                file
-            ).to_indexable_content(
+            indexable_content = file_type_service.get(file).to_indexable_content(
                 FileContentBuffer(content)
             )
         else:
@@ -629,7 +624,7 @@ def _get_file_indexable_content(file: Files, file_content: FileContent):
             f'Failed to generate indexable data for file '
             f'#{file.id} (hash={file.hash_id}, mime type={file.mime_type})',
             exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
         )
     else:
         data = base64.b64encode(indexable_content.getvalue()).decode('utf-8')
@@ -643,16 +638,12 @@ def _get_doc_source_for_file(file: Files) -> dict:
     # we have to check if this file is a ***ARANGO_USERNAME*** project and temporarily set the project
     # properties in it's elastic document to null.
     project = None if file.parent_id is None else file.project
-    user = db.session.query(
-        AppUser
-    ).filter(
-        AppUser.id == file.user_id
-    ).one()
-    file_content = db.session.query(
-        FileContent
-    ).filter(
-        FileContent.id == file.content_id
-    ).one_or_none()
+    user = db.session.query(AppUser).filter(AppUser.id == file.user_id).one()
+    file_content = (
+        db.session.query(FileContent)
+        .filter(FileContent.id == file.content_id)
+        .one_or_none()
+    )
 
     return {
         'filename': file.filename,
@@ -676,10 +667,10 @@ def _get_doc_source_for_file(file: Files) -> dict:
 def _get_bulk_update_request(parent_file: Files, changes: dict, updated_files: dict):
     # These values are very cheap to update, so just include them for simplicity.
     if parent_file.hash_id in updated_files:
-        updated_files[parent_file.hash_id]['filename'] = parent_file.filename,
-        updated_files[parent_file.hash_id]['path'] = parent_file.path,
-        updated_files[parent_file.hash_id]['description'] = parent_file.description,
-        updated_files[parent_file.hash_id]['public'] = parent_file.public,
+        updated_files[parent_file.hash_id]['filename'] = (parent_file.filename,)
+        updated_files[parent_file.hash_id]['path'] = (parent_file.path,)
+        updated_files[parent_file.hash_id]['description'] = (parent_file.description,)
+        updated_files[parent_file.hash_id]['public'] = (parent_file.public,)
 
     # If the file was moved, update the project data since that may have changed as well.
     if 'parent_id' in changes:
@@ -713,12 +704,14 @@ def after_file_insert(mapper: Mapper, connection: Connection, target: Files):
     Handles creating a new elastic document for the newly inserted file. Note: if this fails, the
     file insert will be rolled back.
     """
-    from neo4japp.services.elastic.elastic_indexer_interface import send_index_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import (
+        send_index_file_request,
+    )
 
     try:
         current_app.logger.info(
             f'Attempting to index file in elastic with hash_id: {target.hash_id}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
         )
         send_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
     except Exception as e:
@@ -751,7 +744,7 @@ def _after_file_update(target: Files, changes: dict):
     from neo4japp.services.elastic.elastic_indexer_interface import (
         send_delete_file_request,
         send_index_file_request,
-        send_update_file_request
+        send_update_file_request,
     )
 
     try:
@@ -759,10 +752,8 @@ def _after_file_update(target: Files, changes: dict):
         if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
             family = get_nondeleted_recycled_children_query(
                 Files.id == target.id,
-                children_filter=and_(
-                    Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
+                children_filter=and_(Files.recycling_date.is_(None)),
+                lazy_load_content=True,
             ).all()
             updated_files = {member.hash_id: {'path': member.path} for member in family}
 
@@ -775,7 +766,7 @@ def _after_file_update(target: Files, changes: dict):
             current_app.logger.info(
                 f'Attempting to delete files in elastic with hash_ids: '
                 + f'{list(updated_files.keys())}',
-                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
             )
             send_delete_file_request(list(updated_files.keys()))
             # TODO: Should we handle the case where a document's deleted state goes from
@@ -787,10 +778,12 @@ def _after_file_update(target: Files, changes: dict):
             if 'content_id' in changes:
                 current_app.logger.info(
                     f'Attempting to re-index file in elastic with hash_id: {target.hash_id}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
                 )
                 # If content changes, we *MUST* reindex, we cannot simply update.
-                send_index_file_request({target.hash_id: _get_doc_source_for_file(target)})
+                send_index_file_request(
+                    {target.hash_id: _get_doc_source_for_file(target)}
+                )
 
                 # Don't need to update the target file, since we're re-indexing it entirely anyway.
                 updated_files.pop(target.hash_id)
@@ -802,7 +795,7 @@ def _after_file_update(target: Files, changes: dict):
                 current_app.logger.info(
                     f'Attempting to update files in elastic with hash_ids: '
                     + f'{list(updated_files.keys())}',
-                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+                    extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
                 )
 
                 # TODO: Only need to update children if the folder name changes (is this true? any
@@ -815,7 +808,7 @@ def _after_file_update(target: Files, changes: dict):
         current_app.logger.error(
             f'Elastic update failed for files with hash_ids: {list(updated_files.keys())}',
             exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
         )
         raise
 
@@ -842,29 +835,29 @@ def _after_file_delete(target: Files):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
     from neo4japp.services.file_types.providers import DirectoryTypeProvider
-    from neo4japp.services.elastic.elastic_indexer_interface import send_delete_file_request
+    from neo4japp.services.elastic.elastic_indexer_interface import (
+        send_delete_file_request,
+    )
 
     try:
         files_to_delete = [target.hash_id]
         if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
             family = get_nondeleted_recycled_children_query(
                 Files.id == target.id,
-                children_filter=and_(
-                    Files.recycling_date.is_(None)
-                ),
-                lazy_load_content=True
+                children_filter=and_(Files.recycling_date.is_(None)),
+                lazy_load_content=True,
             ).all()
             files_to_delete = [member.hash_id for member in family]
         current_app.logger.info(
             f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
-            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),
         )
         send_delete_file_request(files_to_delete)
     except Exception as e:
         current_app.logger.error(
             f'Elastic search delete failed for file with hash_id: {target.hash_id}',
             exc_info=e,
-            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ELASTIC_FAILURE.value).to_dict(),
         )
         raise
 

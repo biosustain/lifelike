@@ -5,8 +5,18 @@ from flask import current_app
 from typing import List
 from urllib.parse import urlencode
 
-from neo4japp.constants import BIOCYC_ORG_ID_DICT, EnrichmentDomain, KGDomain, LogEventType
-from neo4japp.exceptions import AnnotationError, ServerException, ServerWarning, wrap_exceptions
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT,
+    EnrichmentDomain,
+    KGDomain,
+    LogEventType,
+)
+from neo4japp.exceptions import (
+    AnnotationError,
+    ServerException,
+    ServerWarning,
+    wrap_exceptions,
+)
 from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.util import compact
@@ -16,7 +26,7 @@ from neo4japp.utils.logger import EventLog
 from .data_transfer_objects.dto import EnrichmentCellTextMapping
 
 
-class EnrichmentTableService():
+class EnrichmentTableService:
     @wrap_exceptions(AnnotationError, title='Could not annotate enrichment table')
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
         try:
@@ -133,31 +143,32 @@ class EnrichmentTableService():
         )
 
 
-def match_ncbi_genes(
-    arango_client: ArangoClient,
-    gene_names: List[str],
-    organism: str
-):
-    """ Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
-        ID of given organism. Input order is maintained in result.
+def match_ncbi_genes(arango_client: ArangoClient, gene_names: List[str], organism: str):
+    """Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
+    ID of given organism. Input order is maintained in result.
     """
     results = execute_arango_query(
         db=get_db(arango_client),
         query=match_ncbi_genes_query(),
         gene_names=gene_names,
-        organism=organism
+        organism=organism,
     )
 
     retval = []
     for result in results:
         gene_id = result['gene_id'] if result['gene_id'] else ''
-        retval.append({
-            'gene': {'name': result['gene_name'], 'full_name': result['gene_full_name']},
-            'synonym': result['synonym'],
-            'geneArangoId': result['gene_arango_id'],
-            'synonymArangoId': result['syn_arango_id'],
-            'link': f"https://www.ncbi.nlm.nih.gov/gene/{gene_id}"
-        })
+        retval.append(
+            {
+                'gene': {
+                    'name': result['gene_name'],
+                    'full_name': result['gene_full_name'],
+                },
+                'synonym': result['synonym'],
+                'geneArangoId': result['gene_arango_id'],
+                'synonymArangoId': result['syn_arango_id'],
+                'link': f"https://www.ncbi.nlm.nih.gov/gene/{gene_id}",
+            }
+        )
     return retval
 
 
@@ -171,14 +182,16 @@ def get_uniprot_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
 
     current_app.logger.info(
         f'Enrichment UniProt KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': {'id': result['uniprot_id'], 'function': result['function']},
-            'link': f'http://identifiers.org/uniprot/{result["uniprot_id"]}'
-        } for result in results}
+            'link': f'http://identifiers.org/uniprot/{result["uniprot_id"]}',
+        }
+        for result in results
+    }
 
 
 def get_string_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
@@ -191,17 +204,21 @@ def get_string_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
 
     current_app.logger.info(
         f'Enrichment String KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': {'id': result['string_id'], 'annotation': result['annotation']},
-            'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}"
-        } for result in results}
+            'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}",
+        }
+        for result in results
+    }
 
 
-def get_biocyc_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int], tax_id: str):
+def get_biocyc_genes(
+    arango_client: ArangoClient, ncbi_gene_ids: List[int], tax_id: str
+):
     start = time.time()
     results = execute_arango_query(
         db=get_db(arango_client),
@@ -211,16 +228,23 @@ def get_biocyc_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int], tax_
 
     current_app.logger.info(
         f'Enrichment Biocyc KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': result['pathways'],
-            'link': "https://biocyc.org/gene?" + urlencode(compact(dict(
-                orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None), id=result['biocyc_id'])
-            ))
-        } for result in results
+            'link': "https://biocyc.org/gene?"
+            + urlencode(
+                compact(
+                    dict(
+                        orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None),
+                        id=result['biocyc_id'],
+                    )
+                )
+            ),
+        }
+        for result in results
     }
 
 
@@ -234,14 +258,16 @@ def get_go_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
 
     current_app.logger.info(
         f'Enrichment GO KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': result['go_terms'],
-            'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
-        } for result in results}
+            'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=',
+        }
+        for result in results
+    }
 
 
 def get_regulon_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
@@ -254,19 +280,26 @@ def get_regulon_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
 
     current_app.logger.info(
         f'Enrichment Regulon KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': result['node'],
-            'link': "http://regulondb.ccg.unam.mx/gene?" + urlencode(compact(dict(
-                term=result['regulondb_id'],
-                organism='ECK12',
-                format='jsp',
-                type='gene'
-            )))
-        } for result in results}
+            'link': "http://regulondb.ccg.unam.mx/gene?"
+            + urlencode(
+                compact(
+                    dict(
+                        term=result['regulondb_id'],
+                        organism='ECK12',
+                        format='jsp',
+                        type='gene',
+                    )
+                )
+            ),
+        }
+        for result in results
+    }
 
 
 def get_kegg_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
@@ -279,17 +312,21 @@ def get_kegg_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
 
     current_app.logger.info(
         f'Enrichment KEGG KG query time {time.time() - start}',
-        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
     )
 
     return {
         result['doc_id']: {
             'result': result['pathway'],
-            'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
-        } for result in results}
+            'link': f"https://www.genome.jp/entry/{result['kegg_id']}",
+        }
+        for result in results
+    }
 
 
-def get_genes(arango_client: ArangoClient, domain: KGDomain, gene_ids: List[int], tax_id: str):
+def get_genes(
+    arango_client: ArangoClient, domain: KGDomain, gene_ids: List[int], tax_id: str
+):
     if domain == KGDomain.REGULON:
         return get_regulon_genes(arango_client, gene_ids)
     if domain == KGDomain.BIOCYC:

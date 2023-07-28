@@ -88,7 +88,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
         verify_override=False,
-        http_client=CustomHTTPClient()
+        http_client=CustomHTTPClient(),
     )
 
 
@@ -164,6 +164,7 @@ def get_file_type_service():
 def get_enrichment_table_service():
     if 'enrichment_table_service' not in g:
         from neo4japp.services import EnrichmentTableService
+
         g.enrichment_table_service = EnrichmentTableService(session=db.session)
     return g.enrichment_table_service
 
