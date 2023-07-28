@@ -72,7 +72,6 @@ from ..services.annotations.constants import (
 )
 from ..services.annotations.initializer import (
     get_manual_annotation_service,
-    get_recognition_service,
     get_sorted_annotation_service,
 )
 from ..services.annotations.sorted_annotation_service import (

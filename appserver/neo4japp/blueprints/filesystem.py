@@ -53,9 +53,9 @@ from neo4japp.exceptions import (
     HandledException,
     ServerException,
     FileNotFound,
-    FileUploadError,
     ServerWarning
 )
+from neo4japp.exceptions.exceptions import FileUploadError
 from neo4japp.models import (
     Projects,
     Files,

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, MISSING
 from http import HTTPStatus
-from typing import Union, Tuple, Optional, Generic, TypeVar, List, Any, cast
+from typing import Union, Tuple, Optional, Generic, TypeVar, Any, cast
 
 from neo4japp.utils.transaction_id import transaction_id
 

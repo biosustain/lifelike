@@ -1,7 +1,7 @@
 """add file contexts
 
 Revision ID: e1b35c398626
-Revises: ad97ec0e4973
+Revises: 1a89853a75af
 Create Date: 2023-06-19 13:53:47.753058
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'e1b35c398626'
-down_revision = 'ad97ec0e4973'
+down_revision = '1a89853a75af'
 branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))

@@ -3,7 +3,7 @@ from http import HTTPStatus
 from typing import Union, Optional
 
 from neo4japp.message import ServerMessage
-from neo4japp.utils.transaction import get_transaction_id
+from neo4japp.utils.transaction_id import transaction_id
 
 
 @dataclass(repr=False, frozen=True)
