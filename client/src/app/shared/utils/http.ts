@@ -1,4 +1,3 @@
-
 export function getFilenameFromContentDisposition(contentDisposition: string) {
   const fileNameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
   const matches = fileNameRegex.exec(contentDisposition);

@@ -127,12 +127,9 @@ export class ObjectMenuComponent implements AfterViewInit, OnChanges {
   }
 
   downloadSelection(targets: FilesystemObject[]) {
-    return this.actions.openDownloadProgressDialog(targets)
-      .then(() =>
-        this.snackBar.open(
-          `Download successful.`,
-          'Close', { duration: 5000 })
-      )
+    return this.actions
+      .openDownloadProgressDialog(targets)
+      .then(() => this.snackBar.open(`Download successful.`, 'Close', { duration: 5000 }))
       .then(() => this.refreshRequest.emit());
   }
 

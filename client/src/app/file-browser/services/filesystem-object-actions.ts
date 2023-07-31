@@ -212,16 +212,22 @@ export class FilesystemObjectActions {
   }
 
   openDownloadProgressDialog(targets: FilesystemObject[]): Promise<void> {
-    const progressDialogRef = this.createProgressDialog(`Downloading ${getObjectLabel(targets)}...`);
-    return this.filesystemService.download(targets.map(target => target.hashId))
+    const progressDialogRef = this.createProgressDialog(
+      `Downloading ${getObjectLabel(targets)}...`
+    );
+    return this.filesystemService
+      .download(targets.map((target) => target.hashId))
       .pipe(
         map((resp) => {
-          const filename = getFilenameFromContentDisposition(resp.headers.get('Content-Disposition'));
+          const filename = getFilenameFromContentDisposition(
+            resp.headers.get('Content-Disposition')
+          );
           return openDownloadForBlob(new File([resp.body], filename), filename);
         }),
         finalize(() => progressDialogRef.close()),
-          this.errorHandler.create({label: 'Download object'}),
-      ).toPromise();
+        this.errorHandler.create({ label: 'Download object' })
+      )
+      .toPromise();
   }
 
   openFileAnnotationHistoryDialog(object: FilesystemObject): Promise<void> {

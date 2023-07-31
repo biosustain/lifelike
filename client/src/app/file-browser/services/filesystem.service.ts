@@ -154,11 +154,11 @@ export class FilesystemService {
     return this.http.post(
       `/api/filesystem/objects/content`,
       {
-        hashIds: [hashId]
+        hashIds: [hashId],
       },
       {
         responseType: 'blob',
-      },
+      }
     );
   }
 
@@ -168,8 +168,8 @@ export class FilesystemService {
       { hashIds },
       {
         responseType: 'blob',
-        observe: 'response'
-      },
+        observe: 'response',
+      }
     );
   }
 

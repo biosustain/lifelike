@@ -340,19 +340,29 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
       },
       {
         name: 'Genes for Graph Analysis CSV',
-        export: () => this.filesystemService.getContent(object.hashId).pipe(
-          mergeMap(blob => new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)),
-          mergeMap(document => new EnrichmentTable({
-            usePlainText: true,
-          }).load(document).pipe(
-            tap(table => this.addBioCycIdColumn(document, table)),
-            tap(table => this.prepareTableForRadiateAnalysis(table))
-          )),
-          mergeMap(table => new TableCSVExporter().generate(table.tableHeader, table.tableCells)),
-          map(blob => {
-            return new File([blob], object.filename + '_for_graph_analysis.csv');
-          }),
-        )
-    }]);
+        export: () =>
+          this.filesystemService.getContent(object.hashId).pipe(
+            mergeMap((blob) =>
+              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
+            ),
+            mergeMap((document) =>
+              new EnrichmentTable({
+                usePlainText: true,
+              })
+                .load(document)
+                .pipe(
+                  tap((table) => this.addBioCycIdColumn(document, table)),
+                  tap((table) => this.prepareTableForRadiateAnalysis(table))
+                )
+            ),
+            mergeMap((table) =>
+              new TableCSVExporter().generate(table.tableHeader, table.tableCells)
+            ),
+            map((blob) => {
+              return new File([blob], object.filename + '_for_graph_analysis.csv');
+            })
+          ),
+      },
+    ]);
   }
 }
