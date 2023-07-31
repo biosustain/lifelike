@@ -30,5 +30,3 @@ def relationship(params):
     )
     for choice in response.get('choices'):
         return {"result": choice.get('text').strip()}
-
-
