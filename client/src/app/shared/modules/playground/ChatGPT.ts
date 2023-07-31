@@ -1,17 +1,24 @@
 import { find as _find, map as _map } from 'lodash/fp';
 
-interface CompletitionsTokenParams {
+export interface CompletitionsParams {
   prompt: string;
   echo: boolean;
   bestOf: number;
   n: number;
   maxTokens: number;
-}
-
-export interface CompletitionsParams extends CompletitionsTokenParams {
   model: string;
   stream: boolean;
 }
+export interface ChatCompletitionsParams {
+  prompt: string;
+  echo: boolean;
+  bestOf: number;
+  n: number;
+  maxTokens: number;
+  model: string;
+  stream: boolean;
+}
+export type CommonCompletitionsParams = CompletitionsParams | ChatCompletitionsParams;
 
 export class ChatGPT {
   static lastUpdate = new Date(2023, 7, 17);
@@ -32,7 +39,7 @@ export class ChatGPT {
       bestOf,
       n,
       maxTokens,
-    }: CompletitionsTokenParams) {
+    }: CompletitionsParams) {
       // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
       const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
       return [

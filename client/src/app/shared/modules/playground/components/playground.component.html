@@ -24,7 +24,7 @@
               ngbDropdownItem
               *ngFor="let mode of MODES"
               (click)="modeChange$.next(mode)"
-              [class.selected]="mode.active"
+              [class.selected]="modeChange$.value === mode"
             >
               {{ mode.label }}
             </button>

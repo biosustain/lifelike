@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { Observable } from 'rxjs';
@@ -13,16 +21,19 @@ import { OpenFileProvider } from '../../../../../providers/open-file/open-file.p
   selector: 'app-compose-prompt-form',
   templateUrl: './compose-prompt-form.component.html',
 })
-export class CompletionsPromptFormComponent implements OnChanges {
-  constructor(private readonly openFileProvider: OpenFileProvider) {}
+export class ComposePromptFormComponent implements OnChanges {
+  constructor(
+    private readonly openFileProvider: OpenFileProvider
+  ) {}
 
-  form = new FormGroup({
+  public form = new FormGroup({
     entities: new FormArrayWithFactory(() => new FormControl(''), []),
     context: new FormControl(''),
   });
   entitiesControl = this.form.controls.entities as FormArrayWithFactory<FormControl, string>;
   contextControl = this.form.controls.context as FormControl;
   @Input() entities!: Set<string>;
+  @Input() context!: string;
   @Output() prompt = new EventEmitter<string>();
 
   contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
@@ -34,10 +45,10 @@ export class CompletionsPromptFormComponent implements OnChanges {
 
   ngOnChanges({ entities, context }: SimpleChanges) {
     if (entities) {
-      this.form.controls.entities.reset(Array.from(entities.currentValue));
+      this.entitiesControl.reset(Array.from(entities.currentValue ?? []));
     }
     if (context) {
-      this.form.controls.context.reset(context.currentValue);
+      this.contextControl.reset(context.currentValue);
     }
   }
 
@@ -51,7 +62,8 @@ export class CompletionsPromptFormComponent implements OnChanges {
     );
   }
 
-  onSubmitPropmptComposer() {
+  onSubmit() {
+    console.log("submitting")
     return this.prompt.emit(
       this.parseEntitiesToPropmpt(
         this.form.controls.entities.value,
