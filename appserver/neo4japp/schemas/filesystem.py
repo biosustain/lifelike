@@ -481,6 +481,7 @@ class FileStarUpdateRequest(CamelCaseSchema):
 # Downloads
 # ========================================
 
+
 # Requests
 # ----------------------------------------
 class DownloadContentSchema(CamelCaseSchema):
