@@ -66,8 +66,8 @@ export interface ChatCompletionsResponse {
 }
 
 export type OptionallyStreamedType<Options, Stramed, Response> = Options extends {
-    stream: true;
-  }
+  stream: true;
+}
   ? Stramed
   : Response;
 
@@ -75,8 +75,7 @@ export type OptionallyStreamedType<Options, Stramed, Response> = Options extends
 export class PlaygroundService {
   endpoint = '/api/playground/';
 
-  constructor(protected readonly http: HttpClient) {
-  }
+  constructor(protected readonly http: HttpClient) {}
 
   /**
    * Helper to compose completitions create call, taking into account possible stream
@@ -86,24 +85,14 @@ export class PlaygroundService {
   private completionsCreateCall(options: CompletitionsParams) {
     return (endpoint) =>
       options.stream
-        ?
-        this.http.post(
-          endpoint,
-          options,
-          {
+        ? this.http.post(endpoint, options, {
             reportProgress: true,
             observe: 'events',
             responseType: 'text',
-          },
-        )
-        :
-        this.http.post(
-          endpoint,
-          options,
-          {
+          })
+        : this.http.post(endpoint, options, {
             responseType: 'json',
-          },
-        );
+          });
   }
 
   completionsCreate(options: CompletitionsParams) {
@@ -115,9 +104,7 @@ export class PlaygroundService {
   }
 
   chatCompletionsCreate(options: CompletitionsParams) {
-    return this.completionsCreateCall(options)(
-      this.endpoint + 'chat/completions',
-    ) as Observable<
+    return this.completionsCreateCall(options)(this.endpoint + 'chat/completions') as Observable<
       OptionallyStreamedType<
         CompletitionsParams,
         HttpEvent<ChatCompletionsResponse>,
