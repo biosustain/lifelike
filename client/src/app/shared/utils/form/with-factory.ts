@@ -40,12 +40,12 @@ export class FormArrayWithFactory<
 
   controls: Control[];
 
-  private matchControls(valuesLength: number, remove: boolean = false) {
-    const conlrolsLength = this.controls.length;
-    for (let i = valuesLength; i < conlrolsLength; i++) {
+  private matchControls(valuesLength: number, remove: boolean) {
+    const controlsLength = this.controls.length;
+    for (let i = valuesLength; remove && i < controlsLength; i++) {
       this.removeAt(i);
     }
-    for (let i = conlrolsLength; i < valuesLength; i++) {
+    for (let i = controlsLength; i < valuesLength; i++) {
       this.push(this.factory());
     }
   }
@@ -56,8 +56,13 @@ export class FormArrayWithFactory<
   }
 
   patchValue(values: T[], options?: { onlySelf?: boolean; emitEvent?: boolean }) {
-    this.matchControls(values.length);
+    this.matchControls(values.length, false);
     super.patchValue(values, options);
+  }
+
+  reset(value?: T[], options?: { onlySelf?: boolean; emitEvent?: boolean }) {
+    this.matchControls(value?.length ?? 0, true);
+    super.reset(value, options);
   }
 
   add(value: T) {
@@ -81,7 +86,7 @@ export class FormGroupWithFactory<
     validatorOrOpts?: ValidatorFn | AbstractControlOptions | ValidatorFn[],
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[]
   ) {
-    super(mapping ? {} : null, validatorOrOpts, asyncValidator);
+    super({}, validatorOrOpts, asyncValidator);
     if (mapping) {
       this.setValue(mapping, { emitEvent: false });
     }

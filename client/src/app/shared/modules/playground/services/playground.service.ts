@@ -1,10 +1,8 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
-
-import { partialRight as _partialRight } from 'lodash/fp';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 import { CompletitionsParams } from '../ChatGPT';
-import { Observable } from 'rxjs';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
@@ -68,8 +66,8 @@ export interface ChatCompletionsResponse {
 }
 
 export type OptionallyStreamedType<Options, Stramed, Response> = Options extends {
-  stream: true;
-}
+    stream: true;
+  }
   ? Stramed
   : Response;
 
@@ -77,7 +75,8 @@ export type OptionallyStreamedType<Options, Stramed, Response> = Options extends
 export class PlaygroundService {
   endpoint = '/api/playground/';
 
-  constructor(protected readonly http: HttpClient) {}
+  constructor(protected readonly http: HttpClient) {
+  }
 
   /**
    * Helper to compose completitions create call, taking into account possible stream
@@ -85,22 +84,30 @@ export class PlaygroundService {
    * @private
    */
   private completionsCreateCall(options: CompletitionsParams) {
-    return _partialRight(this.http.post, [
-      options,
+    return (endpoint) =>
       options.stream
-        ? {
+        ?
+        this.http.post(
+          endpoint,
+          options,
+          {
             reportProgress: true,
             observe: 'events',
             responseType: 'text',
-          }
-        : ({
+          },
+        )
+        :
+        this.http.post(
+          endpoint,
+          options,
+          {
             responseType: 'json',
-          } as any),
-    ]);
+          },
+        );
   }
 
   completionsCreate(options: CompletitionsParams) {
-    return this.completionsCreateCall(options)(this.endpoint + 'completions/create');
+    return this.completionsCreateCall(options)(this.endpoint + 'completions');
   }
 
   completionsModels() {
@@ -109,7 +116,7 @@ export class PlaygroundService {
 
   chatCompletionsCreate(options: CompletitionsParams) {
     return this.completionsCreateCall(options)(
-      this.endpoint + 'chat/completions/create'
+      this.endpoint + 'chat/completions',
     ) as Observable<
       OptionallyStreamedType<
         CompletitionsParams,

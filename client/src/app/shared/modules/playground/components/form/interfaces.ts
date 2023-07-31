@@ -1,8 +1,12 @@
+import { ChangeDetectorRef } from '@angular/core';
+
 import { Observable } from 'rxjs';
 
-import { CompletitionsParams } from '../../ChatGPT';
+import { CommonCompletitionsParams } from '../../ChatGPT';
 import { WrappedRequest } from '../../interfaces';
 
-export interface CompletionForm {
-  request: Observable<WrappedRequest<any, any>>;
+export interface CompletionForm<Params extends CommonCompletitionsParams = CommonCompletitionsParams> {
+  request: Observable<WrappedRequest<Params, any>>;
+  params: Partial<Params & { prompt: string }>;
+  cdr: ChangeDetectorRef
 }

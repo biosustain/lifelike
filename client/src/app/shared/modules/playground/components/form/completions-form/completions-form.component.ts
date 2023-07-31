@@ -1,5 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import {
@@ -27,8 +34,11 @@ import { CompletionForm } from '../interfaces';
   selector: 'app-completions-form',
   templateUrl: './completions-form.component.html',
 })
-export class CompletionsFormComponent implements OnChanges, CompletionForm {
-  constructor(private readonly playgroundService: PlaygroundService) {}
+export class CompletionsFormComponent implements OnChanges, CompletionForm<CompletitionsParams> {
+  constructor(
+    private readonly playgroundService: PlaygroundService,
+    public readonly cdr: ChangeDetectorRef
+  ) {}
 
   models$: Observable<string[]> = this.playgroundService
     .completionsModels()
@@ -98,8 +108,7 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm {
   );
   requestParams$ = new ReplaySubject<CompletitionsParams>(1);
 
-  @Input() temperature!: number;
-  @Input() prompt!: string;
+  @Input() params: CompletitionsParams;
   @Output() request: Observable<WrappedRequest<CompletitionsParams, any>> =
     this.requestParams$.pipe(
       map((params) => {
@@ -146,12 +155,10 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm {
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  ngOnChanges({ temperature, prompt }: SimpleChanges) {
-    if (temperature) {
-      this.form.controls.temperature.reset(temperature.currentValue);
-    }
-    if (prompt) {
-      this.form.controls.prompt.reset(prompt.currentValue);
+  ngOnChanges({ params }: SimpleChanges) {
+    console.log("change", params);
+    if (params) {
+      this.form.reset(params);
     }
   }
 
