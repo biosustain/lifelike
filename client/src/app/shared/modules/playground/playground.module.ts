@@ -12,5 +12,4 @@ import { DynamicViewService } from '../../services/dynamic-view.service';
   exports: [PlaygroundComponent],
   providers: [PlaygroundService, DynamicViewService],
 })
-export class PlaygroundModule {
-}
+export class PlaygroundModule {}
