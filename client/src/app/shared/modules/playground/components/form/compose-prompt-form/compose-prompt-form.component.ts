@@ -1,9 +1,9 @@
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   OnChanges,
+  OnInit,
   Output,
   SimpleChanges,
 } from '@angular/core';
@@ -21,7 +21,7 @@ import { OpenFileProvider } from '../../../../../providers/open-file/open-file.p
   selector: 'app-compose-prompt-form',
   templateUrl: './compose-prompt-form.component.html',
 })
-export class ComposePromptFormComponent implements OnChanges {
+export class ComposePromptFormComponent implements OnChanges, OnInit {
   constructor(
     private readonly openFileProvider: OpenFileProvider
   ) {}
@@ -45,11 +45,16 @@ export class ComposePromptFormComponent implements OnChanges {
 
   ngOnChanges({ entities, context }: SimpleChanges) {
     if (entities) {
-      this.entitiesControl.reset(Array.from(entities.currentValue ?? []));
+      this.entitiesControl.setValue(Array.from(entities.currentValue ?? []));
     }
     if (context) {
-      this.contextControl.reset(context.currentValue);
+      this.contextControl.setValue(context.currentValue);
     }
+  }
+
+  ngOnInit() {
+    // We forward initial values to the form
+    this.onSubmit();
   }
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
@@ -63,7 +68,6 @@ export class ComposePromptFormComponent implements OnChanges {
   }
 
   onSubmit() {
-    console.log("submitting")
     return this.prompt.emit(
       this.parseEntitiesToPropmpt(
         this.form.controls.entities.value,

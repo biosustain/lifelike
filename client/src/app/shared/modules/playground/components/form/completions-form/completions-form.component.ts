@@ -94,9 +94,6 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
       {}
     ),
   });
-  modelControl = this.form.controls.model as FormControl;
-  stopControl = this.form.controls.stop as FormArrayWithFactory<FormControl, string>;
-  logitBiasControl = this.form.controls.logitBias as FormGroupWithFactory<FormControl, string>;
 
   estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
@@ -156,9 +153,8 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
     );
 
   ngOnChanges({ params }: SimpleChanges) {
-    console.log("change", params);
-    if (params) {
-      this.form.reset(params);
+    if (params?.currentValue) {
+      this.form.patchValue(params.currentValue, { emitEvent: false });
     }
   }
 

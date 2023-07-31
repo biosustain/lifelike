@@ -24,10 +24,10 @@ import {
 } from 'lodash/fp';
 import {
   BehaviorSubject,
-  combineLatest,
   ConnectableObservable,
   from,
   iif,
+  merge,
   Observable,
   of,
   ReplaySubject,
@@ -40,7 +40,6 @@ import {
   mergeMap,
   scan,
   shareReplay,
-  startWith,
   switchMap,
   takeUntil,
   tap,
@@ -53,7 +52,6 @@ import { ChatGPT } from '../ChatGPT';
 import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
 import { CompletionsFormComponent } from './form/completions-form/completions-form.component';
 import { CompletionForm } from './form/interfaces';
-import { debug } from '../../../rxjs/debug';
 
 interface Result {
   choices: any[];
@@ -79,7 +77,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
     private readonly modal: NgbActiveModal,
     private readonly componentFactoryResolver: ComponentFactoryResolver,
     private readonly dynamicViewService: DynamicViewService,
-    public readonly cdr: ChangeDetectorRef
+    public readonly cdr: ChangeDetectorRef,
   ) {
     this.params$.subscribe()
     this.prompt$.subscribe(v => console.log(v))
@@ -89,22 +87,16 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
   @Input() entities: Iterable<string>;
   @Input() context: number;
   @Input() temperature: number;
-  private _temperature$ = new ReplaySubject(1);
 
   prompt$ = new ReplaySubject<string>(1);
-  params$: Observable<CompletionForm['params']> = combineLatest([
+  private temperature$ = new ReplaySubject<number>(1);
+  params$: Observable<CompletionForm['params']> = merge(
     this.prompt$.pipe(
-      debug('prompt'),
+      map(prompt => ({prompt})),
     ),
-    this._temperature$.pipe(
-      startWith(null),
+    this.temperature$.pipe(
+      map(temperature => ({temperature})),
     ),
-  ]).pipe(
-    map(([prompt, temperature]) => ({
-      prompt,
-      temperature,
-    })),
-    debug('params'),
   );
 
   private destroy$: Subject<void> = new Subject();
@@ -127,8 +119,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
           this.modeFormView,
           next.form,
           this.params$.pipe(
-            map((params) => ({params}),
-            ),
+            map(params => ({params})),
           ),
         );
       }
@@ -195,7 +186,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
 
   ngOnChanges({temperature}: SimpleChanges) {
     if (temperature) {
-      this._temperature$.next(temperature.currentValue);
+      this.temperature$.next(temperature.currentValue);
     }
   }
 

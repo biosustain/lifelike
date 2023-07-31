@@ -1,97 +1,18 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="form-group">
-    <label [for]="dropdown.uid"> Model </label>
-    <div ngbDropdown appUid #dropdown="uid">
-      <div ngbDropdownToggle class="form-control text-right">{{ modelControl.value }}</div>
-      <ngb-accordion
-        ngbDropdownMenu
-        class="model-group"
-        [activeIds]="getModelGroup(modelControl.value)"
-      >
-        <ng-container *ngFor="let modelGroup of groupedModels$ | async | keyvalue; let last = last">
-          <ngb-panel
-            *ngIf="modelGroup.value.length > 0"
-            [id]="modelGroup.key"
-            cardClass="model-group-card"
-          >
-            <ng-template ngbPanelHeader>
-              <button type="button" ngbPanelToggle class="btn container-fluid text-left pl-0">
-                {{ modelGroup.key }}
-              </button>
-            </ng-template>
-            <ng-template ngbPanelContent>
-              <button
-                type="button"
-                ngbDropdownItem
-                *ngFor="let model of modelGroup.value"
-                (click)="modelControl.setValue(model)"
-                [class.selected]="modelControl.value === model"
-              >
-                {{ model }}
-              </button>
-            </ng-template>
-          </ngb-panel>
-        </ng-container>
-      </ngb-accordion>
-    </div>
+    <label> Model </label>
+    <app-model-control [modelControl]="modelControl" [models]="models$ | async"></app-model-control>
   </div>
   <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
     <label> Messages </label>
-    <ng-container *ngFor="let control of messagesControl.controls; let i = index">
-      <div class="input-group input-border rounded mb-2 flex-shrink-0" [formControl]="control">
-        <div class="form-group" *ngIf="control.controls.role as roleControl">
-          <label [for]="dropdown.uid"> role </label>
-          <div ngbDropdown appUid #dropdown="uid">
-            <div ngbDropdownToggle class="form-control text-right">{{ roleControl.value }}</div>
-
-            <button
-              type="button"
-              ngbDropdownItem
-              *ngFor="let role of ROLES"
-              (click)="roleControl.setValue(role)"
-              [class.selected]="roleControl.value === role"
-            >
-              {{ role }}
-            </button>
-          </div>
-        </div>
-        <textarea class="form-control border-0" formControlName="content"></textarea>
-        <input type="text" class="form-control border-0" formControlName="name" />
-        <!--        TODO function_call -->
-        <div class="input-group-append">
-          <button class="form-control border-0" type="button" (click)="messagesControl.removeAt(i)">
-            <i class="fa fa-fw fa-times"></i>
-          </button>
-        </div>
-      </div>
-    </ng-container>
-    <button class="btn btn-secondary" type="button" (click)="messagesControl.add()">
-      <i class="fa fa-fw fa-plus"></i>
-      Add message
-    </button>
+    <app-messages-control
+      [messagesControl]="form.get('messages')"
+      [roles]="ROLES"
+    ></app-messages-control>
   </div>
   <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
     <label> Functions </label>
-    <ng-container *ngFor="let control of functionsControl.controls; let i = index">
-      <div class="input-group input-border rounded mb-2 flex-shrink-0" [formControl]="control">
-        <input type="text" class="form-control border-0" formControlName="name" />
-        <textarea class="form-control border-0" formControlName="description"></textarea>
-        <!--        TODO parameters -->
-        <div class="input-group-append">
-          <button
-            class="form-control border-0"
-            type="button"
-            (click)="functionsControl.removeAt(i)"
-          >
-            <i class="fa fa-fw fa-times"></i>
-          </button>
-        </div>
-      </div>
-    </ng-container>
-    <button class="btn btn-secondary" type="button" (click)="functionsControl.add()">
-      <i class="fa fa-fw fa-plus"></i>
-      Add function
-    </button>
+    <app-functions-control [functionsControl]="form.get('functions')"></app-functions-control>
   </div>
   <div class="form-row">
     <div class="form-group col-auto">
@@ -136,20 +57,7 @@
   </div>
   <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
     <label>Stop Sequences</label>
-    <ng-container *ngFor="let control of stopControl.controls; let i = index">
-      <div class="input-group input-border rounded mb-2 flex-shrink-0">
-        <input type="text" class="form-control border-0" [formControl]="control" />
-        <div class="input-group-append">
-          <button class="form-control border-0" type="button" (click)="stopControl.removeAt(i)">
-            <i class="fa fa-fw fa-times"></i>
-          </button>
-        </div>
-      </div>
-    </ng-container>
-    <button class="btn btn-secondary" type="button" (click)="stopControl.add()">
-      <i class="fa fa-fw fa-plus"></i>
-      Add stop sequence
-    </button>
+    <app-stop-control [stopControl]="this.form.get('stop')"></app-stop-control>
   </div>
   <div class="form-row">
     <div class="form-group col-auto">
@@ -173,43 +81,9 @@
       />
     </div>
   </div>
-  <div class="form-group" [formGroup]="logitBiasControl">
+  <div class="form-group">
     <label>Logit Bias</label>
-    <div class="form-group">
-      <ng-container *ngFor="let record of logitBiasControl.controls | keyvalue">
-        <div class="form-row mb-2">
-          <label [for]="input.uid" class="col-auto"> {{ record.key }} : </label>
-          <input
-            type="text"
-            class="form-control col-auto"
-            [formControl]="record.value"
-            appUid
-            #input="uid"
-            appAutoGrow
-          />
-          <button
-            class="form-control col-auto border-0"
-            type="button"
-            (click)="logitBiasControl.removeControl(record.key)"
-          >
-            <i class="fa fa-fw fa-times"></i>
-          </button>
-        </div>
-      </ng-container>
-      <div class="input-group input-border rounded mb-2">
-        <input type="text" class="form-control border-0" #newKeyInput />
-        <div class="input-group-append">
-          <button
-            class="btn btn-secondary"
-            type="button"
-            (click)="logitBiasControl.add(newKeyInput.value)"
-          >
-            <i class="fa fa-fw fa-plus"></i>
-            Add Token Id
-          </button>
-        </div>
-      </div>
-    </div>
+    <app-logit-bias-control [logitBiasControl]="form.get('logitBias')"></app-logit-bias-control>
   </div>
   <button class="btn btn-primary" type="submit">Request</button>
   <small *ngIf="estimatedCost$ | async as estimatedCost">

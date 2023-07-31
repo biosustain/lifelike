@@ -125,7 +125,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity>
       validators.push(Validators.pattern(REGEX.FLOAT));
     }
     this.filtersForm = new FormGroup(
-      // Form controls
+      // Form control
       {
         minimumValue: new FormControl(0, validators),
         // TODO: Removing for now, may bring back
