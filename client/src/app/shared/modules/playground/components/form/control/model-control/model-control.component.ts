@@ -14,7 +14,7 @@ import { ChatGPT } from '../../../../ChatGPT';
 
 @Component({
   selector: 'app-model-control',
-  templateUrl: './model-control.component.html'
+  templateUrl: './model-control.component.html',
 })
 export class ModelControlComponent implements OnChanges {
   @Input() modelControl!: FormControl;
@@ -24,7 +24,7 @@ export class ModelControlComponent implements OnChanges {
 
   private groupModels = _flow(_groupBy(ChatGPT.getModelGroup), _mapValues(_sortBy(_identity)));
 
-  ngOnChanges({models}: SimpleChanges) {
+  ngOnChanges({ models }: SimpleChanges) {
     if (models) {
       this.groupedModels$.next(this.groupModels(models.currentValue));
     }

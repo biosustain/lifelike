@@ -10,8 +10,10 @@ export interface CompletionFormProjectedParams {
   temperature: number;
 }
 
-export interface CompletionForm<Params extends AlternativeCompletitionsParams = AlternativeCompletitionsParams> {
+export interface CompletionForm<
+  Params extends AlternativeCompletitionsParams = AlternativeCompletitionsParams
+> {
   request: Observable<WrappedRequest<Params, any>>;
   params: Partial<CompletionFormProjectedParams>;
-  cdr: ChangeDetectorRef
+  cdr: ChangeDetectorRef;
 }

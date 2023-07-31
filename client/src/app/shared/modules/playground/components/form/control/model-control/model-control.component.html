@@ -1,33 +1,33 @@
 <div ngbDropdown appUid #dropdown="uid">
-    <div ngbDropdownToggle class="form-control text-right">{{ modelControl.value }}</div>
-    <ngb-accordion
-        ngbDropdownMenu
-        class="model-group"
-        [activeIds]="getModelGroup(modelControl.value)"
-    >
-        <ng-container *ngFor="let modelGroup of groupedModels$ | async | keyvalue; let last = last">
-            <ngb-panel
-                *ngIf="modelGroup.value.length > 0"
-                [id]="modelGroup.key"
-                cardClass="model-group-card"
-            >
-                <ng-template ngbPanelHeader>
-                    <button type="button" ngbPanelToggle class="btn container-fluid text-left pl-0">
-                        {{ modelGroup.key }}
-                    </button>
-                </ng-template>
-                <ng-template ngbPanelContent>
-                    <button
-                        type="button"
-                        ngbDropdownItem
-                        *ngFor="let model of modelGroup.value"
-                        (click)="modelControl.setValue(model)"
-                        [class.selected]="modelControl.value === model"
-                    >
-                        {{ model }}
-                    </button>
-                </ng-template>
-            </ngb-panel>
-        </ng-container>
-    </ngb-accordion>
+  <div ngbDropdownToggle class="form-control text-right">{{ modelControl.value }}</div>
+  <ngb-accordion
+    ngbDropdownMenu
+    class="model-group"
+    [activeIds]="getModelGroup(modelControl.value)"
+  >
+    <ng-container *ngFor="let modelGroup of groupedModels$ | async | keyvalue; let last = last">
+      <ngb-panel
+        *ngIf="modelGroup.value.length > 0"
+        [id]="modelGroup.key"
+        cardClass="model-group-card"
+      >
+        <ng-template ngbPanelHeader>
+          <button type="button" ngbPanelToggle class="btn container-fluid text-left pl-0">
+            {{ modelGroup.key }}
+          </button>
+        </ng-template>
+        <ng-template ngbPanelContent>
+          <button
+            type="button"
+            ngbDropdownItem
+            *ngFor="let model of modelGroup.value"
+            (click)="modelControl.setValue(model)"
+            [class.selected]="modelControl.value === model"
+          >
+            {{ model }}
+          </button>
+        </ng-template>
+      </ngb-panel>
+    </ng-container>
+  </ngb-accordion>
 </div>

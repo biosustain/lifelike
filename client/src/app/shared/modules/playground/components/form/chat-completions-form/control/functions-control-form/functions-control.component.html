@@ -1,14 +1,10 @@
 <ng-container *ngFor="let control of functionsControl.controls; let i = index">
   <div class="input-group input-border rounded mb-2 flex-shrink-0">
-    <input type="text" class="form-control border-0" [formControl]="control.get('name')"/>
+    <input type="text" class="form-control border-0" [formControl]="control.get('name')" />
     <textarea class="form-control border-0" [formControl]="control.get('description')"></textarea>
     <!--        TODO parameters -->
     <div class="input-group-append">
-      <button
-        class="form-control border-0"
-        type="button"
-        (click)="functionsControl.removeAt(i)"
-      >
+      <button class="form-control border-0" type="button" (click)="functionsControl.removeAt(i)">
         <i class="fa fa-fw fa-times"></i>
       </button>
     </div>

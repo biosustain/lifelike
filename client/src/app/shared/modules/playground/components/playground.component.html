@@ -16,13 +16,13 @@
     </as-split-area>
     <as-split-area>
       <div class="d-block m-2">
-
         <h6 class="mb-4"><strong>Request parameters</strong></h6>
         <div class="form-group">
           <label [for]="dropdown.uid"> Mode </label>
           <div ngbDropdown appUid #dropdown="uid">
-            <div ngbDropdownToggle
-                 class="form-control text-right">{{ modeChange$.value.label }}</div>
+            <div ngbDropdownToggle class="form-control text-right">
+              {{ modeChange$.value.label }}
+            </div>
             <div ngbDropdownMenu class="w-100">
               <button
                 type="button"
@@ -64,7 +64,7 @@
               Estimated cost
               <span [ngbTooltip]="costEstimateTooltip" *ngIf="requestCost$ | async as cost">{{
                 cost | currency : 'USD' : 'symbol' : '1.2-7'
-                }}</span>
+              }}</span>
               <ng-container *ngIf="cached$ | async"> (cached)</ng-container>
             </div>
             <details>
