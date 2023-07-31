@@ -9,16 +9,7 @@ import {
 } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
-import {
-  flow as _flow,
-  groupBy as _groupBy,
-  identity as _identity,
-  isEmpty as _isEmpty,
-  map as _map,
-  mapValues as _mapValues,
-  omit as _omit,
-  sortBy as _sortBy,
-} from 'lodash/fp';
+import { isEmpty as _isEmpty, map as _map, omit as _omit } from 'lodash/fp';
 import { BehaviorSubject, defer, EMPTY, Observable, ReplaySubject } from 'rxjs';
 import { catchError, finalize, map, shareReplay, startWith, tap } from 'rxjs/operators';
 
@@ -28,7 +19,7 @@ import { FormArrayWithFactory, FormGroupWithFactory } from '../../../../../utils
 import { ChatCompletitionsParams, ChatGPT, CompletitionsParams } from '../../../ChatGPT';
 import { WrappedRequest } from '../../../interfaces';
 import { PlaygroundService } from '../../../services/playground.service';
-import { CompletionForm } from '../interfaces';
+import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
 
 @Component({
   selector: 'app-chat-completions-form',
@@ -37,25 +28,20 @@ import { CompletionForm } from '../interfaces';
 export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<ChatCompletitionsParams> {
   constructor(
     private readonly playgroundService: PlaygroundService,
-    public readonly cdr: ChangeDetectorRef
+    public readonly cdr: ChangeDetectorRef,
   ) {
   }
 
-  models$: Observable<string[]> = this.playgroundService
+  protected readonly models$: Observable<string[]> = this.playgroundService
     .chatCompletionsModels()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
       shareReplay({bufferSize: 1, refCount: true}),
     );
 
-  groupedModels$: Observable<Record<string, string[]>> = this.models$.pipe(
-    map(_flow(_groupBy(ChatGPT.getModelGroup), _mapValues(_sortBy(_identity)))),
-    shareReplay({bufferSize: 1, refCount: true}),
-  );
-
   private readonly ROLES = ['system', 'user', 'assitant', 'function'];
 
-  form = new FormGroup({
+  protected readonly form = new FormGroup({
     timeout: new FormControl(60),
     model: new FormControl(
       'gpt-3.5-turbo',
@@ -72,7 +58,7 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
     messages: new FormArrayWithFactory(
       () =>
         new FormGroup({
-          role: new FormControl('', [CustomValidators.oneOf(this.ROLES)]),
+          role: new FormControl(null, [CustomValidators.oneOf(this.ROLES)]),
           content: new FormControl(null),
           name: new FormControl(),
           function_call: new FormGroupWithFactory(() => new FormControl()),
@@ -114,29 +100,8 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
     ),
   });
   modelControl = this.form.controls.model as FormControl;
-  messagesControl = this.form.controls.messages as FormArrayWithFactory<
-    FormGroup & {
-    controls: {
-      role: FormControl;
-      content: FormControl;
-      name: FormControl;
-      function_call: FormGroupWithFactory<FormControl>;
-    };
-  }
-  >;
-  functionsControl = this.form.controls.messages as FormArrayWithFactory<
-    FormGroup & {
-    controls: {
-      name: FormControl;
-      description: FormControl;
-      parameters: FormGroupWithFactory<FormControl>;
-    };
-  }
-  >;
-  stopControl = this.form.controls.stop as FormArrayWithFactory<FormControl, string>;
-  logitBiasControl = this.form.controls.logitBias as FormGroupWithFactory<FormControl, string>;
 
-  estimatedCost$ = defer(() =>
+  protected readonly estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
       map((params: CompletitionsParams) =>
@@ -144,9 +109,9 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
       ),
     ),
   );
-  requestParams$ = new ReplaySubject<CompletitionsParams>(1);
+  protected readonly requestParams$ = new ReplaySubject<CompletitionsParams>(1);
 
-  @Input() params: ChatCompletitionsParams;
+  @Input() params: CompletionFormProjectedParams;
   @Output() request: Observable<WrappedRequest<CompletitionsParams, any>> =
     this.requestParams$.pipe(
       map((params) => {
@@ -193,14 +158,13 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
       shareReplay({bufferSize: 1, refCount: true}),
     );
 
-  private setFormValueFromParams({prompt, ...params}: ChatCompletitionsParams) {
-    this.form.reset({
-      ...params,
-      messages: prompt.split('\n').map((message) => ({
+  private setFormValueFromParams({prompt}: CompletionFormProjectedParams) {
+    this.form.get('messages').setValue(
+      prompt.split('\n').map((message) => ({
         role: 'user',
         content: message,
       })),
-    })
+    )
   }
 
   ngOnChanges({params}: SimpleChanges) {
@@ -220,7 +184,4 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
     this.requestParams$.next(this.parseFormValueToParams(this.form.value));
   }
 
-  getModelGroup(model: string) {
-    return ChatGPT.getModelGroup(model);
-  }
 }

@@ -10,7 +10,6 @@ export interface CompletitionsParams {
   stream: boolean;
 }
 export interface ChatCompletitionsParams {
-  prompt: string;
   echo: boolean;
   bestOf: number;
   n: number;
@@ -18,7 +17,7 @@ export interface ChatCompletitionsParams {
   model: string;
   stream: boolean;
 }
-export type CommonCompletitionsParams = CompletitionsParams | ChatCompletitionsParams;
+export type AlternativeCompletitionsParams = CompletitionsParams | ChatCompletitionsParams;
 
 export class ChatGPT {
   static lastUpdate = new Date(2023, 7, 17);
