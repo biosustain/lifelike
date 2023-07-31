@@ -6,37 +6,37 @@ import { XMLHighlightComponent } from './highlight-text/xml-highlight.component'
 import { XMLSnippetComponent } from './highlight-text/xml-snippet.component';
 
 export default [
-    GenericDataProvider,
-    {
-      provide: DATA_TRANSFER_DATA_PROVIDER,
-      useClass: GenericDataProvider,
-      multi: true,
+  GenericDataProvider,
+  {
+    provide: DATA_TRANSFER_DATA_PROVIDER,
+    useClass: GenericDataProvider,
+    multi: true,
+  },
+  {
+    provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+    useValue: {
+      tag: 'annotation',
+      component: XMLAnnotationComponent,
+      attributes: ['type', 'meta'],
     },
-    {
-      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useValue: {
-        tag: 'annotation',
-        component: XMLAnnotationComponent,
-        attributes: ['type', 'meta'],
-      },
-      multi: true,
+    multi: true,
+  },
+  {
+    provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+    useValue: {
+      tag: 'highlight',
+      component: XMLHighlightComponent,
+      attributes: [],
     },
-    {
-      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useValue: {
-        tag: 'highlight',
-        component: XMLHighlightComponent,
-        attributes: [],
-      },
-      multi: true,
+    multi: true,
+  },
+  {
+    provide: HIGHLIGHT_TEXT_TAG_HANDLER,
+    useValue: {
+      tag: 'snippet',
+      component: XMLSnippetComponent,
+      attributes: [],
     },
-    {
-      provide: HIGHLIGHT_TEXT_TAG_HANDLER,
-      useValue: {
-        tag: 'snippet',
-        component: XMLSnippetComponent,
-        attributes: [],
-      },
-      multi: true,
-    },
-]
+    multi: true,
+  },
+];

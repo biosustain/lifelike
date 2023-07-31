@@ -6,10 +6,4 @@ import { AddStatusPipe } from './add-status.pipe';
 
 export { TruncatePipe, FriendlyDateStrPipe, ScrubHtmlPipe };
 
-export default [
-    TruncatePipe,
-    ScrubHtmlPipe,
-    FriendlyDateStrPipe,
-    NodeTextStylePipe,
-    AddStatusPipe,
-]
+export default [TruncatePipe, ScrubHtmlPipe, FriendlyDateStrPipe, NodeTextStylePipe, AddStatusPipe];
