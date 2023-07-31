@@ -21,7 +21,7 @@ class ChatGPT:
             "davinci",
             "curie",
             "babbage",
-            "ada"
+            "ada",
         ]
 
         @staticmethod
@@ -55,7 +55,7 @@ class ChatGPT:
             "gpt-3.5-turbo",
             "gpt-3.5-turbo-0613",
             "gpt-3.5-turbo-16k",
-            "gpt-3.5-turbo-16k-0613"
+            "gpt-3.5-turbo-16k-0613",
         ]
 
         @staticmethod
