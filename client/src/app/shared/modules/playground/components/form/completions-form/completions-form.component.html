@@ -1,7 +1,10 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()">
   <div class="form-group">
     <label> Model </label>
-    <app-model-control [modelControl]="form.get('model')" [models]="models$ | async"></app-model-control>
+    <app-model-control
+      [modelControl]="form.get('model')"
+      [models]="models$ | async"
+    ></app-model-control>
   </div>
   <div class="form-group">
     <label [for]="input.uid"> Prompt </label>

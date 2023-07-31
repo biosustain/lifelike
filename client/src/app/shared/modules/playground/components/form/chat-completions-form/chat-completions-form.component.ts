@@ -25,18 +25,19 @@ import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
   selector: 'app-chat-completions-form',
   templateUrl: './chat-completions-form.component.html',
 })
-export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<ChatCompletitionsParams> {
+export class ChatCompletionsFormComponent
+  implements OnChanges, CompletionForm<ChatCompletitionsParams>
+{
   constructor(
     private readonly playgroundService: PlaygroundService,
-    public readonly cdr: ChangeDetectorRef,
-  ) {
-  }
+    public readonly cdr: ChangeDetectorRef
+  ) {}
 
   protected readonly models$: Observable<string[]> = this.playgroundService
     .chatCompletionsModels()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
   private readonly ROLES = ['system', 'user', 'assitant', 'function'];
@@ -50,10 +51,10 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
         (control: AbstractControl) =>
           this.models$.pipe(
             map((models) =>
-              models.includes(control.value) ? null : {notAvailable: control.value},
-            ),
+              models.includes(control.value) ? null : { notAvailable: control.value }
+            )
           ),
-      ],
+      ]
     ),
     messages: new FormArrayWithFactory(
       () =>
@@ -64,7 +65,7 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
           function_call: new FormGroupWithFactory(() => new FormControl()),
         }),
       [],
-      [Validators.minLength(1)],
+      [Validators.minLength(1)]
     ),
     functions: new FormArrayWithFactory(
       () =>
@@ -72,19 +73,19 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
           name: new FormControl(null, [Validators.required]),
           description: new FormControl(),
           parameters: new FormControl(null, [CustomValidators.validJSON]),
-        }),
+        })
     ),
     function_call: new FormControl(),
     temperature: new FormControl(0, [Validators.min(0), Validators.max(2)]),
     topP: new FormControl(1),
     n: new FormControl(1, [
       CustomValidators.isInteger,
-      ({value}: FormControl) => {
+      ({ value }: FormControl) => {
         const bestOf = this.form?.controls.bestOf?.value;
         if (!bestOf) {
           return null;
         }
-        return value < bestOf ? {nSmallerThanBestOf: {value, bestOf}} : null;
+        return value < bestOf ? { nSmallerThanBestOf: { value, bestOf } } : null;
       },
     ]),
     stream: new FormControl(false, [CustomValidators.isBoolean]),
@@ -96,7 +97,7 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
     frequencyPenalty: new FormControl(0, [Validators.min(-2), Validators.max(2)]),
     logitBias: new FormGroupWithFactory(
       () => new FormControl(0, [Validators.min(-100), Validators.max(100)]),
-      {},
+      {}
     ),
   });
   modelControl = this.form.controls.model as FormControl;
@@ -105,9 +106,9 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
     this.form.valueChanges.pipe(
       startWith(this.form.value),
       map((params: CompletitionsParams) =>
-        ChatGPT.estimateCost(params.model, ChatGPT.chatCompletions.estimateRequestTokens(params)),
-      ),
-    ),
+        ChatGPT.estimateCost(params.model, ChatGPT.chatCompletions.estimateRequestTokens(params))
+      )
+    )
   );
   protected readonly requestParams$ = new ReplaySubject<CompletitionsParams>(1);
 
@@ -127,7 +128,7 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
             loading$.complete();
             error$.complete();
           }),
-          shareReplay({bufferSize: 1, refCount: true}),
+          shareReplay({ bufferSize: 1, refCount: true })
         );
 
         if (params.stream) {
@@ -144,32 +145,32 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
             params,
             loading$,
             error$,
-            result$: result$.pipe(map(({result}) => result)),
+            result$: result$.pipe(map(({ result }) => result)),
             cost$: result$.pipe(
               map(
-                ({result}) =>
-                  ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens,
-              ),
+                ({ result }) =>
+                  ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens
+              )
             ),
-            cached$: result$.pipe(map(({cached}) => cached)),
+            cached$: result$.pipe(map(({ cached }) => cached)),
           } as WrappedRequest<CompletitionsParams, any>;
         }
       }),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  private setFormValueFromParams({prompt}: CompletionFormProjectedParams) {
+  private setFormValueFromParams({ prompt }: CompletionFormProjectedParams) {
     this.form.get('messages').setValue(
       prompt.split('\n').map((message) => ({
         role: 'user',
         content: message,
-      })),
-    )
+      }))
+    );
   }
 
-  ngOnChanges({params}: SimpleChanges) {
+  ngOnChanges({ params }: SimpleChanges) {
     if (params) {
-      this.setFormValueFromParams(params.currentValue)
+      this.setFormValueFromParams(params.currentValue);
     }
   }
 
@@ -183,5 +184,4 @@ export class ChatCompletionsFormComponent implements OnChanges, CompletionForm<C
   onSubmit() {
     this.requestParams$.next(this.parseFormValueToParams(this.form.value));
   }
-
 }

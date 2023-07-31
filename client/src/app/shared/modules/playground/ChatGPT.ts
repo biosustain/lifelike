@@ -32,13 +32,7 @@ export class ChatGPT {
   ]);
 
   static readonly completions = class Completions {
-    static estimateRequestTokens({
-      prompt = '',
-      echo,
-      bestOf,
-      n,
-      maxTokens,
-    }: CompletitionsParams) {
+    static estimateRequestTokens({ prompt = '', echo, bestOf, n, maxTokens }: CompletitionsParams) {
       // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
       const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
       return [

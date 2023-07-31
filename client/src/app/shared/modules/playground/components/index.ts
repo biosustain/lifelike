@@ -17,5 +17,5 @@ export default [
   MessagesControlComponent,
   LogitBiasControlComponent,
   ModelControlComponent,
-  StopControlComponent
+  StopControlComponent,
 ];

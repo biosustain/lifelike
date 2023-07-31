@@ -22,9 +22,7 @@ import { OpenFileProvider } from '../../../../../providers/open-file/open-file.p
   templateUrl: './compose-prompt-form.component.html',
 })
 export class ComposePromptFormComponent implements OnChanges, OnInit {
-  constructor(
-    private readonly openFileProvider: OpenFileProvider
-  ) {}
+  constructor(private readonly openFileProvider: OpenFileProvider) {}
 
   public form = new FormGroup({
     entities: new FormArrayWithFactory(() => new FormControl(''), []),

@@ -1,14 +1,14 @@
 <ng-container *ngFor="let control of stopControl.controls; let i = index">
-    <div class="input-group input-border rounded mb-2 flex-shrink-0">
-        <input type="text" class="form-control border-0" [formControl]="control"/>
-        <div class="input-group-append">
-            <button class="form-control border-0" type="button" (click)="stopControl.removeAt(i)">
-                <i class="fa fa-fw fa-times"></i>
-            </button>
-        </div>
+  <div class="input-group input-border rounded mb-2 flex-shrink-0">
+    <input type="text" class="form-control border-0" [formControl]="control" />
+    <div class="input-group-append">
+      <button class="form-control border-0" type="button" (click)="stopControl.removeAt(i)">
+        <i class="fa fa-fw fa-times"></i>
+      </button>
     </div>
+  </div>
 </ng-container>
 <button class="btn btn-secondary" type="button" (click)="stopControl.add()">
-    <i class="fa fa-fw fa-plus"></i>
-    Add stop sequence
+  <i class="fa fa-fw fa-plus"></i>
+  Add stop sequence
 </button>
