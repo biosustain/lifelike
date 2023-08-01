@@ -91,7 +91,7 @@ theoretically guide how we build Lifelike.
     -   `components/`
         -   Don't put individual components in their own folder.
     -   `services/`
-    -   `$MODULE-modules.ts`
+    -   `$MODULE-module.ts`
 
 ## Page Layout
 
