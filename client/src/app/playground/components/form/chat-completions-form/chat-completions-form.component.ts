@@ -24,14 +24,14 @@ export class ChatCompletionsFormComponent
 {
   constructor(private readonly playgroundService: PlaygroundService) {}
 
-  protected readonly models$: Observable<string[]> = this.playgroundService
+  readonly models$: Observable<string[]> = this.playgroundService
     .chatCompletionsModels()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  private readonly ROLES = ['system', 'user', 'assitant', 'function'];
+  readonly ROLES = ['system', 'user', 'assitant', 'function'];
 
   readonly form = new FormGroup({
     timeout: new FormControl(60),
@@ -93,7 +93,7 @@ export class ChatCompletionsFormComponent
   });
   modelControl = this.form.controls.model as FormControl;
 
-  protected readonly estimatedCost$ = defer(() =>
+  readonly estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
       map((params: ChatCompletitionsOptions) =>
