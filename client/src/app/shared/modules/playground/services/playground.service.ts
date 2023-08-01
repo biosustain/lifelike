@@ -74,8 +74,7 @@ export interface ChatCompletionsResponse {
 export class PlaygroundService {
   endpoint = '/api/playground/';
 
-  constructor(protected readonly http: HttpClient) {
-  }
+  constructor(protected readonly http: HttpClient) {}
 
   /**
    * Helper to compose completitions create call, taking into account possible stream
@@ -86,13 +85,13 @@ export class PlaygroundService {
     return (endpoint) =>
       options.stream
         ? this.http.post(endpoint, options, {
-          reportProgress: true,
-          observe: 'events',
-          responseType: 'text',
-        })
+            reportProgress: true,
+            observe: 'events',
+            responseType: 'text',
+          })
         : this.http.post(endpoint, options, {
-          responseType: 'json',
-        });
+            responseType: 'json',
+          });
   }
 
   completionsCreate(options: CompletitionsOptions): Observable<any> {

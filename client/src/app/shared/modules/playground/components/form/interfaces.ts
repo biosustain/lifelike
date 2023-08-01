@@ -18,6 +18,8 @@ export interface CompletionForm<
   Params extends AlternativeCompletitionsOptions = AlternativeCompletitionsOptions,
   Result = any
 > {
-  request: Observable<CompletionRequestWrapping<Params, Result>|CompletionRequestStream<Params, Result>>;
+  request: Observable<
+    CompletionRequestWrapping<Params, Result> | CompletionRequestStream<Params, Result>
+  >;
   params: Partial<CompletionFormProjectedParams>;
 }

@@ -20,11 +20,11 @@ def relationship(params):
             dict(
                 role="user",
                 content=(
-                        'What is the relationship between '
-                        + ', '.join(entities)
-                        + (f', {context}' if context else '')
-                        + '?'
-                        # + '\nPlease provide URL sources for your answer.'
+                    'What is the relationship between '
+                    + ', '.join(entities)
+                    + (f', {context}' if context else '')
+                    + '?'
+                    # + '\nPlease provide URL sources for your answer.'
                 ),
             )
         ],

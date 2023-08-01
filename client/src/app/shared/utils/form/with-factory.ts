@@ -66,7 +66,7 @@ export class FormArrayWithFactory<
     super.reset(value, options);
   }
 
-  add(value: T|null) {
+  add(value: T | null) {
     const control = this.factory();
     if (!_isNull(value)) {
       control.setValue(value, { emitEvent: false });

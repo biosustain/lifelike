@@ -41,7 +41,13 @@ export class ChatGPT {
   ]);
 
   static readonly completions = class Completions {
-    static estimateRequestTokens({ prompt = '', echo, bestOf, n, maxTokens }: CompletitionsOptions) {
+    static estimateRequestTokens({
+      prompt = '',
+      echo,
+      bestOf,
+      n,
+      maxTokens,
+    }: CompletitionsOptions) {
       const promptTokens = ChatGPT.textTokenEstimate(prompt);
       return [
         promptTokens + promptTokens * bestOf + Number(echo) * promptTokens,
@@ -51,17 +57,12 @@ export class ChatGPT {
   };
 
   static readonly chatCompletions = class ChatCompletions {
-    static estimateRequestTokens(
-      { messages, n, maxTokens }: ChatCompletitionsOptions
-    ) {
+    static estimateRequestTokens({ messages, n, maxTokens }: ChatCompletitionsOptions) {
       const messageTokens = messages.reduce(
         (acc, { content }) => acc + ChatGPT.textTokenEstimate(content),
         0
       );
-      return [
-        messageTokens + messageTokens * n,
-        messageTokens + maxTokens * n,
-      ];
+      return [messageTokens + messageTokens * n, messageTokens + maxTokens * n];
     }
   };
 
