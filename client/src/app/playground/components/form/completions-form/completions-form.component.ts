@@ -16,10 +16,7 @@ import { map, shareReplay, startWith } from 'rxjs/operators';
 
 import { ChatGPTModel } from 'app/shared/services/explain.service';
 import * as CustomValidators from 'app/shared/utils/forms/validators';
-import {
-  FormArrayWithFactory,
-  FormGroupWithFactory,
-} from 'app/shared/utils/forms/with-factory';
+import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 
 import { ChatGPT, CompletitionsOptions } from '../../../ChatGPT';
 import { PlaygroundService } from '../../../services/playground.service';

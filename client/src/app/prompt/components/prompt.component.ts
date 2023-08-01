@@ -13,16 +13,16 @@ import {
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
-import { environment } from '../../../environments/environment';
-import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
-import { ExplainService } from '../../shared/services/explain.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { ExplainService } from 'app/shared/services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
-} from '../../shared/utils/dropdown.controller.factory';
-import { openModal } from '../../shared/utils/modals';
-import { PlaygroundComponent } from '../../playground/components/playground.component';
+} from 'app/shared/utils/dropdown.controller.factory';
+import { openModal } from 'app/shared/utils/modals';
+import { PlaygroundComponent } from 'app/playground/components/playground.component';
+
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-prompt',
