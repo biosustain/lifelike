@@ -1,8 +1,13 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+
 import { Observable } from 'rxjs';
 
-import { CompletitionsParams } from '../ChatGPT';
+import {
+  AlternativeCompletitionsOptions,
+  ChatCompletitionsOptions,
+  CompletitionsOptions,
+} from '../ChatGPT';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
@@ -65,37 +70,32 @@ export interface ChatCompletionsResponse {
   usage: ChatCompletionsUsage;
 }
 
-export type OptionallyStreamedType<Options, Stramed, Response> = Options extends {
-  stream: true;
-}
-  ? Stramed
-  : Response;
-
 @Injectable()
 export class PlaygroundService {
   endpoint = '/api/playground/';
 
-  constructor(protected readonly http: HttpClient) {}
+  constructor(protected readonly http: HttpClient) {
+  }
 
   /**
    * Helper to compose completitions create call, taking into account possible stream
    * @param options
    * @private
    */
-  private completionsCreateCall(options: CompletitionsParams) {
+  private completionsCreateCall(options: AlternativeCompletitionsOptions) {
     return (endpoint) =>
       options.stream
         ? this.http.post(endpoint, options, {
-            reportProgress: true,
-            observe: 'events',
-            responseType: 'text',
-          })
+          reportProgress: true,
+          observe: 'events',
+          responseType: 'text',
+        })
         : this.http.post(endpoint, options, {
-            responseType: 'json',
-          });
+          responseType: 'json',
+        });
   }
 
-  completionsCreate(options: CompletitionsParams) {
+  completionsCreate(options: CompletitionsOptions): Observable<any> {
     return this.completionsCreateCall(options)(this.endpoint + 'completions');
   }
 
@@ -103,14 +103,8 @@ export class PlaygroundService {
     return this.http.get<ChatGPTModel[]>(this.endpoint + 'completions/models');
   }
 
-  chatCompletionsCreate(options: CompletitionsParams) {
-    return this.completionsCreateCall(options)(this.endpoint + 'chat/completions') as Observable<
-      OptionallyStreamedType<
-        CompletitionsParams,
-        HttpEvent<ChatCompletionsResponse>,
-        ChatCompletionsResponse
-      >
-    >;
+  chatCompletionsCreate(options: ChatCompletitionsOptions) {
+    return this.completionsCreateCall(options)(this.endpoint + 'chat/completions');
   }
 
   chatCompletionsModels() {

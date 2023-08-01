@@ -1,5 +1,5 @@
 import { ComponentType } from '@angular/cdk/overlay';
-import { HttpDownloadProgressEvent } from '@angular/common/http';
+import { HttpDownloadProgressEvent, HttpEvent } from '@angular/common/http';
 import {
   ChangeDetectorRef,
   Component,
@@ -52,6 +52,7 @@ import { ChatGPT } from '../ChatGPT';
 import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
 import { CompletionsFormComponent } from './form/completions-form/completions-form.component';
 import { CompletionForm } from './form/interfaces';
+import { ChatCompletionsResponse } from '../services/playground.service';
 
 interface Result {
   choices: any[];
@@ -97,8 +98,8 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
 
   private destroy$: Subject<void> = new Subject();
   MODES: ModeRef[] = [
-    { label: 'Completion', form: CompletionsFormComponent },
     { label: 'Chat', form: ChatCompletionsFormComponent },
+    { label: 'Completion', form: CompletionsFormComponent },
   ];
   modeChange$: BehaviorSubject<ModeRef> = new BehaviorSubject<ModeRef>(_first(this.MODES));
   mode$ = this.modeChange$.pipe(
@@ -128,7 +129,6 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
       iif(
         () => params.stream,
         (result$ as Observable<HttpDownloadProgressEvent>).pipe(
-          tap((result) => console.log(result)),
           filter(({ partialText }) => Boolean(partialText)),
           mergeMap(({ partialText }) =>
             from(partialText.split('\n').filter(_identity)).pipe(
@@ -138,7 +138,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
                   key === 'choices'
                     ? _values(
                         _mergeWith((ca, cb, ckey) =>
-                          ckey === 'text' ? `${ca ?? ''}${cb ?? ''}` : undefined
+                          ckey in ['text', 'content'] ? `${ca ?? ''}${cb ?? ''}` : undefined
                         )(_keyBy('index')(a), _keyBy('index')(b))
                       )
                     : undefined
@@ -148,7 +148,7 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
           ),
           tap((result) => console.log(result))
         ),
-        result$ as Observable<Result>
+        result$
       )
     ),
     takeUntil(this.destroy$),

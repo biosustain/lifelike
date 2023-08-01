@@ -1,6 +1,6 @@
 import { find as _find, map as _map } from 'lodash/fp';
 
-export interface CompletitionsParams {
+export interface CompletitionsOptions {
   prompt: string;
   echo: boolean;
   bestOf: number;
@@ -9,7 +9,16 @@ export interface CompletitionsParams {
   model: string;
   stream: boolean;
 }
-export interface ChatCompletitionsParams {
+
+export interface ChatCompletitionsMessageOptions {
+  role: string;
+  content: string;
+  name?: string;
+  functionCall?: Record<string, any>;
+}
+
+export interface ChatCompletitionsOptions {
+  messages: any[];
   echo: boolean;
   bestOf: number;
   n: number;
@@ -17,7 +26,7 @@ export interface ChatCompletitionsParams {
   model: string;
   stream: boolean;
 }
-export type AlternativeCompletitionsParams = CompletitionsParams | ChatCompletitionsParams;
+export type AlternativeCompletitionsOptions = CompletitionsOptions | ChatCompletitionsOptions;
 
 export class ChatGPT {
   static lastUpdate = new Date(2023, 7, 17);
@@ -32,9 +41,8 @@ export class ChatGPT {
   ]);
 
   static readonly completions = class Completions {
-    static estimateRequestTokens({ prompt = '', echo, bestOf, n, maxTokens }: CompletitionsParams) {
-      // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-      const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
+    static estimateRequestTokens({ prompt = '', echo, bestOf, n, maxTokens }: CompletitionsOptions) {
+      const promptTokens = ChatGPT.textTokenEstimate(prompt);
       return [
         promptTokens + promptTokens * bestOf + Number(echo) * promptTokens,
         promptTokens + maxTokens * bestOf + Number(echo) * promptTokens,
@@ -44,23 +52,21 @@ export class ChatGPT {
 
   static readonly chatCompletions = class ChatCompletions {
     static estimateRequestTokens(
-      abc: any
-      // {
-      //   prompt = '',
-      //   echo,
-      //   bestOf,
-      //   n,
-      //   maxTokens,
-      // }: CompletitionsTokenParams,
+      { messages, n, maxTokens }: ChatCompletitionsOptions
     ) {
-      // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
-      // const promptTokens = Math.ceil((prompt.split(' ').length * 4) / 3);
+      const messageTokens = messages.reduce(
+        (acc, { content }) => acc + ChatGPT.textTokenEstimate(content),
+        0
+      );
       return [
-        NaN,
-        NaN, // TODO
+        messageTokens + messageTokens * n,
+        messageTokens + maxTokens * n,
       ];
     }
   };
+
+  // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
+  static textTokenEstimate = (text: string) => Math.ceil((text.split(' ').length * 4) / 3);
 
   static getModelGroup(id: string) {
     return (

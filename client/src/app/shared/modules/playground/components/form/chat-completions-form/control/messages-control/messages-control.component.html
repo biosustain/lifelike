@@ -1,7 +1,7 @@
 <ng-container *ngFor="let control of messagesControl.controls; let i = index">
-  <div class="input-group input-border rounded mb-2" [formControl]="control">
+  <div class="input-group input-border rounded mb-2">
     <div class="input-group w-100">
-      <div class="form-group flex-grow-1" *ngIf="control.controls.role as roleControl">
+      <div class="form-group flex-grow-1" *ngIf="control.get('role') as roleControl">
         <!--      <label [for]="dropdown.uid"> role </label>-->
         <div ngbDropdown appUid #dropdown="uid">
           <div ngbDropdownToggle class="form-control border-0 text-right">
@@ -32,14 +32,14 @@
     <textarea class="form-control border-0 w-100" [formControl]="control.get('content')"></textarea>
     <!--    <div class="input-group w-100">-->
     <!--      <input type="text" class="form-control border-0" [formControl]="control.get('name')"/>-->
-    <!--      &lt;!&ndash;        TODO function_call &ndash;&gt;-->
+    <!--      &lt;!&ndash;        TODO functionCall &ndash;&gt;-->
     <!--      <div class="input-group-append">-->
     <!--      </div>-->
     <!--    </div>-->
   </div>
 </ng-container>
 
-<button class="btn btn-secondary" type="button" (click)="messagesControl.add()">
+<button class="btn btn-secondary" type="button" (click)="messagesControl.add(null)">
   <i class="fa fa-fw fa-plus"></i>
   Add message
 </button>

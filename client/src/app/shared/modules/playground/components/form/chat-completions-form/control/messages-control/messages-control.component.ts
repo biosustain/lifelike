@@ -16,7 +16,7 @@ export class MessagesControlComponent {
         role: FormControl;
         content: FormControl;
         name: FormControl;
-        function_call: FormGroupWithFactory<FormControl>;
+        functionCall: FormGroupWithFactory<FormControl>;
       };
     }
   >;

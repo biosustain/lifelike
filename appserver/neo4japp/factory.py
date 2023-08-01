@@ -10,6 +10,7 @@ from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
 from marshmallow import ValidationError, missing
+from pipenv.vendor.ruamel import yaml
 from pythonjsonlogger import jsonlogger
 from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity
@@ -267,18 +268,14 @@ def handle_validation_error(code, error: ValidationError, messages=None):
     current_app.logger.error('Request caused UnprocessableEntity error', exc_info=error)
 
     fields: dict = messages or error.normalized_messages()
-    field_keys = list(fields.keys())
-
-    # Generate a message (errors need a message that can be shown to the user)
-    if len(field_keys) == 1:
-        key = field_keys[0]
-        field = fields[key]
-        message = '; '.join(field)
-    else:
-        message = 'An error occurred with the provided input.'
 
     try:
-        raise ServerException(message=message, code=code, fields=fields) from error
+        raise ServerException(
+            message='An error occurred with the provided input.',
+            additional_msgs=(yaml.dump(fields),),
+            code=code,
+            fields=fields
+        ) from error
     except ServerException as newex:
         return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 

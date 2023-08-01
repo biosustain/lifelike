@@ -19,6 +19,7 @@ import {
   sortBy as _sortBy,
   values as _values,
   keys as _keys,
+  isNull as _isNull,
   difference as _difference,
 } from 'lodash/fp';
 
@@ -65,9 +66,11 @@ export class FormArrayWithFactory<
     super.reset(value, options);
   }
 
-  add(value: T) {
+  add(value: T|null) {
     const control = this.factory();
-    control.setValue(value, { emitEvent: false });
+    if (!_isNull(value)) {
+      control.setValue(value, { emitEvent: false });
+    }
     super.push(control);
   }
 

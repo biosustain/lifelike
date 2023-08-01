@@ -57,7 +57,14 @@
                 class="card bg-light overflow-auto flex-grow-1 mb-2"
                 [style.whiteSpace]="'pre-wrap'"
               >
-                {{ choice.text }}
+                <ng-container *ngIf="choice.message as message; else text">
+                  <p>
+                    <strong>{{message.role}}:</strong> {{ message.content }}
+                  </p>
+                </ng-container>
+                <ng-template #text>
+                  {{ choice.text }}
+                </ng-template>
               </samp>
             </ng-container>
             <div class="mb-2">
