@@ -86,20 +86,20 @@ def enrich_go():
     return forward_request()
 
 
-def composePrompt(organism, term, context, geneName):
-    if organism and term and context and geneName:
+def compose_prompt(organism, term, context, gene_name):
+    if organism and term and context and gene_name:
         return (
-            f'For {organism}, what function does {geneName} have in {term},'
+            f'For {organism}, what function does {gene_name} have in {term},'
             f' in context of {context}?'
         )
-    if organism and term and geneName:
-        return f'For {organism}, what function does {geneName} have in {term}?'
+    if organism and term and gene_name:
+        return f'For {organism}, what function does {gene_name} have in {term}?'
     elif organism and term and context:
         return f'For {organism}, what is the relationship between {term} and {context}?'
     elif organism and term:
         return f'What is the ralationship between {organism} and {term}?'
     else:
-        list_str = ", ".join(filter(lambda a: a, (organism, term, context, geneName)))
+        list_str = ", ".join(filter(lambda a: a, (organism, term, context, gene_name)))
         return f'What is the ralationship between {list_str}?'
 
 
@@ -111,11 +111,16 @@ def enrich_context():
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
     print(request.get_json())
-    response = ChatGPT.Completion.create(
+    response = ChatGPT.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        prompt=composePrompt(organism, term, context, gene_name),
+        messages=[
+          dict(
+              role="user",
+              content=compose_prompt(organism, term, context, gene_name),
+          )
+        ],
         temperature=0,
         max_tokens=500,
     )
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {"result": choice.get('message').get('content').strip()}

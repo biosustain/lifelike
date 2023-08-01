@@ -25,7 +25,7 @@ def models():
 def _completions_call(completion, params):
     wrapped_params = {**params, 'user': str(hash(current_username))}
     if params.get('stream'):
-        response = ChatGPT.Completion.create_stream(**wrapped_params)
+        response = completion.create_stream(**wrapped_params)
         return Response(stream_to_json_lines(response), mimetype='text/plain')
 
     cached = hashkey(**wrapped_params) in completion.cache

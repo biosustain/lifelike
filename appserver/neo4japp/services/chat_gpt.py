@@ -70,10 +70,10 @@ class ChatGPT:
         @staticmethod
         @cached(cache=cache)
         def create(*args, **kwargs):
-            return openai.Completion.create(*args, **kwargs)
+            return openai.ChatCompletion.create(*args, **kwargs)
 
         def create_stream(*args, **kwargs):
-            return openai.Completion.create(*args, **kwargs)
+            return openai.ChatCompletion.create(*args, **kwargs)
 
     class Model(openai.Model):
         cache: Cache = RedisCache('ChatGPT', 'Model', ex=3600 * 24)  # Cache for a day

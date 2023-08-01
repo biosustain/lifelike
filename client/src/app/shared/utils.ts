@@ -1,13 +1,23 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { catchError } from 'rxjs/operators';
-import { from, never, Observable, pipe, throwError } from 'rxjs';
+import { identity, isEmpty, isEqual, isObject, isObjectLike, transform } from 'lodash-es';
+import { from, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
-import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } from 'lodash-es';
+import { catchError } from 'rxjs/operators';
+import {
+  filter as _filter,
+  flow as _flow,
+  isArray as _isArray,
+  isObject as _isObject,
+  map as _map,
+  mapValues as _mapValues,
+  negate as _negate,
+  omitBy as _omitBy,
+} from 'lodash/fp';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
-import { FAClass, CustomIconColors, Unicodes } from './constants';
+import { CustomIconColors, FAClass, Unicodes } from './constants';
 import { RecursiveReadonly } from './utils/types';
 
 /**
@@ -96,7 +106,7 @@ export function uuidv4(): string {
   // @ts-ignore
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
     /* tslint:disable:no-bitwise*/
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16),
   );
 }
 
@@ -253,15 +263,15 @@ export const mapIterable = <
 >(
   itrable: InputType,
   mapping: (v: Value, k: number) => ReturnType<Mapping>,
-  mappedObjectConstructor?: MappedTypeConstructor
+  mappedObjectConstructor?: MappedTypeConstructor,
 ) =>
   new (mappedObjectConstructor ?? (itrable.constructor as any))(
-    Array.from<Value, ReturnType<Mapping>>(itrable, mapping)
+    Array.from<Value, ReturnType<Mapping>>(itrable, mapping),
   ) as MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => infer ResultType
     ? ResultType
     : InputType extends new (args: ReturnType<Mapping>[]) => infer ResultType
-    ? ResultType
-    : never;
+      ? ResultType
+      : never;
 
 /** Unique Symbol to be used as defualt value of parameter.
  * We want to use it so we are not running into issue of differentiate between
@@ -297,7 +307,7 @@ export const reduceIterable = (iterable, callbackfn, initialValue: any = notDefi
   const interator = iterable[Symbol.iterator]();
   let currentIndex = 0;
   if (initialValue === notDefined) {
-    const { done, value } = interator.next();
+    const {done, value} = interator.next();
     if (done) {
       return undefined;
     }
@@ -319,7 +329,7 @@ export const inText = (pattern: string, flags: string = 'i') => {
 
 export const findEntriesKey = <K, V>(
   iterable: Iterable<[K, V]>,
-  predicate: (v: V) => boolean = identity
+  predicate: (v: V) => boolean = identity,
 ) => {
   for (const [k, v] of iterable) {
     if (predicate(v)) {
@@ -330,7 +340,7 @@ export const findEntriesKey = <K, V>(
 
 export const findEntriesValue = <K, V>(
   iterable: Iterable<[K, V]>,
-  predicate: (k: K) => boolean = identity
+  predicate: (k: K) => boolean = identity,
 ) => {
   for (const [k, v] of iterable) {
     if (predicate(k)) {
@@ -348,6 +358,13 @@ export const freezeDeep = <O extends Record<string, any>>(obj: O) =>
           result[key] = freezeDeep(value as object);
         }
       },
-      obj as Record<string, any>
-    )
+      obj as Record<string, any>,
+    ),
   ) as RecursiveReadonly<O>;
+
+export const omitByDeep = (predicate: (any) => boolean) => {
+  const omit = (obj: any) => _isArray(obj) ? omitArray(obj) : _isObject(obj) ? omitObject(obj) : obj;
+  const omitObject = _flow(_omitBy(predicate), _mapValues(omit));
+  const omitArray = _flow(_filter(_negate(predicate)), _map(omit));
+  return omit;
+};

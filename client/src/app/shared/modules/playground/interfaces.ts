@@ -2,22 +2,20 @@ import { HttpDownloadProgressEvent, HttpErrorResponse, HttpEvent } from '@angula
 
 import { Observable } from 'rxjs';
 
-interface RequestWrapping<Params> {
-  params: Params;
+export interface RequestWrapping<Arguments extends Array<any>, Result> {
+  arguments: Arguments;
   loading$: Observable<boolean>;
   error$: Observable<HttpErrorResponse>;
+  result$: Observable<Result>;
+}
+
+export interface CompletionRequestWrapping<Params, Result> extends Omit<RequestWrapping<[Params], Result>, 'arguments'> {
+  params: Params;
   cost$: Observable<number>;
   cached$: Observable<boolean>;
 }
 
-interface Request<Params, Result> extends RequestWrapping<Params> {
-  result$: Observable<Result>;
-}
+export type CompletionRequest<Params, Result> = CompletionRequestWrapping<Params, { result: Result, cached: boolean }>;
 
-interface RequestStream<Params, Result> extends RequestWrapping<Params> {
-  result$: Observable<HttpEvent<Result> | HttpDownloadProgressEvent>;
-}
-
-export type WrappedRequest<Params, Result> = Params extends { stream: true }
-  ? RequestStream<Params, Result>
-  : Request<Params, Result>;
+export type CompletionRequestStream<Params, Result> =
+  CompletionRequestWrapping<Params, HttpEvent<Result> | HttpDownloadProgressEvent>;

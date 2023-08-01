@@ -14,19 +14,24 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context_')
     options = params.get('options', {})
-    response = ChatGPT.Completion.create(
+    response = ChatGPT.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        prompt=(
-            'What is the relationship between '
-            + ', '.join(entities)
-            + (f', {context}' if context else '')
-            + '?'
-            # + '\nPlease provide URL sources for your answer.'
-        ),
+        messages=[
+            dict(
+                role="user",
+                content=(
+                        'What is the relationship between '
+                        + ', '.join(entities)
+                        + (f', {context}' if context else '')
+                        + '?'
+                        # + '\nPlease provide URL sources for your answer.'
+                ),
+            )
+        ],
         temperature=options.get('temperature', 0),
         max_tokens=200,
         user=str(hash(current_username)),
         timeout=60,
     )
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {"result": choice.get('message').get('content').strip()}

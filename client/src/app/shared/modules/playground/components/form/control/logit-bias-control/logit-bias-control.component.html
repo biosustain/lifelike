@@ -1,17 +1,17 @@
 <div class="form-group">
   <ng-container *ngFor="let record of logitBiasControl.controls | keyvalue">
     <div class="form-row mb-2">
-      <label [for]="input.uid" class="col-auto"> {{ record.key }} : </label>
+      <label [for]="input.uid" class="col"> {{ record.key }} : </label>
       <input
         type="text"
-        class="form-control col-auto"
+        class="form-control col"
         [formControl]="record.value"
         appUid
         #input="uid"
         appAutoGrow
       />
       <button
-        class="form-control col-auto border-0"
+        class="form-control col border-0"
         type="button"
         (click)="logitBiasControl.removeControl(record.key)"
       >
