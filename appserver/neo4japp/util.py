@@ -6,7 +6,6 @@ import itertools
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, Iterator, Dict

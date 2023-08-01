@@ -274,7 +274,7 @@ def handle_validation_error(code, error: ValidationError, messages=None):
             message='An error occurred with the provided input.',
             additional_msgs=(yaml.dump(fields),),
             code=code,
-            fields=fields
+            fields=fields,
         ) from error
     except ServerException as newex:
         return jsonify(ErrorResponseSchema().dump(newex)), newex.code

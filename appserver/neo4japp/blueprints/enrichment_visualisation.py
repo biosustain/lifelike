@@ -114,10 +114,10 @@ def enrich_context():
     response = ChatGPT.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=[
-          dict(
-              role="user",
-              content=compose_prompt(organism, term, context, gene_name),
-          )
+            dict(
+                role="user",
+                content=compose_prompt(organism, term, context, gene_name),
+            )
         ],
         temperature=0,
         max_tokens=500,

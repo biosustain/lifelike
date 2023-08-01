@@ -59,7 +59,7 @@
               >
                 <ng-container *ngIf="choice.message as message; else text">
                   <p>
-                    <strong>{{message.role}}:</strong> {{ message.content }}
+                    <strong>{{ message.role }}:</strong> {{ message.content }}
                   </p>
                 </ng-container>
                 <ng-template #text>

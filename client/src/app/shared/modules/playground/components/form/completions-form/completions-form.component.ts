@@ -26,16 +26,14 @@ import { toRequest } from '../../../utils';
   selector: 'app-completions-form',
   templateUrl: './completions-form.component.html',
 })
-export class CompletionsFormComponent
-  implements OnChanges, CompletionForm<CompletitionsOptions> {
-  constructor(private readonly playgroundService: PlaygroundService) {
-  }
+export class CompletionsFormComponent implements OnChanges, CompletionForm<CompletitionsOptions> {
+  constructor(private readonly playgroundService: PlaygroundService) {}
 
   models$: Observable<string[]> = this.playgroundService
     .completionsModels()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
   protected readonly form = new FormGroup({
@@ -47,10 +45,10 @@ export class CompletionsFormComponent
         (control: AbstractControl) =>
           this.models$.pipe(
             map((models) =>
-              models.includes(control.value) ? null : {notAvailable: control.value},
-            ),
+              models.includes(control.value) ? null : { notAvailable: control.value }
+            )
           ),
-      ],
+      ]
     ),
     prompt: new FormControl('', [Validators.required]),
     maxTokens: new FormControl(200),
@@ -58,12 +56,12 @@ export class CompletionsFormComponent
     topP: new FormControl(1),
     n: new FormControl(1, [
       CustomValidators.isInteger,
-      ({value}: FormControl) => {
+      ({ value }: FormControl) => {
         const bestOf = this.form?.controls.bestOf?.value;
         if (!bestOf) {
           return null;
         }
-        return value < bestOf ? {nSmallerThanBestOf: {value, bestOf}} : null;
+        return value < bestOf ? { nSmallerThanBestOf: { value, bestOf } } : null;
       },
     ]),
     stream: new FormControl(false, [CustomValidators.isBoolean]),
@@ -77,7 +75,7 @@ export class CompletionsFormComponent
     bestOf: new FormControl(1, [CustomValidators.isInteger]),
     logitBias: new FormGroupWithFactory(
       () => new FormControl(0, [Validators.min(-100), Validators.max(100)]),
-      {},
+      {}
     ),
   });
 
@@ -85,9 +83,9 @@ export class CompletionsFormComponent
     this.form.valueChanges.pipe(
       startWith(this.form.value),
       map((params: CompletitionsOptions) =>
-        ChatGPT.estimateCost(params.model, ChatGPT.completions.estimateRequestTokens(params)),
-      ),
-    ),
+        ChatGPT.estimateCost(params.model, ChatGPT.completions.estimateRequestTokens(params))
+      )
+    )
   );
   requestParams$ = new ReplaySubject<CompletitionsOptions>(1);
 
@@ -95,7 +93,7 @@ export class CompletionsFormComponent
   @Output() request = this.requestParams$.pipe(
     map((params) => [params]),
     toRequest((params) => this.playgroundService.completionsCreate(params)),
-    map(({arguments: [params], result$, ...rest}) => {
+    map(({ arguments: [params], result$, ...rest }) => {
       if (params.stream) {
         return {
           ...rest,
@@ -108,23 +106,22 @@ export class CompletionsFormComponent
         return {
           ...rest,
           params,
-          result$: result$.pipe(map(({result}) => result)),
+          result$: result$.pipe(map(({ result }) => result)),
           cost$: result$.pipe(
             map(
-              ({result}) =>
-                ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens,
-            ),
+              ({ result }) => ChatGPT.getModelTokenCost(params.model) * result?.usage?.total_tokens
+            )
           ),
-          cached$: result$.pipe(map(({cached}) => cached)),
+          cached$: result$.pipe(map(({ cached }) => cached)),
         };
       }
     }),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  ngOnChanges({params}: SimpleChanges) {
+  ngOnChanges({ params }: SimpleChanges) {
     if (params?.currentValue) {
-      this.form.patchValue(params.currentValue, {emitEvent: false});
+      this.form.patchValue(params.currentValue, { emitEvent: false });
     }
   }
 
