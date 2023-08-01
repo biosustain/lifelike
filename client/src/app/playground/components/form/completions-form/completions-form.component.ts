@@ -14,12 +14,13 @@ import {
 import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
-import { ChatGPTModel } from '../../../../shared/services/explain.service';
-import * as CustomValidators from '../../../../shared/utils/forms/validators';
+import { ChatGPTModel } from 'app/shared/services/explain.service';
+import * as CustomValidators from 'app/shared/utils/forms/validators';
 import {
   FormArrayWithFactory,
   FormGroupWithFactory,
-} from '../../../../shared/utils/forms/with-factory';
+} from 'app/shared/utils/forms/with-factory';
+
 import { ChatGPT, CompletitionsOptions } from '../../../ChatGPT';
 import { PlaygroundService } from '../../../services/playground.service';
 import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
@@ -39,7 +40,7 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  protected readonly form = new FormGroup({
+  readonly form = new FormGroup({
     timeout: new FormControl(60),
     model: new FormControl(
       'text-davinci-003',
@@ -82,7 +83,7 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
     ),
   });
 
-  protected readonly estimatedCost$ = defer(() =>
+  readonly estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
       map((params: CompletitionsOptions) =>

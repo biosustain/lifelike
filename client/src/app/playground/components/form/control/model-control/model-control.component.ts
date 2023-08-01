@@ -20,7 +20,7 @@ export class ModelControlComponent implements OnChanges {
   @Input() modelControl!: FormControl;
   @Input() models!: string[];
 
-  protected readonly groupedModels$ = new ReplaySubject<Record<string, string[]>>(1);
+  readonly groupedModels$ = new ReplaySubject<Record<string, string[]>>(1);
 
   private groupModels = _flow(_groupBy(ChatGPT.getModelGroup), _mapValues(_sortBy(_identity)));
 
