@@ -13,9 +13,8 @@ import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
-import { FormArrayWithFactory } from '../../../../shared/utils/forms/with-factory';
-import { OpenFileProvider } from '../../../../shared/providers/open-file/open-file.provider';
+import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 @Component({
   selector: 'app-compose-prompt-form',

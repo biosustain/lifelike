@@ -1,10 +1,11 @@
 import { NgModule } from '@angular/core';
 
+import { SharedModule } from 'app/shared/shared.module';
+import { DynamicViewService } from 'app/shared/services/dynamic-view.service';
+
 import { PlaygroundComponent } from './components/playground.component';
 import declarations from './components';
 import { PlaygroundService } from './services/playground.service';
-import { SharedModule } from '../shared/shared.module';
-import { DynamicViewService } from '../shared/services/dynamic-view.service';
 
 @NgModule({
   imports: [SharedModule],

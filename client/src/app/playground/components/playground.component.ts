@@ -45,9 +45,10 @@ import {
   tap,
 } from 'rxjs/operators';
 
-import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
-import { DynamicViewService } from '../../shared/services/dynamic-view.service';
-import { ExplainService } from '../../shared/services/explain.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { DynamicViewService } from 'app/shared/services/dynamic-view.service';
+import { ExplainService } from 'app/shared/services/explain.service';
+
 import { ChatGPT } from '../ChatGPT';
 import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
 import { CompletionsFormComponent } from './form/completions-form/completions-form.component';

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { FormArrayWithFactory } from '../../../../../shared/utils/forms/with-factory';
+import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 
 @Component({
   selector: 'app-stop-control',
