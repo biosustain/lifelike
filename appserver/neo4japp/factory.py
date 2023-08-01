@@ -10,7 +10,7 @@ from flask.logging import wsgi_errors_stream
 from flask_caching import Cache
 from flask_cors import CORS
 from marshmallow import ValidationError, missing
-from pipenv.vendor.ruamel import yaml
+import yaml
 from pythonjsonlogger import jsonlogger
 from webargs.flaskparser import parser
 from werkzeug.exceptions import UnprocessableEntity

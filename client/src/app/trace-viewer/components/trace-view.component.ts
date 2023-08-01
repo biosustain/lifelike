@@ -8,7 +8,7 @@ import { truncate } from 'lodash-es';
 
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { UserError } from 'app/shared/exceptions';
-import { ModuleAwareComponent } from 'app/shared/module_interfaces';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';

@@ -14,8 +14,8 @@ import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operator
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { FormArrayWithFactory } from '../../../../../utils/form/with-factory';
-import { OpenFileProvider } from '../../../../../providers/open-file/open-file.provider';
+import { FormArrayWithFactory } from '../../../../shared/utils/form/with-factory';
+import { OpenFileProvider } from '../../../../shared/providers/open-file/open-file.provider';
 
 @Component({
   selector: 'app-compose-prompt-form',

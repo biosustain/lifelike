@@ -16,7 +16,7 @@ import { FTSQueryRecord, FTSResult } from 'app/interfaces';
 import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/module_interfaces';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { fTSQueryRecordLoadingMock } from 'app/shared/mocks/loading/graph-search';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
