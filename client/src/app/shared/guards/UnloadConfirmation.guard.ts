@@ -3,7 +3,7 @@ import { CanDeactivate } from '@angular/router';
 
 import { Observable } from 'rxjs';
 
-import { ModuleAwareComponent, ShouldConfirmUnload } from '../module_interfaces';
+import { ModuleAwareComponent, ShouldConfirmUnload } from '../modules';
 
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',

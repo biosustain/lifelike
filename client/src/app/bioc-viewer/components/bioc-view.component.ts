@@ -19,7 +19,7 @@ import jQueryType from 'jquery';
 import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { BiocFile } from 'app/interfaces/bioc-files.interface';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/module_interfaces';
+import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';

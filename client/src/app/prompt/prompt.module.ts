@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
 
-import { SharedModule } from '../../shared.module';
+import { SharedModule } from 'app/shared/shared.module';
+import { PlaygroundModule } from 'app/playground/playground.module';
+
 import { PromptComponent } from './components/prompt.component';
-import { PlaygroundModule } from '../playground/playground.module';
 import declarations from './components';
 
 @NgModule({

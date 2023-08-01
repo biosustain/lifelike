@@ -30,7 +30,7 @@ export class RectangleNode extends BaseRectangleNode {
   readonly stroke: Line | undefined;
   readonly forceVisibleText = false;
 
-  // This control how 'rounded' the rect is
+  // This controls how 'rounded' the rect is
   readonly ARC_SIZE = 5;
 
   constructor(ctx: CanvasRenderingContext2D, options: RectangleNodeOptions) {

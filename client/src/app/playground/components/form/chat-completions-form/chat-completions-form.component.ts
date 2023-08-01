@@ -5,14 +5,15 @@ import { isEmpty as _isEmpty, map as _map, omitBy as _omitBy } from 'lodash/fp';
 import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
-import { ChatGPTModel } from '../../../../../services/explain.service';
-import * as CustomValidators from '../../../../../utils/form/validators';
-import { FormArrayWithFactory, FormGroupWithFactory } from '../../../../../utils/form/with-factory';
+import { ChatGPTModel } from 'app/shared/services/explain.service';
+import * as CustomValidators from 'app/shared/utils/form/validators';
+import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/form/with-factory';
+import { omitByDeep } from 'app/shared/utils';
+
 import { ChatCompletitionsOptions, ChatGPT } from '../../../ChatGPT';
 import { ChatCompletionsResponse, PlaygroundService } from '../../../services/playground.service';
 import { toRequest } from '../../../utils';
 import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
-import { omitByDeep } from '../../../../../utils';
 
 @Component({
   selector: 'app-chat-completions-form',
@@ -32,7 +33,7 @@ export class ChatCompletionsFormComponent
 
   private readonly ROLES = ['system', 'user', 'assitant', 'function'];
 
-  protected readonly form = new FormGroup({
+  readonly form = new FormGroup({
     timeout: new FormControl(60),
     model: new FormControl(
       'gpt-3.5-turbo',

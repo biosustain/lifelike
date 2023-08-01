@@ -7,6 +7,7 @@ import { MessagesControlComponent } from './form/chat-completions-form/control/m
 import { LogitBiasControlComponent } from './form/control/logit-bias-control/logit-bias-control.component';
 import { ModelControlComponent } from './form/control/model-control/model-control.component';
 import { StopControlComponent } from './form/control/stop-control/stop-control.component';
+import { CostEstimateTooltipComponent } from './cost-estimate-tooltip.component';
 
 export default [
   PlaygroundComponent,
@@ -18,4 +19,5 @@ export default [
   LogitBiasControlComponent,
   ModelControlComponent,
   StopControlComponent,
+  CostEstimateTooltipComponent,
 ];

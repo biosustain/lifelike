@@ -2,7 +2,7 @@
 
 <app-modal-body>
   <ng-template #costEstimateTooltip>
-    The pricing information has been last updated on {{ lastPricingUpdate | date : 'medium' }}
+    <app-cost-estimate-tooltip></app-cost-estimate-tooltip>
   </ng-template>
   <as-split class="align-items-stretch">
     <as-split-area>

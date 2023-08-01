@@ -14,14 +14,14 @@ import {
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { environment } from '../../../../../environments/environment';
-import { OpenFileProvider } from '../../../providers/open-file/open-file.provider';
-import { ExplainService } from '../../../services/explain.service';
+import { environment } from '../../../environments/environment';
+import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
+import { ExplainService } from '../../shared/services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
-} from '../../../utils/dropdown.controller.factory';
-import { openModal } from '../../../utils/modals';
+} from '../../shared/utils/dropdown.controller.factory';
+import { openModal } from '../../shared/utils/modals';
 import { PlaygroundComponent } from '../../playground/components/playground.component';
 
 @Component({

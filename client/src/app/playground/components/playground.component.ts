@@ -45,9 +45,9 @@ import {
   tap,
 } from 'rxjs/operators';
 
-import { OpenFileProvider } from '../../../providers/open-file/open-file.provider';
-import { DynamicViewService } from '../../../services/dynamic-view.service';
-import { ExplainService } from '../../../services/explain.service';
+import { OpenFileProvider } from '../../shared/providers/open-file/open-file.provider';
+import { DynamicViewService } from '../../shared/services/dynamic-view.service';
+import { ExplainService } from '../../shared/services/explain.service';
 import { ChatGPT } from '../ChatGPT';
 import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
 import { CompletionsFormComponent } from './form/completions-form/completions-form.component';
@@ -175,8 +175,6 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
     map(({ choices }) => choices ?? []),
     catchError((error) => of(`Error: ${error}`))
   );
-
-  lastPricingUpdate = ChatGPT.lastUpdate;
 
   ngOnChanges({ temperature }: SimpleChanges) {
     if (temperature) {

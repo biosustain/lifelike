@@ -42,11 +42,7 @@ import {
 } from 'rxjs';
 import { assign, isNil, omitBy, zip } from 'lodash-es';
 
-import {
-  ModuleAwareComponent,
-  ModuleProperties,
-  ShouldConfirmUnload,
-} from 'app/shared/module_interfaces';
+import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from 'app/shared/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
