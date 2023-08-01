@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { FormGroupWithFactory } from 'app/shared/utils/form/with-factory';
+import { FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 
 @Component({
   selector: 'app-logit-bias-control',

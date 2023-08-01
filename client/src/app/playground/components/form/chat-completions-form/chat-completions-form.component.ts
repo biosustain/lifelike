@@ -6,8 +6,8 @@ import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
 import { ChatGPTModel } from 'app/shared/services/explain.service';
-import * as CustomValidators from 'app/shared/utils/form/validators';
-import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/form/with-factory';
+import * as CustomValidators from 'app/shared/utils/forms/validators';
+import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 import { omitByDeep } from 'app/shared/utils';
 
 import { ChatCompletitionsOptions, ChatGPT } from '../../../ChatGPT';

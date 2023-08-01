@@ -14,7 +14,7 @@ import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operator
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { FormArrayWithFactory } from '../../../../shared/utils/form/with-factory';
+import { FormArrayWithFactory } from '../../../../shared/utils/forms/with-factory';
 import { OpenFileProvider } from '../../../../shared/providers/open-file/open-file.provider';
 
 @Component({

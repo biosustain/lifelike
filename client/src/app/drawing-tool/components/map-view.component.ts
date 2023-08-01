@@ -19,7 +19,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
-import { ImageBlob } from 'app/shared/utils/form';
+import { ImageBlob } from 'app/shared/utils/forms';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
