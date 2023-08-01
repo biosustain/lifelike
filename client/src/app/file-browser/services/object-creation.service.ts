@@ -65,7 +65,7 @@ import {
 import { Progress, ProgressArguments, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { isNotEmpty } from 'app/shared/utils';
 import { idle } from 'app/shared/rxjs/idle-observable';
-import { objectToMixedFormData } from 'app/shared/utils/form';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
 import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
 import {

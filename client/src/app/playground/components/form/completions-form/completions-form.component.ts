@@ -15,11 +15,11 @@ import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
 import { ChatGPTModel } from '../../../../shared/services/explain.service';
-import * as CustomValidators from '../../../../shared/utils/form/validators';
+import * as CustomValidators from '../../../../shared/utils/forms/validators';
 import {
   FormArrayWithFactory,
   FormGroupWithFactory,
-} from '../../../../shared/utils/form/with-factory';
+} from '../../../../shared/utils/forms/with-factory';
 import { ChatGPT, CompletitionsOptions } from '../../../ChatGPT';
 import { PlaygroundService } from '../../../services/playground.service';
 import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';

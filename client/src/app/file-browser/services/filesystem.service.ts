@@ -14,7 +14,7 @@ import { ConnectableObservable, from, Observable, of, throwError } from 'rxjs';
 import { catchError, filter, map, publish, refCount, switchMap, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { objectToMixedFormData } from 'app/shared/utils/form';
+import { objectToMixedFormData } from 'app/shared/utils/forms';
 import { serializePaginatedParams } from 'app/shared/utils/params';
 import {
   PaginatedRequestOptions,
