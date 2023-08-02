@@ -39,7 +39,6 @@ export abstract class EntityForm implements AfterViewInit, OnChanges {
   @Output() sourceOpen = new EventEmitter<string>();
 
   overflow = false;
-  viewInited = false;
   protected abstract readonly TABS: string[];
 
   protected constructor(protected readonly workspaceManager: WorkspaceManager) {}

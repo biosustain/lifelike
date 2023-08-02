@@ -139,6 +139,7 @@ export class LockService implements OnDestroy {
   }
 
   startLockInterval() {
+    inDevMode(NgZone.assertInAngularZone);
     this.lockAcquired = null;
     this.ngZone.runOutsideAngular(() => {
       // Make the timer start near the crossing of the second hand, to make it look like the
