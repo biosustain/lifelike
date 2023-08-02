@@ -4,30 +4,43 @@
 
 interface EnvironmentVars {
   production: boolean;
-  chatGPTPlaygroundEnabled: boolean;
   keggEnabled: boolean;
+  chatGPTPlaygroundEnabled: boolean;
   oauthEnabled: boolean;
-  testVar: string;
   oauthIssuer: string;
   oauthClientId: string;
+  oauthScopes?: string;
+  oauthPasswordChangeLink?: string;
+  keycloakApiBaseUrl?: string;
   ***ARANGO_DB_NAME***Version: string;
 }
 
-// Read environment variables (set by env.js) from browser window
-const browserWindow = window || {};
-const envAccessor = '__env';
-const browserWindowEnv = (
-  browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}
-) as EnvironmentVars;
+// Read environment variables (set by env.js) into the globalThis object
+const windowObjectEnvKey = '__env';
+const {
+  production = false,
+  keggEnabled = false,
+  chatGPTPlaygroundEnabled = false,
+  oauthEnabled = false,
+  oauthIssuer,
+  oauthClientId,
+  oauthScopes = 'openid profile email offline_access',
+  oauthPasswordChangeLink,
+  keycloakApiBaseUrl,
+  ***ARANGO_DB_NAME***Version = '__VERSION__', // This is statically replaced during build time
+}: EnvironmentVars = globalThis.window?.[windowObjectEnvKey] || {};
 
 export const environment = {
-  production: browserWindowEnv.production || false,
-  chatGPTPlaygroundEnabled: browserWindowEnv.chatGPTPlaygroundEnabled || false,
-  keggEnabled: browserWindowEnv.keggEnabled || false,
-  oauthEnabled: browserWindowEnv.oauthEnabled || false,
-  oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',
-  oauthClientId: browserWindowEnv.oauthClientId || 'client',
-  ***ARANGO_DB_NAME***Version: '__VERSION__', // This is replaced during the docker build stage
+  production,
+  keggEnabled,
+  chatGPTPlaygroundEnabled,
+  oauthEnabled,
+  oauthIssuer,
+  oauthClientId,
+  oauthScopes,
+  oauthPasswordChangeLink,
+  keycloakApiBaseUrl,
+  ***ARANGO_DB_NAME***Version,
 };
 
 /*

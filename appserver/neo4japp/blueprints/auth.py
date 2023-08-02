@@ -157,46 +157,45 @@ def verify_token(token):
     token_service = TokenService(config['JWT_SECRET'], config['JWT_ALGORITHM'])
     decoded = token_service.decode_token(token, audience=config['JWT_AUDIENCE'])
 
-    with db.session.begin_nested():
+    try:
+        user = AppUser.query_by_subject(decoded['sub']).one()
+        current_app.logger.info(
+            f'Active user: {user.email}',
+            extra=UserEventLog(
+                username=user.username, event_type=LogEventType.LAST_ACTIVE.value
+            ).to_dict(),
+        )
+    except NoResultFound:
+        # Note that this except block should only trigger when a user signs in via OAuth for the
+        # first time.
+        user = AppUser(
+            username=decoded['preferred_username'],
+            email=decoded['email'],
+            first_name=decoded.get('given_name') or decoded.get('name', ''),
+            last_name=decoded.get('family_name', ''),
+            subject=decoded.get('sub')
+        )
+
+        # Add the "user" role to the new user
+        user_role = AppRole.query.filter_by(name='user').one()
+        user.roles.append(user_role)
+        projects_service = get_projects_service()
+
+        # Finally, add the new user to the DB
         try:
-            user = AppUser.query_by_subject(decoded['sub']).one()
-            current_app.logger.info(
-                f'Active user: {user.email}',
-                extra=UserEventLog(
-                    username=user.username, event_type=LogEventType.LAST_ACTIVE.value
-                ).to_dict(),
-            )
-        except NoResultFound:
-            # Note that this except block should only trigger when a user signs in via OAuth for the
-            # first time.
-            user = AppUser(
-                username=decoded['username'],
-                email=decoded['email'],
-                first_name=decoded['first_name'],
-                last_name=decoded['last_name'],
-                subject=decoded['sub'],
-            )
-
-            # Add the "user" role to the new user
-            user_role = AppRole.query.filter_by(name='user').one()
-            user.roles.append(user_role)
-            projects_service = get_projects_service()
-
-            # Finally, add the new user to the DB
-            try:
-                with db.session.begin_nested():
-                    projects_service.create_initial_project(user)
-                    db.session.add(user)
-            except SQLAlchemyError as e:
-                raise ServerException(
-                    title='Unexpected Database Transaction Error',
-                    message='Something unexpected occurred while adding the user to the database.',
-                    fields={
-                        'user_id': user.id if user.id is not None else 'N/A',
-                        'username': user.username,
-                        'user_email': user.email,
-                    },
-                ) from e
+            projects_service.create_initial_project(user)
+            db.session.add(user)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            raise ServerException(
+                title='Unexpected Database Transaction Error',
+                message='Something unexpected occurred while adding the user to the database.',
+                fields={
+                    'user_id': user.id if user.id is not None else 'N/A',
+                    'username': user.username,
+                    'user_email': user.email,
+                },
+            ) from e
 
     g.current_user = user
     return True
@@ -254,63 +253,69 @@ def refresh():
 @wrap_exceptions(AuthenticationError)
 def login():
     """
-    Generate JWT to validate graph API calls
-    based on successful user login
+        Generate JWT to validate graph API calls
+        based on successful user login
     """
     data = request.get_json()
     exception = None
 
-    with db.session.begin_nested():
-        # Pull user by email
-        try:
-            user = AppUser.query.filter_by(email=data.get('email')).one()
-        except NoResultFound as e:
-            exception = e
-        else:
-            if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
-                raise ServerException(
-                    message='The account has been suspended after too many failed login attempts.\
-                    Please contact an administrator for help.',
-                    code=HTTPStatus.LOCKED,
-                )
-            elif user.check_password(data.get('password')):
-                current_app.logger.info(
-                    UserEventLog(
-                        username=user.username,
-                        event_type=LogEventType.AUTHENTICATION.value,
-                    ).to_dict()
-                )
-                token_service = TokenService(
-                    config['JWT_SECRET'], config['JWT_ALGORITHM']
-                )
-                access_jwt = token_service.get_access_token(user.email)
-                refresh_jwt = token_service.get_refresh_token(user.email)
-                user.failed_login_count = 0
 
+    # Pull user by email
+    try:
+        user = AppUser.query.filter_by(email=data.get('email')).one()
+    except NoResultFound as e:
+        exception = e
+    else:
+        if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
+            raise ServerException(
+                message='The account has been suspended after too many failed login attempts.\
+                Please contact an administrator for help.',
+                code=HTTPStatus.LOCKED,
+            )
+        elif user.check_password(data.get('password')):
+            current_app.logger.info(
+                UserEventLog(
+                    username=user.username,
+                    event_type=LogEventType.AUTHENTICATION.value,
+                ).to_dict()
+            )
+            token_service = TokenService(
+                config['JWT_SECRET'],
+                config['JWT_ALGORITHM']
+            )
+            access_jwt = token_service.get_access_token(user.email)
+            refresh_jwt = token_service.get_refresh_token(user.email)
+            user.failed_login_count = 0
+
+            try:
                 db.session.add(user)
-
-                return jsonify(
-                    LifelikeJWTTokenResponse().dump(
-                        {
-                            'access_token': access_jwt,
-                            'refresh_token': refresh_jwt,
-                            'user': {
-                                'hash_id': user.hash_id,
-                                'email': user.email,
-                                'username': user.username,
-                                'first_name': user.first_name,
-                                'last_name': user.last_name,
-                                'id': user.id,
-                                'reset_password': user.forced_password_reset,
-                                'roles': [u.name for u in user.roles],
-                            },
-                        }
-                    )
-                )
+                db.session.commit()
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                exception = e
             else:
-                user.failed_login_count += 1
-
+                return jsonify(LifelikeJWTTokenResponse().dump({
+                    'access_token': access_jwt,
+                    'refresh_token': refresh_jwt,
+                    'user': {
+                        'hash_id': user.hash_id,
+                        'email': user.email,
+                        'username': user.username,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'id': user.id,
+                        'reset_password': user.forced_password_reset,
+                        'roles': [u.name for u in user.roles],
+                    },
+                }))
+        else:
+            user.failed_login_count += 1
+            try:
                 db.session.add(user)
+                db.session.commit()
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                exception = e
 
     raise ServerException(
         message='Could not find an account with that username/password combination. '
