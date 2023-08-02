@@ -1,4 +1,4 @@
-<ng-container *ngIf="currentUsers$ | async as user">
+<ng-container *ngIf="(currentUsers$ | async) as user">
   <div class="module" appContainerBreakpoints>
     <div class="module-header">
       <div class="module-title-bar">
@@ -18,9 +18,7 @@
 
           <li ngbNavItem="security">
             <ng-container *ngIf="oauthEnabled; else basicPasswordChange">
-              <a class="nav-link" [href]="oauthPasswordChangeLink" target="_blank"
-                >Password <i class="fas fa-external-link-alt ml-1"></i
-              ></a>
+              <a class="nav-link" [href]="oauthPasswordChangeLink" target="_blank">Password <i class="fas fa-external-link-alt ml-1"></i></a>
             </ng-container>
             <ng-template #basicPasswordChange>
               <a ngbNavLink>Password</a>

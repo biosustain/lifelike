@@ -1,15 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, EMPTY, Observable } from 'rxjs';
+import { catchError, filter, map } from 'rxjs/operators';
 
 import { State } from 'app/auth/store/state';
+import { ErrorResponse } from 'app/shared/schemas/common';
+import { SnackbarActions } from 'app/shared/store';
+import { AccountService } from 'app/users/services/account.service';
 
 import { AuthActions } from '../store';
-import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable({ providedIn: 'root' })
 export class LifelikeOAuthService {
@@ -31,8 +35,10 @@ export class LifelikeOAuthService {
    */
   public canActivateProtectedRoutes$: Observable<boolean> = combineLatest([
     this.isAuthenticated$,
-    this.isDoneLoading$,
-  ]).pipe(map((values) => values.every((b) => b)));
+    this.isDoneLoading$
+  ]).pipe(
+    map(values => values.every(b => b)),
+  );
 
   private navigateToLoginPage() {
     this.router.navigateByUrl('/login');
@@ -40,6 +46,7 @@ export class LifelikeOAuthService {
 
   constructor(
     private oauthService: OAuthService,
+    private accountService: AccountService,
     private router: Router,
     private location: Location,
     private readonly store$: Store<State>
@@ -53,9 +60,7 @@ export class LifelikeOAuthService {
         return;
       }
 
-      console.warn(
-        'Noticed changes to access_token (most likely from another tab), updating isAuthenticated'
-      );
+      console.warn('Noticed changes to access_token (most likely from another tab), updating isAuthenticated');
       this.isAuthenticatedSubject$.next(this.oauthService.hasValidAccessToken());
 
       if (!this.oauthService.hasValidAccessToken()) {
@@ -63,17 +68,18 @@ export class LifelikeOAuthService {
       }
     });
 
-    this.oauthService.events.subscribe((_) => {
-      this.isAuthenticatedSubject$.next(this.oauthService.hasValidAccessToken());
+    this.oauthService.events
+      .subscribe(_ => {
+        this.isAuthenticatedSubject$.next(this.oauthService.hasValidAccessToken());
     });
 
     this.oauthService.events
-      .pipe(filter((e) => ['token_received'].includes(e.type)))
-      .subscribe((e) => this.oauthService.loadUserProfile());
+      .pipe(filter(e => ['token_received'].includes(e.type)))
+      .subscribe(() => this.oauthService.loadUserProfile());
 
     this.oauthService.events
-      .pipe(filter((e) => ['session_terminated', 'session_error'].includes(e.type)))
-      .subscribe((e) => this.navigateToLoginPage());
+      .pipe(filter(e => ['session_terminated', 'session_error'].includes(e.type)))
+      .subscribe(() => this.navigateToLoginPage());
 
     this.oauthService.setupAutomaticSilentRefresh();
   }
@@ -81,89 +87,106 @@ export class LifelikeOAuthService {
   runInitialLoginSequence(): Promise<void> {
     // 0. LOAD CONFIG:
     // First we have to check to see how the IdServer is currently configured:
-    return (
-      this.oauthService
-        .loadDiscoveryDocument()
+    return this.oauthService.loadDiscoveryDocument()
 
-        // 1. HASH LOGIN:
-        // Try to log in via hash fragment after redirect back from IdServer from initImplicitFlow:
-        .then(() => this.oauthService.tryLogin())
+      // 1. HASH LOGIN:
+      // Try to log in via hash fragment after redirect back from IdServer from initImplicitFlow:
+      .then(() => this.oauthService.tryLogin())
 
-        .then(() => {
-          if (this.oauthService.hasValidAccessToken()) {
-            const payload = this.oauthService.getIdentityClaims() as any;
-            this.store$.dispatch(
-              AuthActions.oauthLogin({
-                oauthLoginData: {
-                  subject: payload.sub,
-                  firstName: payload.first_name,
-                  lastName: payload.last_name,
-                  username: payload.username,
-                },
-              })
-            );
-            return Promise.resolve();
+      .then(() => {
+        if (this.oauthService.hasValidAccessToken()) {
+          const payload = (this.oauthService.getIdentityClaims() as any);
+          const oauthLoginData = {
+            subject: payload.sub,
+            firstName: payload.first_name || payload.given_name || payload.name,
+            lastName: payload.last_name || payload.family_name,
+            username: payload.username || payload.preferred_username,
           }
 
-          // 2. SILENT LOGIN:
-          // Try to log in via a refresh because then we can prevent needing to redirect the user:
-          return this.oauthService
-            .silentRefresh()
-            .then(() => Promise.resolve())
-            .catch((result: OAuthErrorEvent) => {
-              // Subset of situations from https://openid.net/specs/openid-connect-core-1_0.html#AuthError
-              // Only the ones where it's reasonably sure that sending the user to the IdServer will help.
-              const errorResponsesRequiringUserInteraction = [
-                'interaction_required',
-                'login_required',
-                'account_selection_required',
-                'consent_required',
-              ];
-              const reason: any = result.reason;
+          this.store$.dispatch(AuthActions.oauthLogin({ oauthLoginData }));
+          return this.accountService.getUserBySubject(payload.sub).pipe(
+            map((user) => {
+              this.store$.dispatch(AuthActions.oauthLoginSuccess({lifelikeUser: user, oauthUser: oauthLoginData}))
+            }),
+            catchError((err: HttpErrorResponse) => {
+              // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the home
+              // page. Also, see the below Github issue:
+              //    https://github.com/manfredsteyer/angular-oauth2-oidc/issues/9
+              // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server). The
+              // likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so ideally
+              // we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to wait a few moments
+              // and refresh their browser to log in successfully.
+              const error = (err.error as ErrorResponse).message;
+              this.logout(true);
+              this.router.navigateByUrl('/dashboard');
 
-              if (
-                result &&
-                reason &&
-                errorResponsesRequiringUserInteraction.indexOf(reason.params.error) >= 0
-              ) {
-                // 3. USER MUST LOGIN:
-                // At this point we know for sure that we have to ask the user to log in, so we initiate the log out flow. They will need to
-                // manually log themselves in afterwards.
+              this.store$.dispatch(
+                SnackbarActions.displaySnackbar({
+                  payload: {
+                    message: error,
+                    action: 'Dismiss',
+                    config: {duration: 10000},
+                  },
+                }),
+              );
+              return EMPTY;
+            }),
+          ).toPromise()
+          .then(() => Promise.resolve());
+        }
 
-                this.store$.dispatch(AuthActions.oauthLogout());
+        // 2. SILENT LOGIN:
+        // Try to log in via a refresh because then we can prevent needing to redirect the user:
+        return this.oauthService.silentRefresh()
+          .then(() => Promise.resolve())
+          .catch((result: OAuthErrorEvent) => {
+            // Subset of situations from https://openid.net/specs/openid-connect-core-1_0.html#AuthError
+            // Only the ones where it's reasonably sure that sending the user to the IdServer will help.
+            const errorResponsesRequiringUserInteraction = [
+              'interaction_required',
+              'login_required',
+              'account_selection_required',
+              'consent_required',
+            ];
+            const reason: any = result.reason;
 
-                // To immediately redirect them to the login server, comment the above and uncomment the below:
-                // this.login()
+            if (
+              result &&
+              reason &&
+              errorResponsesRequiringUserInteraction.indexOf(reason.params.error) >= 0
+            ) {
+              // 3. USER MUST LOGIN:
+              // At this point we know for sure that we have to ask the user to log in, so we initiate the log out flow. They will need to
+              // manually log themselves in afterwards.
 
-                // Instead, we'll now do this:
-                return Promise.resolve();
-              }
+              this.store$.dispatch(AuthActions.oauthLogout());
 
-              // We can't handle the truth, just pass on the problem to the next handler.
-              return Promise.reject(result);
-            });
-        })
+              // To immediately redirect them to the login server, comment the above and uncomment the below:
+              // this.login()
 
-        .then(() => {
-          this.isDoneLoadingSubject$.next(true);
-
-          // Check for the strings 'undefined' and 'null' just to be sure.
-          // Our current login(...) should never have this, but in case someone
-          // ever calls initImplicitFlow(undefined | null) this could happen.
-          if (
-            this.oauthService.state &&
-            this.oauthService.state !== 'undefined' &&
-            this.oauthService.state !== 'null'
-          ) {
-            let stateUrl = this.oauthService.state;
-            if (stateUrl.startsWith('/') === false) {
-              stateUrl = decodeURIComponent(stateUrl);
+              // Instead, we'll now do this:
+              return Promise.resolve();
             }
-            this.router.navigateByUrl(stateUrl);
+
+            // We can't handle the truth, just pass on the problem to the next handler.
+            return Promise.reject(result);
+          });
+      })
+
+      .then(() => {
+        this.isDoneLoadingSubject$.next(true);
+
+        // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case someone
+        // ever calls initImplicitFlow(undefined | null) this could happen.
+        if (this.oauthService.state && this.oauthService.state !== 'undefined' && this.oauthService.state !== 'null') {
+          let stateUrl = this.oauthService.state;
+          if (stateUrl.startsWith('/') === false) {
+            stateUrl = decodeURIComponent(stateUrl);
           }
-        })
-        .catch(() => this.isDoneLoadingSubject$.next(true))
-    );
+          this.router.navigateByUrl(stateUrl);
+        }
+      })
+      .catch(() => this.isDoneLoadingSubject$.next(true));
   }
 
   login(targetUrl?: string) {

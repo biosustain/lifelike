@@ -17,9 +17,7 @@ export class UserSettingsComponent {
   currentUsers$: Observable<AppUser>;
   activeTab: 'profile' | 'security';
 
-  // TODO: Better to have an environment variable for this
-  oauthPasswordChangeLink =
-    'https://keycloak.apps.lifelike.cloud/auth/realms/master/account/#/security/signingin';
+  oauthPasswordChangeLink = environment.oauthPasswordChangeLink;
 
   get oauthEnabled() {
     return environment.oauthEnabled;
