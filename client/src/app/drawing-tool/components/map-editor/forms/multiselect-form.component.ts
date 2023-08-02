@@ -75,6 +75,7 @@ export class MultiselectFormComponent extends EntityForm implements OnChanges, O
 
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+    super.ngOnChanges(changes);
   }
 
   ngOnDestroy() {
