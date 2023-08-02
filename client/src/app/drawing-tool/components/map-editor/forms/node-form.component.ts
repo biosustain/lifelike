@@ -22,6 +22,7 @@ import { EntityForm } from './entity-form';
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent extends EntityForm {
+  protected readonly TABS: string[] = ['properties', 'search', 'style'];
   @ViewChild('option') selectedOption: ElementRef;
 
   nodeTypeChoices = annotationTypes;
