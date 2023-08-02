@@ -9,9 +9,9 @@ interface EnvironmentVars {
   oauthEnabled: boolean;
   oauthIssuer: string;
   oauthClientId: string;
-  oauthScopes?: string;
-  oauthPasswordChangeLink?: string;
-  keycloakApiBaseUrl?: string;
+  oauthScopes: string;
+  oauthPasswordChangeLink: string;
+  keycloakApiBaseUrl: string;
   lifelikeVersion: string;
 }
 
