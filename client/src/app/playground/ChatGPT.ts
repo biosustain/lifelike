@@ -1,23 +1,10 @@
 import { Injectable } from '@angular/core';
 
-import {
-  difference as _difference,
-  flow as _flow,
-  groupBy as _groupBy,
-  identity as _identity,
-  isEmpty as _isEmpty,
-  isInteger as _isInteger,
-  keys as _keys,
-  map as _map,
-  mapValues as _mapValues,
-  omit as _omit,
-  sortBy as _sortBy,
-  find as _find,
-} from 'lodash/fp';
+import { find as _find, map as _map } from 'lodash/fp';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
-import { ChatGPTModel, ExplainService } from '../../../services/explain.service';
+import { ChatGPTModel, ExplainService } from '../shared/services/explain.service';
 
 interface CompletitionsTokenParams {
   prompt: string;
@@ -34,7 +21,6 @@ export interface CompletitionsParams extends CompletitionsTokenParams {
 
 @Injectable()
 export class ChatGPT {
-
   constructor(private readonly explainService: ExplainService) {}
 
   static lastUpdate = new Date(2023, 7, 17);

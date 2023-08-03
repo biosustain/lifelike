@@ -7,11 +7,28 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 
-import { keys as _keys, difference as _difference } from 'lodash/fp';
+import {
+  flow as _flow,
+  groupBy as _groupBy,
+  identity as _identity,
+  isEmpty as _isEmpty,
+  keyBy as _keyBy,
+  mapValues as _mapValues,
+  mergeWith as _mergeWith,
+  omit as _omit,
+  sortBy as _sortBy,
+  values as _values,
+  keys as _keys,
+  isNull as _isNull,
+  difference as _difference,
+} from 'lodash/fp';
 
-export class FormArrayWithFactory<T = any> extends FormArray {
+export class FormArrayWithFactory<
+  Control extends AbstractControl = AbstractControl,
+  T = any
+> extends FormArray {
   constructor(
-    private readonly factory: () => AbstractControl,
+    private readonly factory: () => Control,
     values: T[] = [],
     validatorOrOpts?: ValidatorFn | AbstractControlOptions | ValidatorFn[],
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[]
@@ -22,12 +39,14 @@ export class FormArrayWithFactory<T = any> extends FormArray {
     }
   }
 
-  private matchControls(valuesLength: number, remove: boolean = false) {
-    const conlrolsLength = this.controls.length;
-    for (let i = valuesLength; i < conlrolsLength; i++) {
+  controls: Control[];
+
+  private matchControls(valuesLength: number, remove: boolean) {
+    const controlsLength = this.controls.length;
+    for (let i = valuesLength; remove && i < controlsLength; i++) {
       this.removeAt(i);
     }
-    for (let i = conlrolsLength; i < valuesLength; i++) {
+    for (let i = controlsLength; i < valuesLength; i++) {
       this.push(this.factory());
     }
   }
@@ -38,29 +57,39 @@ export class FormArrayWithFactory<T = any> extends FormArray {
   }
 
   patchValue(values: T[], options?: { onlySelf?: boolean; emitEvent?: boolean }) {
-    this.matchControls(values.length);
+    this.matchControls(values.length, false);
     super.patchValue(values, options);
   }
 
-  add(value: T) {
+  reset(value?: T[], options?: { onlySelf?: boolean; emitEvent?: boolean }) {
+    this.matchControls(value?.length ?? 0, true);
+    super.reset(value, options);
+  }
+
+  add(value: T | null) {
     const control = this.factory();
-    control.setValue(value, { emitEvent: false });
+    if (!_isNull(value)) {
+      control.setValue(value, { emitEvent: false });
+    }
     super.push(control);
   }
 
-  removeControl(control: AbstractControl) {
+  removeControl(control: Control) {
     super.removeAt(this.controls.indexOf(control));
   }
 }
 
-export class FormGroupWithFactory<V = any> extends FormGroup {
+export class FormGroupWithFactory<
+  Control extends AbstractControl = AbstractControl,
+  V = any
+> extends FormGroup {
   constructor(
-    private readonly factory: () => AbstractControl,
+    private readonly factory: () => Control,
     mapping?: Record<string, V>,
     validatorOrOpts?: ValidatorFn | AbstractControlOptions | ValidatorFn[],
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[]
   ) {
-    super(mapping ? {} : null, validatorOrOpts, asyncValidator);
+    super({}, validatorOrOpts, asyncValidator);
     if (mapping) {
       this.setValue(mapping, { emitEvent: false });
     }
