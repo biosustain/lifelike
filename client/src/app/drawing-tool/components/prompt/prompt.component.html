@@ -59,13 +59,7 @@
       </div>
     </div>
   </div>
-  <button
-    class="d-inline-block btn btn-sm flex-grow-0"
-    (click)="openPlayground()"
-    *ngIf="showPlayground"
-  >
-    <i class="fas fa-flask"></i>
-  </button>
+  <app-open-playground [params]="playgroundParams$ | async"></app-open-playground>
 </div>
 <ng-content></ng-content>
 <div

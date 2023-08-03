@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
-import { ChatGPT } from './ChatGPT';
+import { ChatGPT } from '../ChatGPT';
 
 @Component({
   selector: 'app-cost-estimate-tooltip',

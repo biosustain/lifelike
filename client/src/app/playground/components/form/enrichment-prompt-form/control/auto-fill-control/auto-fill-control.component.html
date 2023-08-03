@@ -1,0 +1,26 @@
+<div ngbDropdown class="input-group input-border rounded" placement="bottom-left" container="body">
+  <input
+    #contextDropdown="uid"
+    appUid
+    autocomplete="off"
+    class="form-control border-0"
+    type="text"
+    container="body"
+    ngbDropdownToggle
+    formControlName="context"
+    appAutoGrow
+  />
+
+  <div ngbDropdownMenu [attr.aria-labelledby]="contextDropdown" class="w-100">
+    <ng-container *ngFor="let suggestion of suggestions">
+      <button
+        class="dropdown-item"
+        type="button"
+        placement="right"
+        (click)="control.setValue(suggestion)"
+      >
+        <ngb-highlight [result]="suggestion" [term]="control.value"></ngb-highlight>
+      </button>
+    </ng-container>
+  </div>
+</div>
