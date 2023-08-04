@@ -74,7 +74,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
       this.search.getOrganismFromTaxId(organismTaxId.currentValue).subscribe((response) => {
         // If response is null that means there was no match found
         if (!isNil(response)) {
-          this.setInputText(response.organism_name);
+          this.inputText = response.organism_name;
           this.isOrganismSelected = true;
         }
       });
