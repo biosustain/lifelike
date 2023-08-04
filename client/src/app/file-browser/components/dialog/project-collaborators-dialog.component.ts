@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { uniqueId } from 'lodash-es';
 import { finalize, tap } from 'rxjs/operators';
 
@@ -16,7 +16,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { addStatus } from 'app/shared/pipes/add-status.pipe';
-import { appUserLoadingMock, collaboratorLoadingMock } from 'app/shared/mocks/loading/user';
+import { collaboratorLoadingMock } from 'app/shared/mocks/loading/user';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ProjectImpl } from '../../models/filesystem-object';
@@ -32,7 +32,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
   private _project: ProjectImpl;
-  collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
+  collaborators$: Subject<ModelList<Collaborator>> = new Subject<ModelList<Collaborator>>();
   collaboratorsWithStatus$ = this.collaborators$.pipe(
     addStatus(new ModelList(mockArrayOf(collaboratorLoadingMock)))
   );
@@ -65,9 +65,11 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   getValue() {}
 
   refresh() {
-    this.collaborators$ = this.projectsService.getCollaborators(this.project.hashId, {
-      limit: 100, // TODO: Implement pagination
-    });
+    this.projectsService
+      .getCollaborators(this.project.hashId, {
+        limit: 100, // TODO: Implement pagination
+      })
+      .subscribe((result) => this.collaborators$.next(result));
   }
 
   addCollaborator() {
@@ -131,7 +133,7 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
           users: [],
         });
         this.addForm.markAsPristine();
-        this.collaborators$ = of(collaborators);
+        this.collaborators$.next(collaborators);
       }),
       finalize(() => progressDialogRef.close()),
       this.errorHandler.create({ label: 'Save project collaborators' })
