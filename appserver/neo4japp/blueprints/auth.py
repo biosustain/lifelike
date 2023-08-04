@@ -158,7 +158,7 @@ def verify_token(token):
     decoded = token_service.decode_token(token, audience=config['JWT_AUDIENCE'])
 
     try:
-        user = AppUser.query_by_subject(decoded['sub']).one()
+        user = AppUser.query_by_email(decoded['email']).one()
         current_app.logger.info(
             f'Active user: {user.email}',
             extra=UserEventLog(
