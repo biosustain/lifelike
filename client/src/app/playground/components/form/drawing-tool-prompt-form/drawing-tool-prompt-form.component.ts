@@ -1,39 +1,51 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
-import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 
 import { PromptComposer } from '../../../interface';
+
+export interface DrawingToolPromptFormParams {
+  formInput: {
+    context: string;
+    entities: string[];
+  };
+
+  contexts: string[];
+}
 
 @Component({
   selector: 'app-drawing-tool-prompt-form',
   templateUrl: './drawing-tool-prompt-from.component.html',
 })
-export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer {
-  constructor(private readonly openFileProvider: OpenFileProvider) {}
-
-  form = new FormGroup({
-    entities: new FormArrayWithFactory(() => new FormControl(''), []),
+export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
+  TEMPLATE = `
+What is the relationship between [entities], [context]?
+  `;
+  readonly form = new FormGroup({
     context: new FormControl(''),
+    entities: new FormArrayWithFactory(() => new FormControl(''), []),
   });
-  @Output() prompt$ = new EventEmitter<string>();
-  @Input() params: Record<string, any>;
+  @Output() readonly prompt$ = new EventEmitter<string>();
+  @Input() formInput: DrawingToolPromptFormParams['formInput'];
+  @Input() contexts: DrawingToolPromptFormParams['contexts'] = [];
 
-  readonly contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
-    map(({ contexts }) => contexts),
-    startWith([]),
-    distinctUntilChanged(),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
-
-  ngOnChanges({ params }: SimpleChanges) {
-    if (params) {
-      this.form.patchValue(params.currentValue);
+  ngOnChanges({ formInput }: SimpleChanges) {
+    if (formInput) {
+      this.form.patchValue(formInput.currentValue);
     }
   }
 
@@ -47,9 +59,17 @@ export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer
     );
   }
 
-  onSubmit() {
+  emitPrompt() {
     this.prompt$.emit(
       this.parseEntitiesToPropmpt(this.form.value.entities, this.form.value.context)
     );
+  }
+
+  onSubmit() {
+    this.emitPrompt();
+  }
+
+  ngOnInit() {
+    this.emitPrompt();
   }
 }

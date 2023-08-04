@@ -29,14 +29,11 @@ import {
 } from 'app/shared/utils/dropdown.controller.factory';
 import { idle } from 'app/shared/rxjs/idle-observable';
 import { EnrichmentVisualisationSelectService } from 'app/enrichment/services/enrichment-visualisation-select.service';
-import { openModal } from 'app/shared/utils/modals';
-import { PlaygroundComponent } from 'app/playground/components/playground.component';
 import {
   EnrichmentPromptFormComponent,
   EnrichmentPromptFormParams,
 } from 'app/playground/components/form/enrichment-prompt-form/enrichment-prompt-form.component';
-
-import { environment } from '../../../../../../environments/environment';
+import { OpenPlaygroundParams } from 'app/playground/components/open-playground/open-playground.component';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -126,14 +123,19 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  playgroundParams$ = combineLatest([
-    this.params$,
+  playgroundParams$: Observable<OpenPlaygroundParams<EnrichmentPromptFormParams>> = combineLatest([
+    combineLatest(this.params$, this.enrichmentService.enrichmentDocument$).pipe(
+      map(([params, { organism }]) => ({
+        ...params,
+        organism,
+      }))
+    ),
     this.enrichmentService.contexts$,
     this.geneNames$,
     this.goTerms$,
   ]).pipe(
-    map(([params, contexts, geneNames, goTerms]) => ({
-      ...params,
+    map(([formInput, contexts, geneNames, goTerms]) => ({
+      formInput,
       contexts,
       geneNames,
       goTerms,

@@ -9,7 +9,7 @@
       <ng-container #promptForm></ng-container>
     </as-split-area>
     <as-split-area>
-      <form [formGroup]="form" (ngSubmit)="onSubmitRequest($event)">
+      <form [formGroup]="form" (ngSubmit)="onSubmitRequest()">
         <h6 class="mb-4"><strong>Request parameters</strong></h6>
         <div class="form-group" *ngIf="form.controls['model'] as modelControl">
           <label [for]="dropdown.uid"> Model </label>

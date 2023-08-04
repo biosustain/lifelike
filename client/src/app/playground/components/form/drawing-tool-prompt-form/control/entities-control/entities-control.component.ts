@@ -8,5 +8,5 @@ import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
   templateUrl: './entities-control.component.html',
 })
 export class EntitiesControlComponent {
-  @Input() entitiesControl!: FormArrayWithFactory<FormControl>;
+  @Input() formControl!: FormArrayWithFactory<FormControl>;
 }

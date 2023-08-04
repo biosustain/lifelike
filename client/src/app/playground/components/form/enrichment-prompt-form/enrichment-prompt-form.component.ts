@@ -1,19 +1,24 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 
-import { Observable } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
-
-import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
-import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { filter as _filter, flow as _flow, join as _join } from 'lodash/fp';
 
 import { PromptComposer } from '../../../interface';
 
 export interface EnrichmentPromptFormParams {
-  context: string;
-  goTerm: string;
-  geneName: string;
+  formInput: {
+    context: string;
+    goTerm: string;
+    geneName: string;
+  };
 
   contexts: string[];
   goTerms: string[];
@@ -21,46 +26,80 @@ export interface EnrichmentPromptFormParams {
 }
 
 @Component({
-  selector: 'app-drawing-tool-prompt-form',
+  selector: 'app-enrichment-prompt-from',
   templateUrl: './enrichment-prompt-from.component.html',
 })
-export class EnrichmentPromptFormComponent implements OnChanges, PromptComposer {
+export class EnrichmentPromptFormComponent implements OnChanges, PromptComposer, OnInit {
+  PSEUDOCODE = `
+if all inputs are provided:
+  return a string that says: "For [organism], what function does [geneName] have in [term], in context of [context]?"
+if organism, term, and geneName are provided:
+  return a string that says: "For [organism], what function does [geneName] have in [term]?"
+if organism, term, and context are provided:
+  return a string that says: "For [organism], what is the relationship between [term] and [context]?"
+if organism and term are provided:
+  return a string that says: "What is the relationship between [organism] and [term]?"
+otherwise:
+  create a list of all the inputs that are not empty join the list with commas and separate by spaces
+  return a string that says: "What is the relationship between [list_str]?"
+  `
   readonly form = new FormGroup({
+    organism: new FormControl(''),
     context: new FormControl(''),
     goTerm: new FormControl(''),
     geneName: new FormControl(''),
   });
   @Output() readonly prompt$ = new EventEmitter<string>();
-  @Input() params: EnrichmentPromptFormParams;
+  @Input() formInput: EnrichmentPromptFormParams['formInput'];
+  @Input() contexts: EnrichmentPromptFormParams['contexts'] = [];
+  @Input() goTerms: EnrichmentPromptFormParams['goTerms'] = [];
+  @Input() geneNames: EnrichmentPromptFormParams['geneNames'] = [];
 
-  contexts: string[] = [];
-  goTerms: string[] = [];
-  geneNames: string[] = [];
-
-  ngOnChanges({ params }: SimpleChanges) {
-    if (params) {
-      const { context, goTerm, geneName } = params.currentValue;
-      this.form.patchValue({ context, goTerm, geneName });
-      const { contexts, goTerms, geneNames } = params.currentValue;
-      this.contexts = contexts;
-      this.goTerms = goTerms;
-      this.geneNames = geneNames;
+  ngOnChanges({ formInput }: SimpleChanges) {
+    if (formInput) {
+      this.form.patchValue(formInput.currentValue);
     }
   }
 
-  parseEntitiesToPropmpt(entities: string[], context: string) {
-    return (
-      'What is the relationship between ' +
-      entities.join(', ') +
-      (context ? `, ${context}` : '') +
-      '?'
-      // + '\nPlease provide URL sources for your answer.'
+  parseEntitiesToPropmpt(organism, term, context, geneName): string {
+    if (organism && term && context && geneName) {
+      return `For ${organism}, what function does ${geneName} have in ${term}, in context of ${context}?`;
+    }
+    if (organism && term && geneName) {
+      return `For ${organism}, what function does ${geneName} have in ${term}?`;
+    }
+    if (organism && term && context) {
+      return `For ${organism}, what is the relationship between ${term} and ${context}?`;
+    }
+    if (organism && term) {
+      return `What is the ralationship between ${organism} and ${term}?`;
+    }
+    const listStr = _flow(_filter(Boolean), _join(', '))([organism, term, context, geneName]);
+    return `What is the ralationship between ${listStr}?`;
+  }
+
+  private organismPicked(organism: string) {
+    const organismControl = this.form.get('organism');
+    organismControl.setValue(organism);
+    organismControl.markAsDirty();
+  }
+
+  emitPrompt() {
+    this.prompt$.emit(
+      this.parseEntitiesToPropmpt(
+        this.form.value.organism,
+        this.form.value.goTerm,
+        this.form.value.context,
+        this.form.value.geneName
+      )
     );
   }
 
   onSubmit() {
-    this.prompt$.emit(
-      this.parseEntitiesToPropmpt(this.form.value.entities, this.form.value.context)
-    );
+    this.emitPrompt();
+  }
+
+  ngOnInit() {
+    this.emitPrompt();
   }
 }

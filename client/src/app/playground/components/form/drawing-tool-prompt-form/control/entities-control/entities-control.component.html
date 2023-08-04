@@ -1,14 +1,14 @@
-<ng-container *ngFor="let control of entitiesControl.controls; let i = index">
+<ng-container *ngFor="let control of formControl.controls; let i = index">
   <div class="input-group input-border rounded mb-2 w-100 flex-shrink-0">
-    <input type="text" class="form-control border-0" [formControl]="control"/>
+    <input type="text" class="form-control border-0" [formControl]="control" />
     <div class="input-group-append">
-      <button class="form-control border-0" type="button" (click)="entitiesControl.removeAt(i)">
+      <button class="form-control border-0" type="button" (click)="formControl.removeAt(i)">
         <i class="fa fa-fw fa-times"></i>
       </button>
     </div>
   </div>
 </ng-container>
-<button class="btn btn-secondary" type="button" (click)="entitiesControl.add()">
+<button class="btn btn-secondary" type="button" (click)="formControl.add()">
   <i class="fa fa-fw fa-plus"></i>
   Add entity
 </button>

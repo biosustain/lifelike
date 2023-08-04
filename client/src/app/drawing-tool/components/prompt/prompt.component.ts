@@ -1,18 +1,9 @@
-import {
-  Component,
-  Injector,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Injector, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subject } from 'rxjs';
 import {
   distinctUntilChanged,
-  filter,
   map,
   shareReplay,
   startWith,
@@ -21,18 +12,20 @@ import {
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
+import {
+  DrawingToolPromptFormComponent,
+  DrawingToolPromptFormParams,
+} from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
+import {
+  OpenPlaygroundComponent,
+  OpenPlaygroundParams,
+} from 'app/playground/components/open-playground/open-playground.component';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { ExplainService } from 'app/shared/services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
 } from 'app/shared/utils/dropdown.controller.factory';
-import { PlaygroundComponent } from 'app/playground/components/playground.component';
-import { openModal } from 'app/shared/utils/modals';
-import { OpenPlaygroundComponent } from 'app/playground/components/open-playground/open-playground.component';
-import { DrawingToolPromptFormComponent } from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
-
-import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-drawing-tool-prompt',
@@ -42,8 +35,8 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   constructor(
     private readonly explainService: ExplainService,
     private readonly openFileProvider: OpenFileProvider,
-    private readonly modalService: NgbModal,
-    private readonly injector: Injector
+    private readonly injector: Injector,
+    private readonly modalService: NgbModal
   ) {}
 
   private destroy$: Subject<void> = new Subject();
@@ -91,8 +84,21 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     )
   );
 
-  playgroundParams$: Observable<OpenPlaygroundComponent['params']> = this.params$.pipe(
-    map((promptFormParams) => ({ promptFormParams, promptForm: DrawingToolPromptFormComponent }))
+  playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> = combineLatest([
+    this.params$,
+    this.contexts$,
+  ]).pipe(
+    map(([{ temperature, entities, context }, contexts]) => ({
+      promptFormParams: {
+        formInput: {
+          entities: Array.from(entities),
+          context,
+        },
+        contexts,
+      },
+      promptForm: DrawingToolPromptFormComponent,
+      temperature,
+    }))
   );
 
   public ngOnChanges({ entities }: SimpleChanges) {

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -12,6 +12,6 @@ import {
   templateUrl: './auto-fill-control.component.html',
 })
 export class AutoFillControlComponent {
-  @Input() control: FormControl;
+  @Input() formControl!: FormControl;
   @Input() suggestions: string[];
 }
