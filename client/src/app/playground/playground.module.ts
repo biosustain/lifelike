@@ -10,12 +10,13 @@ import { ChatGPT } from './ChatGPT';
 import form from './components/form';
 import { AutoFillControlComponent } from './components/form/enrichment-prompt-form/control/auto-fill-control/auto-fill-control.component';
 import { OpenPlaygroundComponent } from './components/open-playground/open-playground.component';
+import { EnrichmentPromptFormComponent } from './components/form/enrichment-prompt-form/enrichment-prompt-form.component';
 
 @NgModule({
-  entryComponents: [DrawingToolPromptFormComponent, ...form],
+  entryComponents: [DrawingToolPromptFormComponent, EnrichmentPromptFormComponent],
   imports: [SharedModule],
   declarations,
-  exports: [OpenPlaygroundComponent],
+  exports: [OpenPlaygroundComponent, DrawingToolPromptFormComponent, EnrichmentPromptFormComponent],
   providers: [DynamicViewService, ChatGPT],
 })
 export class PlaygroundModule {

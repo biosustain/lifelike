@@ -4,7 +4,7 @@ import { find as _find, map as _map } from 'lodash/fp';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
-import { ChatGPTModel, ExplainService } from '../shared/services/explain.service';
+import { ChatGPTModel, ExplainService } from 'app/shared/services/explain.service';
 
 interface CompletitionsTokenParams {
   prompt: string;

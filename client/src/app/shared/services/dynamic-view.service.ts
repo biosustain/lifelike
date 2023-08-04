@@ -11,8 +11,10 @@ import {
   ViewRef,
 } from '@angular/core';
 
-import { reduce as _reduce, flow as _flow, isEmpty as _isEmpty } from 'lodash/fp';
+import { difference as _difference, reduce as _reduce } from 'lodash/fp';
 import { isObservable, Observable } from 'rxjs';
+
+import { inDevMode } from '../utils/debug';
 
 export interface DynamicComponentRef<ComponentInterface> {
   componentRef?: ComponentRef<ComponentInterface>;
@@ -37,7 +39,7 @@ export class DynamicViewService {
     componentInstance: T,
     inputsDefinitions: { propName: string; templateName: string }[],
     changed: Set<string>,
-    changeCallback?: (changes: SimpleChanges) => void,
+    changeCallback?: (changes: SimpleChanges) => void
   ): (inputs: Partial<T>) => void {
     return (inputs) => {
       // Calculate changes and set input values as side effect
@@ -46,13 +48,19 @@ export class DynamicViewService {
           const prev = componentInstance[propName];
           const next = inputs[templateName];
           if (prev !== next) {
-            result[templateName] = new SimpleChange(prev, next, changed.has(templateName));
+            result[templateName] = new SimpleChange(prev, next, !changed.has(templateName));
             componentInstance[propName] = next;
             changed.add(templateName);
           }
         }
         return result;
       }, {} as SimpleChanges)(inputsDefinitions);
+      inDevMode(() =>
+        _difference(
+          Object.keys(inputs),
+          /* definedInputs */ inputsDefinitions.map(({ templateName }) => templateName)
+        ).forEach((key) => console.warn(`Input "${key}" is not defined in component`))
+      );
       (componentInstance as Partial<OnChanges>).ngOnChanges?.(changes);
       changeCallback?.(changes);
     };
@@ -82,7 +90,7 @@ export class DynamicViewService {
     const componentRef = viewRef.createComponent(componentFactory);
     const componentCdr = componentRef.injector.get(ChangeDetectorRef);
     const updateInputs = DynamicViewService.updateInputs(
-      componentRef,
+      componentRef.instance,
       componentFactory.inputs,
       new Set<string>(),
       () => componentCdr.detectChanges()

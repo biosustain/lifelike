@@ -5,8 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
-
-import { CompletitionsParams } from '../components/prompt/playground/ChatGPT';
+import { CompletitionsParams } from 'app/playground/ChatGPT';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
