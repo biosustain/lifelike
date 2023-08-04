@@ -42,7 +42,7 @@ if organism and term are provided:
 otherwise:
   create a list of all the inputs that are not empty join the list with commas and separate by spaces
   return a string that says: "What is the relationship between [list_str]?"
-  `
+  `;
   readonly form = new FormGroup({
     organism: new FormControl(''),
     context: new FormControl(''),
