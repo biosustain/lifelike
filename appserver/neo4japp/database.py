@@ -50,7 +50,7 @@ db = SQLAlchemy(
     },
 )
 
-_jwt_client: PyJWKClient
+_jwt_client: PyJWKClient = None
 
 
 # Note that this client should only be used when JWKS_URL has been configured!
