@@ -1,0 +1,739 @@
+affinity: {}
+args: []
+auth:
+  adminPassword: ***REMOVED***
+  adminUser: admin
+  existingSecret: ""
+  passwordSecretKey: ""
+  tls:
+    enabled: false
+autoscaling:
+  enabled: false
+  maxReplicas: 11
+  minReplicas: 1
+  targetCPU: ""
+  targetMemory: ""
+cache:
+  enabled: true
+  stackFile: ""
+  stackName: kubernetes
+clusterDomain: cluster.local
+command: []
+common:
+  exampleValue: common-chart
+  global:
+    imagePullSecrets: []
+    imageRegistry: ""
+    storageClass: ""
+commonAnnotations: {}
+commonLabels: {}
+configuration: ""
+containerPorts:
+  http: 8080
+  https: 8443
+  infinispan: 7800
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 1001
+customLivenessProbe: {}
+customReadinessProbe: {}
+customStartupProbe: {}
+diagnosticMode:
+  args:
+  - infinity
+  command:
+  - sleep
+  enabled: false
+dnsConfig: {}
+dnsPolicy: ""
+enableServiceLinks: true
+existingConfigmap: ""
+externalDatabase:
+  database: bitnami_keycloak
+  existingSecret: ""
+  existingSecretDatabaseKey: ""
+  existingSecretHostKey: ""
+  existingSecretPasswordKey: ""
+  existingSecretPortKey: ""
+  existingSecretUserKey: ""
+  host: ""
+  password: ""
+  port: 5432
+  user: bn_keycloak
+extraContainerPorts: []
+extraDeploy: []
+extraEnvVars:
+- name: KEYCLOAK_EXTRA_ARGS
+  value: -Dkeycloak.profile.feature.upload_scripts=enabled
+extraEnvVarsCM: ""
+extraEnvVarsSecret: ""
+extraStartupArgs: ""
+extraVolumeMounts: []
+extraVolumes: []
+fullnameOverride: ""
+global:
+  imagePullSecrets: []
+  imageRegistry: ""
+  storageClass: ""
+hostAliases: []
+httpRelativePath: /
+image:
+  debug: false
+  digest: ""
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+  registry: docker.io
+  repository: bitnami/keycloak
+  tag: 19.0.3-debian-11-r15
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers 'Access-Control-Allow-Headers: Accept-Lifelike-Version,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization';
+    nginx.ingress.kubernetes.io/proxy-body-size: 10m
+    nginx.ingress.kubernetes.io/proxy-buffer-size: 256k
+  enabled: true
+  ingressClassName: nginx
+  hostname: auth.az.lifelike.bio
+  tls: true
+initContainers: []
+initdbScripts: {}
+initdbScriptsConfigMap: ""
+keycloakConfigCli:
+  annotations:
+    helm.sh/hook: post-install,post-upgrade,post-rollback
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+    helm.sh/hook-weight: "5"
+  args: []
+  backoffLimit: 1
+  cleanupAfterFinished:
+    enabled: false
+    seconds: 600
+  command: []
+  configuration: {}
+  containerSecurityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1001
+  enabled: false
+  existingConfigmap: ""
+  extraEnvVars: []
+  extraEnvVarsCM: ""
+  extraEnvVarsSecret: ""
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  image:
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: docker.io
+    repository: bitnami/keycloak-config-cli
+    tag: 5.5.0-debian-11-r4
+  initContainers: []
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext:
+    enabled: true
+    fsGroup: 1001
+  podTolerations: []
+  resources:
+    limits: {}
+    requests: {}
+  sidecars: []
+kubeVersion: ""
+lifecycleHooks: {}
+livenessProbe:
+  enabled: true
+  failureThreshold: 3
+  initialDelaySeconds: 300
+  periodSeconds: 1
+  successThreshold: 1
+  timeoutSeconds: 5
+logging:
+  level: INFO
+  output: default
+metrics:
+  enabled: false
+  prometheusRule:
+    enabled: false
+    groups: []
+    labels: {}
+    namespace: ""
+  service:
+    annotations:
+      prometheus.io/port: '{{ .Values.metrics.service.ports.http }}'
+      prometheus.io/scrape: "true"
+    ports:
+      http: 8080
+  serviceMonitor:
+    enabled: false
+    endpoints:
+    - path: /metrics
+    - path: /realms/master/metrics
+    honorLabels: false
+    interval: 30s
+    jobLabel: ""
+    labels: {}
+    metricRelabelings: []
+    namespace: ""
+    path: ""
+    port: http
+    relabelings: []
+    scrapeTimeout: ""
+    selector: {}
+nameOverride: ""
+namespaceOverride: ""
+networkPolicy:
+  additionalRules: {}
+  allowExternal: true
+  enabled: false
+nodeAffinityPreset:
+  key: ""
+  type: ""
+  values: []
+nodeSelector: {}
+pdb:
+  create: false
+  maxUnavailable: ""
+  minAvailable: 1
+podAffinityPreset: ""
+podAnnotations: {}
+podAntiAffinityPreset: soft
+podLabels: {}
+podManagementPolicy: Parallel
+podSecurityContext:
+  enabled: true
+  fsGroup: 1001
+postgresql:
+  architecture: standalone
+  audit:
+    clientMinMessages: error
+    logConnections: false
+    logDisconnections: false
+    logHostname: false
+    logLinePrefix: ""
+    logTimezone: ""
+    pgAuditLog: ""
+    pgAuditLogCatalog: "off"
+  auth:
+    database: bitnami_keycloak
+    enablePostgresUser: true
+    existingSecret: ""
+    password: ""
+    postgresPassword: ""
+    replicationPassword: ""
+    replicationUsername: repl_user
+    secretKeys:
+      adminPasswordKey: postgres-password
+      replicationPasswordKey: replication-password
+      userPasswordKey: password
+    usePasswordFiles: false
+    username: bn_keycloak
+  clusterDomain: cluster.local
+  common:
+    exampleValue: common-chart
+    global:
+      imagePullSecrets: []
+      imageRegistry: ""
+      postgresql:
+        auth:
+          database: ""
+          existingSecret: ""
+          password: ""
+          postgresPassword: ""
+          secretKeys:
+            adminPasswordKey: ""
+            replicationPasswordKey: ""
+            userPasswordKey: ""
+          username: ""
+        service:
+          ports:
+            postgresql: ""
+      storageClass: ""
+  commonAnnotations: {}
+  commonLabels: {}
+  containerPorts:
+    postgresql: 5432
+  diagnosticMode:
+    args:
+    - infinity
+    command:
+    - sleep
+    enabled: false
+  enabled: true
+  extraDeploy: []
+  fullnameOverride: ""
+  global:
+    imagePullSecrets: []
+    imageRegistry: ""
+    postgresql:
+      auth:
+        database: ""
+        existingSecret: ""
+        password: ""
+        postgresPassword: ""
+        secretKeys:
+          adminPasswordKey: ""
+          replicationPasswordKey: ""
+          userPasswordKey: ""
+        username: ""
+      service:
+        ports:
+          postgresql: ""
+    storageClass: ""
+  image:
+    debug: false
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: 15.1.0-debian-11-r0
+  kubeVersion: ""
+  ldap:
+    basedn: ""
+    binddn: ""
+    bindpw: ""
+    enabled: false
+    port: ""
+    prefix: ""
+    scheme: ""
+    searchAttribute: ""
+    searchFilter: ""
+    server: ""
+    suffix: ""
+    tls:
+      enabled: false
+    uri: ""
+  metrics:
+    containerPorts:
+      metrics: 9187
+    containerSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      runAsUser: 1001
+    customLivenessProbe: {}
+    customMetrics: {}
+    customReadinessProbe: {}
+    customStartupProbe: {}
+    enabled: false
+    extraEnvVars: []
+    image:
+      digest: ""
+      pullPolicy: IfNotPresent
+      pullSecrets: []
+      registry: docker.io
+      repository: bitnami/postgres-exporter
+      tag: 0.11.1-debian-11-r27
+    livenessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    prometheusRule:
+      enabled: false
+      labels: {}
+      namespace: ""
+      rules: []
+    readinessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+      limits: {}
+      requests: {}
+    service:
+      annotations:
+        prometheus.io/port: '{{ .Values.metrics.service.ports.metrics }}'
+        prometheus.io/scrape: "true"
+      clusterIP: ""
+      ports:
+        metrics: 9187
+      sessionAffinity: None
+    serviceMonitor:
+      enabled: false
+      honorLabels: false
+      interval: ""
+      jobLabel: ""
+      labels: {}
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scrapeTimeout: ""
+      selector: {}
+    startupProbe:
+      enabled: false
+      failureThreshold: 15
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+  nameOverride: ""
+  networkPolicy:
+    egressRules:
+      customRules: {}
+      denyConnectionsToExternal: false
+    enabled: false
+    ingressRules:
+      primaryAccessOnlyFrom:
+        customRules: {}
+        enabled: false
+        namespaceSelector: {}
+        podSelector: {}
+      readReplicasAccessOnlyFrom:
+        customRules: {}
+        enabled: false
+        namespaceSelector: {}
+        podSelector: {}
+    metrics:
+      enabled: false
+      namespaceSelector: {}
+      podSelector: {}
+  postgresqlDataDir: /bitnami/postgresql/data
+  postgresqlSharedPreloadLibraries: pgaudit
+  primary:
+    affinity: {}
+    annotations: {}
+    args: []
+    command: []
+    configuration: ""
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1001
+    customLivenessProbe: {}
+    customReadinessProbe: {}
+    customStartupProbe: {}
+    existingConfigmap: ""
+    existingExtendedConfigmap: ""
+    extendedConfiguration: ""
+    extraEnvVars: []
+    extraEnvVarsCM: ""
+    extraEnvVarsSecret: ""
+    extraPodSpec: {}
+    extraVolumeMounts: []
+    extraVolumes: []
+    hostAliases: []
+    hostIPC: false
+    hostNetwork: false
+    initContainers: []
+    initdb:
+      args: ""
+      password: ""
+      postgresqlWalDir: ""
+      scripts: {}
+      scriptsConfigMap: ""
+      scriptsSecret: ""
+      user: ""
+    labels: {}
+    lifecycleHooks: {}
+    livenessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: primary
+    nodeAffinityPreset:
+      key: ""
+      type: ""
+      values: []
+    nodeSelector: {}
+    persistence:
+      accessModes:
+      - ReadWriteOnce
+      annotations: {}
+      dataSource: {}
+      enabled: true
+      existingClaim: ""
+      labels: {}
+      mountPath: /bitnami/postgresql
+      selector: {}
+      size: 8Gi
+      storageClass: ""
+      subPath: ""
+    pgHbaConfiguration: ""
+    podAffinityPreset: ""
+    podAnnotations: {}
+    podAntiAffinityPreset: soft
+    podLabels: {}
+    podSecurityContext:
+      enabled: true
+      fsGroup: 1001
+    priorityClassName: ""
+    readinessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources:
+      limits: {}
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    schedulerName: ""
+    service:
+      annotations: {}
+      clusterIP: ""
+      externalTrafficPolicy: Cluster
+      extraPorts: []
+      headless:
+        annotations: {}
+      loadBalancerIP: ""
+      loadBalancerSourceRanges: []
+      nodePorts:
+        postgresql: ""
+      ports:
+        postgresql: 5432
+      sessionAffinity: None
+      sessionAffinityConfig: {}
+      type: ClusterIP
+    sidecars: []
+    standby:
+      enabled: false
+      primaryHost: ""
+      primaryPort: ""
+    startupProbe:
+      enabled: false
+      failureThreshold: 15
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    terminationGracePeriodSeconds: ""
+    tolerations: []
+    topologySpreadConstraints: []
+    updateStrategy:
+      rollingUpdate: {}
+      type: RollingUpdate
+  psp:
+    create: false
+  rbac:
+    create: false
+    rules: []
+  readReplicas:
+    affinity: {}
+    annotations: {}
+    args: []
+    command: []
+    containerSecurityContext:
+      enabled: true
+      runAsUser: 1001
+    customLivenessProbe: {}
+    customReadinessProbe: {}
+    customStartupProbe: {}
+    extendedConfiguration: ""
+    extraEnvVars: []
+    extraEnvVarsCM: ""
+    extraEnvVarsSecret: ""
+    extraPodSpec: {}
+    extraVolumeMounts: []
+    extraVolumes: []
+    hostAliases: []
+    hostIPC: false
+    hostNetwork: false
+    initContainers: []
+    labels: {}
+    lifecycleHooks: {}
+    livenessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    name: read
+    nodeAffinityPreset:
+      key: ""
+      type: ""
+      values: []
+    nodeSelector: {}
+    persistence:
+      accessModes:
+      - ReadWriteOnce
+      annotations: {}
+      dataSource: {}
+      enabled: true
+      existingClaim: ""
+      labels: {}
+      mountPath: /bitnami/postgresql
+      selector: {}
+      size: 8Gi
+      storageClass: ""
+      subPath: ""
+    podAffinityPreset: ""
+    podAnnotations: {}
+    podAntiAffinityPreset: soft
+    podLabels: {}
+    podSecurityContext:
+      enabled: true
+      fsGroup: 1001
+    priorityClassName: ""
+    readinessProbe:
+      enabled: true
+      failureThreshold: 6
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    replicaCount: 1
+    resources:
+      limits: {}
+      requests:
+        cpu: 250m
+        memory: 256Mi
+    schedulerName: ""
+    service:
+      annotations: {}
+      clusterIP: ""
+      externalTrafficPolicy: Cluster
+      extraPorts: []
+      headless:
+        annotations: {}
+      loadBalancerIP: ""
+      loadBalancerSourceRanges: []
+      nodePorts:
+        postgresql: ""
+      ports:
+        postgresql: 5432
+      sessionAffinity: None
+      sessionAffinityConfig: {}
+      type: ClusterIP
+    sidecars: []
+    startupProbe:
+      enabled: false
+      failureThreshold: 15
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    terminationGracePeriodSeconds: ""
+    tolerations: []
+    topologySpreadConstraints: []
+    updateStrategy:
+      rollingUpdate: {}
+      type: RollingUpdate
+  replication:
+    applicationName: my_application
+    numSynchronousReplicas: 0
+    synchronousCommit: "off"
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: false
+    name: ""
+  serviceBindings:
+    enabled: false
+  shmVolume:
+    enabled: true
+    sizeLimit: ""
+  tls:
+    autoGenerated: false
+    certCAFilename: ""
+    certFilename: ""
+    certKeyFilename: ""
+    certificatesSecret: ""
+    crlFilename: ""
+    enabled: false
+    preferServerCiphers: true
+  volumePermissions:
+    containerSecurityContext:
+      runAsUser: 0
+    enabled: false
+    image:
+      digest: ""
+      pullPolicy: IfNotPresent
+      pullSecrets: []
+      registry: docker.io
+      repository: bitnami/bitnami-shell
+      tag: 11-debian-11-r50
+    resources:
+      limits: {}
+      requests: {}
+priorityClassName: ""
+production: false
+proxy: edge
+rbac:
+  create: false
+  rules: []
+readinessProbe:
+  enabled: true
+  failureThreshold: 3
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+replicaCount: 1
+resources:
+  limits: {}
+  requests: {}
+schedulerName: ""
+service:
+  annotations: {}
+  clusterIP: ""
+  externalTrafficPolicy: Cluster
+  extraHeadlessPorts: []
+  extraPorts: []
+  headless:
+    annotations: {}
+    extraPorts: []
+  http:
+    enabled: true
+  loadBalancerIP: ""
+  loadBalancerSourceRanges: []
+  nodePorts:
+    http: ""
+    https: ""
+  ports:
+    http: 80
+    https: 443
+  sessionAffinity: None
+  sessionAffinityConfig: {}
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  automountServiceAccountToken: true
+  create: true
+  extraLabels: {}
+  name: ""
+sidecars: []
+spi:
+  existingSecret: ""
+  hostnameVerificationPolicy: ""
+  passwordsSecret: ""
+  truststoreFilename: keycloak-spi.truststore.jks
+  truststorePassword: ""
+startupProbe:
+  enabled: false
+  failureThreshold: 60
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  successThreshold: 1
+  timeoutSeconds: 1
+terminationGracePeriodSeconds: ""
+tls:
+  autoGenerated: false
+  enabled: false
+  existingSecret: ""
+  keystoreFilename: keycloak.keystore.jks
+  keystorePassword: ""
+  passwordsSecret: ""
+  truststoreFilename: keycloak.truststore.jks
+  truststorePassword: ""
+  usePem: false
+tolerations: []
+topologySpreadConstraints: []
+updateStrategy:
+  rollingUpdate: {}
+  type: RollingUpdate
