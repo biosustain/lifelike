@@ -4,7 +4,15 @@ from typing import Tuple, Union, Type
 
 
 class ServerException(Exception):
-    def __init__(self, title=None, message=None, additional_msgs=None, fields=None, code=500, *args):  # noqa
+    def __init__(
+        self,
+        title=None,
+        message=None,
+        additional_msgs=None,
+        fields=None,
+        code=500,
+        *args,
+    ):  # noqa
         """
         Create a new exception.
         :param title: the title of the error, which sometimes used on the client
@@ -66,7 +74,7 @@ def wrap_exceptions(
     wrapped_exceptions: Union[
         Type[Exception], Tuple[Type[Exception], ...]
     ] = ServerException,
-    **exception_kwargs
+    **exception_kwargs,
 ):
     """Decorator that reraises wrapping exception in case given exception occurs"""
 

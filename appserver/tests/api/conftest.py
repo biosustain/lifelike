@@ -184,6 +184,7 @@ def mock_get_organisms_from_gene_ids_result(monkeypatch):
         get_organisms_from_gene_ids_result,
     )
 
+
 ####################
 # End service mocks
 ####################

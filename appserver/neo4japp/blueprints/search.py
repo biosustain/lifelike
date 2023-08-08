@@ -45,14 +45,7 @@ bp = Blueprint('search', __name__, url_prefix='/search')
 
 @bp.route('/visualizer', methods=['POST'])
 @use_kwargs(VizSearchSchema)
-def viz_search(
-        query,
-        page,
-        limit,
-        domains,
-        entities,
-        organism
-):
+def viz_search(query, page, limit, domains, entities, organism):
     current_app.logger.info(
         f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
@@ -62,9 +55,11 @@ def viz_search(
     )
 
     if not query:
-        return jsonify({
-            'result': FTSResult(query, [], 0, page, limit).to_dict(),
-        })
+        return jsonify(
+            {
+                'result': FTSResult(query, [], 0, page, limit).to_dict(),
+            }
+        )
 
     arango_client = get_or_create_arango_client()
     results = visualizer_search(
@@ -76,9 +71,13 @@ def viz_search(
         domains=domains,
         entities=entities,
     )
-    return jsonify({
-        'result': FTSResult(query, results['rows'], results['count'], page, limit).to_dict(),
-    })
+    return jsonify(
+        {
+            'result': FTSResult(
+                query, results['rows'], results['count'], page, limit
+            ).to_dict(),
+        }
+    )
 
 
 # Start Search Helpers #
@@ -354,7 +353,9 @@ class SynonymSearchView(FilesystemBaseView):
         arango_client = get_or_create_arango_client()
 
         try:
-            results = get_synonyms(arango_client, search_term, organisms, types, skip, limit)
+            results = get_synonyms(
+                arango_client, search_term, organisms, types, skip, limit
+            )
             count = get_synonyms_count(arango_client, search_term, organisms, types)
         except Exception as e:
             current_app.logger.error(
@@ -382,8 +383,7 @@ bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'
 def get_organism(organism_tax_id: str):
     arango_client = get_or_create_arango_client()
     return SuccessResponse(
-        result=get_organism_with_tax_id(arango_client, organism_tax_id),
-        status_code=200
+        result=get_organism_with_tax_id(arango_client, organism_tax_id), status_code=200
     )
 
 

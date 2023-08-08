@@ -10,5 +10,5 @@ def get_organisms_from_gene_ids(arango_client: ArangoClient, gene_ids: Dict[Any,
     return execute_arango_query(
         db=get_db(arango_client),
         query=get_organisms_from_gene_ids_query(),
-        gene_ids=list(gene_ids.keys())
+        gene_ids=list(gene_ids.keys()),
     )

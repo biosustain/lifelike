@@ -29,14 +29,14 @@ async def annotate_file(
     local_inclusions: List[dict] = None,
     organism_synonym: str = None,
     organism_taxonomy_id: str = None,
-    annotation_configs=None
+    annotation_configs=None,
 ):
     effective_annotation_configs = annotation_configs or DEFAULT_ANNOTATION_CONFIGS
 
     try:
         text, parsed = Pipeline.parse_file(
             file_id=file_id,
-            exclude_references=effective_annotation_configs['exclude_references']  # type: ignore
+            exclude_references=effective_annotation_configs['exclude_references'],  # type: ignore
         )
 
         pipeline = Pipeline(
@@ -44,32 +44,34 @@ async def annotate_file(
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_annotation_service,
-                'bs': get_bioc_document_service
+                'bs': get_bioc_document_service,
             },
-            text=text, parsed=parsed
+            text=text,
+            parsed=parsed,
         )
 
-        annotations_json = pipeline.get_globals(
-            global_exclusions=global_exclusions or [],
-            local_exclusions=local_exclusions or [],
-            local_inclusions=local_inclusions or []
-        ).identify(
-            annotation_methods=effective_annotation_configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism_synonym or '',
-            specified_organism_tax_id=organism_taxonomy_id or '',
-            custom_annotations=local_inclusions or [],
-            file_id=file_id
+        annotations_json = (
+            pipeline.get_globals(
+                global_exclusions=global_exclusions or [],
+                local_exclusions=local_exclusions or [],
+                local_inclusions=local_inclusions or [],
+            )
+            .identify(
+                annotation_methods=effective_annotation_configs['annotation_methods']
+            )
+            .annotate(
+                specified_organism_synonym=organism_synonym or '',
+                specified_organism_tax_id=organism_taxonomy_id or '',
+                custom_annotations=local_inclusions or [],
+                file_id=file_id,
+            )
         )
         logger.debug(f'File successfully annotated: {file_id}')
     except AnnotationError as e:
         logger.error(e, exc_info=True)
         logger.error(f'Could not annotate file: {file_id}')
         raise
-    return {
-        'file_id': file_id,
-        'annotations': annotations_json
-    }
+    return {'file_id': file_id, 'annotations': annotations_json}
 
 
 # TODO: Need to make the annotation pipeline calls async so the event loop can cede control while
@@ -83,7 +85,7 @@ async def annotate_text(
     local_inclusions: List[dict] = None,
     organism_synonym: str = None,
     organism_taxonomy_id: str = None,
-    annotation_configs=None
+    annotation_configs=None,
 ):
     """Annotate all text in enrichment table."""
     effective_annotation_configs = annotation_configs or DEFAULT_ANNOTATION_CONFIGS
@@ -95,40 +97,49 @@ async def annotate_text(
             'aers': get_recognition_service,
             'tkner': get_annotation_tokenizer,
             'as': get_enrichment_annotation_service,
-            'bs': get_bioc_document_service
+            'bs': get_bioc_document_service,
         },
-        text=text, parsed=parsed
+        text=text,
+        parsed=parsed,
     )
 
-    annotations_json = pipeline.get_globals(
-        global_exclusions=global_exclusions or [],
-        local_exclusions=local_exclusions or [],
-        local_inclusions=local_inclusions or []
-    ).identify(
-        annotation_methods=effective_annotation_configs['annotation_methods']
-    ).annotate(
-        specified_organism_synonym=organism_synonym or '',
-        specified_organism_tax_id=organism_taxonomy_id or '',
-        custom_annotations=local_inclusions or [],
-        file_id=file_id,
-        enrichment_mappings=enrichment_mapping['text_index_map']
+    annotations_json = (
+        pipeline.get_globals(
+            global_exclusions=global_exclusions or [],
+            local_exclusions=local_exclusions or [],
+            local_inclusions=local_inclusions or [],
+        )
+        .identify(annotation_methods=effective_annotation_configs['annotation_methods'])
+        .annotate(
+            specified_organism_synonym=organism_synonym or '',
+            specified_organism_tax_id=organism_taxonomy_id or '',
+            custom_annotations=local_inclusions or [],
+            file_id=file_id,
+            enrichment_mappings=enrichment_mapping['text_index_map'],
+        )
     )
 
     # NOTE: code below to calculate the correct offsets for enrichment table
     # and correctly highlight based on cell is not pretty
     annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
     # sort by lo_location_offset to go from beginning to end
-    sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
+    sorted_annotations_list = sorted(
+        annotations_list, key=lambda x: x['loLocationOffset']
+    )
 
     prev_index = -1
     enriched_gene = ''
 
     start = time.time()
     for index, cell_text in enrichment_mapping['text_index_map']:
-        annotation_chunk = [anno for anno in sorted_annotations_list if anno.get(
-            'hiLocationOffset', None) and anno.get('hiLocationOffset') <= index]
+        annotation_chunk = [
+            anno
+            for anno in sorted_annotations_list
+            if anno.get('hiLocationOffset', None)
+            and anno.get('hiLocationOffset') <= index
+        ]
         # it's sorted so we can do this to make the list shorter every iteration
-        sorted_annotations_list = sorted_annotations_list[len(annotation_chunk):]
+        sorted_annotations_list = sorted_annotations_list[len(annotation_chunk) :]
 
         # update JSON to have enrichment row and domain...
         for anno in annotation_chunk:
@@ -137,10 +148,12 @@ async def annotate_text(
                 # first cell will always have the correct index
                 # update index offset to be relative to the cell again
                 # since they're relative to the combined text
-                anno['loLocationOffset'] = \
+                anno['loLocationOffset'] = (
                     anno['loLocationOffset'] - (prev_index + 1) - 1
-                anno['hiLocationOffset'] = \
+                )
+                anno['hiLocationOffset'] = (
                     anno['loLocationOffset'] + anno['keywordLength'] - 1
+                )
 
             if 'domain' in cell_text:
                 # imported should come first for each row
@@ -154,10 +167,11 @@ async def annotate_text(
                     anno['enrichmentDomain']['domain'] = cell_text['domain']
 
         snippet = _highlight_annotations(
-            original_text=cell_text['text'],
-            annotations=annotation_chunk
+            original_text=cell_text['text'], annotations=annotation_chunk
         )
-        enrichment_genes_index = raw_enrichment_data['result']['genes'][cell_text['index']]
+        enrichment_genes_index = raw_enrichment_data['result']['genes'][
+            cell_text['index']
+        ]
         if cell_text['domain'] == 'Imported':
             enrichment_genes_index['annotatedImported'] = snippet
         elif cell_text['domain'] == 'Matched':
@@ -165,11 +179,9 @@ async def annotate_text(
         elif cell_text['domain'] == 'Full Name':
             enrichment_genes_index['annotatedFullName'] = snippet
         else:
-            enrichment_genes_index \
-                .get('domains') \
-                .get(cell_text['domain']) \
-                .get(cell_text['label'])['annotatedText'] = \
-                snippet
+            enrichment_genes_index.get('domains').get(cell_text['domain']).get(
+                cell_text['label']
+            )['annotatedText'] = snippet
 
         prev_index = index
 
@@ -179,7 +191,7 @@ async def annotate_text(
     return {
         'file_id': file_id,
         'annotations': annotations_json,
-        'enrichment_annotations': raw_enrichment_data
+        'enrichment_annotations': raw_enrichment_data,
     }
 
 
@@ -198,9 +210,11 @@ def _highlight_annotations(original_text: str, annotations: List[dict]):
         lo_location_offset = annotation['loLocationOffset']
         hi_location_offset = annotation['hiLocationOffset']
 
-        text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
-               f'{term}' \
-               f'</annotation>'
+        text = (
+            f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">'
+            f'{term}'
+            f'</annotation>'
+        )
 
         if lo_location_offset == 0:
             prev_ending_index = hi_location_offset
@@ -213,10 +227,10 @@ def _highlight_annotations(original_text: str, annotations: List[dict]):
             else:
                 # TODO: would lo_location_offset == prev_ending_index ever happen?
                 # if yes, need to handle it
-                texts.append(original_text[prev_ending_index + 1:lo_location_offset])
+                texts.append(original_text[prev_ending_index + 1 : lo_location_offset])
                 prev_ending_index = hi_location_offset
                 texts.append(text)
 
-    texts.append(original_text[prev_ending_index + 1:])
+    texts.append(original_text[prev_ending_index + 1 :])
     final_text = ''.join(texts)
     return f'<snippet>{final_text}</snippet>'

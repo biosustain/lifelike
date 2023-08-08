@@ -37,6 +37,7 @@ class TransactionContext(metaclass=abc.ABCMeta):
     We don't need to do this for SQLAlchemy because
     flask-sqlalchemy does it for us, other databases we do.
     """
+
     @abc.abstractmethod
     def __enter__(self):
         raise NotImplementedError
@@ -60,6 +61,7 @@ class DatabaseConnection(metaclass=abc.ABCMeta):
             self._session = self.conn.session()
         return self._session
     """
+
     @abc.abstractmethod
     def begin(self, **kwargs):
         """Needs to return an instance of TransactionContext
@@ -94,30 +96,27 @@ class LMDBConnection(DatabaseConnection):
         if not dbname:
             logger.error(
                 f'LMDB database name is invalid, cannot connect to {dbname}.',
-                extra=get_annotator_extras_obj()
+                extra=get_annotator_extras_obj(),
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message='Unable to connect to LMDB, database name is invalid.')
+                message='Unable to connect to LMDB, database name is invalid.',
+            )
 
         dbpath = path.join(self.dirpath, self.configs[dbname])
         try:
             # Important to set locking to false, otherwise the annotators will fall over each other
             env: lmdb.Environment = lmdb.open(
-                path=dbpath,
-                create=create,
-                readonly=readonly,
-                max_dbs=2,
-                lock=False
+                path=dbpath, create=create, readonly=readonly, max_dbs=2, lock=False
             )
         except Exception:
             logger.error(
                 f'Failed to open LMDB environment in path {dbpath}.',
-                extra=get_annotator_extras_obj()
+                extra=get_annotator_extras_obj(),
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message='Encountered unexpected error connecting to LMDB.'
+                message='Encountered unexpected error connecting to LMDB.',
             )
 
         try:
@@ -133,7 +132,9 @@ class LMDBConnection(DatabaseConnection):
             memory and retrieve whatever is there.
             """
             if dbname not in self.dbs:
-                db = env.open_db(key=dbname.encode('utf-8'), create=create, dupsort=True)
+                db = env.open_db(
+                    key=dbname.encode('utf-8'), create=create, dupsort=True
+                )
                 self.dbs[dbname] = db
             else:
                 db = self.dbs[dbname]
@@ -141,9 +142,9 @@ class LMDBConnection(DatabaseConnection):
         except Exception:
             logger.error(
                 f'Failed to open LMDB database named {dbname}.',
-                extra=get_annotator_extras_obj()
+                extra=get_annotator_extras_obj(),
             )
             raise LMDBError(
                 title='Cannot Connect to LMDB',
-                message='Encountered unexpected error connecting to LMDB.'
+                message='Encountered unexpected error connecting to LMDB.',
             )

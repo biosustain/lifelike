@@ -12,7 +12,7 @@ def send_pdf_annotation_request(
     local_inclusions: list,
     organism_synonym: str,
     organism_taxonomy_id: str,
-    override_annotation_configs: dict
+    override_annotation_configs: dict,
 ):
     current_app.logger.info(f'Sending annotation task for PDF with id: {file_id}')
     _send_annotation_request(
@@ -22,7 +22,7 @@ def send_pdf_annotation_request(
         local_inclusions=local_inclusions,
         organism_synonym=organism_synonym,
         organism_taxonomy_id=organism_taxonomy_id,
-        override_annotation_config=override_annotation_configs
+        override_annotation_config=override_annotation_configs,
     )
 
 
@@ -35,9 +35,11 @@ def send_et_annotation_request(
     local_inclusions: list,
     organism_synonym: str,
     organism_taxonomy_id: str,
-    override_annotation_configs: dict
+    override_annotation_configs: dict,
 ):
-    current_app.logger.info(f'Sending annotation task for enrichment table with id: {file_id}')
+    current_app.logger.info(
+        f'Sending annotation task for enrichment table with id: {file_id}'
+    )
     _send_annotation_request(
         file_id=file_id,
         enrichment_mapping=enrichment_mapping,
@@ -53,9 +55,4 @@ def send_et_annotation_request(
 
 def _send_annotation_request(**kwargs):
     current_app.logger.debug(kwargs)
-    asyncio.run(
-        send(
-            body=kwargs,
-            queue=current_app.config.get('ANNOTATOR_QUEUE')
-        )
-    )
+    asyncio.run(send(body=kwargs, queue=current_app.config.get('ANNOTATOR_QUEUE')))

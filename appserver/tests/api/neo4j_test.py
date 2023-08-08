@@ -2,37 +2,36 @@ import json
 
 from http import HTTPStatus
 
+
 def generate_headers(jwt_token):
     return {'Authorization': f'Bearer {jwt_token}'}
 
 
-def test_get_reference_table_data(
-    client,
-    test_user,
-    test_arango_db
-):
+def test_get_reference_table_data(client, test_user, test_arango_db):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
         '/visualizer/get-reference-table',
-        data=json.dumps({
-            'nodeEdgePairs': [
-                {
-                    'node': {
-                        'id': f'duplicateNode:1',
-                        'label': 'Chemical',
-                        'displayName': 'penicillins',
+        data=json.dumps(
+            {
+                'nodeEdgePairs': [
+                    {
+                        'node': {
+                            'id': f'duplicateNode:1',
+                            'label': 'Chemical',
+                            'displayName': 'penicillins',
+                        },
+                        'edge': {
+                            'label': 'ASSOCIATED',
+                            'originalFrom': '2',
+                            'originalTo': '1',
+                        },
                     },
-                    'edge': {
-                        'label': 'ASSOCIATED',
-                        'originalFrom': '2',
-                        'originalTo': '1',
-                    },
-                },
-            ],
-            'description': 'treatment/therapy',
-            'direction': 'Outgoing'
-        }),
+                ],
+                'description': 'treatment/therapy',
+                'direction': 'Outgoing',
+            }
+        ),
         headers=headers,
         content_type='application/json',
     )
@@ -40,11 +39,7 @@ def test_get_reference_table_data(
     assert response.status_code == HTTPStatus.OK
 
 
-def test_get_snippets_for_edge(
-    client,
-    test_user,
-    test_arango_db
-):
+def test_get_snippets_for_edge(client, test_user, test_arango_db):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(
@@ -69,11 +64,7 @@ def test_get_snippets_for_edge(
     assert response.status_code == HTTPStatus.OK
 
 
-def test_get_snippets_for_cluster(
-    client,
-    test_user,
-    test_arango_db
-):
+def test_get_snippets_for_cluster(client, test_user, test_arango_db):
     login_resp = client.login_as_user(test_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     response = client.post(

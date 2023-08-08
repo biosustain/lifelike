@@ -22,7 +22,7 @@ from neo4japp.schemas.common import (
     RankedItemSchema,
     WarningSchema,
     InformationSchema,
-    ErrorSchema
+    ErrorSchema,
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
@@ -121,9 +121,7 @@ class ProjectUpdateRequestSchema(BulkProjectRequestSchema):
 
 
 class BulkProjectUpdateRequestSchema(CamelCaseSchema):
-    name = fields.String(
-        required=True, validate=validate.Length(min=1, max=200)
-    )
+    name = fields.String(required=True, validate=validate.Length(min=1, max=200))
     description = fields.String(
         validate=validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
     )
@@ -269,9 +267,7 @@ class FileSearchRequestSchema(CamelCaseSchema):
         validate=validate.OneOf(['public', 'linked', 'pinned']),
     )
     linked_hash_id = fields.String(validate=validate.Length(min=1, max=36))
-    mime_types = fields.List(
-        fields.String(), validate=validate.Length(min=1)
-    )
+    mime_types = fields.List(fields.String(), validate=validate.Length(min=1))
     sort = SortField(
         columns={
             'filename': Files.filename,
@@ -358,7 +354,9 @@ class BulkFileUploadRequestSchema(CamelCaseSchema):
 
 
 class StreamedJSONLines(CamelCaseSchema):
-    def dumps(self, obj: typing.Any, *args, many: typing.Union[bool, None] = None, **kwargs):
+    def dumps(
+        self, obj: typing.Any, *args, many: typing.Union[bool, None] = None, **kwargs
+    ):
         return super().dumps(obj, *args, many=many, **kwargs) + '\n'
 
 
@@ -368,7 +366,9 @@ class UploadResult(Enum):
     Skipped = 'skipped'
 
 
-class BulkFileResponseSchema(SingleResultSchema, ErrorSchema, WarningSchema, InformationSchema):
+class BulkFileResponseSchema(
+    SingleResultSchema, ErrorSchema, WarningSchema, InformationSchema
+):
     result = fields.Enum(UploadResult, required=True)
 
 
@@ -377,8 +377,7 @@ class BulkFileUploadStreamedRespondSchema(StreamedJSONLines, CamelCaseSchema):
     processed = fields.Integer(validate=validate.Range(min=0))
     current = fields.String()
     result = fields.Dict(
-        keys=fields.String(),
-        values=fields.Nested(BulkFileResponseSchema)
+        keys=fields.String(), values=fields.Nested(BulkFileResponseSchema)
     )
 
 

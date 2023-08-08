@@ -29,7 +29,7 @@ class EnrichmentAnnotationService(AnnotationService):
         # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
         # now, but I think we should slowly try to migrate away from the "service-as-an-object"
         # pattern.
-        arango_client: ArangoClient
+        arango_client: ArangoClient,
     ) -> None:
         super().__init__(arango_client=arango_client)
 
@@ -59,15 +59,14 @@ class EnrichmentAnnotationService(AnnotationService):
         gene_names_list = list(gene_names)
 
         gene_match_time = time.time()
-        fallback_graph_results = \
-            get_genes_to_organisms(
-                arango_client=self.arango_client,
-                genes=gene_names_list,
-                organisms=[self.specified_organism.organism_id],
-            )
+        fallback_graph_results = get_genes_to_organisms(
+            arango_client=self.arango_client,
+            genes=gene_names_list,
+            organisms=[self.specified_organism.organism_id],
+        )
         logger.info(
             f'Gene fallback organism KG query time {time.time() - gene_match_time}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         fallback_gene_organism_matches = fallback_graph_results.matches
         gene_data_sources = fallback_graph_results.data_sources
@@ -154,15 +153,14 @@ class EnrichmentAnnotationService(AnnotationService):
         protein_match_time = time.time()
         organism = self.specified_organism
         organism_id = organism.organism_id
-        fallback_graph_results = \
-            get_proteins_to_organisms(
-                arango_client=self.arango_client,
-                proteins=protein_names_list,
-                organisms=[organism_id],
-            )
+        fallback_graph_results = get_proteins_to_organisms(
+            arango_client=self.arango_client,
+            proteins=protein_names_list,
+            organisms=[organism_id],
+        )
         logger.info(
             f'Protein fallback organism KG query time {time.time() - protein_match_time}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         fallback_protein_organism_matches = fallback_graph_results.matches
         protein_primary_names = fallback_graph_results.primary_names
@@ -221,7 +219,7 @@ class EnrichmentAnnotationService(AnnotationService):
 
         logger.info(
             f'Time to clean and run annotation interval tree {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         return cleaned
 

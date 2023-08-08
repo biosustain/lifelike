@@ -33,7 +33,7 @@ configs = {
     PHENOMENAS_LMDB: 'phenomenas',
     PHENOTYPES_LMDB: 'phenotypes',
     PROTEINS_LMDB: 'proteins',
-    SPECIES_LMDB: 'species'
+    SPECIES_LMDB: 'species',
 }
 
 
@@ -63,7 +63,5 @@ def get_lmdb_service():
 
 def get_recognition_service(exclusions, inclusions):
     return EntityRecognitionService(
-        exclusions=exclusions,
-        inclusions=inclusions,
-        lmdb=get_lmdb_service()
+        exclusions=exclusions, inclusions=inclusions, lmdb=get_lmdb_service()
     )

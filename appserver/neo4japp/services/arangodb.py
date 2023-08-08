@@ -13,14 +13,16 @@ def convert_datetime(date_val: str) -> datetime:
         '%Y-%m-%d %H:%M:%S',
         '%Y-%m-%dT%H:%M:%S.%fZ',
         '%Y-%m-%dT%H:%M:%SZ[UTC]',
-        '%Y-%m-%dT%H:%MZ[UTC]'
+        '%Y-%m-%dT%H:%MZ[UTC]',
     ]
     for format in valid_formats:
         try:
             return datetime.strptime(date_val, format)
         except ValueError:
             continue
-    raise ValueError(f'time data {date_val} does not match any of the accepted formats.')
+    raise ValueError(
+        f'time data {date_val} does not match any of the accepted formats.'
+    )
 
 
 def get_version(client: ArangoClient):

@@ -20,16 +20,16 @@ def enrich_go(arango_client: ArangoClient, gene_names: List[str], analysis, orga
             go = df[mask]
         else:
             go = redis_cached(
-                    f"get_go_terms_{organism}_{','.join(gene_names)}_x",
-                    partial(get_go_terms, arango_client, organism.id, gene_names),
-                    load=json.loads,
-                    dump=json.dumps
+                f"get_go_terms_{organism}_{','.join(gene_names)}_x",
+                partial(get_go_terms, arango_client, organism.id, gene_names),
+                load=json.loads,
+                dump=json.dumps,
             )
             go_count = redis_cached(
-                    f"go_term_count_{organism.id}",
-                    partial(get_go_term_count, arango_client, organism.id),
-                    load=json.loads,
-                    dump=json.dumps
+                f"go_term_count_{organism.id}",
+                partial(get_go_term_count, arango_client, organism.id),
+                load=json.loads,
+                dump=json.dumps,
             )
         return fisher(gene_names, go, go_count)
     raise NotImplementedError
@@ -40,21 +40,23 @@ def get_go_terms(arango_client: ArangoClient, tax_id, gene_names: List[str]):
         db=get_db(arango_client),
         query=go_term_query(),
         gene_names=gene_names,
-        tax_id=tax_id
+        tax_id=tax_id,
     )
     if not result:
-        current_app.logger.warning(f'Could not find related GO terms for organism id: {tax_id}')
+        current_app.logger.warning(
+            f'Could not find related GO terms for organism id: {tax_id}'
+        )
     return result
 
 
 def get_go_term_count(arango_client: ArangoClient, tax_id):
     result = execute_arango_query(
-        db=get_db(arango_client),
-        query=go_term_count_query(),
-        tax_id=tax_id
+        db=get_db(arango_client), query=go_term_count_query(), tax_id=tax_id
     )
     if not result:
-        current_app.logger.warning(f'Could not find related GO terms for organism id: {tax_id}')
+        current_app.logger.warning(
+            f'Could not find related GO terms for organism id: {tax_id}'
+        )
         return None
     return result[0]
 
@@ -131,6 +133,7 @@ def go_term_query():
                 "geneNames": UNIQUE(FLATTEN(genes))
             }
     """
+
 
 def go_term_count_query():
     return """

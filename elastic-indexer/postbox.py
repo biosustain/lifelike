@@ -10,7 +10,7 @@ from app.constants import BULK_DELETE_OP, BULK_INDEX_OP, BULK_UPDATE_OP
 from app.elastic_service import (
     streaming_bulk_delete_files,
     streaming_bulk_index_files,
-    streaming_bulk_update_files
+    streaming_bulk_update_files,
 )
 from app.logs import get_logger
 
@@ -19,7 +19,9 @@ from app.logs import get_logger
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
 ELASTIC_INDEXER_QUEUE = os.environ.get('ELASTIC_INDEXER_QUEUE', 'elastic_indexer')
-RABBITMQ_CONNECTION_URL = f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSWORD}@rabbitmq/'
+RABBITMQ_CONNECTION_URL = (
+    f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSWORD}@rabbitmq/'
+)
 
 logger = get_logger()
 
@@ -67,12 +69,16 @@ async def on_message(message: AbstractIncomingMessage) -> None:
             await _handle_request(request)
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
-            logger.error('Elasticsearch operation failed. Request contained malformed JSON body:')
+            logger.error(
+                'Elasticsearch operation failed. Request contained malformed JSON body:'
+            )
             logger.error(message.body)
             raise
     except Exception as e:
         logger.error(e, exc_info=True)
-        logger.error('Elasticsearch operation failed. Unhandled error occurred. Request object:')
+        logger.error(
+            'Elasticsearch operation failed. Unhandled error occurred. Request object:'
+        )
         logger.error(json.dumps(request, indent=4))
         await message.reject(requeue=False)
     else:

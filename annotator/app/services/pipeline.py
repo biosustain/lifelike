@@ -8,16 +8,25 @@ from app.utils import normalize_str
 
 from .annotation_graph_service import get_entity_inclusions
 from .arangodb import create_arango_client
-from .constants import PARSER_PDF_ENDPOINT, PARSER_TEXT_ENDPOINT, SPECIES_LMDB, EntityType
+from .constants import (
+    PARSER_PDF_ENDPOINT,
+    PARSER_TEXT_ENDPOINT,
+    SPECIES_LMDB,
+    EntityType,
+)
 from .data_transfer_objects.dto import (
     GlobalExclusions,
     GlobalInclusions,
     PDFWord,
-    SpecifiedOrganismStrain
+    SpecifiedOrganismStrain,
 )
 from .exceptions import AnnotationError
 from .utils.nlp import predict
-from .utils.parsing import get_parser_args_for_file, get_parser_args_for_text, request_parse
+from .utils.parsing import (
+    get_parser_args_for_file,
+    get_parser_args_for_text,
+    request_parse,
+)
 
 logger = get_logger()
 
@@ -37,11 +46,12 @@ class Pipeline:
             (2) parsed : list
                 List of PDFWord objects representing words in text.
     """
+
     def __init__(self, steps: dict, text: str, parsed: List[PDFWord]):
         if not all(k in ['aers', 'tkner', 'as', 'bs'] for k in steps):
             raise AnnotationError(
                 'Unable to Annotate',
-                'Configurations for the annotation pipeline is incorrect, please try again later.'
+                'Configurations for the annotation pipeline is incorrect, please try again later.',
             )
         if not text:
             text = ''
@@ -58,7 +68,9 @@ class Pipeline:
     # TODO: May be better to squash this and the `parse_text` method below, revisit this once we
     # tackle annotating enrichment tables.
     @classmethod
-    def parse_file(self, file_id: int, exclude_references: bool) -> Tuple[str, List[PDFWord]]:
+    def parse_file(
+        self, file_id: int, exclude_references: bool
+    ) -> Tuple[str, List[PDFWord]]:
         """
         :param file_id : int
         :param exclude_references : bool
@@ -69,7 +81,7 @@ class Pipeline:
             raise AnnotationError('Unable to Annotate', 'No file ID provided.')
         return request_parse(
             url=PARSER_PDF_ENDPOINT,
-            data=get_parser_args_for_file(file_id, exclude_references)
+            data=get_parser_args_for_file(file_id, exclude_references),
         )
 
     @classmethod
@@ -81,13 +93,13 @@ class Pipeline:
         # warning message...
         if not text:
             raise AnnotationError('Unable to Annotate', 'No text provided.')
-        return request_parse(url=PARSER_TEXT_ENDPOINT, data=get_parser_args_for_text(text))
+        return request_parse(
+            url=PARSER_TEXT_ENDPOINT, data=get_parser_args_for_text(text)
+        )
 
     @classmethod
     def get_entity_exclusions(
-        self,
-        global_exclusions: List[dict],
-        local_exclusions: List[dict]
+        self, global_exclusions: List[dict], local_exclusions: List[dict]
     ) -> GlobalExclusions:
         """Returns set of combined global and local exclusions
         for each entity type.
@@ -109,12 +121,12 @@ class Pipeline:
             EntityType.COMPANY: set(),
             EntityType.ENTITY: set(),
             EntityType.LAB_SAMPLE: set(),
-            EntityType.LAB_STRAIN: set()
+            EntityType.LAB_STRAIN: set(),
         }
 
         exclusion_sets_case_insensitive: Dict[EntityType, set] = {
             EntityType.GENE: set(),
-            EntityType.PROTEIN: set()
+            EntityType.PROTEIN: set(),
         }
 
         for exclude in global_exclusions + local_exclusions:
@@ -128,7 +140,9 @@ class Pipeline:
                 if entity_type == EntityType.GENE or entity_type == EntityType.PROTEIN:
                     if exclude.get('isCaseInsensitive', False):
                         if entity_type in exclusion_sets_case_insensitive:
-                            exclusion_sets_case_insensitive[entity_type].add(excluded_text.lower())
+                            exclusion_sets_case_insensitive[entity_type].add(
+                                excluded_text.lower()
+                            )
                     else:
                         exclusion_sets[entity_type].add(excluded_text)
                 else:
@@ -145,34 +159,41 @@ class Pipeline:
             excluded_phenotypes=exclusion_sets[EntityType.PHENOTYPE],
             excluded_proteins=exclusion_sets[EntityType.PROTEIN],
             excluded_species=exclusion_sets[EntityType.SPECIES],
-            excluded_genes_case_insensitive=exclusion_sets_case_insensitive[EntityType.GENE],
-            excluded_proteins_case_insensitive=exclusion_sets_case_insensitive[EntityType.PROTEIN],
+            excluded_genes_case_insensitive=exclusion_sets_case_insensitive[
+                EntityType.GENE
+            ],
+            excluded_proteins_case_insensitive=exclusion_sets_case_insensitive[
+                EntityType.PROTEIN
+            ],
             excluded_companies=exclusion_sets[EntityType.COMPANY],
             excluded_entities=exclusion_sets[EntityType.ENTITY],
             excluded_lab_strains=exclusion_sets[EntityType.LAB_STRAIN],
-            excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE]
+            excluded_lab_samples=exclusion_sets[EntityType.LAB_SAMPLE],
         )
 
     def get_globals(
         self,
         global_exclusions: List[dict],
         local_exclusions: List[dict],
-        local_inclusions: List[dict]
+        local_inclusions: List[dict],
     ):
         arango_client = create_arango_client()
 
         start = time.time()
-        self.global_exclusions = self.get_entity_exclusions(global_exclusions, local_exclusions)
+        self.global_exclusions = self.get_entity_exclusions(
+            global_exclusions, local_exclusions
+        )
         self.global_inclusions = get_entity_inclusions(arango_client, local_inclusions)
         logger.info(
             f'Time to process entity exclusions/inclusions {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         return self
 
     def identify(self, annotation_methods: dict):
         self.er_service = self.steps['aers'](
-            exclusions=self.global_exclusions, inclusions=self.global_inclusions)
+            exclusions=self.global_exclusions, inclusions=self.global_inclusions
+        )
         tokenizer = self.steps['tkner']()
 
         # identify entities w/ NLP first
@@ -181,21 +202,21 @@ class Pipeline:
         nlp_results = predict(text=self.text, entities=entities_to_run_nlp)
         logger.info(
             f'Total NLP processing time for entities {entities_to_run_nlp} {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
 
         start = time.time()
         tokens = tokenizer.create(self.parsed)
         logger.info(
             f'Time to tokenize PDF words {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
 
         start = time.time()
         self.entities = self.er_service.identify(tokens=tokens, nlp_results=nlp_results)
         logger.info(
             f'Total LMDB lookup time {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
         return self
 
@@ -205,14 +226,13 @@ class Pipeline:
         specified_organism_tax_id: str,
         custom_annotations: dict,
         file_id: int,
-        enrichment_mappings: dict = {}
+        enrichment_mappings: dict = {},
     ):
         annotator = self.steps['as']()
         bioc_service = self.steps['bs']()
 
         self.create_fallback_organism(
-            specified_organism_synonym,
-            specified_organism_tax_id
+            specified_organism_synonym, specified_organism_tax_id
         )
 
         start = time.time()
@@ -221,21 +241,19 @@ class Pipeline:
             entity_results=self.entities,
             entity_type_and_id_pairs=annotator.get_entities_to_annotate(),
             specified_organism=self.fallback_organism,
-            enrichment_mappings=enrichment_mappings
+            enrichment_mappings=enrichment_mappings,
         )
 
         logger.info(
             f'Time to create annotations {time.time() - start}',
-            extra=get_annotator_extras_obj()
+            extra=get_annotator_extras_obj(),
         )
 
         bioc = bioc_service.read(text=self.text, file_uri=file_id)
         return bioc_service.generate_bioc_json(annotations=annotations, bioc=bioc)
 
     def create_fallback_organism(
-        self,
-        specified_organism_synonym: str,
-        specified_organism_tax_id: str
+        self, specified_organism_synonym: str, specified_organism_tax_id: str
     ):
         entity_synonym = ''
         entity_id = ''
@@ -247,14 +265,16 @@ class Pipeline:
             try:
                 with self.er_service.lmdb.begin(SPECIES_LMDB) as txn:
                     entity_category = json.loads(
-                        txn.get(entity_synonym.encode('utf-8')))['category']
+                        txn.get(entity_synonym.encode('utf-8'))
+                    )['category']
             except (KeyError, TypeError, Exception):
                 # could not get data from lmdb
                 logger.info(
                     f'Failed to get category for fallback organism "{specified_organism_synonym}".',
-                    extra=get_annotator_extras_obj()
+                    extra=get_annotator_extras_obj(),
                 )
                 entity_category = 'Uncategorized'
         self.fallback_organism = SpecifiedOrganismStrain(
-            synonym=entity_synonym, organism_id=entity_id, category=entity_category)
+            synonym=entity_synonym, organism_id=entity_id, category=entity_category
+        )
         return self

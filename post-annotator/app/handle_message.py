@@ -5,7 +5,17 @@ import timeflake
 
 from datetime import datetime
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Enum, Integer, MetaData, String, Table, create_engine, func, select
+from sqlalchemy import (
+    Column,
+    Enum,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    func,
+    select,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.types import TIMESTAMP
 from typing import Tuple
@@ -19,7 +29,9 @@ PG_PORT = os.environ.get('POSTGRES_PORT', '5432')
 PG_USER = os.environ.get('POSTGRES_USER', 'postgres')
 PG_PASSWORD = os.environ.get('POSTGRES_PASSWORD', 'postgres')
 PG_DB = os.environ.get('POSTGRES_DB', 'postgres')
-POSTGRES_CONNECTION_URL = f'postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}/{PG_DB}'
+POSTGRES_CONNECTION_URL = (
+    f'postgresql+psycopg2://{PG_USER}:{PG_PASSWORD}@{PG_HOST}/{PG_DB}'
+)
 
 logger = get_logger()
 
@@ -80,26 +92,28 @@ def update_tables(body: dict) -> Tuple[str, str]:
         logger.info('Updating Files table with new annotations...')
         logger.debug(json.dumps(body))
         session.execute(
-            t_files.update().where(
-                t_files.c.id == file_id
-            ).values(
+            t_files.update()
+            .where(t_files.c.id == file_id)
+            .values(
                 annotations=body['annotations'],
                 enrichment_annotations=body.get('enrichment_annotations', None),
-                annotations_date=datetime.now(TIMEZONE)
+                annotations_date=datetime.now(TIMEZONE),
             )
         )
         logger.info('File annotations updated.')
 
-        logger.info('Fetching data from Files table for FileAnnotationsVersion insert...')
+        logger.info(
+            'Fetching data from Files table for FileAnnotationsVersion insert...'
+        )
         file_hash_id, file_user_id, inclusions, exclusions = session.execute(
-            select([
-                t_files.c.hash_id,
-                t_files.c.user_id,
-                t_files.c.custom_annotations,
-                t_files.c.excluded_annotations
-            ]).where(
-                t_files.c.id == file_id
-            )
+            select(
+                [
+                    t_files.c.hash_id,
+                    t_files.c.user_id,
+                    t_files.c.custom_annotations,
+                    t_files.c.excluded_annotations,
+                ]
+            ).where(t_files.c.id == file_id)
         ).first()
         logger.info('Insert data fetched.')
 
@@ -111,14 +125,12 @@ def update_tables(body: dict) -> Tuple[str, str]:
             cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
             custom_annotations=inclusions,
             excluded_annotations=exclusions,
-            user_id=file_user_id
+            user_id=file_user_id,
         )
 
         logger.info('Inserting data into FileAnnotationsVersion...')
         logger.debug(insert_data)
-        session.execute(
-            t_file_annotations_version.insert().values(**insert_data)
-        )
+        session.execute(t_file_annotations_version.insert().values(**insert_data))
         logger.info('FileAnnotationsVersion updated. Closing Postgres connection...')
         session.commit()
 

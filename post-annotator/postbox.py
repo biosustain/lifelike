@@ -14,7 +14,9 @@ from app.logs import get_logger
 RMQ_MESSENGER_USERNAME = os.environ.get('RMQ_MESSENGER_USERNAME', 'messenger')
 RMQ_MESSENGER_PASSWORD = os.environ.get('RMQ_MESSENGER_PASSWORD', 'password')
 POST_ANNOTATOR_QUEUE = os.environ.get('POST_ANNOTATOR_QUEUE', 'post_annotator')
-RABBITMQ_CONNECTION_URL = f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSWORD}@rabbitmq/'
+RABBITMQ_CONNECTION_URL = (
+    f'amqp://{RMQ_MESSENGER_USERNAME}:{RMQ_MESSENGER_PASSWORD}@rabbitmq/'
+)
 
 logger = get_logger()
 
@@ -29,8 +31,8 @@ async def on_message(message: AbstractIncomingMessage) -> None:
         except json.JSONDecodeError as e:
             logger.error(e, exc_info=True)
             logger.error(
-                'File Annotation Post Processing Failed. ' +
-                'Request contained malformed JSON body:'
+                'File Annotation Post Processing Failed. '
+                + 'Request contained malformed JSON body:'
             )
             logger.error(message.body)
             raise
@@ -38,15 +40,17 @@ async def on_message(message: AbstractIncomingMessage) -> None:
     except Exception as e:
         logger.error(e, exc_info=True)
         logger.error(
-            'File Annotation Post Processing Failed. Unhandled exception occurred. ' +
-            'Request object:'
+            'File Annotation Post Processing Failed. Unhandled exception occurred. '
+            + 'Request object:'
         )
         logger.error(json.dumps(request, indent=4))
         await message.reject(requeue=False)
     else:
         logger.info('Annotations successfully post-processed:')
         logger.info(f'\t\tFile Hash ID: {file_hash_id}')
-        logger.info(f'\t\tFile Annotations Version Hash ID: {file_annotations_version_hash_id}')
+        logger.info(
+            f'\t\tFile Annotations Version Hash ID: {file_annotations_version_hash_id}'
+        )
         await message.ack()
 
 

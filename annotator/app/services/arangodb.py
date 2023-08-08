@@ -16,7 +16,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
         verify_override=False,
-        http_client=CustomHTTPClient()
+        http_client=CustomHTTPClient(),
     )
 
 
@@ -24,7 +24,7 @@ def get_db(
     arango_client: ArangoClient,
     name: Optional[str] = None,
     username: Optional[str] = None,
-    password: Optional[str] = None
+    password: Optional[str] = None,
 ):
     return arango_client.db(
         name=name or os.environ.get('ARANGO_DB_NAME'),

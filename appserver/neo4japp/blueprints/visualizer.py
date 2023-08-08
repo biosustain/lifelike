@@ -23,8 +23,7 @@ from neo4japp.services.visualizer import (
     get_reference_table_data,
     get_snippets_for_edge,
     get_snippets_for_cluster,
-    get_snippets_for_node_pair
-
+    get_snippets_for_node_pair,
 )
 from neo4japp.util import camel_to_snake_dict
 from neo4japp.utils.jsonify import jsonify_with_class
@@ -53,10 +52,7 @@ def get_ref_table(req: ReferenceTableDataRequest):
     arango_client = get_or_create_arango_client()
     reference_table_data = get_reference_table_data(
         arango_client,
-        [
-            camel_to_snake_dict(pair.to_dict())
-            for pair in req.node_edge_pairs
-        ]
+        [camel_to_snake_dict(pair.to_dict()) for pair in req.node_edge_pairs],
     )
     return SuccessResponse(reference_table_data, status_code=HTTPStatus.OK)
 
@@ -99,21 +95,25 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
 @use_kwargs(AssociatedTypeSnippetCountRequest)
 def get_assoc_type_snippet_count(source_node, associated_nodes):
     arango_client = get_or_create_arango_client()
-    result = get_associated_type_snippet_count(arango_client, source_node, associated_nodes)
-    return jsonify({
-        'result': result.to_dict(),
-    })
+    result = get_associated_type_snippet_count(
+        arango_client, source_node, associated_nodes
+    )
+    return jsonify(
+        {
+            'result': result.to_dict(),
+        }
+    )
 
 
 @bp.route('/get-snippets-for-node-pair', methods=['POST'])
 @use_kwargs(GetSnippetsForNodePairRequest)
 def get_snippets_for_pair(node_1_id, node_2_id, page, limit):
     arango_client = get_or_create_arango_client()
-    result = get_snippets_for_node_pair(arango_client, node_1_id, node_2_id, page, limit)
+    result = get_snippets_for_node_pair(
+        arango_client, node_1_id, node_2_id, page, limit
+    )
 
-    return jsonify({
-        'result': result.to_dict()
-    })
+    return jsonify({'result': result.to_dict()})
 
 
 class GetDocumentView(MethodView):
@@ -121,11 +121,10 @@ class GetDocumentView(MethodView):
         arango_client = get_or_create_arango_client()
         doc_id = f'{collection}/{key}'
         result = get_document_for_visualizer(arango_client, doc_id)
-        return jsonify({
-            'nodes': [result],
-            'edges': []
-        })
+        return jsonify({'nodes': [result], 'edges': []})
 
 
-bp.add_url_rule('/document/<string:collection>/<string:key>',
-                view_func=GetDocumentView.as_view('fetch_document'))
+bp.add_url_rule(
+    '/document/<string:collection>/<string:key>',
+    view_func=GetDocumentView.as_view('fetch_document'),
+)

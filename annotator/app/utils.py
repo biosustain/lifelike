@@ -47,8 +47,7 @@ class DictMixin:
                 # if the value of key is also an attrs class
                 # create an instance of it
                 value = json_dict.get(a.name)
-                if (value and
-                        issubclass(attr_type, CamelDictMixin)):
+                if value and issubclass(attr_type, CamelDictMixin):
                     # assumption is if attr_type is a subclass
                     # then value must be type dict
                     if isinstance(value, list):
@@ -58,7 +57,7 @@ class DictMixin:
                         attributes[a.name] = cls_list
                     else:
                         attributes[a.name] = attr_type.build_from_dict(value)
-                elif (value and isinstance(attr_type, EnumMeta)):
+                elif value and isinstance(attr_type, EnumMeta):
                     try:
                         attributes[a.name] = attr_type[str.upper(value)]
                     except TypeError:
@@ -120,9 +119,7 @@ class Enumd(Enum):
 
 
 def _snake_to_camel_update(k, v):
-    return {
-        snake_to_camel(encode_to_str(k)): v
-    }
+    return {snake_to_camel(encode_to_str(k)): v}
 
 
 def compact(d):
@@ -132,7 +129,7 @@ def compact(d):
 
 
 def encode_to_str(obj):
-    """Converts different types into a string representation. """
+    """Converts different types into a string representation."""
     if isinstance(obj, str):
         return obj
     elif isinstance(obj, Enum):
@@ -183,7 +180,9 @@ def snake_to_camel_dict(d, new_dict: dict) -> dict:
         if callable(getattr(v, 'to_dict', None)):
             new_dict.update(_snake_to_camel_update(k, v.to_dict()))
         elif type(v) is list:
-            new_dict.update(_snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v]))
+            new_dict.update(
+                _snake_to_camel_update(k, [snake_to_camel_dict(i, {}) for i in v])
+            )
         elif type(v) is dict:
             new_dict.update(_snake_to_camel_update(k, snake_to_camel_dict(v, {})))
         else:

@@ -654,8 +654,7 @@ def add_file(
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
                     file.filename = Files.generate_non_conflicting_filename(
-                        file.filename,
-                        file.parent.id
+                        file.filename, file.parent.id
                     )
                 except ValueError:
                     raise ValidationError(

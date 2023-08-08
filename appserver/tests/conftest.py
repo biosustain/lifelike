@@ -131,9 +131,7 @@ def _create_empty_graphs(arango_db: StandardDatabase):
 
 
 @pytest.fixture(scope="function")
-def test_arango_db(
-        app, arango_client: ArangoClient, system_db: StandardDatabase
-):
+def test_arango_db(app, arango_client: ArangoClient, system_db: StandardDatabase):
     test_db_name = app.config.get('ARANGO_DB_NAME')
     create_db(system_db, test_db_name)
 
@@ -152,6 +150,7 @@ def test_arango_db(
 
     # Drop the test database after every test to make it clean before the next one
     system_db.delete_database(test_db_name)
+
 
 @pytest.fixture(scope='function')
 def test_arango_all_graph(test_arango_db: StandardDatabase):

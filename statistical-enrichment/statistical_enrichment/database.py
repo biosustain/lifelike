@@ -14,7 +14,7 @@ def create_arango_client(hosts=None) -> ArangoClient:
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
         verify_override=False,
-        http_client=CustomHTTPClient()
+        http_client=CustomHTTPClient(),
     )
 
 

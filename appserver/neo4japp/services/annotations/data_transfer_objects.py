@@ -4,7 +4,7 @@ from typing import List
 
 
 @attr.s(slots=True)
-class PDFWord():
+class PDFWord:
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()

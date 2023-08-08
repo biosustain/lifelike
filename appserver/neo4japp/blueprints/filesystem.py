@@ -110,10 +110,10 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema,
     MultipleFileResponseSchema,
     BulkFileUploadStreamedRespondSchema,
-    UploadResult
+    UploadResult,
 )
 from neo4japp.services.annotations.annotator_interface import (
-    send_pdf_annotation_request
+    send_pdf_annotation_request,
 )
 from neo4japp.services.annotations.globals_service import (
     get_global_exclusion_annotations,
@@ -1287,9 +1287,7 @@ class FileBulkUploadView(FilesystemBaseView):
         global_exclusions = get_global_exclusion_annotations()
 
         def process_files(files):
-            yield BulkFileUploadStreamedRespondSchema().dumps(dict(
-                total=len(files)
-            ))
+            yield BulkFileUploadStreamedRespondSchema().dumps(dict(total=len(files)))
             processed = 0
             for upload in files:
                 current_app.logger.info(f'Processing file {upload.filename}...')
@@ -1298,9 +1296,9 @@ class FileBulkUploadView(FilesystemBaseView):
                     return dict(result={upload.filename: kwargs})
 
                 # Update the transaction task at the start of each loop
-                yield BulkFileUploadStreamedRespondSchema().dumps(dict(
-                    current=upload.filename
-                ))
+                yield BulkFileUploadStreamedRespondSchema().dumps(
+                    dict(current=upload.filename)
+                )
 
                 try:
                     buffer = FileContentBuffer(stream=upload)
@@ -1375,9 +1373,7 @@ class FileBulkUploadView(FilesystemBaseView):
                                 + f'{parent.id}. Skipping.'
                             )
                             yield BulkFileUploadStreamedRespondSchema().dumps(
-                                result_factory(
-                                    result=UploadResult.Skipped
-                                )
+                                result_factory(result=UploadResult.Skipped)
                             )
                             continue
                         elif (
@@ -1496,17 +1492,14 @@ class FileBulkUploadView(FilesystemBaseView):
                         raise ServerException(message=message) from e
                     except ServerException as e:
                         yield BulkFileUploadStreamedRespondSchema().dumps(
-                            result_factory(
-                                result=UploadResult.Failed,
-                                errors=[e]
-                            )
+                            result_factory(result=UploadResult.Failed, errors=[e])
                         )
                 else:
-                    current_app.logger.info(f'File {upload.filename} successfully processed.')
+                    current_app.logger.info(
+                        f'File {upload.filename} successfully processed.'
+                    )
                     yield BulkFileUploadStreamedRespondSchema().dumps(
-                        result_factory(
-                            result=UploadResult.Succeeded
-                        )
+                        result_factory(result=UploadResult.Succeeded)
                     )
 
                     # Once the file is safely stored in postgres, send an annotation request for it
@@ -1521,9 +1514,9 @@ class FileBulkUploadView(FilesystemBaseView):
                     )
 
                 processed += 1
-                yield BulkFileUploadStreamedRespondSchema().dumps(dict(
-                    processed=processed
-                ))
+                yield BulkFileUploadStreamedRespondSchema().dumps(
+                    dict(processed=processed)
+                )
 
         return Response(
             stream_with_context(process_files(params['files'])), mimetype='text/csv'

@@ -29,8 +29,8 @@ DEFAULT_ANNOTATION_CONFIGS = {
     'annotation_methods': {
         'Chemical': {'nlp': False, 'rules_based': True},
         'Disease': {'nlp': False, 'rules_based': True},
-        'Gene': {'nlp': False, 'rules_based': True}
-    }
+        'Gene': {'nlp': False, 'rules_based': True},
+    },
 }
 
 

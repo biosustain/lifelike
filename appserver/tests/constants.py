@@ -1,24 +1,24 @@
 # Arango vars
 
 DOCUMENT_COLLECTIONS = [
-        'biocyc',
-        'chebi',
-        'enzyme',
-        'go',
-        'kegg',
-        '***ARANGO_DB_NAME***',
-        'liquibasechangelog',
-        'literature',
-        'mesh',
-        'ncbi',
-        'other',
-        'pubmed',
-        'regulondb',
-        'string',
-        'synonym',
-        'taxonomy',
-        'uniprot'
-    ]
+    'biocyc',
+    'chebi',
+    'enzyme',
+    'go',
+    'kegg',
+    '***ARANGO_DB_NAME***',
+    'liquibasechangelog',
+    'literature',
+    'mesh',
+    'ncbi',
+    'other',
+    'pubmed',
+    'regulondb',
+    'string',
+    'synonym',
+    'taxonomy',
+    'uniprot',
+]
 
 EDGE_COLLECTIONS = [
     'associated',
@@ -66,9 +66,7 @@ EDGE_COLLECTIONS = [
     'produces',
     'regulates',
     'replaced_by',
-    'type_of'
+    'type_of',
 ]
 
-GRAPHS = [
-    'all'
-]
+GRAPHS = ['all']
