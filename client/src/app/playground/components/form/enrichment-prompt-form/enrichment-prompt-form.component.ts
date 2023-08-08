@@ -78,7 +78,7 @@ otherwise:
     return `What is the ralationship between ${listStr}?`;
   }
 
-  private organismPicked(organism: string) {
+  organismPicked(organism: string) {
     const organismControl = this.form.get('organism');
     organismControl.setValue(organism);
     organismControl.markAsDirty();
