@@ -5,6 +5,7 @@ import string
 
 from flask import Blueprint, current_app, g, jsonify
 from flask.views import MethodView
+from http import HTTPStatus
 from sendgrid.helpers.mail import Mail
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
@@ -26,8 +27,15 @@ from neo4japp.constants import (
     LogEventType,
 )
 from neo4japp.database import db, get_authorization_service, get_projects_service
-from neo4japp.exceptions import FailedToUpdateUser, AuthenticationError, UserNotFound
-from neo4japp.exceptions import NotAuthorized, ServerException, wrap_exceptions
+from neo4japp.exceptions.exceptions import (
+    AuthenticationError,
+    CannotCreateNewUser,
+    FailedToUpdateUser,
+    NotAuthorized,
+    ServerException,
+    UserNotFound,
+)
+from neo4japp.exceptions.wrap_exceptions import wrap_exceptions
 from neo4japp.models import AppUser, AppRole
 from neo4japp.models.auth import user_role
 from neo4japp.schemas.account import (
@@ -144,20 +152,21 @@ class AccountView(MethodView):
         admin_or_private_access = g.current_user.has_role('admin') or \
                                   g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
-            raise NotAuthorized(
+            raise CannotCreateNewUser(
                 title='Cannot Create New User',
-                message='You do not have sufficient privileges.',
+                code=HTTPStatus.UNAUTHORIZED
             )
         if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
-            raise ServerException(
+            raise CannotCreateNewUser(
                 title='Cannot Create New User',
-                message=f'E-mail {params["email"]} already taken.'
+                message=f'E-mail {params["email"]} already taken.',
+                code=HTTPStatus.CONFLICT
             )
         elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
-            raise ServerException(
+            raise CannotCreateNewUser(
                 title='Cannot Create New User',
                 message=f'Username {params["username"]} already taken.',
-                code=400
+                code=HTTPStatus.CONFLICT
             )
 
         app_user = AppUser(
@@ -190,7 +199,6 @@ class AccountView(MethodView):
                     'username': app_user.username,
                     'user_email': app_user.email
                 },
-                stacktrace=str(e)
             )
         except ServerException:
             db.session.rollback()
@@ -286,23 +294,21 @@ def update_password(params: dict, hash_id):
     admin_or_private_access = g.current_user.has_role('admin') or \
                               g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise NotAuthorized(
-            title='Failed to Update User',
-            message='You do not have sufficient privileges.'
+        raise FailedToUpdateUser(
+            message='You do not have sufficient privileges.',
+            code=HTTPStatus.UNAUTHORIZED
         )
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             if target.check_password(params['new_password']):
-                raise ServerException(
-                    title='Failed to Update User',
+                raise FailedToUpdateUser(
                     message='New password cannot be the old one.'
                 )
             target.set_password(params['new_password'])
             target.forced_password_reset = False
         else:
-            raise ServerException(
-                title='Failed to Update User',
+            raise FailedToUpdateUser(
                 message='Old password is invalid.'
             )
         try:
