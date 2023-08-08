@@ -4,6 +4,6 @@ metadata:
   name: binderhub-proxy-ingress-nginx-controller
   namespace: binderhub
 data:
-  proxy-body-size: "5m"
+  proxy-body-size: "15m"
   proxy-read-timeout: "15m"
   proxy-send-timeout: "15m"
