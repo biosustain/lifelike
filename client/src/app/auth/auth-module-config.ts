@@ -1,13 +1,14 @@
 import { environment } from 'environments/environment';
 
 import { OAuthModuleConfig } from 'angular-oauth2-oidc';
+import { compact } from 'lodash-es';
 
 export const authModuleConfig: OAuthModuleConfig = {
   resourceServer: {
-    allowedUrls: [
+    allowedUrls: compact([
       '/api',
-      ...(environment.keycloakApiBaseUrl ? [environment.keycloakApiBaseUrl] : []),
-    ],
+      environment.keycloakApiBaseUrl,
+    ]),
     sendAccessToken: true,
-  }
+  },
 };
