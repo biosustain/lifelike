@@ -215,8 +215,8 @@ class FilesystemBaseView(MethodView):
                         if 'pinned' in params:
                             file.pinned = params['pinned']
 
-                if 'contexts' in params:
-                    file.contexts = params['contexts']
+                        if 'contexts' in params:
+                            file.contexts = params['contexts']
 
                         if 'fallback_organism' in params:
                             if params['fallback_organism'] is None:
