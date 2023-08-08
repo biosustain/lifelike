@@ -1,81 +1,79 @@
 {
-    "vhosts":[
-        {"name": "/"}
-    ],
-    "users": [
-        { "name": "$RMQ_ADMIN_USERNAME", "password": "$RMQ_ADMIN_PASSWORD", "tags": "administrator" },
-        { "name": "$RMQ_MESSENGER_USERNAME", "password": "$RMQ_MESSENGER_PASSWORD", "tags": "" }
-    ],
-    "permissions":[
-        { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
-        { "user": "messenger", "vhost": "/", "configure": "", "write": ".*", "read": ".*" }
-    ],
-    "queues": [
-        {
-            "name": "dl",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-queue-type": "classic"
-            }
-        },
-        {
-            "name": "$ANNOTATOR_QUEUE",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-queue-type": "classic",
-                "x-dead-letter-exchange": "dlx",
-                "x-dead-letter-routing-key" : "dl",
-                "x-message-ttl": 900000
-            }
-        },
-        {
-            "name": "$POST_ANNOTATOR_QUEUE",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-queue-type": "classic",
-                "x-dead-letter-exchange": "dlx",
-                "x-dead-letter-routing-key" : "dl",
-                "x-message-ttl": 900000
-            }
-        },
-        {
-            "name": "$ELASTIC_INDEXER_QUEUE",
-            "vhost": "/",
-            "durable": true,
-            "auto_delete": false,
-            "arguments": {
-                "x-queue-type": "classic",
-                "x-dead-letter-exchange": "dlx",
-                "x-dead-letter-routing-key" : "dl",
-                "x-message-ttl": 900000
-            }
-        }
-    ],
-    "exchanges": [
-        {
-            "name": "dlx",
-            "vhost": "/",
-            "type": "direct",
-            "durable": true,
-            "auto_delete": false,
-            "internal": false,
-            "arguments": {}
-        }
-    ],
-    "bindings": [
-        {
-            "source": "dlx",
-            "vhost": "/",
-            "destination": "dl",
-            "destination_type": "queue",
-            "routing_key": "dl",
-            "arguments": {}
-        }
-      ]
+  "vhosts": [{ "name": "/" }],
+  "users": [
+    { "name": "$RMQ_ADMIN_USERNAME", "password": "$RMQ_ADMIN_PASSWORD", "tags": "administrator" },
+    { "name": "$RMQ_MESSENGER_USERNAME", "password": "$RMQ_MESSENGER_PASSWORD", "tags": "" }
+  ],
+  "permissions": [
+    { "user": "admin", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" },
+    { "user": "messenger", "vhost": "/", "configure": "", "write": ".*", "read": ".*" }
+  ],
+  "queues": [
+    {
+      "name": "dl",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "$ANNOTATOR_QUEUE",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "dl",
+        "x-message-ttl": 900000
+      }
+    },
+    {
+      "name": "$POST_ANNOTATOR_QUEUE",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "dl",
+        "x-message-ttl": 900000
+      }
+    },
+    {
+      "name": "$ELASTIC_INDEXER_QUEUE",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "dl",
+        "x-message-ttl": 900000
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "dlx",
+      "vhost": "/",
+      "destination": "dl",
+      "destination_type": "queue",
+      "routing_key": "dl",
+      "arguments": {}
+    }
+  ]
 }

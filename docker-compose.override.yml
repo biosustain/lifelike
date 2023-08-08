@@ -135,7 +135,6 @@ x-elastic-indexer: &elastic-indexer
     - backend
     - rabbitmq
 
-
 services:
   appserver:
     <<: *appserver

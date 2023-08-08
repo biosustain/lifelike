@@ -256,12 +256,13 @@ export class FilesystemObjectActions {
     const progressDialogRef = this.createProgressDialog('Parsing and identifying annotations...');
     // it's better to have separate service calls for each file
     // and let each finish independently
-    const annotationRequests = targets.map(
-      object => {
-        const annotationConfigs = object.annotationConfigs;
-        const organism = object.fallbackOrganism;
-        return this.annotationsService.generateAnnotations(
-          [object.hashId], object.mimeType, {annotationConfigs, organism}).body$;
+    const annotationRequests = targets.map((object) => {
+      const annotationConfigs = object.annotationConfigs;
+      const organism = object.fallbackOrganism;
+      return this.annotationsService.generateAnnotations([object.hashId], object.mimeType, {
+        annotationConfigs,
+        organism,
+      }).body$;
     });
 
     const results: ResultMapping<AnnotationGenerationResultData>[] = [];

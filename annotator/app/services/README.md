@@ -28,10 +28,12 @@ NLP: https://github.com/biosustain/nlp-api
 The LMDB files are created from `.tsv` data files, which can be found on GCloud storage bucket: `annotation-data-files/used-in-annotations-pipeline`.
 
 To create them, make sure the `.tsv` files are in `app/services/datasets`, then start the `annotator` container and run the command:
+
 ```bash
 # create all lmdb files
 docker-compose exec annotator python create_lmdb.py
 ```
+
 Once the files are created, the version number needs to be updated in `lmdb_manager/lmdb_config.json`. This file is used during the deployment to pull the latest LMDB files. The LMDB files will then need to be uploaded to Azure in the correct folder, if a new version then make a new folder for it. The path on Azure is `***ARANGO_DB_NAME*** > File shares > lmdb`, there you will see `v#` folders which is where you will put the LMDB files.
 
 I'm not sure if every function in `lmdb_manager/manager.py` is used (it was written by David B. and used with Ansible), but it does look overly complicated to me. It will probably need to be refactored - there are also JIRA cards to verify it actually works, since we rarely update our LMDB files.
@@ -43,6 +45,7 @@ I'm not sure if every function in `lmdb_manager/manager.py` is used (it was writ
 The `Annotation` and `Manual Annotation` processes are within the `appserver` container; there is a JIRA card to separate them out in the future if needed. The `PDF/Text Parser` process is the PDF parser itself, and is a separate docker container written in Java. The `NLP` service is also deployed separately.
 
 ## The Pipeline
+
 Because the pipeline involves many steps, it is abstracted away into `class Pipeline` in `app/services/pipeline.py`. This is to ensure the steps are called in the correct order.
 
 There might be a better way to do this, but due to time constraints it was done this way.

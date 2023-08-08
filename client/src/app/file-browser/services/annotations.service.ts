@@ -49,28 +49,34 @@ export class AnnotationsService {
     );
   }
 
-  generateAnnotations(hashIds: string[], mimeType: string, request: PDFAnnotationGenerationRequest = {}):
-    HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>> {
+  generateAnnotations(
+    hashIds: string[],
+    mimeType: string,
+    request: PDFAnnotationGenerationRequest = {}
+  ): HttpObservableResponse<ResultMapping<AnnotationGenerationResultData>> {
     let requestUrl: string;
     if (mimeType === MimeTypes.Pdf) {
       requestUrl = '/api/filesystem/annotations/generate/pdf';
     } else if (mimeType === MimeTypes.EnrichmentTable) {
       requestUrl = '/api/filesystem/annotations/generate/enrichment-table';
     }
-    const progress$ =  this.http.post<ResultMapping<AnnotationGenerationResultData>>(
-      requestUrl, {
-        hashIds,
-        ...request,
-      },
-      {
-        observe: 'events',
-        reportProgress: true,
-        responseType: 'json',
-      },
-    ).pipe(
-      // Wait for connect before emitting
-      publish()
-    );
+    const progress$ = this.http
+      .post<ResultMapping<AnnotationGenerationResultData>>(
+        requestUrl,
+        {
+          hashIds,
+          ...request,
+        },
+        {
+          observe: 'events',
+          reportProgress: true,
+          responseType: 'json',
+        }
+      )
+      .pipe(
+        // Wait for connect before emitting
+        publish()
+      );
     return {
       // Progress subscribe is not returning values until we subscribe to body$
       progress$,

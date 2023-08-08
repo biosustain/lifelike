@@ -19,9 +19,15 @@ export class GraphSearchService {
     domains: string[],
     entities: string[]
   ) {
-    return this.http.post<{ result: FTSResult<any> }>(
-      `${this.searchApi}/visualizer`,
-      {query, organism, page, domains, entities, limit},
-    ).pipe(map(resp => resp.result));
+    return this.http
+      .post<{ result: FTSResult<any> }>(`${this.searchApi}/visualizer`, {
+        query,
+        organism,
+        page,
+        domains,
+        entities,
+        limit,
+      })
+      .pipe(map((resp) => resp.result));
   }
 }

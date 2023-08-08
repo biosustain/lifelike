@@ -52,7 +52,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     // Don't reset the transaction id for the request if it was explicitly added.
     if (isNull(request.headers.get('X-Transaction-ID'))) {
       const transactionId = uuidv4();
-      return request.clone({setHeaders: {'X-Transaction-ID': transactionId}});
+      return request.clone({ setHeaders: { 'X-Transaction-ID': transactionId } });
     }
     return request;
   }

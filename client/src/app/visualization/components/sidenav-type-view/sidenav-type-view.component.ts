@@ -101,12 +101,7 @@ export class SidenavTypeViewComponent {
   }
 
   getSnippets(node1Id: IdType, node2Id: IdType, limit: number, page: number) {
-    this.visualizationService.getSnippetsForNodePair(
-      node1Id,
-      node2Id,
-      page,
-      limit
-    ).subscribe(
+    this.visualizationService.getSnippetsForNodePair(node1Id, node2Id, page, limit).subscribe(
       (result) => {
         this.queryData = result.queryData;
         this.selectedRowSnippetTotal = result.totalResults;

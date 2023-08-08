@@ -30,7 +30,6 @@ export class VisualizationService {
 
   constructor(private http: HttpClient) {}
 
-
   /**
    * This function is used to modify the API response to a format
    * vis.js will understand. vis.js uses a limited set
@@ -98,7 +97,10 @@ export class VisualizationService {
    */
   expandNode(nodeId: IdType, filterLabels: string[]) {
     return this.http
-      .post<{ result: GetBulkReferenceTableDataResult }>(`${this.baseUrl}/expand`, { nodeId, filterLabels })
+      .post<{ result: GetBulkReferenceTableDataResult }>(`${this.baseUrl}/expand`, {
+        nodeId,
+        filterLabels,
+      })
       .pipe(map((resp) => resp.result));
   }
 

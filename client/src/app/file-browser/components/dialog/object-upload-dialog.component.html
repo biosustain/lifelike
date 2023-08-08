@@ -41,7 +41,11 @@
                 Click on the row to inspect and edit properties.
               </caption>
               <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
-                You can only upload {{ maxFileCount }} files at once.
+                You can only upload
+                {{
+                  maxFileCount
+                }}
+                files at once.
               </caption>
               <colgroup>
                 <col style="width: 50%" />

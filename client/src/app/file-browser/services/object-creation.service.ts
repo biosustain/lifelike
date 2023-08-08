@@ -3,14 +3,7 @@ import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {
-  from,
-  Observable,
-  of,
-  Subject,
-  concat,
-  EMPTY,
-} from 'rxjs';
+import { from, Observable, of, Subject, concat, EMPTY } from 'rxjs';
 import {
   bufferWhen,
   catchError,
@@ -46,18 +39,14 @@ import {
   filter as _filter,
   flow as _flow,
   map as _map,
-mergeWith as _mergeWith,
+  mergeWith as _mergeWith,
   reduce as _reduce,
   thru as _thru,
   isArray as _isArray,
   flatMap as _flatMap,
 } from 'lodash/fp';
 
-import {
-  Progress,
-  ProgressArguments,
-  ProgressMode
-} from 'app/interfaces/common-dialog.interface';
+import { Progress, ProgressArguments, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -90,7 +79,7 @@ interface ResultWithMessages<Result> {
   errors?: ErrorResponse[];
 }
 
-type CreationResult = ResultWithMessages<FilesystemObject|undefined>;
+type CreationResult = ResultWithMessages<FilesystemObject | undefined>;
 
 type AnnotationResult = AnnotationGenerationResultData & {
   error: ErrorResponse;
@@ -134,7 +123,7 @@ export type CreateResultMapping = Map<ObjectCreateRequest, CreationAnnotationRes
 enum BulkUploadFileStatus {
   Succeeded = 'succeeded',
   Failed = 'failed',
-  Skipped = 'skipped'
+  Skipped = 'skipped',
 }
 
 type BulkUploadFileResult = ResultWithMessages<BulkUploadFileStatus>;
@@ -148,29 +137,30 @@ interface BulkUploadStatus {
 
 @Injectable()
 export class ObjectCreationService {
-
-  constructor(protected readonly annotationsService: AnnotationsService,
+  constructor(
+    protected readonly annotationsService: AnnotationsService,
     protected readonly snackBar: MatSnackBar,
     protected readonly modalService: NgbModal,
     protected readonly progressDialog: ProgressDialog,
     protected readonly route: ActivatedRoute,
     protected readonly messageDialog: MessageDialog,
     protected readonly errorHandler: ErrorHandler,
-              protected readonly filesystemService: FilesystemService
+    protected readonly filesystemService: FilesystemService
   ) {}
 
-  static readonly parseBulkUploadStatus: (partialText: string|undefined) => BulkUploadStatus = _flow(
-    _defaultTo(''),
-    _thru((partialText: string) => partialText.split('\n')),
-    _filter(Boolean),
-    _map((json: string) => JSON.parse(json)),
-    _reduce(
-      _mergeWith(
-        (objValue, srcValue) => _isArray(objValue) ? objValue.concat(srcValue) : undefined
-      ),
-      {result: {}} as BulkUploadStatus
-    ),
-  );
+  static readonly parseBulkUploadStatus: (partialText: string | undefined) => BulkUploadStatus =
+    _flow(
+      _defaultTo(''),
+      _thru((partialText: string) => partialText.split('\n')),
+      _filter(Boolean),
+      _map((json: string) => JSON.parse(json)),
+      _reduce(
+        _mergeWith((objValue, srcValue) =>
+          _isArray(objValue) ? objValue.concat(srcValue) : undefined
+        ),
+        { result: {} } as BulkUploadStatus
+      )
+    );
 
   private readonly MAX_PARALLEL_CREATIONS = 3;
   private readonly MAX_PARALLEL_ANNOTATIONS = 1;
@@ -259,7 +249,7 @@ export class ObjectCreationService {
   private composeBulkCreationTask(data: FormData) {
     const transactionId = uuidv4();
     return this.filesystemService.bulkCreate(data, transactionId).pipe(
-      map(event => {
+      map((event) => {
         switch (event.type) {
           /**
            * The request was sent out over the wire.
@@ -290,19 +280,21 @@ export class ObjectCreationService {
             const status = ObjectCreationService.parseBulkUploadStatus((event as any).partialText);
             const progressStatus: ProgressArguments = {
               mode: isNil(status.total) ? ProgressMode.Indeterminate : ProgressMode.Determinate,
-              status: ''
+              status: '',
             };
             if (status.current) {
               progressStatus.status += `Currently processing ${status.current}...`;
             }
             if (status.processed && status.total) {
               progressStatus.value = status.processed / status.total;
-              progressStatus.status += `${Math.floor(progressStatus.value * 100)}% of all files completed.`;
+              progressStatus.status += `${Math.floor(
+                progressStatus.value * 100
+              )}% of all files completed.`;
             }
             const results = Object.values(status.result);
-            progressStatus.errors = _flatMap(({errors}) => errors ?? [])(results);
-            progressStatus.warnings = _flatMap(({warnings}) => warnings ?? [])(results);
-            progressStatus.info = _flatMap(({info}) => info ?? [])(results);
+            progressStatus.errors = _flatMap(({ errors }) => errors ?? [])(results);
+            progressStatus.warnings = _flatMap(({ warnings }) => warnings ?? [])(results);
+            progressStatus.info = _flatMap(({ info }) => info ?? [])(results);
             return progressStatus;
           /**
            * The full response including the body was received.
@@ -324,20 +316,20 @@ export class ObjectCreationService {
         mode: ProgressMode.Indeterminate,
         status: `Preparing files...`,
       }),
-      catchError(error =>
+      catchError((error) =>
         of({
           mode: ProgressMode.Determinate,
           status: `Error occurred during upload/parsing of files!`,
           value: 0,
           errors: [error],
-        }),
+        })
       ),
       endWith({
         mode: ProgressMode.Determinate,
         status: `Done with files.`,
         value: 1,
       }),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
   }
 
@@ -551,26 +543,38 @@ export class ObjectCreationService {
             !some(warnings, ({ type }) => type === 'TextExtractionNotAllowedWarning')
         );
         const uniqeAnnotationConfigs = uniqWith(
-          resultsToAnnotate.map(({annotation: {options}, creation: {result: {mimeType}}}) => [mimeType, options]),
+          resultsToAnnotate.map(
+            ({
+              annotation: { options },
+              creation: {
+                result: { mimeType },
+              },
+            }) => [mimeType, options]
+          ),
           isEqual
         );
         // generateAnnotations can be called for multiple files but within one config
         const resultsToAnnotateGroupedByAnnotationConfig = groupBy(
           resultsToAnnotate,
-          resultToAnnotate => uniqeAnnotationConfigs.findIndex(
-            ac => isEqual([resultToAnnotate.creation.result.mimeType, resultToAnnotate.annotation.options], ac),
-          ),
+          (resultToAnnotate) =>
+            uniqeAnnotationConfigs.findIndex((ac) =>
+              isEqual(
+                [resultToAnnotate.creation.result.mimeType, resultToAnnotate.annotation.options],
+                ac
+              )
+            )
         );
         return from(entries(resultsToAnnotateGroupedByAnnotationConfig)).pipe(
-          map(([uniqeAnnotationConfigIndex, creationTaskBatch]) =>
-            ({
-              annotationTask: this.annotationsService.generateAnnotations(
-                creationTaskBatch.map(task => task.creation.result.hashId),
-                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][0],
-                uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][1],
-              ),
-              creationTaskBatch,
-            } as CreateToAnnotateStep),
+          map(
+            ([uniqeAnnotationConfigIndex, creationTaskBatch]) =>
+              ({
+                annotationTask: this.annotationsService.generateAnnotations(
+                  creationTaskBatch.map((task) => task.creation.result.hashId),
+                  uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][0],
+                  uniqeAnnotationConfigs[uniqeAnnotationConfigIndex][1]
+                ),
+                creationTaskBatch,
+              } as CreateToAnnotateStep)
           ),
           startWith({
             annotationTask: null,
@@ -614,13 +618,9 @@ export class ObjectCreationService {
     const bulkTask = this.composeBulkCreationTask(data);
     const progressDialogRef = this.progressDialog.display({
       title: `Creating Files`,
-      progressObservables: [bulkTask.pipe(
-          map(args => new Progress(args)),
-        )],
+      progressObservables: [bulkTask.pipe(map((args) => new Progress(args)))],
     });
-    return bulkTask.pipe(
-      finalize(() => progressDialogRef.componentInstance?.close())
-    );
+    return bulkTask.pipe(finalize(() => progressDialogRef.componentInstance?.close()));
   }
 
   /**
@@ -668,7 +668,7 @@ export class ObjectCreationService {
     const dialogRef = this.modalService.open(ObjectBulkUploadDialogComponent);
     dialogRef.componentInstance.title = title || 'Bulk Upload Files';
     dialogRef.componentInstance.parentHashId = parentHashId;
-    dialogRef.componentInstance.accept = ((dialogValue) => {
+    dialogRef.componentInstance.accept = (dialogValue) => {
       const formData = objectToMixedFormData({
         public: dialogValue.public,
         copyBehavior: dialogValue.copyBehavior,
@@ -678,7 +678,7 @@ export class ObjectCreationService {
       });
       dialogValue.files.forEach((file: File) => formData.append('files', file, file.name));
       return this.executeBulkWithProgressDialog(formData).toPromise();
-    });
+    };
     return dialogRef.result;
   }
 }

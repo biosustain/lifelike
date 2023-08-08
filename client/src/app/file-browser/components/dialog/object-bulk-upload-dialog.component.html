@@ -12,13 +12,21 @@
           Browse...
         </button>
       </div>
-      <input type="file" id="content-value" (change)="fileChanged($event)" class="d-none" accept="application/pdf" multiple #fileInput>
+      <input
+        type="file"
+        id="content-value"
+        (change)="fileChanged($event)"
+        class="d-none"
+        accept="application/pdf"
+        multiple
+        #fileInput
+      />
     </app-form-row>
 
-    <div class="overflow-auto" style="height: 400px;" *ngIf="fileList.length">
+    <div class="overflow-auto" style="height: 400px" *ngIf="fileList.length">
       <table class="table" style="table-layout: fixed">
         <colgroup>
-          <col style="width: 50%">
+          <col style="width: 50%" />
         </colgroup>
         <thead>
           <tr>
@@ -26,7 +34,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let file of fileList; let index=index">
+          <tr *ngFor="let file of fileList; let index = index">
             <td class="align-middle text-truncate mw-100">{{ file.name }}</td>
             <td class="text-right">
               <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
@@ -37,16 +45,38 @@
     </div>
 
     <app-form-row label="Copy Behavior" [control]="form.get('copyBehavior')">
-      <div *ngFor="let behavior of copyBehaviors" class="custom-control custom-radio custom-control-inline" [ngbTooltip]="behavior.description">
-        <input type="radio" class="custom-control-input" #copyBehavior="uid" appUid [id]="copyBehavior.uid" formControlName="copyBehavior" [value]="behavior.name">
-        <label class="custom-control-label" [for]="copyBehavior.uid">{{ behavior.name }} Duplicates</label>
+      <div
+        *ngFor="let behavior of copyBehaviors"
+        class="custom-control custom-radio custom-control-inline"
+        [ngbTooltip]="behavior.description"
+      >
+        <input
+          type="radio"
+          class="custom-control-input"
+          #copyBehavior="uid"
+          appUid
+          [id]="copyBehavior.uid"
+          formControlName="copyBehavior"
+          [value]="behavior.name"
+        />
+        <label class="custom-control-label" [for]="copyBehavior.uid"
+          >{{ behavior.name }} Duplicates</label
+        >
       </div>
     </app-form-row>
 
     <app-form-row [control]="form.get('public')">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" #public="uid" appUid formControlName="public">
-        <label class="custom-control-label" [for]="public.uid">Publicly share these files with the community</label>
+        <input
+          type="checkbox"
+          class="custom-control-input"
+          #public="uid"
+          appUid
+          formControlName="public"
+        />
+        <label class="custom-control-label" [for]="public.uid"
+          >Publicly share these files with the community</label
+        >
       </div>
     </app-form-row>
 
@@ -72,7 +102,8 @@
                   [headers]="annotationMethods"
                   [models]="annotationModels"
                   [form]="form.get('annotationConfigs')"
-                  fileType="application/pdf">
+                  fileType="application/pdf"
+                >
                 </app-annotation-config-table>
               </ng-template>
             </ngb-panel>
@@ -84,6 +115,8 @@
 
   <app-modal-footer>
     <button type="button" class="btn btn-secondary mr-2" (click)="cancel()">Cancel</button>
-    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || !fileList.length" >Upload</button>
+    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || !fileList.length">
+      Upload
+    </button>
   </app-modal-footer>
 </form>

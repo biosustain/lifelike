@@ -265,100 +265,120 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
     );
   }
 
-  private generateEnrichmentResults(domains: string[], importGenes: string[],
-                                    taxID: string): Observable<EnrichmentResult> {
-    return this.worksheetViewerService
-      .matchNCBINodes(importGenes, taxID)
-      .pipe(
-        mergeMap((ncbiNodesData: NCBIWrapper[]) => {
-          const arangoIds = ncbiNodesData.map((wrapper) => wrapper.geneArangoId);
-          return this.worksheetViewerService
-            .getNCBIEnrichmentDomains(arangoIds, taxID, domains)
-            .pipe(
-              map((domainResults: EnrichmentWrapper): EnrichmentResult => {
-                // a gene can point to 2 different synonyms
-                // and a synonym can point to 2 different genes
-                const arangoIdSynonymMap: Map<string, Map<string, string>> = new Map();
-                const arangoIdNodeMap: Map<string, Map<string, NCBINode>> = new Map();
-                const arangoIdLinkMap: Map<string, Map<string, string>> = new Map();
-                const geneSynonymArangoIdMap: Map<string, Map<string, string>> = new Map();
-                const geneMap: Set<string> = new Set();
-                const genesList: EnrichedGene[] = [];
-                const synonymsSet: Set<string> = new Set();
-                // list of tuples
-                const synonymArangoIds: [string, string][] = [];
+  private generateEnrichmentResults(
+    domains: string[],
+    importGenes: string[],
+    taxID: string
+  ): Observable<EnrichmentResult> {
+    return this.worksheetViewerService.matchNCBINodes(importGenes, taxID).pipe(
+      mergeMap((ncbiNodesData: NCBIWrapper[]) => {
+        const arangoIds = ncbiNodesData.map((wrapper) => wrapper.geneArangoId);
+        return this.worksheetViewerService.getNCBIEnrichmentDomains(arangoIds, taxID, domains).pipe(
+          map((domainResults: EnrichmentWrapper): EnrichmentResult => {
+            // a gene can point to 2 different synonyms
+            // and a synonym can point to 2 different genes
+            const arangoIdSynonymMap: Map<string, Map<string, string>> = new Map();
+            const arangoIdNodeMap: Map<string, Map<string, NCBINode>> = new Map();
+            const arangoIdLinkMap: Map<string, Map<string, string>> = new Map();
+            const geneSynonymArangoIdMap: Map<string, Map<string, string>> = new Map();
+            const geneMap: Set<string> = new Set();
+            const genesList: EnrichedGene[] = [];
+            const synonymsSet: Set<string> = new Set();
+            // list of tuples
+            const synonymArangoIds: [string, string][] = [];
 
-                ncbiNodesData.forEach(wrapper => {
-                  geneSynonymArangoIdMap.has(wrapper.synonymArangoId) ? geneSynonymArangoIdMap.get(
-                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.geneArangoId) : geneSynonymArangoIdMap.set(
-                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.geneArangoId));
+            ncbiNodesData.forEach((wrapper) => {
+              geneSynonymArangoIdMap.has(wrapper.synonymArangoId)
+                ? geneSynonymArangoIdMap
+                    .get(wrapper.synonymArangoId)
+                    .set(wrapper.geneArangoId, wrapper.geneArangoId)
+                : geneSynonymArangoIdMap.set(
+                    wrapper.synonymArangoId,
+                    new Map().set(wrapper.geneArangoId, wrapper.geneArangoId)
+                  );
 
-                  arangoIdSynonymMap.has(wrapper.synonymArangoId) ? arangoIdSynonymMap.get(
-                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.synonym) : arangoIdSynonymMap.set(
-                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.synonym));
+              arangoIdSynonymMap.has(wrapper.synonymArangoId)
+                ? arangoIdSynonymMap
+                    .get(wrapper.synonymArangoId)
+                    .set(wrapper.geneArangoId, wrapper.synonym)
+                : arangoIdSynonymMap.set(
+                    wrapper.synonymArangoId,
+                    new Map().set(wrapper.geneArangoId, wrapper.synonym)
+                  );
 
-                  arangoIdNodeMap.has(wrapper.synonymArangoId) ? arangoIdNodeMap.get(
-                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.gene) : arangoIdNodeMap.set(
-                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.gene));
+              arangoIdNodeMap.has(wrapper.synonymArangoId)
+                ? arangoIdNodeMap
+                    .get(wrapper.synonymArangoId)
+                    .set(wrapper.geneArangoId, wrapper.gene)
+                : arangoIdNodeMap.set(
+                    wrapper.synonymArangoId,
+                    new Map().set(wrapper.geneArangoId, wrapper.gene)
+                  );
 
-                  arangoIdLinkMap.has(wrapper.synonymArangoId) ? arangoIdLinkMap.get(
-                    wrapper.synonymArangoId).set(wrapper.geneArangoId, wrapper.link) : arangoIdLinkMap.set(
-                      wrapper.synonymArangoId, new Map().set(wrapper.geneArangoId, wrapper.link));
+              arangoIdLinkMap.has(wrapper.synonymArangoId)
+                ? arangoIdLinkMap
+                    .get(wrapper.synonymArangoId)
+                    .set(wrapper.geneArangoId, wrapper.link)
+                : arangoIdLinkMap.set(
+                    wrapper.synonymArangoId,
+                    new Map().set(wrapper.geneArangoId, wrapper.link)
+                  );
 
-                  synonymsSet.add(wrapper.synonym);
-                  synonymArangoIds.push([wrapper.synonymArangoId, wrapper.geneArangoId]);
+              synonymsSet.add(wrapper.synonym);
+              synonymArangoIds.push([wrapper.synonymArangoId, wrapper.geneArangoId]);
+            });
+
+            for (const [synId, geneId] of synonymArangoIds) {
+              const synonym = arangoIdSynonymMap.get(synId).get(geneId);
+              const node = arangoIdNodeMap.get(synId).get(geneId);
+              const link = arangoIdLinkMap.get(synId).get(geneId);
+              const domainWrapper =
+                domainResults[geneSynonymArangoIdMap.get(synId).get(geneId)] || null;
+
+              if (domainWrapper !== null) {
+                geneMap.add(synonym);
+                genesList.push({
+                  imported: synonym,
+                  annotatedImported: synonym,
+                  matched: node.name,
+                  annotatedMatched: node.name,
+                  fullName: node.full_name || '',
+                  annotatedFullName: node.full_name || '',
+                  link,
+                  domains: this.generateGeneDomainResults(domains, domainWrapper, node),
+                  value: this.values.get(synonym) || '',
                 });
+              }
+            }
 
-                for (const [synId, geneId] of synonymArangoIds) {
-                  const synonym = arangoIdSynonymMap.get(synId).get(geneId);
-                  const node = arangoIdNodeMap.get(synId).get(geneId);
-                  const link = arangoIdLinkMap.get(synId).get(geneId);
-                  const domainWrapper = domainResults[geneSynonymArangoIdMap.get(synId).get(geneId)] || null;
+            for (const gene of importGenes) {
+              // Don't add the unmatched gene if we've already seen it.
+              if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
+                geneMap.add(gene);
+                genesList.push({
+                  imported: gene,
+                  value: this.values.get(gene) || '',
+                });
+              }
+            }
 
-                  if (domainWrapper !== null) {
-                    geneMap.add(synonym);
-                    genesList.push({
-                      imported: synonym,
-                      annotatedImported: synonym,
-                      matched: node.name,
-                      annotatedMatched: node.name,
-                      fullName: node.full_name || '',
-                      annotatedFullName: node.full_name || '',
-                      link,
-                      domains: this.generateGeneDomainResults(domains, domainWrapper, node),
-                      value: this.values.get(synonym) || '',
-                    });
-                  }
-                }
-
-                for (const gene of importGenes) {
-                  // Don't add the unmatched gene if we've already seen it.
-                  if (!synonymsSet.has(gene) && !geneMap.has(gene)) {
-                    geneMap.add(gene);
-                    genesList.push({
-                        imported: gene,
-                        value: this.values.get(gene) || '',
-                    });
-                  }
-                }
-
-                return {
-                  domainInfo: _omitBy(_isEmpty)({
-                    Regulon: {
-                      labels: ['Regulator Family', 'Activated By', 'Repressed By'],
-                    },
-                    UniProt: { labels: ['Function'] },
-                    String: { labels: ['Annotation'] },
-                    GO: { labels: ['Annotation'] },
-                    BioCyc: { labels: ['Pathways'] },
-                    KEGG: environment.keggEnabled && { labels: ['Pathways'] },
-                  }),
-                  genes: genesList,
-                };
+            return {
+              domainInfo: _omitBy(_isEmpty)({
+                Regulon: {
+                  labels: ['Regulator Family', 'Activated By', 'Repressed By'],
+                },
+                UniProt: { labels: ['Function'] },
+                String: { labels: ['Annotation'] },
+                GO: { labels: ['Annotation'] },
+                BioCyc: { labels: ['Pathways'] },
+                KEGG: environment.keggEnabled && { labels: ['Pathways'] },
               }),
-            );
-        }),
-      );
+              genes: genesList,
+            };
+          })
+        );
+      })
+    );
   }
 
   /**

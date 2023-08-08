@@ -121,19 +121,15 @@ export class FilesystemService {
   }
 
   bulkCreate(data: FormData, transactionId: string): ConnectableObservable<HttpEvent<string>> {
-    return this.http.post(
-      `/api/filesystem/objects/bulk-upload`,
-      data,
-      {
-        observe: 'events',
-        reportProgress: true,
-        // @ts-ignore
-        responseType: 'text',
-        headers: {
-          'X-Transaction-ID': transactionId
-        }
+    return this.http.post(`/api/filesystem/objects/bulk-upload`, data, {
+      observe: 'events',
+      reportProgress: true,
+      // @ts-ignore
+      responseType: 'text',
+      headers: {
+        'X-Transaction-ID': transactionId,
       },
-    ) as ConnectableObservable<HttpEvent<string>>;
+    }) as ConnectableObservable<HttpEvent<string>>;
   }
 
   /**
