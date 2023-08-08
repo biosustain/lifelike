@@ -36,7 +36,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
-import { HttpURL } from '../../shared/url';
+import { HttpURL } from 'app/shared/url';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
