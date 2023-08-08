@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
+import { every } from 'lodash-es'
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from 'rxjs';
 import { catchError, filter, map } from 'rxjs/operators';
@@ -37,7 +38,7 @@ export class LifelikeOAuthService {
     this.isAuthenticated$,
     this.isDoneLoading$
   ]).pipe(
-    map(values => values.every(b => b)),
+    map(every)
   );
 
   private navigateToLoginPage() {
@@ -60,7 +61,9 @@ export class LifelikeOAuthService {
         return;
       }
 
-      console.warn('Noticed changes to access_token (most likely from another tab), updating isAuthenticated');
+      console.warn(
+        'Noticed changes to access_token (most likely from another tab), updating isAuthenticated'
+      );
       this.isAuthenticatedSubject$.next(this.oauthService.hasValidAccessToken());
 
       if (!this.oauthService.hasValidAccessToken()) {
