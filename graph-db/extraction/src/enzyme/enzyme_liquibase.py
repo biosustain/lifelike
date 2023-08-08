@@ -8,13 +8,9 @@ from common.query_builder import (
     get_create_index_query,
     get_create_relationships_query,
     get_create_synonym_relationships_query,
-    get_create_update_nodes_query
+    get_create_update_nodes_query,
 )
-from enzyme.enzyme_parser import (
-    ENZYME_FILE,
-    ENZYME_SYNONYM_FILE,
-    ENZYME_REL_FILE
-)
+from enzyme.enzyme_parser import ENZYME_FILE, ENZYME_SYNONYM_FILE, ENZYME_REL_FILE
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
@@ -35,11 +31,29 @@ class EnzymeChangeLog(ChangeLog):
 
     def create_indexes(self):
         queries = []
-        queries.append(get_create_constraint_query(NODE_ENZYME, PROP_ID, 'constraint_enzyme_id') + ';')
-        queries.append(get_create_constraint_query(NODE_EC_NUMBER, PROP_ID, 'constraint_ecnumber_id') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name') + ';')
-        queries.append(get_create_index_query(NODE_ENZYME, PROP_NAME, 'index_enzyme_name') + ';')
-        queries.append(get_create_index_query(NODE_EC_NUMBER, PROP_NAME, 'index_ecnumber_name') + ';')
+        queries.append(
+            get_create_constraint_query(NODE_ENZYME, PROP_ID, 'constraint_enzyme_id')
+            + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_EC_NUMBER, PROP_ID, 'constraint_ecnumber_id'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_ENZYME, PROP_NAME, 'index_enzyme_name') + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_EC_NUMBER, PROP_NAME, 'index_ecnumber_name')
+            + ';'
+        )
         return queries
 
     def add_index_change_set(self):
@@ -55,8 +69,16 @@ class EnzymeChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f''
-        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID, [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER], datasource='Enzyme')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{ENZYME_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_ENZYME,
+            PROP_ID,
+            [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS],
+            [NODE_EC_NUMBER],
+            datasource='Enzyme',
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{ENZYME_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_enzyme_synonym_rels(self):
@@ -64,8 +86,12 @@ class EnzymeChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_synonym_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, PROP_NAME)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{ENZYME_SYNONYM_FILE}')
+        query = get_create_synonym_relationships_query(
+            NODE_ENZYME, PROP_ID, PROP_ID, PROP_NAME
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{ENZYME_SYNONYM_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_enzyme_parent_rels(self):
@@ -73,9 +99,20 @@ class EnzymeChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = ''
-        query = get_create_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, NODE_ENZYME, PROP_ID, PROP_PARENT_ID, REL_PARENT)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{ENZYME_REL_FILE}')
+        query = get_create_relationships_query(
+            NODE_ENZYME,
+            PROP_ID,
+            PROP_ID,
+            NODE_ENZYME,
+            PROP_ID,
+            PROP_PARENT_ID,
+            REL_PARENT,
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{ENZYME_REL_FILE}'
+        )
         self.change_sets.append(changeset)
+
 
 if __name__ == '__main__':
     task = EnzymeChangeLog('Binh Vu', 'LL-3217')

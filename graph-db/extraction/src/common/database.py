@@ -56,7 +56,9 @@ class Database:
             try:
                 session.run(query)
             except Exception as error:
-                self.logger.error("Could not create constraint %r. %r", constraint_name, error)
+                self.logger.error(
+                    "Could not create constraint %r. %r", constraint_name, error
+                )
 
     def create_index(self, label: str, property_name, index_name=''):
         """
@@ -74,11 +76,18 @@ class Database:
             except Exception as error:
                 self.logger.error("Could not create index %r. %r", index_name, error)
 
-    def create_fulltext_index(self, index_name, node_labels: list, index_properties: list):
+    def create_fulltext_index(
+        self, index_name, node_labels: list, index_properties: list
+    ):
         query = get_create_fulltext_index_query()
         with self.driver.session(database=self.dbname) as session:
             try:
-                session.run(query, indexName=index_name, labels=node_labels, properties=index_properties)
+                session.run(
+                    query,
+                    indexName=index_name,
+                    labels=node_labels,
+                    properties=index_properties,
+                )
             except Exception as error:
                 self.logger.error("Could not create index %r. %r", index_name, error)
 
@@ -98,7 +107,7 @@ class Database:
             except Neo4jError as ex:
                 self.logger.error(ex.message)
 
-    def get_data(self, query:str, params={}) -> pd.DataFrame:
+    def get_data(self, query: str, params={}) -> pd.DataFrame:
         """
         Run query to get data as dataframe
         :param query: the query with parameter $dict (see query_builder.py)
@@ -111,7 +120,9 @@ class Database:
             df = pd.DataFrame(results.values(), columns=results.keys())
         return df
 
-    def load_data_from_rows(self, query: str, data_rows: list, return_node_count: bool = False):
+    def load_data_from_rows(
+        self, query: str, data_rows: list, return_node_count: bool = False
+    ):
         """
         run the query by passing data rows
         :param query: the query with $dict parameter (see query_builder.py)
@@ -134,7 +145,9 @@ class Database:
 
             return info.counters
 
-    def load_data_from_dataframe(self, query: str, data_frame: pd.DataFrame, chunksize=None):
+    def load_data_from_dataframe(
+        self, query: str, data_frame: pd.DataFrame, chunksize=None
+    ):
         """
         Run query by passing dataframe
         :param data_frame: the dataframe to load
@@ -144,18 +157,31 @@ class Database:
         """
         with self.driver.session(database=self.dbname) as session:
             if chunksize:
-                chunks = [data_frame[i:i + chunksize] for i in range(0, data_frame.shape[0], chunksize)]
+                chunks = [
+                    data_frame[i : i + chunksize]
+                    for i in range(0, data_frame.shape[0], chunksize)
+                ]
                 for chunk in chunks:
                     rows = chunk.fillna(value="").to_dict('records')
-                    session.run(query, rows = rows)
+                    session.run(query, rows=rows)
                 self.logger.info("Rows processed:" + str(len(data_frame)))
             else:
                 rows = data_frame.fillna(value="").to_dict('records')
                 result = session.run(query, rows=rows).consume()
                 self.logger.info(result.counters)
 
-    def load_csv_file(self, query:str, data_file: str, sep='\t', header='infer', colnames:list = None, usecols = None,
-                      skiprows=None, chunksize=None, dtype=None):
+    def load_csv_file(
+        self,
+        query: str,
+        data_file: str,
+        sep='\t',
+        header='infer',
+        colnames: list = None,
+        usecols=None,
+        skiprows=None,
+        chunksize=None,
+        dtype=None,
+    ):
         """
         load csv file to neo4j database
         :param data_file: path to the file
@@ -167,8 +193,17 @@ class Database:
         :param dtype: pandas parameter, eg. converting column values to str, {PROP_ID: str}
         :return: number of items loaded
         """
-        data_chunk = pd.read_csv(data_file, sep=sep, header=header, names=colnames, usecols=usecols,
-                                 chunksize=chunksize, dtype=dtype, skiprows=skiprows, index_col=False)
+        data_chunk = pd.read_csv(
+            data_file,
+            sep=sep,
+            header=header,
+            names=colnames,
+            usecols=usecols,
+            chunksize=chunksize,
+            dtype=dtype,
+            skiprows=skiprows,
+            index_col=False,
+        )
         count = 0
         self.logger.info("Load file: " + data_file)
         self.logger.info("Query: " + query)
@@ -210,7 +245,14 @@ class Database:
         etl_load_id = df.loc[0][0]
         return etl_load_id
 
-    def log_etl_load_finished(self, etl_load_id: str, no_of_created_nodes : int = None, no_of_updated_nodes : int = None, no_of_created_relations: int = None, no_of_updated_relations : int = None):
+    def log_etl_load_finished(
+        self,
+        etl_load_id: str,
+        no_of_created_nodes: int = None,
+        no_of_updated_nodes: int = None,
+        no_of_created_relations: int = None,
+        no_of_updated_relations: int = None,
+    ):
         """Log etl load finish by updating an EtlLoad node.
         param etl_load_id: etl_load_id of the load to log as finished.
         param no_of_created_nodes: number of nodes created by the load

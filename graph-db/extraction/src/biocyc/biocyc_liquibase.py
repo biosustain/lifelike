@@ -21,10 +21,25 @@ class BiocycChangeLog(ChangeLog):
 
     def create_indexes(self):
         queries = []
-        queries.append(get_create_constraint_query(NODE_BIOCYC, PROP_BIOCYC_ID, 'constraint_biocyc_biocycid') + ';')
-        queries.append(get_create_constraint_query(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name') + ';')
-        queries.append(get_create_index_query(NODE_BIOCYC, PROP_NAME, 'index_biocyc_name') + ';')
+        queries.append(
+            get_create_constraint_query(
+                NODE_BIOCYC, PROP_BIOCYC_ID, 'constraint_biocyc_biocycid'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_constraint_query(NODE_BIOCYC, PROP_ID, 'constraint_biocyc_id')
+            + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_BIOCYC, PROP_NAME, 'index_biocyc_name') + ';'
+        )
         return queries
 
     def add_index_change_set(self):

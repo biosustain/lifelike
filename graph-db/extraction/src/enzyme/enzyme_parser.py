@@ -8,7 +8,7 @@ from common.constants import *
 from common.query_builder import (
     get_create_relationships_query,
     get_create_synonym_relationships_query,
-    get_create_update_nodes_query
+    get_create_update_nodes_query,
 )
 
 
@@ -17,6 +17,7 @@ ENZYME_SYNONYM_FILE = 'enzyme_synonym.tsv'
 ENZYME_REL_FILE = 'enzyme_rels.tsv'
 
 SEP = '[ ]{2,}'
+
 
 class Enzyme:
     def __init__(self, code, name=''):
@@ -31,13 +32,13 @@ class Enzyme:
         self.children = []
         self.labels = ['db_Enzyme', 'EC_Number']
 
-    def add_synonym(self, name:str):
+    def add_synonym(self, name: str):
         self.synonyms.append(name)
 
-    def add_activity(self, v:str):
+    def add_activity(self, v: str):
         self.activities.append(v)
 
-    def add_cofactor(self, v:str):
+    def add_cofactor(self, v: str):
         self.cofactors.append(v)
 
     def add_child(self, e):
@@ -62,29 +63,20 @@ class Enzyme:
             PROP_NAME: self.name,
             PROP_CODE: self.code,
             PROP_ACTIVITIES: ' | '.join(self.activities),
-            PROP_COFACTORS: ' | '.join(self.cofactors)
+            PROP_COFACTORS: ' | '.join(self.cofactors),
         }
 
     def get_enzyme_synonyms(self):
         syns = list()
-        syns.append({
-            PROP_ID: self.ec_number,
-            PROP_NAME: self.name
-        })
+        syns.append({PROP_ID: self.ec_number, PROP_NAME: self.name})
         for syn in self.synonyms:
-            syns.append({
-                PROP_ID: self.ec_number,
-                PROP_NAME: syn
-            })
+            syns.append({PROP_ID: self.ec_number, PROP_NAME: syn})
         return syns
 
     def get_parent2child(self):
         children = []
         for c in self.children:
-            children.append({
-                PROP_PARENT_ID: self.ec_number,
-                PROP_ID: c.ec_number
-            })
+            children.append({PROP_PARENT_ID: self.ec_number, PROP_ID: c.ec_number})
         return children
 
 
@@ -104,7 +96,7 @@ class EnzymeParser(BaseParser):
                     start = True
                 if start:
                     row = re.split(SEP, line)
-                    if len(row)==2:
+                    if len(row) == 2:
                         id = row[0].replace(' ', '')
                         name = row[1].strip().strip('.')
                         ec_classes[id] = Enzyme(id, name)
@@ -121,7 +113,7 @@ class EnzymeParser(BaseParser):
         self.build_tree(nodes)
         return list(nodes.values())
 
-    def parse_enz_data_file(self)->dict:
+    def parse_enz_data_file(self) -> dict:
         """
         Parse enzyme data file, return dictionary with enzyme code as key, Enzyme object as value. The enzyme data file
         contains only leaf nodes
@@ -146,7 +138,7 @@ class EnzymeParser(BaseParser):
         self.logger.info(f'enzymes: {len(enzymes)}')
         return enzymes
 
-    def parse_classes(self)->dict:
+    def parse_classes(self) -> dict:
         """
         parse enzyme classes file to get the parent node (enzyme classes, subclasses and sub-subclasses)
         :return: dict with enzyme code as key, Enzyme object as value
@@ -159,7 +151,7 @@ class EnzymeParser(BaseParser):
                     start = True
                 if start:
                     row = re.split(SEP, line)
-                    if len(row)==2:
+                    if len(row) == 2:
                         id = row[0].replace(' ', '')
                         name = row[1].strip().strip('.')
                         ec_classes[id] = Enzyme(id, name)
@@ -170,11 +162,11 @@ class EnzymeParser(BaseParser):
         row = re.split(SEP, line)
         return row[1].strip().strip('.')
 
-    def _get_parent_code(self, enzyme:Enzyme):
+    def _get_parent_code(self, enzyme: Enzyme):
         tokens = enzyme.code.split('.')
         for i in range(len(tokens), 1, -1):
-            if tokens[i-1] != '-':
-                tokens[i-1] = '-'
+            if tokens[i - 1] != '-':
+                tokens[i - 1] = '-'
                 return '.'.join(tokens)
         return None
 
@@ -196,8 +188,12 @@ class EnzymeParser(BaseParser):
         data = [enzyme.get_enzyme_dict() for enzyme in enzymes]
         self.logger.info(f'total enzymes: {len(data)}')
         df = pd.DataFrame.from_records(data)
-        query = get_create_update_nodes_query(NODE_ENZYME, PROP_ID,
-            [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS], [NODE_EC_NUMBER])
+        query = get_create_update_nodes_query(
+            NODE_ENZYME,
+            PROP_ID,
+            [PROP_NAME, PROP_CODE, PROP_ACTIVITIES, PROP_COFACTORS],
+            [NODE_EC_NUMBER],
+        )
         print(query)
         outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_FILE)
         df.to_csv(outfile, index=False, sep='\t')
@@ -208,9 +204,13 @@ class EnzymeParser(BaseParser):
             enzyme2syns += enzyme.get_enzyme_synonyms()
         df = pd.DataFrame.from_records(enzyme2syns)
         self.logger.info(f'enzyme synonyms: {len(df)}')
-        query = get_create_synonym_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, PROP_NAME)
+        query = get_create_synonym_relationships_query(
+            NODE_ENZYME, PROP_ID, PROP_ID, PROP_NAME
+        )
         print(query)
-        outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_SYNONYM_FILE)
+        outfile = os.path.join(
+            self.output_dir, f'{self.file_prefix}' + ENZYME_SYNONYM_FILE
+        )
         df.to_csv(outfile, index=False, sep='\t')
 
         self.logger.info('load enzyme parent-child relationships')
@@ -219,7 +219,15 @@ class EnzymeParser(BaseParser):
             parent2child_list += enzyme.get_parent2child()
         df = pd.DataFrame.from_records(parent2child_list)
         self.logger.info(f'parent-child rels:{len(df)}')
-        query = get_create_relationships_query(NODE_ENZYME, PROP_ID, PROP_ID, NODE_ENZYME, PROP_ID, PROP_PARENT_ID, REL_PARENT)
+        query = get_create_relationships_query(
+            NODE_ENZYME,
+            PROP_ID,
+            PROP_ID,
+            NODE_ENZYME,
+            PROP_ID,
+            PROP_PARENT_ID,
+            REL_PARENT,
+        )
         print(query)
         outfile = os.path.join(self.output_dir, f'{self.file_prefix}' + ENZYME_REL_FILE)
         df.to_csv(outfile, index=False, sep='\t')

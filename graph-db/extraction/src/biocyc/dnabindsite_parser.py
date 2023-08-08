@@ -11,7 +11,15 @@ ATTR_NAMES = {
 
 class DnaBindSiteParser(BaseDataFileParser):
     def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir, db_name, tarfile, 'dnabindsites.dat', NODE_DNA_BINDING_SITE, ATTR_NAMES)
+        super().__init__(
+            prefix,
+            base_dir,
+            db_name,
+            tarfile,
+            'dnabindsites.dat',
+            NODE_DNA_BINDING_SITE,
+            ATTR_NAMES,
+        )
         self.attrs = [PROP_BIOCYC_ID, PROP_POS]
 
     def __str__(self):

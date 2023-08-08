@@ -16,7 +16,9 @@ class BaseParser:
         try:
             int(file_prefix.split('-')[1])
         except Exception:
-            raise ValueError('The argument change_id_prefix must be the JIRA card number; e.g LL-1234')
+            raise ValueError(
+                'The argument change_id_prefix must be the JIRA card number; e.g LL-1234'
+            )
 
         self.file_prefix = f'jira-{file_prefix}-'
         self.base_dir = base_dir

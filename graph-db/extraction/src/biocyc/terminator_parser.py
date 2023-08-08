@@ -11,8 +11,23 @@ ATTR_NAMES = {
 
 class TerminatorParser(BaseDataFileParser):
     def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir, db_name, tarfile, 'terminators.dat', NODE_TERMINATOR,ATTR_NAMES)
-        self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ACCESSION, PROP_POS_LEFT, PROP_POS_RIGHT,PROP_STRAND]
+        super().__init__(
+            prefix,
+            base_dir,
+            db_name,
+            tarfile,
+            'terminators.dat',
+            NODE_TERMINATOR,
+            ATTR_NAMES,
+        )
+        self.attrs = [
+            PROP_BIOCYC_ID,
+            PROP_NAME,
+            PROP_ACCESSION,
+            PROP_POS_LEFT,
+            PROP_POS_RIGHT,
+            PROP_STRAND,
+        ]
 
     def __str__(self):
         return 'biocyc-terminator'

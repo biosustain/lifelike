@@ -6,7 +6,9 @@ def get_drop_database_query(db_name: str):
     return f'DROP DATABASE {db_name}'
 
 
-def get_create_constraint_query(label: str, property_name: str, constraint_name: str = ''):
+def get_create_constraint_query(
+    label: str, property_name: str, constraint_name: str = ''
+):
     """
     Build query to create a constraint
     :param label: node label
@@ -36,7 +38,7 @@ def get_create_index_query(label: str, property_name: str, index_name=''):
     return query
 
 
-def get_drop_index_query(index_name:str):
+def get_drop_index_query(index_name: str):
     return f'DROP INDEX {index_name}'
 
 
@@ -49,13 +51,13 @@ def get_create_fulltext_index_query():
 
 
 def get_create_update_nodes_query(
-    node_label:str,
+    node_label: str,
     id_name: str,
     update_properties: list,
     additional_labels=[],
     datasource=None,
     original_entity_types=[],
-    namespace_label: str = ''
+    namespace_label: str = '',
 ):
     """
     Build query to create or update nodes. Make sure for each row, the keys match with properties.
@@ -77,7 +79,9 @@ def get_create_update_nodes_query(
             label_set = 'n:' + ':'.join(additional_labels)
             prop_sets.append(label_set)
         if update_properties:
-            props = [f"n.{prop}=row.{prop}" for prop in update_properties if prop != id_name]
+            props = [
+                f"n.{prop}=row.{prop}" for prop in update_properties if prop != id_name
+            ]
             prop_sets += props
         if datasource:
             prop_sets.append(f"n.data_source='{datasource}'")
@@ -89,7 +93,9 @@ def get_create_update_nodes_query(
         if len(prop_sets) > 0:
             query_rows.append('SET ' + ','.join(prop_sets))
         if namespace_label:
-            query_rows.append(f"FOREACH (item IN CASE WHEN row.namespace = '{namespace_label}' THEN [1] ELSE [] END | SET n:{namespace_label.title().replace('_', '')})")
+            query_rows.append(
+                f"FOREACH (item IN CASE WHEN row.namespace = '{namespace_label}' THEN [1] ELSE [] END | SET n:{namespace_label.title().replace('_', '')})"
+            )
             query_rows.append('RETURN COUNT(*)')
     return '\n'.join(query_rows)
 
@@ -106,17 +112,17 @@ def get_delete_nodes_query(node_label: str, id_name: str):
 
 
 def get_create_relationships_query(
-    node1_label:str,
-    node1_id:str,
-    node1_col:str,
+    node1_label: str,
+    node1_id: str,
+    node1_col: str,
     node2_label: str,
     node2_id: str,
     node2_col: str,
-    relationship:str,
+    relationship: str,
     rel_properties=[],
     foreach=False,
     foreach_property='',
-    return_node_count=False
+    return_node_count=False,
 ):
     """
     Build the query to create relationships.
@@ -132,11 +138,15 @@ def get_create_relationships_query(
     """
     rows = list()
     rows.append("UNWIND $rows AS row")
-    rows.append("MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})" % (
-        node1_label, node1_id, node1_col, node2_label, node2_id, node2_col))
+    rows.append(
+        "MATCH (a:%s {%s: row.%s}), (b:%s {%s: row.%s})"
+        % (node1_label, node1_id, node1_col, node2_label, node2_id, node2_col)
+    )
     if foreach:
-        rows.append("FOREACH (item IN CASE WHEN row.%s = '%s' THEN [1] ELSE [] END | MERGE (a)-[r:%s]->(b))" % (
-            foreach_property, relationship, relationship))
+        rows.append(
+            "FOREACH (item IN CASE WHEN row.%s = '%s' THEN [1] ELSE [] END | MERGE (a)-[r:%s]->(b))"
+            % (foreach_property, relationship, relationship)
+        )
     else:
         rows.append(f'MERGE (a)-[r:{relationship}]->(b)')
     prop_sets = []
@@ -152,12 +162,12 @@ def get_create_relationships_query(
 
 
 def get_create_synonym_relationships_query(
-    node_label:str,
-    node_id:str,
-    node_id_col:str,
+    node_label: str,
+    node_id: str,
+    node_id_col: str,
     synonym_col: str,
     rel_properties=[],
-    return_node_count: bool=False
+    return_node_count: bool = False,
 ):
     """
     Build the query to create node, then create relationship with another existing node using dataframe data.
@@ -172,8 +182,13 @@ def get_create_synonym_relationships_query(
     """
     query_rows = list()
     query_rows.append("UNWIND $rows AS row")
-    query_rows.append("MERGE (a:Synonym {name: row.%s}) SET a.lowercase_name=toLower(row.%s)" % (synonym_col, synonym_col))
-    query_rows.append("WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col))
+    query_rows.append(
+        "MERGE (a:Synonym {name: row.%s}) SET a.lowercase_name=toLower(row.%s)"
+        % (synonym_col, synonym_col)
+    )
+    query_rows.append(
+        "WITH row, a MATCH (b:%s {%s: row.%s})" % (node_label, node_id, node_id_col)
+    )
     query_rows.append("MERGE (b)-[r:HAS_SYNONYM]->(a)")
     prop_sets = []
     for prop in rel_properties:

@@ -5,6 +5,7 @@ from common.utils import get_data_dir
 from datetime import datetime
 from common.utils import write_compressed_tsv_file_from_dataframe
 
+
 def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     """
     Export PseudomonasCyc genes and synonyms to tsv file for LMDB annotation.
@@ -17,6 +18,7 @@ def generate_pseudomonas_genelist_for_LMDB(database, output_dir):
     df = database.get_data(query)
     outfile = os.path.join(output_dir, "pseudomonasCyc_genes_for_LMDB.tsv")
     df.to_csv(outfile, index=False, sep='\t')
+
 
 def generate_compound_list_for_LMDB(database, output_dir):
     """
@@ -40,5 +42,3 @@ if __name__ == '__main__':
     generate_pseudomonas_genelist_for_LMDB(database, output_dir)
     generate_compound_list_for_LMDB(database, output_dir)
     database.close()
-
-

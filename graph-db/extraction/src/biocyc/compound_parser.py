@@ -11,7 +11,7 @@ ATTR_NAMES = {
     'INCHI-KEY': (PROP_INCHI_KEY, 'str'),
     'INCHI': (PROP_INCHI, 'str'),
     'SMILES': (PROP_SMILES, 'str'),
-    'SYNONYMS': (PROP_SYNONYMS, 'str')
+    'SYNONYMS': (PROP_SYNONYMS, 'str'),
 }
 REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
@@ -19,11 +19,22 @@ REL_NAMES = {
 }
 
 ## format: key: source db name, value: (KEY-Index, KEY_with_DB_PREFIX), e.g. if KEY_with_DB_PREFIX == True, key will be like 'CHEBI:1234', otherwise, '1234'.
-DB_LINK_SOURCES = {'CHEBI':True}
+DB_LINK_SOURCES = {'CHEBI': True}
+
 
 class CompoundParser(BaseDataFileParser):
     def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir, db_name, tarfile, 'compounds.dat', NODE_COMPOUND, ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        super().__init__(
+            prefix,
+            base_dir,
+            db_name,
+            tarfile,
+            'compounds.dat',
+            NODE_COMPOUND,
+            ATTR_NAMES,
+            REL_NAMES,
+            DB_LINK_SOURCES,
+        )
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_INCHI_KEY]
 
     def __str__(self):
@@ -46,5 +57,5 @@ class CompoundParser(BaseDataFileParser):
 
             inchi_key = node.get_attribute(PROP_INCHI_KEY)
             if inchi_key:
-                node.update_attribute(PROP_INCHI_KEY, inchi_key[len('InChIKey='):])
+                node.update_attribute(PROP_INCHI_KEY, inchi_key[len('InChIKey=') :])
         super().parse_and_write_data_files()

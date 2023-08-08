@@ -9,7 +9,14 @@ class OboParser:
     """
     Base parser to parse obo format files.
     """
-    def __init__(self, attributes_map: dict, relationships_map: dict, node_labels, node_id_attr_name: str):
+
+    def __init__(
+        self,
+        attributes_map: dict,
+        relationships_map: dict,
+        node_labels,
+        node_id_attr_name: str,
+    ):
         self.attributes_map = attributes_map
         self.relationships_map = relationships_map
         self.node_labels = node_labels
@@ -44,7 +51,10 @@ class OboParser:
         return nodes
 
     def _process_property(self, node: NodeData, attr_name: str, attr_val: str):
-        if not attr_name in self.attributes_map and not attr_name in self.relationships_map:
+        if (
+            not attr_name in self.attributes_map
+            and not attr_name in self.relationships_map
+        ):
             return
         if attr_name == 'property_value':
             prop_identifier, value, _ = attr_val.split(' ')

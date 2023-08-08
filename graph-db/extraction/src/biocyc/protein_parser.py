@@ -11,13 +11,17 @@ ATTR_NAMES = {
     'PI': (PROP_PI, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str'),
     'LOCATIONS': (PROP_LOCATION, 'str'),
-    'GO-TERMS': (DB_GO, 'str')
+    'GO-TERMS': (DB_GO, 'str'),
 }
 REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
-    'COMPONENTS': RelationshipType(REL_IS_COMPONENT, 'from', NODE_PROTEIN, PROP_BIOCYC_ID),
+    'COMPONENTS': RelationshipType(
+        REL_IS_COMPONENT, 'from', NODE_PROTEIN, PROP_BIOCYC_ID
+    ),
     'GENE': RelationshipType(REL_ENCODE, 'from', NODE_GENE, PROP_BIOCYC_ID),
-    'MODIFIED-FORM': RelationshipType(REL_MODIFIED_TO, 'to', NODE_PROTEIN, PROP_BIOCYC_ID)
+    'MODIFIED-FORM': RelationshipType(
+        REL_MODIFIED_TO, 'to', NODE_PROTEIN, PROP_BIOCYC_ID
+    ),
 }
 
 DB_LINK_SOURCES = {DB_GO: True}
@@ -29,7 +33,17 @@ COMPLEXES = 'Complexes'
 
 class ProteinParser(BaseDataFileParser):
     def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir,  db_name, tarfile, 'proteins.dat', NODE_PROTEIN,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        super().__init__(
+            prefix,
+            base_dir,
+            db_name,
+            tarfile,
+            'proteins.dat',
+            NODE_PROTEIN,
+            ATTR_NAMES,
+            REL_NAMES,
+            DB_LINK_SOURCES,
+        )
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_ABBREV_NAME, PROP_MOL_WEIGHT_KD]
 
     def __str__(self):

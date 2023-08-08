@@ -21,16 +21,28 @@ from biocyc import (
     regulation_parser,
     rna_parser,
     terminator_parser,
-    transcriptionunit_parser
+    transcriptionunit_parser,
 )
 
 
 # reference to this directory
 directory = os.path.realpath(os.path.dirname(__file__))
 
-ENTITIES = [NODE_CLASS, NODE_COMPOUND, NODE_DNA_BINDING_SITE, NODE_GENE, NODE_TERMINATOR, NODE_PROMOTER,
-            NODE_TRANS_UNIT, NODE_RNA, NODE_PROTEIN,
-            NODE_REACTION, NODE_PATHWAY, NODE_ENZ_REACTION, NODE_REGULATION]
+ENTITIES = [
+    NODE_CLASS,
+    NODE_COMPOUND,
+    NODE_DNA_BINDING_SITE,
+    NODE_GENE,
+    NODE_TERMINATOR,
+    NODE_PROMOTER,
+    NODE_TRANS_UNIT,
+    NODE_RNA,
+    NODE_PROTEIN,
+    NODE_REACTION,
+    NODE_PATHWAY,
+    NODE_ENZ_REACTION,
+    NODE_REGULATION,
+]
 
 PARSERS = {
     NODE_CLASS: class_parser.ClassParser,
@@ -52,7 +64,7 @@ ECOCYC_FILE = 'ecocyc.zip'
 
 
 class BiocycParser(CloudMixin):
-    def __init__(self, prefix: str, base_dir: str=None):
+    def __init__(self, prefix: str, base_dir: str = None):
         self.base_dir = base_dir
         self.prefix = prefix
 
@@ -64,7 +76,9 @@ class BiocycParser(CloudMixin):
         self.data_sources_to_load = self.data_sources
         self.logger = logging.getLogger(__name__)
 
-    def get_parser(self, entity_name: str, biocyc_dbname: str, filename: str) -> Type[BaseDataFileParser]:
+    def get_parser(
+        self, entity_name: str, biocyc_dbname: str, filename: str
+    ) -> Type[BaseDataFileParser]:
         return PARSERS[entity_name](self.prefix, biocyc_dbname, filename, self.base_dir)
 
     def link_genes(self, database):
@@ -149,7 +163,9 @@ class BiocycParser(CloudMixin):
         self.zip_files(parser.output_dir)
 
     def zip_files(self, dir):
-        with ZipFile(os.path.join(dir, f'jira-{self.prefix}.zip'), 'w', ZIP_DEFLATED) as zipped:
+        with ZipFile(
+            os.path.join(dir, f'jira-{self.prefix}.zip'), 'w', ZIP_DEFLATED
+        ) as zipped:
             for parent, subfolders, filenames in os.walk(os.path.join(dir)):
                 for fn in filenames:
                     [path, ext] = path.splitext(fn.lower())
@@ -170,7 +186,9 @@ def main(args):
                     data_source_name
                 ]
             else:
-                raise ValueError(f'The specified data source was not recognized: {data_source_name}')
+                raise ValueError(
+                    f'The specified data source was not recognized: {data_source_name}'
+                )
     else:
         logger.info('No data sources specified. Loading all data sources...')
 
@@ -181,8 +199,18 @@ def main(args):
     # parser.set_gene_property_for_enrichment(database)
     # parser.add_protein_synonyms(database)
 
-    for filename in ['LL-3164-ecocyc.zip', 'LL-3164-humancyc.zip', 'LL-3164-metacyc.zip', 'LL-3164-pseudomonascyc.zip', 'LL-3164-yeastcyc.zip']:
-        parser.upload_to_azure(f'jira-{filename}', os.path.join(directory, '../../data/processed/biocyc', f'jira-{filename}'), True)
+    for filename in [
+        'LL-3164-ecocyc.zip',
+        'LL-3164-humancyc.zip',
+        'LL-3164-metacyc.zip',
+        'LL-3164-pseudomonascyc.zip',
+        'LL-3164-yeastcyc.zip',
+    ]:
+        parser.upload_to_azure(
+            f'jira-{filename}',
+            os.path.join(directory, '../../data/processed/biocyc', f'jira-{filename}'),
+            True,
+        )
 
 
 if __name__ == "__main__":

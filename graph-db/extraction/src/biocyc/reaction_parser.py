@@ -11,7 +11,7 @@ ATTR_NAMES = {
     'REACTION-DIRECTION': (PROP_DIRECTION, 'str'),
     'RXN-LOCATIONS': (PROP_LOCATION, 'str'),
     'SYNONYMS': (PROP_SYNONYMS, 'str'),
-    'RXN-LOCATIONS': (PROP_LOCATION, 'str')
+    'RXN-LOCATIONS': (PROP_LOCATION, 'str'),
 }
 REL_NAMES = {
     'TYPES': RelationshipType(REL_TYPE, 'to', NODE_CLASS, PROP_BIOCYC_ID),
@@ -21,7 +21,7 @@ REL_NAMES = {
 
 REL_ATTRS = {
     'LEFT': {'^COMPARTMENT': PROP_COMPARTMENT},
-    'RIGHT': {'^COMPARTMENT': PROP_COMPARTMENT}
+    'RIGHT': {'^COMPARTMENT': PROP_COMPARTMENT},
 }
 
 # False means not adding prefix 'Enzyme' to reference id
@@ -33,7 +33,17 @@ SMALL_MOL_REACTIONS = 'Small-Molecule-Reactions'
 
 class ReactionParser(BaseDataFileParser):
     def __init__(self, prefix: str, db_name: str, tarfile: str, base_dir: str):
-        super().__init__(prefix, base_dir, db_name, tarfile, 'reactions.dat', NODE_REACTION,ATTR_NAMES, REL_NAMES, DB_LINK_SOURCES)
+        super().__init__(
+            prefix,
+            base_dir,
+            db_name,
+            tarfile,
+            'reactions.dat',
+            NODE_REACTION,
+            ATTR_NAMES,
+            REL_NAMES,
+            DB_LINK_SOURCES,
+        )
         self.attrs = [PROP_BIOCYC_ID, PROP_NAME, PROP_EC_NUMBER]
 
     def __str__(self):
@@ -52,7 +62,10 @@ class ReactionParser(BaseDataFileParser):
             edges = set(node.edges)
             for edge in edges:
                 if edge.label == REL_TYPE:
-                    if edge.dest.get_attribute(PROP_BIOCYC_ID) in [CHEM_REACTIONS, SMALL_MOL_REACTIONS]:
+                    if edge.dest.get_attribute(PROP_BIOCYC_ID) in [
+                        CHEM_REACTIONS,
+                        SMALL_MOL_REACTIONS,
+                    ]:
                         node.edges.remove(edge)
             ec_number_str = node.get_attribute(PROP_EC_NUMBER)
             if ec_number_str:

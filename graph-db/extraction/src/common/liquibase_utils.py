@@ -32,12 +32,16 @@ def get_changelog_template():
 class ChangeLog:
     def __init__(self, author: str, change_id_prefix: str):
         if not change_id_prefix:
-            raise ValueError('The argument change_id_prefix must not be null or empty string')
+            raise ValueError(
+                'The argument change_id_prefix must not be null or empty string'
+            )
 
         try:
             int(change_id_prefix.split('-')[1])
         except Exception:
-            raise ValueError('The argument change_id_prefix must be the JIRA card number; e.g LL-1234')
+            raise ValueError(
+                'The argument change_id_prefix must be the JIRA card number; e.g LL-1234'
+            )
         self.author = author
         self.id_prefix = change_id_prefix
         self.file_prefix = f'jira-{change_id_prefix}-'
@@ -73,15 +77,26 @@ class ChangeSet:
         template = get_template(sql_template)
         # liquibase doesn't like the `<` character
         self.cypher = self.cypher.replace('<', '&lt;')
-        return template.render(change_id=self.id, author=self.author, change_comment=self.comment, cypher_query=self.cypher)
+        return template.render(
+            change_id=self.id,
+            author=self.author,
+            change_comment=self.comment,
+            cypher_query=self.cypher,
+        )
 
 
 class CustomChangeSet(ChangeSet):
-    def __init__(self, id, author, comment, cypher,
-                 filename:str,
-                 handler="edu.ucsd.sbrg.FileQueryHandler",
-                 filetype='TSV',
-                 startrow=1):
+    def __init__(
+        self,
+        id,
+        author,
+        comment,
+        cypher,
+        filename: str,
+        handler="edu.ucsd.sbrg.FileQueryHandler",
+        filetype='TSV',
+        startrow=1,
+    ):
         ChangeSet.__init__(self, id, author, comment, cypher)
         self.handler = handler
         self.filename = filename.replace('.tsv', '.zip')
@@ -90,18 +105,32 @@ class CustomChangeSet(ChangeSet):
 
     def create_changelog_str(self):
         template = get_template(custom_template)
-        return template.render(change_id=self.id, change_comment=self.comment, author=self.author,
-                               handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
-                               start_at=self.start_at, file_type=self.filetype, params=CUSTOM_PARAMS)
+        return template.render(
+            change_id=self.id,
+            change_comment=self.comment,
+            author=self.author,
+            handler_class=self.handler,
+            cypher_query=self.cypher,
+            data_file=self.filename,
+            start_at=self.start_at,
+            file_type=self.filetype,
+            params=CUSTOM_PARAMS,
+        )
 
 
 class ZipCustomChangeSet(ChangeSet):
-    def __init__(self, id, author, comment, cypher,
-                 filename:str,
-                 zip_filename: str,
-                 handler="edu.ucsd.sbrg.ZipFileQueryHandler",
-                 filetype='TSV',
-                 startrow=1):
+    def __init__(
+        self,
+        id,
+        author,
+        comment,
+        cypher,
+        filename: str,
+        zip_filename: str,
+        handler="edu.ucsd.sbrg.ZipFileQueryHandler",
+        filetype='TSV',
+        startrow=1,
+    ):
         ChangeSet.__init__(self, id, author, comment, cypher)
         self.handler = handler
         self.zip_filename = zip_filename
@@ -111,10 +140,18 @@ class ZipCustomChangeSet(ChangeSet):
 
     def create_changelog_str(self):
         template = get_template(zip_custom_template)
-        return template.render(change_id=self.id, change_comment=self.comment, author=self.author,
-                               handler_class=self.handler, cypher_query=self.cypher, data_file=self.filename,
-                               zip_data_file=self.zip_filename, start_at=self.start_at, file_type=self.filetype,
-                               params=CUSTOM_PARAMS)
+        return template.render(
+            change_id=self.id,
+            change_comment=self.comment,
+            author=self.author,
+            handler_class=self.handler,
+            cypher_query=self.cypher,
+            data_file=self.filename,
+            zip_data_file=self.zip_filename,
+            start_at=self.start_at,
+            file_type=self.filetype,
+            params=CUSTOM_PARAMS,
+        )
 
 
 def generate_sql_changelog_file(id, author, comment, cypher, outfile):
@@ -127,7 +164,9 @@ def generate_sql_changelog_file(id, author, comment, cypher, outfile):
 if __name__ == '__main__':
     cypher = 'match(n:Gene)-[r]-(:Gene) where r.score < 0.4 delete r;'
     comment = 'Remove ecocyc-plus string relationships with 0.4 threshold. After the update, create ecocyc-plus-10012021.dump file'
-    outfile = os.path.join('../../../migration/liquibase/ecocyc-plus/ecocyc-plus changelog-0010.xml')
-    generate_sql_changelog_file('LL-3702 cut string rels with threshold', 'robin cai',
-                                comment,
-                                cypher, outfile)
+    outfile = os.path.join(
+        '../../../migration/liquibase/ecocyc-plus/ecocyc-plus changelog-0010.xml'
+    )
+    generate_sql_changelog_file(
+        'LL-3702 cut string rels with threshold', 'robin cai', comment, cypher, outfile
+    )
