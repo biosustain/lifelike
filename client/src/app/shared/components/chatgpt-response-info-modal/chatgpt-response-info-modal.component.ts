@@ -9,7 +9,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 export class ChatgptResponseInfoModalComponent {
   constructor(private readonly modal: NgbActiveModal) {}
 
-  private query: string;
+  query: string;
 
   @Input() set queryParams(qp: object) {
     this.query = JSON.stringify(qp, null, 2);
