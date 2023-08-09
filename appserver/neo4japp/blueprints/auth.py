@@ -173,7 +173,7 @@ def verify_token(token):
             email=decoded['email'],
             first_name=decoded.get('given_name') or decoded.get('name', ''),
             last_name=decoded.get('family_name', ''),
-            subject=decoded.get('sub')
+            subject=decoded.get('sub'),
         )
 
         # Add the "user" role to the new user
@@ -253,12 +253,11 @@ def refresh():
 @wrap_exceptions(AuthenticationError)
 def login():
     """
-        Generate JWT to validate graph API calls
-        based on successful user login
+    Generate JWT to validate graph API calls
+    based on successful user login
     """
     data = request.get_json()
     exception = None
-
 
     # Pull user by email
     try:
@@ -279,10 +278,7 @@ def login():
                     event_type=LogEventType.AUTHENTICATION.value,
                 ).to_dict()
             )
-            token_service = TokenService(
-                config['JWT_SECRET'],
-                config['JWT_ALGORITHM']
-            )
+            token_service = TokenService(config['JWT_SECRET'], config['JWT_ALGORITHM'])
             access_jwt = token_service.get_access_token(user.email)
             refresh_jwt = token_service.get_refresh_token(user.email)
             user.failed_login_count = 0
@@ -294,20 +290,24 @@ def login():
                 db.session.rollback()
                 exception = e
             else:
-                return jsonify(LifelikeJWTTokenResponse().dump({
-                    'access_token': access_jwt,
-                    'refresh_token': refresh_jwt,
-                    'user': {
-                        'hash_id': user.hash_id,
-                        'email': user.email,
-                        'username': user.username,
-                        'first_name': user.first_name,
-                        'last_name': user.last_name,
-                        'id': user.id,
-                        'reset_password': user.forced_password_reset,
-                        'roles': [u.name for u in user.roles],
-                    },
-                }))
+                return jsonify(
+                    LifelikeJWTTokenResponse().dump(
+                        {
+                            'access_token': access_jwt,
+                            'refresh_token': refresh_jwt,
+                            'user': {
+                                'hash_id': user.hash_id,
+                                'email': user.email,
+                                'username': user.username,
+                                'first_name': user.first_name,
+                                'last_name': user.last_name,
+                                'id': user.id,
+                                'reset_password': user.forced_password_reset,
+                                'roles': [u.name for u in user.roles],
+                            },
+                        }
+                    )
+                )
         else:
             user.failed_login_count += 1
             try:
