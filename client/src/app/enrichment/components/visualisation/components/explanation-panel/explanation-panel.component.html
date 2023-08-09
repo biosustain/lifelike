@@ -87,12 +87,8 @@
   <i class="fa fa-spinner fa-spin"></i>
 </ng-template>
 <ng-container *ngIf="explanation$ | async as explanation; else loading">
-    <span
-      style="float: right;"
-      class="ml-2 mb-2"
-      (click)="openInfo(explanation.query_params)"
-    >
-      <i class="fas fa-info-circle"></i>
-    </span>
-    {{ explanation.result }}
+  <span style="float: right" class="ml-2 mb-2" (click)="openInfo(explanation.query_params)">
+    <i class="fas fa-info-circle"></i>
+  </span>
+  {{ explanation.result }}
 </ng-container>

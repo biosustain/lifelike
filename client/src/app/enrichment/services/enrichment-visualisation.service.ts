@@ -128,13 +128,12 @@ export class EnrichmentVisualisationService implements OnDestroy {
   public enrichTermWithContext(term, context?, geneName?): Observable<ChatGPTResponse> {
     return this.enrichmentDocument$.pipe(
       switchMap(({ organism }) =>
-        this.http
-          .post<ChatGPTResponse>(`/api/enrichment-visualisation/enrich-with-context`, {
-            organism,
-            term,
-            context,
-            geneName,
-          })
+        this.http.post<ChatGPTResponse>(`/api/enrichment-visualisation/enrich-with-context`, {
+          organism,
+          term,
+          context,
+          geneName,
+        })
       )
     );
   }

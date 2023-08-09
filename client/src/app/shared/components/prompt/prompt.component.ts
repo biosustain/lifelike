@@ -70,15 +70,11 @@ export class PromptComponent implements OnDestroy, OnChanges {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  possibleExplanation$: Observable<ChatGPTResponse|null> = this.params$.pipe(
+  possibleExplanation$: Observable<ChatGPTResponse | null> = this.params$.pipe(
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
-      this.explainService
-        .relationship(entities, context, {temperature})
-        .pipe(
-          startWith(null),
-        ),
-    ),
+      this.explainService.relationship(entities, context, { temperature }).pipe(startWith(null))
+    )
   );
 
   showPlayground = environment.chatGPTPlaygroundEnabled;

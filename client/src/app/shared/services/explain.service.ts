@@ -49,12 +49,11 @@ export class ExplainService {
     context?: string,
     options: ExplainRelationshipOptions = {}
   ): Observable<ChatGPTResponse> {
-    return this.http
-      .post<ChatGPTResponse>(this.endpoint + 'relationship', {
-        entities: Array.from(entities),
-        context,
-        options,
-      });
+    return this.http.post<ChatGPTResponse>(this.endpoint + 'relationship', {
+      entities: Array.from(entities),
+      context,
+      options,
+    });
   }
 
   playground(options: CompletitionsParams) {

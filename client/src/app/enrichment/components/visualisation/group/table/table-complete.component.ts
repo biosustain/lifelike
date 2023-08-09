@@ -41,7 +41,7 @@ export class TableCompleteComponent implements OnChanges {
     readonly enrichmentService: EnrichmentVisualisationService,
     public service: DataService,
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
-    private readonly modalService: NgbModal,
+    private readonly modalService: NgbModal
   ) {
     this.data$ = service.data$;
     this.total$ = service.total$;

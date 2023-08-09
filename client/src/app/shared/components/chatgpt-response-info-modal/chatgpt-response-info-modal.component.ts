@@ -7,14 +7,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './chatgpt-response-info-modal.component.html',
 })
 export class ChatgptResponseInfoModalComponent {
-  constructor(private readonly modal: NgbActiveModal) {
-  }
+  constructor(private readonly modal: NgbActiveModal) {}
 
   private query: string;
 
   @Input() set queryParams(qp: object) {
     this.query = JSON.stringify(qp, null, 2);
-  };
+  }
 
   close() {
     this.modal.close();
