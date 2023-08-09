@@ -149,24 +149,26 @@ class AccountView(MethodView):
     @use_args(UserCreateSchema)
     @wrap_exceptions(ServerException, title='Cannot Create New User')
     def post(self, params: dict):
-        admin_or_private_access = g.current_user.has_role('admin') or \
-                                  g.current_user.has_role('private-data-access')
+        admin_or_private_access = g.current_user.has_role(
+            'admin'
+        ) or g.current_user.has_role('private-data-access')
         if not admin_or_private_access:
             raise CannotCreateNewUser(
-                title='Cannot Create New User',
-                code=HTTPStatus.UNAUTHORIZED
+                title='Cannot Create New User', code=HTTPStatus.UNAUTHORIZED
             )
         if db.session.query(AppUser.query_by_email(params['email']).exists()).scalar():
             raise CannotCreateNewUser(
                 title='Cannot Create New User',
                 message=f'E-mail {params["email"]} already taken.',
-                code=HTTPStatus.CONFLICT
+                code=HTTPStatus.CONFLICT,
             )
-        elif db.session.query(AppUser.query_by_username(params["username"]).exists()).scalar():
+        elif db.session.query(
+            AppUser.query_by_username(params["username"]).exists()
+        ).scalar():
             raise CannotCreateNewUser(
                 title='Cannot Create New User',
                 message=f'Username {params["username"]} already taken.',
-                code=HTTPStatus.CONFLICT
+                code=HTTPStatus.CONFLICT,
             )
 
         app_user = AppUser(
@@ -175,7 +177,7 @@ class AccountView(MethodView):
             first_name=params['first_name'],
             last_name=params['last_name'],
             subject=params['email'],
-            forced_password_reset=params['created_by_admin']
+            forced_password_reset=params['created_by_admin'],
         )
         app_user.set_password(params['password'])
         if not params.get('roles'):
@@ -197,7 +199,7 @@ class AccountView(MethodView):
                 fields={
                     'user_id': app_user.id if app_user.id is not None else 'N/A',
                     'username': app_user.username,
-                    'user_email': app_user.email
+                    'user_email': app_user.email,
                 },
             )
         except ServerException:
@@ -291,26 +293,23 @@ bp.add_url_rule(
 @use_args(UserChangePasswordSchema)
 @wrap_exceptions(ServerException, title='Failed to update password')
 def update_password(params: dict, hash_id):
-    admin_or_private_access = g.current_user.has_role('admin') or \
-                              g.current_user.has_role('private-data-access')
+    admin_or_private_access = g.current_user.has_role(
+        'admin'
+    ) or g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
         raise FailedToUpdateUser(
             message='You do not have sufficient privileges.',
-            code=HTTPStatus.UNAUTHORIZED
+            code=HTTPStatus.UNAUTHORIZED,
         )
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
             if target.check_password(params['new_password']):
-                raise FailedToUpdateUser(
-                    message='New password cannot be the old one.'
-                )
+                raise FailedToUpdateUser(message='New password cannot be the old one.')
             target.set_password(params['new_password'])
             target.forced_password_reset = False
         else:
-            raise FailedToUpdateUser(
-                message='Old password is invalid.'
-            )
+            raise FailedToUpdateUser(message='Old password is invalid.')
         try:
             db.session.add(target)
             db.session.commit()
