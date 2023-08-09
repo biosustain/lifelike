@@ -5,10 +5,7 @@ import { compact } from 'lodash-es';
 
 export const authModuleConfig: OAuthModuleConfig = {
   resourceServer: {
-    allowedUrls: compact([
-      '/api',
-      environment.keycloakApiBaseUrl,
-    ]),
+    allowedUrls: compact(['/api', environment.keycloakApiBaseUrl]),
     sendAccessToken: true,
   },
 };
