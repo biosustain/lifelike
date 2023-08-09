@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
+import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 
 import { CompletitionsParams } from '../components/prompt/ChatGPT';
 
@@ -47,14 +48,13 @@ export class ExplainService {
     entities: Iterable<string>,
     context?: string,
     options: ExplainRelationshipOptions = {}
-  ): Observable<string> {
+  ): Observable<ChatGPTResponse> {
     return this.http
-      .post<SingleResult<string>>(this.endpoint + 'relationship', {
+      .post<ChatGPTResponse>(this.endpoint + 'relationship', {
         entities: Array.from(entities),
         context,
         options,
-      })
-      .pipe(map(({ result }) => result));
+      });
   }
 
   playground(options: CompletitionsParams) {

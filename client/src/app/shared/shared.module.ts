@@ -96,6 +96,7 @@ import { ResponseAlertComponent } from './components/response-alert/response-ale
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
 import { PlaygroundComponent } from './components/prompt/playground.component';
+import { ChatgptResponseInfoModalComponent } from './components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -193,6 +194,7 @@ const components = [
     XMLAnnotationComponent,
     PromptComponent,
     PlaygroundComponent,
+    ChatgptResponseInfoModalComponent,
   ],
   providers: [
     TruncatePipe,
@@ -261,6 +263,7 @@ const components = [
     ModuleHeaderComponent,
     PromptComponent,
     PlaygroundComponent,
+    ChatgptResponseInfoModalComponent,
   ],
 })
 export class SharedModule {}

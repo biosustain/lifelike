@@ -1,13 +1,6 @@
 import { Component } from '@angular/core';
 
-import {
-  distinctUntilChanged,
-  map,
-  shareReplay,
-  startWith,
-  switchMap,
-  throttle,
-} from 'rxjs/operators';
+import { isEqual } from 'lodash-es';
 import {
   filter as _filter,
   flatMap as _flatMap,
@@ -16,18 +9,28 @@ import {
   uniq as _uniq,
 } from 'lodash/fp';
 import { combineLatest, Observable } from 'rxjs';
-import { isEqual } from 'lodash-es';
-
 import {
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  throttle,
+} from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import { EnrichmentVisualisationSelectService } from 'app/enrichment/services/enrichment-visualisation-select.service';
+import {
+  ChatGPTResponse,
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
+import { idle } from 'app/shared/rxjs/idle-observable';
 import {
   DropdownController,
   dropdownControllerFactory,
 } from 'app/shared/utils/dropdown.controller.factory';
-import { idle } from 'app/shared/rxjs/idle-observable';
-import { EnrichmentVisualisationSelectService } from 'app/enrichment/services/enrichment-visualisation-select.service';
+import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -36,8 +39,10 @@ import { EnrichmentVisualisationSelectService } from 'app/enrichment/services/en
 export class EnrichmentVisualisationExplanationPanelComponent {
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
-    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService
-  ) {}
+    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
+    private readonly modalService: NgbModal,
+  ) {
+  }
 
   contextsController$: Observable<DropdownController<string>> =
     this.enrichmentService.contexts$.pipe(
@@ -87,7 +92,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  explanation$: Observable<string> = combineLatest([
+  explanation$: Observable<ChatGPTResponse|null> = combineLatest([
     this.contextsController$.pipe(
       switchMap(({ current$ }) => current$),
       startWith(undefined)
@@ -106,7 +111,16 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     switchMap(([context, goTerm, geneName]) =>
       this.enrichmentService
         .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(startWith('Loading...'))
-    )
+        .pipe(
+          startWith(null),
+        ),
+    ),
+    shareReplay({bufferSize: 1, refCount: true}),
   );
+
+  openInfo(queryParams: object) {
+    const info = this.modalService.open(ChatgptResponseInfoModalComponent);
+    info.componentInstance.queryParams = queryParams;
+    return info.result;
+  }
 }

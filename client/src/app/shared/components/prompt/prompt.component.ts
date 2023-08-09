@@ -12,6 +12,7 @@ import {
   takeUntil,
 } from 'rxjs/operators';
 
+import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
@@ -20,6 +21,7 @@ import {
   DropdownController,
   dropdownControllerFactory,
 } from '../../utils/dropdown.controller.factory';
+import { ChatgptResponseInfoModalComponent } from '../chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 import { PlaygroundComponent } from './playground.component';
 import { environment } from '../../../../environments/environment';
 
@@ -68,13 +70,15 @@ export class PromptComponent implements OnDestroy, OnChanges {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  possibleExplanation$: Observable<string> = this.params$.pipe(
+  possibleExplanation$: Observable<ChatGPTResponse|null> = this.params$.pipe(
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
       this.explainService
-        .relationship(entities, context, { temperature })
-        .pipe(startWith(undefined))
-    )
+        .relationship(entities, context, {temperature})
+        .pipe(
+          startWith(null),
+        ),
+    ),
   );
 
   showPlayground = environment.chatGPTPlaygroundEnabled;
@@ -86,6 +90,12 @@ export class PromptComponent implements OnDestroy, OnChanges {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  openInfo(queryParams: object) {
+    const info = this.modalService.open(ChatgptResponseInfoModalComponent);
+    info.componentInstance.queryParams = queryParams;
+    return info.result;
   }
 
   openPlayground() {

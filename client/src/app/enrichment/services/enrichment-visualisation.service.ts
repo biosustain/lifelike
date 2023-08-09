@@ -32,6 +32,10 @@ const addressPrecisionMistake = (d) => {
   return d;
 };
 
+export interface ChatGPTResponse extends SingleResult<string> {
+  query_params: object;
+}
+
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
   constructor(
@@ -121,17 +125,16 @@ export class EnrichmentVisualisationService implements OnDestroy {
       .pipe(map((data: any) => data.map(addressPrecisionMistake)));
   }
 
-  public enrichTermWithContext(term, context?, geneName?): Observable<string> {
+  public enrichTermWithContext(term, context?, geneName?): Observable<ChatGPTResponse> {
     return this.enrichmentDocument$.pipe(
       switchMap(({ organism }) =>
         this.http
-          .post<SingleResult<string>>(`/api/enrichment-visualisation/enrich-with-context`, {
+          .post<ChatGPTResponse>(`/api/enrichment-visualisation/enrich-with-context`, {
             organism,
             term,
             context,
             geneName,
           })
-          .pipe(map(({ result }) => result))
       )
     );
   }

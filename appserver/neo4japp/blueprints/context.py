@@ -23,7 +23,7 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context_')
     options = params.get('options', {})
-    response = ChatGPT.Completion.create(
+    crate_params = dict(
         model="text-davinci-003",
         prompt=(
             'What is the relationship between '
@@ -37,8 +37,12 @@ def relationship(params):
         user=str(hash(current_username)),
         timeout=60,
     )
+    response = ChatGPT.Completion.create(**crate_params)
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {
+            "result": choice.get('text').strip(),
+            "query_params": crate_params,
+        }
 
 
 def stream_to_json_lines(stream):
