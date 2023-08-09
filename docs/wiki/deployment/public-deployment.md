@@ -2,27 +2,27 @@
 
 ## Glossary
 
-- [Introduction](#introduction)
-- [How the Azure Kubernetes Cluster Fits in to the Deployment](#how-the-azure-kubernetes-cluster-fits-in-to-the-deployment)
-- [Create the New Compute Engine VM](#create-the-new-compute-engine-vm)
-  - [Disable OS Login](#disable-os-login)
-- [Update Keycloak to Connect to the New Installation](#update-keycloak-to-connect-to-the-new-installation)
-  - [Export the Configurations for the Existing Public Realm](#export-the-configurations-for-the-existing-public-realm)
-  - [Import the Exported Keycloak Public Config to a New Realm](#import-the-exported-keycloak-public-config-to-a-new-realm)
-  - [Update Signing Keys for New Realm](#update-signing-keys-for-new-realm)
-- [Add a Ansible Vault File for the New Environment](#add-a-ansible-vault-file-for-the-new-environment)
-- [Ensure the Postgres DB Allows Incoming Connections from the VM](#ensure-the-postgres-db-allows-incoming-connections-from-the-vm)
-  - [Whitelisting on Google](#whitelisting-on-google)
-  - [Whitelisting on Azure](#whitelisting-on-azure)
-- [Update the Traefik Services File to Include the New Environment](#update-the-traefik-services-file-to-include-the-new-environment)
-  - [What if Logging in Via SSH Fails?](#what-if-logging-in-via-ssh-fails)
-- [Add a Github Action Workflow for the New Environment](#add-a-github-action-workflow-for-the-new-environment)
-- [Push the Updated Files to the kg-prototypes and lifelike-infra Repos](#push-the-updated-files-to-the-kg-prototypes-and-lifelike-infra-repos)
-- [Run the Github Action](#run-the-github-action)
+-   [Introduction](#introduction)
+-   [How the Azure Kubernetes Cluster Fits in to the Deployment](#how-the-azure-kubernetes-cluster-fits-in-to-the-deployment)
+-   [Create the New Compute Engine VM](#create-the-new-compute-engine-vm)
+    -   [Disable OS Login](#disable-os-login)
+-   [Update Keycloak to Connect to the New Installation](#update-keycloak-to-connect-to-the-new-installation)
+    -   [Export the Configurations for the Existing Public Realm](#export-the-configurations-for-the-existing-public-realm)
+    -   [Import the Exported Keycloak Public Config to a New Realm](#import-the-exported-keycloak-public-config-to-a-new-realm)
+    -   [Update Signing Keys for New Realm](#update-signing-keys-for-new-realm)
+-   [Add a Ansible Vault File for the New Environment](#add-a-ansible-vault-file-for-the-new-environment)
+-   [Ensure the Postgres DB Allows Incoming Connections from the VM](#ensure-the-postgres-db-allows-incoming-connections-from-the-vm)
+    -   [Whitelisting on Google](#whitelisting-on-google)
+    -   [Whitelisting on Azure](#whitelisting-on-azure)
+-   [Update the Traefik Services File to Include the New Environment](#update-the-traefik-services-file-to-include-the-new-environment)
+    -   [What if Logging in Via SSH Fails?](#what-if-logging-in-via-ssh-fails)
+-   [Add a Github Action Workflow for the New Environment](#add-a-github-action-workflow-for-the-new-environment)
+-   [Push the Updated Files to the kg-prototypes and lifelike-infra Repos](#push-the-updated-files-to-the-kg-prototypes-and-lifelike-infra-repos)
+-   [Run the Github Action](#run-the-github-action)
 
 ## Why Does This Guide Exist?
 
-We recently discovered that a deployment of the public lifelike installation was completely offline. At the time of writing, it is still unknown what caused the installation to go offline, and it is not clear how it was originally deployed. We *were* able to restore our [Keycloak](https://www.keycloak.org/) installation, but the main Lifelike application remains inaccessible.
+We recently discovered that a deployment of the public lifelike installation was completely offline. At the time of writing, it is still unknown what caused the installation to go offline, and it is not clear how it was originally deployed. We _were_ able to restore our [Keycloak](https://www.keycloak.org/) installation, but the main Lifelike application remains inaccessible.
 
 So, where did this leave us? Because we have a (mostly) well-documented architecture for deploying Lifelike to Google Cloud, we decided to create a hybrid deployment of the public installation. In short, Keycloak is still running on the Azure Kubernetes cluster "lifelike-k8s-test", but the Lifelike application is running on a Google Cloud VM via a handful of Docker containers. The two services can communicate with one another in such a way that makes this new deployment mostly indistinguishable from the original.
 
@@ -44,7 +44,7 @@ If you create from a similar VM, there are several very crucial steps you need t
 
 ### Disable OS Login
 
-[OS Login](https://cloud.google.com/compute/docs/oslogin) is enabled *silently* by default on new Google Cloud VMs. When this feature is enabled, classic SSH sign-in is effectively *disabled*. This interferes with the Ansible deployment's ability to connect to the VM. Ideally, we would update the Ansible workflow to use an authorized Google service account, but until then we must disable OS Login.
+[OS Login](https://cloud.google.com/compute/docs/oslogin) is enabled _silently_ by default on new Google Cloud VMs. When this feature is enabled, classic SSH sign-in is effectively _disabled_. This interferes with the Ansible deployment's ability to connect to the VM. Ideally, we would update the Ansible workflow to use an authorized Google service account, but until then we must disable OS Login.
 
 To disable OS Login, navigate to the details page of your new VM. Then, click on the "Edit" button to open the editing view for the machine. At the bottom of the edit details page, you should see a field called "Custom Metadata". Add a new entry to this field called "enable-oslogin" and assign it the value "FALSE" Don't forget to save your changes!
 
@@ -68,7 +68,7 @@ At the time of writing, this step is optional. We currently have DNS configured 
 
 ## Update Keycloak to Connect to the New Installation
 
-This step is currently only required for the public installation, and only if you are creating a *new* install of public.
+This step is currently only required for the public installation, and only if you are creating a _new_ install of public.
 
 ### Export the Configurations for the Existing Public Realm
 
@@ -81,7 +81,7 @@ There is a backup of the public Keycloak installation in the "kg-secrets" storag
     ```yaml
     cache:
         enabled: false
-        stackFile: ""
+        stackFile: ''
         stackName: kubernetes
     ```
 
@@ -120,9 +120,9 @@ You should now see the export on your local machine! Also, don't forget to re-en
 
 ```yaml
 cache:
-  enabled: true
-  stackFile: ""
-  stackName: kubernetes
+    enabled: true
+    stackFile: ''
+    stackName: kubernetes
 ```
 
 ### Import the Exported Keycloak Public Config to a New Realm
@@ -131,13 +131,13 @@ Before you begin, make sure your export file uses a unique ID for the realm! If 
 
 ```json
 {
-  // Example:
-  "id" : "de346121-e3e2-434b-b5c8-a34e18e66c1d",
-  // ...
+    // Example:
+    "id": "de346121-e3e2-434b-b5c8-a34e18e66c1d"
+    // ...
 }
 ```
 
-In fact, you will need to remove any lines that contain a UUID, which should be a 32-character string separated by "-". You can search for "_id", "id", and "Id" to find properties with UUID values.
+In fact, you will need to remove any lines that contain a UUID, which should be a 32-character string separated by "-". You can search for "\_id", "id", and "Id" to find properties with UUID values.
 
 Unlike the export process, you can actually import a new realm from the Keycloak admin web UI. Log in with the admin credentials, then under the realm dropdown list in the top-left of the screen, select "Create Realm". On the next page, simply copy/paste your export file or use the file select widget to browse your filesystem. Click "Create" and your new realm should be created automatically.
 
@@ -192,16 +192,16 @@ You will need to update the Ansible services hosts file to include the new IP ad
 
 ```yaml
 all:
-  children:
-    # --------------------------------------------------
-    # Lifelike Docker Compose hosts
-    # --------------------------------------------------
+    children:
+        # --------------------------------------------------
+        # Lifelike Docker Compose hosts
+        # --------------------------------------------------
 
-    # ...
+        # ...
 
-    lifelike-public:
-      hosts:
-        <YOUR_IP_ADDRESS>:
+        lifelike-public:
+            hosts:
+                <YOUR_IP_ADDRESS>:
 ```
 
 The config should look like the above. Remember, indentation is important in YAML files!
@@ -212,7 +212,7 @@ Each of our deployments has an associated Ansible Vault file. This is essentiall
 
 Once you've identified which branch you are interested in, navigate to the `/deployment/ansible/inventories/group_vars` folder. There, you should notice a handful of additional folders for each deployment, e.g. `lifelike-staging`. You will also notice each has at least a file called "vault.yml", this is the Ansible Vault file for that deployment.
 
-Create a folder for your deployment. Naming is important here! If you recall the "hosts.yml" file we updated earlier, the name you choose for the folder *must* match the name of the host you added there, e.g., `lifelike-public`. Then, create a new vault file with:
+Create a folder for your deployment. Naming is important here! If you recall the "hosts.yml" file we updated earlier, the name you choose for the folder _must_ match the name of the host you added there, e.g., `lifelike-public`. Then, create a new vault file with:
 
 ```bash
 ansible-vault create vault.yml
@@ -298,20 +298,20 @@ http:
         lifelike-public:
             entryPoints:
                 - websecure
-            rule: "Host(`public.lifelike.bio`)"
+            rule: 'Host(`public.lifelike.bio`)'
             service: lifelike-public-service
             tls:
-                certResolver: "le"
+                certResolver: 'le'
                 domains:
-                    - main: "public.lifelike.bio"
+                    - main: 'public.lifelike.bio'
     services:
         lifelike-public-service:
             loadBalancer:
                 servers:
-                - url: "http://INTERNAL-VM-IP"
+                    - url: 'http://INTERNAL-VM-IP'
 ```
 
-Notice that the new "services" entry uses the *internal* IP address of the VM, NOT the *external* IP.
+Notice that the new "services" entry uses the _internal_ IP address of the VM, NOT the _external_ IP.
 
 Finally, you will also need to restart the traefik service. We currently have this running in docker, with the compose file located in `/home/ansible/`. Navigate to this folder and then run:
 
@@ -327,25 +327,25 @@ You will need to add a new workflow file to the list of Github Action workflows 
 name: GCP <Your Environment Name Here> Deployment
 
 on:
-  workflow_dispatch:
-  push:
-    tags: [new-env]
-    branches: [new-env/**]
+    workflow_dispatch:
+    push:
+        tags: [new-env]
+        branches: [new-env/**]
 
 jobs:
-  call-deployment-gcp:
-    uses: ./.github/workflows/deployment-gcp.yml
-    with:
-      environment_name: new-env
-      client_config: production
-      cloud_sql_instance_name: lifelike-new-env
-    secrets:
-      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
-      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
-      CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
-      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
-      GCP_CREDENTIALS: ${{ secrets.GCE_SA_KEY }}
-      INFRA_PAT: ${{ secrets.INFRA_PAT }}
+    call-deployment-gcp:
+        uses: ./.github/workflows/deployment-gcp.yml
+        with:
+            environment_name: new-env
+            client_config: production
+            cloud_sql_instance_name: lifelike-new-env
+        secrets:
+            VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+            SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+            CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
+            CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
+            GCP_CREDENTIALS: ${{ secrets.GCE_SA_KEY }}
+            INFRA_PAT: ${{ secrets.INFRA_PAT }}
 ```
 
 You will then need to commit this file to the main branch of the repository so it can be used from the Actions GUI.
@@ -354,7 +354,7 @@ You will then need to commit this file to the main branch of the repository so i
 
 Almost done! We've updated a few files during our setup, namely the ansible `hosts.yml` file, and the vault file for our new environment. We've also added a new workflow file for the Github Actions. We need to commit and deploy these changes in order for the Github Action workflow to succeed.
 
-The workflow file *must* by committed to the "master" branch of the "kg-prototypes" repo. This is required to enable the new workflow to appear in the GUI.
+The workflow file _must_ by committed to the "master" branch of the "kg-prototypes" repo. This is required to enable the new workflow to appear in the GUI.
 
 Once you've committed and pushed the new workflow file, it is highly recommended to create a new branch for the next changes. This ensures no erroneous changes are accidentally committed to the main branch of Lifelike.
 
