@@ -2,20 +2,20 @@
 
 ## Glossary
 
-- [Introduction](#introduction)
-- [Caveats](#caveats)
-- [Create the Cluster](#create-the-cluster)
-  - [Create a Namespace for the Binderhub Resources](#create-a-namespace-for-the-binderhub-resources)
-- [Setup the Nginx Load Balancer](#setup-the-nginx-load-balancer)
-  - [Reserve a Static IP Address](#reserve-a-static-ip-address)
-  - [Configure DNS with the Static IP](#configure-dns-with-the-static-ip)
-  - [Install cert-manager](#install-cert-manager)
-  - [Create a Temporary Certificate Issuer](#create-a-temporary-certificate-issuer)
-  - [Add and Install Ingress NGINX](#add-and-install-ingress-nginx)
-  - [Optional: Add a Config Map for the NGINX Proxy](#optional-add-a-config-map-for-the-nginx-proxy)
-- [Install Binderhub](#install-binderhub)
-- [Verify SSL Certs are Created](#verify-ssl-certs-are-created)
-- [Additional Configurations](#additional-configurations)
+-   [Introduction](#introduction)
+-   [Caveats](#caveats)
+-   [Create the Cluster](#create-the-cluster)
+    -   [Create a Namespace for the Binderhub Resources](#create-a-namespace-for-the-binderhub-resources)
+-   [Setup the Nginx Load Balancer](#setup-the-nginx-load-balancer)
+    -   [Reserve a Static IP Address](#reserve-a-static-ip-address)
+    -   [Configure DNS with the Static IP](#configure-dns-with-the-static-ip)
+    -   [Install cert-manager](#install-cert-manager)
+    -   [Create a Temporary Certificate Issuer](#create-a-temporary-certificate-issuer)
+    -   [Add and Install Ingress NGINX](#add-and-install-ingress-nginx)
+    -   [Optional: Add a Config Map for the NGINX Proxy](#optional-add-a-config-map-for-the-nginx-proxy)
+-   [Install Binderhub](#install-binderhub)
+-   [Verify SSL Certs are Created](#verify-ssl-certs-are-created)
+-   [Additional Configurations](#additional-configurations)
 
 ## Introduction
 
@@ -227,5 +227,5 @@ It is VERY IMPORTANT that both of these guides are followed! Implementing just o
 
 You may also find useful the following resources:
 
-- [BinderHub Docs](https://binderhub.readthedocs.io/en/latest/index.html)
-- [JupyterHub Docs](https://z2jh.jupyter.org/en/stable/#)
+-   [BinderHub Docs](https://binderhub.readthedocs.io/en/latest/index.html)
+-   [JupyterHub Docs](https://z2jh.jupyter.org/en/stable/#)
