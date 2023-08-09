@@ -112,6 +112,7 @@
                     [page]="params.page"
                     [pageSize]="params.limit"
                     [collectionSize]="collectionSize"
+                    *ngIf="collectionSize !== undefined"
                     (pageChange)="goToPage($event)"
                   ></ngb-pagination>
                 </div>
