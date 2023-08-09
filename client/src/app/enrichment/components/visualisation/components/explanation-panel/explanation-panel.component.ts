@@ -40,9 +40,8 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
-    private readonly modalService: NgbModal,
-  ) {
-  }
+    private readonly modalService: NgbModal
+  ) {}
 
   contextsController$: Observable<DropdownController<string>> =
     this.enrichmentService.contexts$.pipe(
@@ -92,7 +91,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  explanation$: Observable<ChatGPTResponse|null> = combineLatest([
+  explanation$: Observable<ChatGPTResponse | null> = combineLatest([
     this.contextsController$.pipe(
       switchMap(({ current$ }) => current$),
       startWith(undefined)
@@ -109,13 +108,9 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService
-        .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(
-          startWith(null),
-        ),
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(startWith(null))
     ),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   openInfo(queryParams: object) {
