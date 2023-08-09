@@ -53,22 +53,24 @@ def data_upgrades():
         'files_content',
         sa.column('id', sa.Integer),
         sa.column('raw_file', sa.LargeBinary),
-        sa.column('checksum_sha256', sa.Binary)
+        sa.column('checksum_sha256', sa.Binary),
     )
 
     # This will retrieve the *content* of all enrichment tables *without* annotations. If the
     # content is invalid, we will fix it, and update the row with the valid content.
     files_content = conn.execution_options(stream_results=True).execute(
-        sa.select([
-            t_files_content.c.id,
-            t_files_content.c.raw_file,
-        ]).select_from(
+        sa.select(
+            [
+                t_files_content.c.id,
+                t_files_content.c.raw_file,
+            ]
+        ).select_from(
             t_files_content.join(
                 t_files,
                 sa.and_(
                     t_files.c.content_id == t_files_content.c.id,
                     t_files.c.mime_type == FILE_MIME_TYPE_MAP,
-                )
+                ),
             )
         )
     )
@@ -91,9 +93,8 @@ def data_upgrades():
                 edges_to_remove = []
                 for i, edge in enumerate(map_obj['edges']):
                     try:
-                        if (
-                            (edge['to'] is None or edge['from'] is None) or
-                            (type(edge['to']) is not str or type(edge['from']) is not str)
+                        if (edge['to'] is None or edge['from'] is None) or (
+                            type(edge['to']) is not str or type(edge['from']) is not str
                         ):
                             edges_to_remove.append(i)
                     except KeyError:
@@ -108,12 +109,16 @@ def data_upgrades():
 
                 # Zip the file back up before saving to the DB
                 zip_bytes = io.BytesIO()
-                with zipfile.ZipFile(zip_bytes, 'x', zipfile.ZIP_DEFLATED) as new_zip_file:
+                with zipfile.ZipFile(
+                    zip_bytes, 'x', zipfile.ZIP_DEFLATED
+                ) as new_zip_file:
                     new_zip_file.writestr('graph.json', byte_graph)
 
                     for node in map_obj['nodes']:
                         if node.get('image_id', None) is not None:
-                            image_name = "".join(['images/', node.get('image_id'), '.png'])
+                            image_name = "".join(
+                                ['images/', node.get('image_id'), '.png']
+                            )
                             try:
                                 image_bytes = old_zip_file.read(image_name)
                             except KeyError:
@@ -125,7 +130,9 @@ def data_upgrades():
                 # Create the update mapping object
                 new_bytes = zip_bytes.getvalue()
                 new_hash = hashlib.sha256(new_bytes).digest()
-                file_content_to_update.append({'id': id, 'raw_file': new_bytes, 'checksum_sha256': new_hash})  # noqa
+                file_content_to_update.append(
+                    {'id': id, 'raw_file': new_bytes, 'checksum_sha256': new_hash}
+                )  # noqa
 
         # Flush pending updates to the transaction after every chunk
         session.bulk_update_mappings(FileContent, file_content_to_update)

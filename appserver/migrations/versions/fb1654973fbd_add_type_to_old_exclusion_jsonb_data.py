@@ -27,7 +27,7 @@ t_files = table(
     'files',
     column('id', sa.Integer),
     column('annotations', postgresql.JSONB),
-    column('excluded_annotations', postgresql.JSONB)
+    column('excluded_annotations', postgresql.JSONB),
 )
 
 
@@ -50,14 +50,18 @@ def data_upgrades():
     session = Session(op.get_bind())
 
     val = db.column('value', type_=postgresql.JSONB)
-    files = session.query(
-        t_files,
-    ).select_from(
-        t_files,
-        db.func.jsonb_array_elements(t_files.c.excluded_annotations).alias()
-    ).filter(
-        not_(val.has_key('type'))  # noqa
-    ).distinct().all()
+    files = (
+        session.query(
+            t_files,
+        )
+        .select_from(
+            t_files,
+            db.func.jsonb_array_elements(t_files.c.excluded_annotations).alias(),
+        )
+        .filter(not_(val.has_key('type')))  # noqa
+        .distinct()
+        .all()
+    )
 
     try:
         for file in files:
@@ -73,22 +77,28 @@ def data_upgrades():
                     exclusions_to_keep.append(exclusion)
 
             id_type_map = {}
-            for annotation in file.annotations['documents'][0]['passages'][0]['annotations']:
+            for annotation in file.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ]:
                 if annotation['meta']['id'] in exclusions_to_update_ids:
                     id_type_map[annotation['meta']['id']] = annotation['meta']['type']
 
             updated_exclusions = []
             for exclusion in exclusions_to_update:
-                updated_exclusions.append({
-                    **exclusion,
-                    # Very uncommon case, but for whatever reason there are exclusions that have no
-                    # corresponding annotation, so we have to give a default value in those cases.
-                    'type': id_type_map.get(exclusion['id'], 'Unknown')
-                })
+                updated_exclusions.append(
+                    {
+                        **exclusion,
+                        # Very uncommon case, but for whatever reason there are exclusions that have no
+                        # corresponding annotation, so we have to give a default value in those cases.
+                        'type': id_type_map.get(exclusion['id'], 'Unknown'),
+                    }
+                )
 
             session.execute(
-                t_files.update().where(
-                    t_files.c.id == file.id).values(excluded_annotations=[*updated_exclusions, *exclusions_to_keep]))  # noqa
+                t_files.update()
+                .where(t_files.c.id == file.id)
+                .values(excluded_annotations=[*updated_exclusions, *exclusions_to_keep])
+            )  # noqa
 
         session.commit()
     except Exception:

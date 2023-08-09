@@ -3,11 +3,13 @@
 ## Kibana
 
 ### Annotation
-- To seed LMDB data to Kibana:
+
+-   To seed LMDB data to Kibana:
+
 ```bash
 ./deployment/kibana.sh -a None
 # or
-docker-compose exec appserver python neo4japp/services/annotations/index_annotations.py -a
+docker compose exec appserver python neo4japp/services/annotations/index_annotations.py -a
 ```
 
 Then go to `localhost:5601/app/kibana`.

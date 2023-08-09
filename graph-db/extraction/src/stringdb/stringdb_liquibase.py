@@ -10,7 +10,9 @@ class StringChangeLogsGenerator(ChangeLogFileGenerator):
 
     def get_create_index_queries(self):
         self.index_quieries.append(get_create_constraint_query(NODE_STRING, PROP_ID))
-        self.index_quieries.append(get_create_constraint_query(NODE_STRING, PROP_STRING_ID))
+        self.index_quieries.append(
+            get_create_constraint_query(NODE_STRING, PROP_STRING_ID)
+        )
         self.index_quieries.append(get_create_index_query(NODE_STRING, PROP_NAME))
         self.index_quieries.append(get_create_index_query(NODE_STRING, PROP_REFSEQ))
         self.index_quieries.append(get_create_index_query(NODE_STRING, PROP_TAX_ID))
@@ -19,14 +21,18 @@ class StringChangeLogsGenerator(ChangeLogFileGenerator):
     def add_node_changesets(self):
         id = f'load String Protein from {self.zipfile}, date {self.date_tag}'
         comment = f'load all String Protein from {self.zipfile}'
-        query = get_create_update_nodes_query(NODE_STRING, PROP_ID,
-                                              PROT_INFO_HEADER,
-                                              [NODE_PROTEIN],
-                                              datasource=DB_STRING)
-        changeset = CustomChangeSet(id, self.author, comment, query,
-                                    handler=QUERY_HANDLER,
-                                    filename='string-data.tsv',
-                                    zipfile=self.zipfile)
+        query = get_create_update_nodes_query(
+            NODE_STRING, PROP_ID, PROT_INFO_HEADER, [NODE_PROTEIN], datasource=DB_STRING
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            handler=QUERY_HANDLER,
+            filename='string-data.tsv',
+            zipfile=self.zipfile,
+        )
         self.change_sets.append(changeset)
 
     def add_cypher_changesets(self):
@@ -46,11 +52,10 @@ class StringChangeLogsGenerator(ChangeLogFileGenerator):
 def generate_string_changelogs(data_zip_file):
     task = StringChangeLogsGenerator('rcai', data_zip_file)
     task.add_all_change_sets()
-    task.generate_changelog_file(f"string_changelog_{task.date_tag.replace('/', '')}.xml")
+    task.generate_changelog_file(
+        f"string_changelog_{task.date_tag.replace('/', '')}.xml"
+    )
 
 
 if __name__ == '__main__':
     generate_string_changelogs('jira-LL-4222-string-data-v11.5.zip')
-
-
-

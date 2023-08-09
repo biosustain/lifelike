@@ -3,6 +3,7 @@ import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/cor
 import { combineLatest, Subscription } from 'rxjs';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { loadingText, mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ShortestPathService } from '../services/shortest-path.service';
 import { DisplayType } from './route-display.component';
@@ -10,7 +11,7 @@ import { DisplayType } from './route-display.component';
 @Component({
   selector: 'app-route-builder',
   templateUrl: './route-builder.component.html',
-  styleUrls: ['./route-builder.component.scss']
+  styleUrls: ['./route-builder.component.scss'],
 })
 export class RouteBuilderComponent implements OnInit, OnDestroy {
   @Output() loadNewQuery: EventEmitter<number>;
@@ -23,11 +24,9 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
 
   routeBuilderOpen: boolean;
 
-  queries: string[][];
+  queries: string[][] = mockArrayOf(() => mockArrayOf(loadingText));
 
-  constructor(
-    public shortestPathService: ShortestPathService,
-  ) {
+  constructor(public shortestPathService: ShortestPathService) {
     this.queries = [];
 
     this.routeBuilderContainerClass = 'route-builder-container-open';
@@ -37,16 +36,16 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
     this.changeDisplayType = new EventEmitter<DisplayType>();
 
     this.loadShortestPathQueries = new BackgroundTask(() => {
-      return combineLatest(
-        this.shortestPathService.getShortestPathQueryList(),
-      );
+      return combineLatest(this.shortestPathService.getShortestPathQueryList());
     });
-    this.queriesLoadedsub = this.loadShortestPathQueries.results$.subscribe(({
-      result: [shortestPathQueries],
-      value: [],
-    }) => {
-      this.queries = Object.keys(shortestPathQueries).map(key => [key, shortestPathQueries[key]]);
-    });
+    this.queriesLoadedsub = this.loadShortestPathQueries.results$.subscribe(
+      ({ result: [shortestPathQueries], value: [] }) => {
+        this.queries = Object.keys(shortestPathQueries).map((key) => [
+          key,
+          shortestPathQueries[key],
+        ]);
+      }
+    );
   }
 
   ngOnInit() {
@@ -61,7 +60,9 @@ export class RouteBuilderComponent implements OnInit, OnDestroy {
 
   toggleRouteBuilderOpen() {
     this.routeBuilderOpen = !this.routeBuilderOpen;
-    this.routeBuilderContainerClass = this.routeBuilderOpen ? 'route-builder-container-open' : 'route-builder-container-closed';
+    this.routeBuilderContainerClass = this.routeBuilderOpen
+      ? 'route-builder-container-open'
+      : 'route-builder-container-closed';
   }
 
   requestQueryLoadFromParent(event: any) {

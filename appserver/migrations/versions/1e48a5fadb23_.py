@@ -52,19 +52,29 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('mime_type', sa.String),
-        column('annotation_configs', postgresql.JSONB))
+        column('annotation_configs', postgresql.JSONB),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause1.c.id.label('file_id'),
-        tableclause1.c.annotation_configs.label('annotation_configs')
-    ]).where(tableclause1.c.mime_type.in_([FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF])))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select(
+            [
+                tableclause1.c.id.label('file_id'),
+                tableclause1.c.annotation_configs.label('annotation_configs'),
+            ]
+        ).where(
+            tableclause1.c.mime_type.in_(
+                [FILE_MIME_TYPE_ENRICHMENT_TABLE, FILE_MIME_TYPE_PDF]
+            )
+        )
+    )
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
         for fid, configs in chunk:
             if configs and 'annotation_methods' not in configs:
                 files_to_update.append(
-                    {'id': fid, 'annotation_configs': DEFAULT_ANNOTATION_CONFIGS})
+                    {'id': fid, 'annotation_configs': DEFAULT_ANNOTATION_CONFIGS}
+                )
 
         try:
             session.bulk_update_mappings(Files, files_to_update)

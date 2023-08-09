@@ -7,15 +7,15 @@ as "objects" in the API and on the client.
 
 Objects have the following properties:
 
-* 0 or 1 parent
-* A filename
-* A description
-* A mime type
-* A 'public' flag
-* Potentially 0 or more users and their granted roles on the object
-* Potentially a reference to a row in `FileContent`
-* Recycled status
-* Soft delete status
+-   0 or 1 parent
+-   A filename
+-   A description
+-   A mime type
+-   A 'public' flag
+-   Potentially 0 or more users and their granted roles on the object
+-   Potentially a reference to a row in `FileContent`
+-   Recycled status
+-   Soft delete status
 
 ### Hierarchy and Projects
 
@@ -65,27 +65,33 @@ client or API.
 #### Implied Permissions
 
 ```python
-commentable = any([
-    project_manageable,
-    project_readable and project_writable,
-    file_commentable,
-    parent_privileges and parent_privileges.commentable,
-])
+commentable = any(
+        [
+            project_manageable,
+            project_readable and project_writable,
+            file_commentable,
+            parent_privileges and parent_privileges.commentable,
+        ]
+)
 
-readable = commentable or any([
-    project_manageable,
-    project_readable,
-    file_readable,
-    file.public,
-    parent_privileges and parent_privileges.readable,
-])
+readable = commentable or any(
+        [
+            project_manageable,
+            project_readable,
+            file_readable,
+            file.public,
+            parent_privileges and parent_privileges.readable,
+        ]
+)
 
-writable = readable and any([
-    project_manageable,
-    project_writable,
-    file_writable,
-    parent_privileges and parent_privileges.writable,
-])
+writable = readable and any(
+        [
+            project_manageable,
+            project_writable,
+            file_writable,
+            parent_privileges and parent_privileges.writable,
+        ]
+)
 
 commentable = commentable or writable
 ```
@@ -125,9 +131,9 @@ AppServer and the client.
 You will need to determine a mime type for your file type, and if you are creating a new one
 for Lifelike, be sure to follow the convention of the existing mime types:
 
-* `vnd.***ARANGO_DB_NAME***.document/map`
-* `vnd.***ARANGO_DB_NAME***.document/enrichment-table`
-* `vnd.***ARANGO_DB_NAME***.filesystem/directory`
+-   `vnd.***ARANGO_DB_NAME***.document/map`
+-   `vnd.***ARANGO_DB_NAME***.document/enrichment-table`
+-   `vnd.***ARANGO_DB_NAME***.filesystem/directory`
 
 ### AppServer
 
@@ -181,9 +187,9 @@ class MapTypeProvider(BaseFileTypeProvider):
     def generate_export(self, file: Files, format: str) -> FileExport:
         # ...generate export
         return FileExport(
-            content=FileContentBuffer(graph.pipe()),
-            mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
+                content = FileContentBuffer(graph.pipe()),
+                mime_type = extension_mime_types[ext],
+                filename = f"{file.filename}{ext}"
         )
 ```
 
@@ -195,14 +201,16 @@ In `database.py`, be sure to register your new provider:
 @scope_flask_app_ctx('file_type_service')
 def get_file_type_service():
     from neo4japp.services.file_types.service import FileTypeService
-    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider, \
-        MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
-    service = FileTypeService()
-    service.register(DirectoryTypeProvider())
-    service.register(PDFTypeProvider())
-    # ...
-    # Add your provider here
-    return service
+    from neo4japp.services.file_types.providers import EnrichmentTableTypeProvider,
+    MapTypeProvider, PDFTypeProvider, DirectoryTypeProvider
+
+
+service = FileTypeService()
+service.register(DirectoryTypeProvider())
+service.register(PDFTypeProvider())
+# ...
+# Add your provider here
+return service
 ```
 
 ### Client
@@ -225,52 +233,51 @@ A demo of a provider is below:
 ```ts
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
+    constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver, protected readonly injector: Injector, protected readonly objectCreationService: ObjectCreationService) {
+        super();
+    }
 
-  constructor(protected readonly componentFactoryResolver: ComponentFactoryResolver,
-              protected readonly injector: Injector,
-              protected readonly objectCreationService: ObjectCreationService) {
-    super();
-  }
+    handles(object: FilesystemObject): boolean {
+        return object.mimeType === 'vnd.***ARANGO_DB_NAME***.document/map';
+    }
 
-  handles(object: FilesystemObject): boolean {
-    return object.mimeType === 'vnd.***ARANGO_DB_NAME***.document/map';
-  }
+    createPreviewComponent(object: FilesystemObject) {
+        const factory: ComponentFactory<MapComponent<any>> = this.componentFactoryResolver.resolveComponentFactory(MapComponent);
+        const componentRef = factory.create(this.injector);
+        const instance: MapComponent = componentRef.instance;
+        instance.locator = object.hashId;
+        return of(componentRef);
+    }
 
-  createPreviewComponent(object: FilesystemObject) {
-    const factory: ComponentFactory<MapComponent<any>> =
-      this.componentFactoryResolver.resolveComponentFactory(MapComponent);
-    const componentRef = factory.create(this.injector);
-    const instance: MapComponent = componentRef.instance;
-    instance.locator = object.hashId;
-    return of(componentRef);
-  }
-
-  getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
-    return [{
-      rank: 100,
-      item: {
-        label: 'Map',
-        openSuggested: true,
-        create: (options?: CreateActionOptions) => {
-          const object = new FilesystemObject();
-          object.filename = 'Untitled Map';
-          object.mimeType = MAP_MIMETYPE;
-          object.parent = options.parent;
-          return this.objectCreationService.openCreateDialog(object, {
-            title: 'New Map',
-            request: {
-              contentValue: new Blob([JSON.stringify({
-                edges: [],
-                nodes: [],
-              } as UniversalGraph)]),
+    getCreateDialogOptions(): RankedItem<CreateDialogAction>[] {
+        return [
+            {
+                rank: 100,
+                item: {
+                    label: 'Map',
+                    openSuggested: true,
+                    create: (options?: CreateActionOptions) => {
+                        const object = new FilesystemObject();
+                        object.filename = 'Untitled Map';
+                        object.mimeType = MAP_MIMETYPE;
+                        object.parent = options.parent;
+                        return this.objectCreationService.openCreateDialog(object, {
+                            title: 'New Map',
+                            request: {
+                                contentValue: new Blob([
+                                    JSON.stringify({
+                                        edges: [],
+                                        nodes: [],
+                                    } as UniversalGraph),
+                                ]),
+                            },
+                            ...(options.createDialog || {}),
+                        });
+                    },
+                },
             },
-            ...(options.createDialog || {}),
-          });
-        },
-      },
-    }];
-  }
-
+        ];
+    }
 }
 ```
 
@@ -282,17 +289,15 @@ You will want to register your provider in in the `FileTypesModule`:
 import { TYPE_PROVIDER } from './services/object-type.service';
 
 @NgModule({
-  providers: [
-    {
-      provide: TYPE_PROVIDER,
-      useClass: ExampleTypeProvider,
-      multi: true,
-    },
-    // ...
-  ],
+    providers: [
+        {
+            provide: TYPE_PROVIDER,
+            useClass: ExampleTypeProvider,
+            multi: true,
+        }, // ...
+    ],
 })
-export class FileTypesModule {
-}
+export class FileTypesModule {}
 ```
 
 #### FilesystemObject Changes
@@ -304,25 +309,25 @@ Some examples of those methods are as follows:
 
 ```ts
 class FilesystemObject {
-  get isAnnotatable() {
-    // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf';
-  }
+    get isAnnotatable() {
+        // TODO: Move this method to ObjectTypeProvider
+        return this.mimeType === 'application/pdf';
+    }
 
-  get isMovable() {
-    // TODO: Move this method to ObjectTypeProvider
-    return !(this.isDirectory && !this.parent);
-  }
+    get isMovable() {
+        // TODO: Move this method to ObjectTypeProvider
+        return !(this.isDirectory && !this.parent);
+    }
 
-  get isCloneable() {
-    // TODO: Move this method to ObjectTypeProvider
-    return this.isFile;
-  }
+    get isCloneable() {
+        // TODO: Move this method to ObjectTypeProvider
+        return this.isFile;
+    }
 
-  get isDeletable() {
-    // TODO: Move this method to ObjectTypeProvider
-    return true;
-  }
+    get isDeletable() {
+        // TODO: Move this method to ObjectTypeProvider
+        return true;
+    }
 }
 ```
 

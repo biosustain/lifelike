@@ -18,7 +18,6 @@ import { FilesystemObject } from '../models/filesystem-object';
   templateUrl: './object-tile-deck.component.html',
 })
 export class ObjectTileDeckComponent extends ObjectListComponent {
-
   @Input() tileDeckSize = 'md';
   @Input() newTabObject = false;
   @Input() newTabMore = false;
@@ -26,24 +25,36 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
   @Input() showAuthor = true;
   @Input() moreLink = [];
   @Input() moreButtonText = 'View more...';
-  @ContentChild('tileToolbar', {static: false}) tileToolbar: TemplateRef<any>;
+  @ContentChild('tileToolbar', { static: false }) tileToolbar: TemplateRef<any>;
 
-  constructor(router: Router,
-              snackBar: MatSnackBar,
-              modalService: NgbModal,
-              errorHandler: ErrorHandler,
-              route: ActivatedRoute,
-              workspaceManager: WorkspaceManager,
-              actions: FilesystemObjectActions,
-              filesystemService: FilesystemService,
-              elementRef: ElementRef,
-              progressDialog: ProgressDialog) {
-    super(router, snackBar, modalService, errorHandler, route, workspaceManager, actions, filesystemService, elementRef, progressDialog);
+  constructor(
+    router: Router,
+    snackBar: MatSnackBar,
+    modalService: NgbModal,
+    errorHandler: ErrorHandler,
+    route: ActivatedRoute,
+    workspaceManager: WorkspaceManager,
+    actions: FilesystemObjectActions,
+    filesystemService: FilesystemService,
+    elementRef: ElementRef,
+    progressDialog: ProgressDialog
+  ) {
+    super(
+      router,
+      snackBar,
+      modalService,
+      errorHandler,
+      route,
+      workspaceManager,
+      actions,
+      filesystemService,
+      elementRef,
+      progressDialog
+    );
   }
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
     object.addDataTransferData(dataTransfer);
   }
-
 }

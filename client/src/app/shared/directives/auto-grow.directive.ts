@@ -1,14 +1,21 @@
-import { Directive, HostListener, HostBinding, Input, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import {
+  Directive,
+  HostListener,
+  HostBinding,
+  Input,
+  ElementRef,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 
 import { Observable, BehaviorSubject, Subject, of } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 
 @Directive({
-  selector: 'input[appAutoGrow]'
+  selector: 'input[appAutoGrow]',
 })
 export class AutoGrowDirective implements OnInit, OnDestroy {
-  constructor(private el: ElementRef) {
-  }
+  constructor(private el: ElementRef) {}
 
   // for compatibility with global styling (e.g. bootstrap) avoiding to change box-sizing
   @Input() paddingBorderAdjustment = 'calc( 0.65rem + 1px )';
@@ -22,10 +29,12 @@ export class AutoGrowDirective implements OnInit, OnDestroy {
   @HostBinding('style.width') width: string;
 
   ngOnInit() {
-    this.metaRecalculate.pipe(
-      switchMap(recalculateObservable => recalculateObservable),
-      takeUntil(this.destroyed$)
-    ).subscribe(() => this.adjustWidth(this.el.nativeElement.value.length));
+    this.metaRecalculate
+      .pipe(
+        switchMap((recalculateObservable) => recalculateObservable),
+        takeUntil(this.destroyed$)
+      )
+      .subscribe(() => this.adjustWidth(this.el.nativeElement.value.length));
   }
 
   ngOnDestroy() {

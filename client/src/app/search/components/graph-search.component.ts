@@ -1,4 +1,12 @@
-import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs';
@@ -9,9 +17,15 @@ import { LegendService } from 'app/shared/services/legend.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { fTSQueryRecordLoadingMock } from 'app/shared/mocks/loading/graph-search';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { GraphSearchService } from '../services/graph-search.service';
-import { createGraphSearchParamsFromQuery, getGraphQueryParams, GraphQueryParameters } from '../utils/search';
+import {
+  createGraphSearchParamsFromQuery,
+  getGraphQueryParams,
+  GraphQueryParameters,
+} from '../utils/search';
 import { GraphSearchParameters } from '../graph-search';
 
 @Component({
@@ -19,24 +33,26 @@ import { GraphSearchParameters } from '../graph-search';
   templateUrl: './graph-search.component.html',
 })
 export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareComponent {
-  @ViewChild('body', {static: false}) body: ElementRef;
+  @ViewChild('body', { static: false }) body: ElementRef;
 
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(params => {
-    return this.searchService.visualizerSearch(
-      params.query,
-      params.organism,
-      params.page,
-      params.limit,
-      params.domains,
-      params.entities,
-    );
-  });
+  readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(
+    (params) => {
+      return this.searchService.visualizerSearch(
+        params.query,
+        params.organism,
+        params.page,
+        params.limit,
+        params.domains,
+        params.entities
+      );
+    }
+  );
 
   params: GraphSearchParameters | undefined;
   collectionSize = 0;
-  results: FTSQueryRecord[] = [];
+  results: FTSQueryRecord[] = mockArrayOf(fTSQueryRecordLoadingMock);
 
   legend: Map<string, string> = new Map();
 
@@ -48,48 +64,52 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
     private route: ActivatedRoute,
     private searchService: GraphSearchService,
     private legendService: LegendService,
-    private workspaceManager: WorkspaceManager,
-  ) {
-  }
+    private workspaceManager: WorkspaceManager
+  ) {}
 
   ngOnInit() {
-    this.valuesSubscription = this.loadTask.values$.subscribe(value => {
+    this.valuesSubscription = this.loadTask.values$.subscribe((value) => {
       this.modulePropertiesChange.emit({
-        title: value.query != null && value.query.length ? `Knowledge Graph: ${value.query}` : 'Knowledge Graph',
+        title:
+          value.query != null && value.query.length
+            ? `Knowledge Graph: ${value.query}`
+            : 'Knowledge Graph',
         fontAwesomeIcon: 'fas fa-chart-network',
       });
     });
 
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result}) => {
-      const {nodes, total} = result;
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result }) => {
+      const { nodes, total } = result;
       this.results = nodes;
       this.collectionSize = total;
       this.body.nativeElement.scrollTop = 0;
     });
 
-    this.legendService.getAnnotationLegend().subscribe(legend => {
-      Object.keys(legend).forEach(label => {
+    this.legendService.getAnnotationLegend().subscribe((legend) => {
+      Object.keys(legend).forEach((label) => {
         // Keys of the result dict are all lowercase, need to change the first character
         // to uppercase to match Neo4j labels
         this.legend.set(label, legend[label].color);
       });
     });
 
-    this.routerParamSubscription = this.route.queryParams.pipe(
-      tap((params) => {
-        if (params.q != null) {
-          this.params = createGraphSearchParamsFromQuery(params as GraphQueryParameters);
-          this.loadTask.update(this.params);
-        } else {
-          this.params = null;
-          this.results = [];
-          this.collectionSize = 0;
-        }
-        if (this.body) {
-          this.body.nativeElement.scrollTop = 0;
-        }
-      }),
-    ).subscribe();
+    this.routerParamSubscription = this.route.queryParams
+      .pipe(
+        tap((params) => {
+          if (params.q != null) {
+            this.params = createGraphSearchParamsFromQuery(params as GraphQueryParameters);
+            this.loadTask.update(this.params);
+          } else {
+            this.params = null;
+            this.results = [];
+            this.collectionSize = 0;
+          }
+          if (this.body) {
+            this.body.nativeElement.scrollTop = 0;
+          }
+        })
+      )
+      .subscribe();
   }
 
   ngOnDestroy() {

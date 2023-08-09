@@ -7,17 +7,17 @@ from typing import List, Optional
 from webargs.flaskparser import use_args
 
 from neo4japp.blueprints.projects import ProjectBaseView
-from neo4japp.constants import FILE_INDEX_ID, FRAGMENT_SIZE, LogEventType
+from neo4japp.constants import FRAGMENT_SIZE, LogEventType
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
     get_search_service_dao,
     get_elastic_service,
-    get_file_type_service
+    get_file_type_service,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Files, Projects
-from neo4japp.schemas.common import PaginatedRequestSchema
+from neo4japp.schemas.common import PaginatedRequestSchema, SuccessResponse
 from neo4japp.schemas.search import (
     ContentSearchSchema,
     ContentSearchResponseSchema,
@@ -27,29 +27,24 @@ from neo4japp.schemas.search import (
     VizSearchSchema,
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.util import jsonify_with_class, SuccessResponse
+from neo4japp.utils.globals import config
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
+from neo4japp.utils.jsonify import jsonify_with_class
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 
 
 @bp.route('/viz-search', methods=['POST'])
 @use_kwargs(VizSearchSchema)
-def visualizer_search(
-        query,
-        page,
-        limit,
-        domains,
-        entities,
-        organism
-):
+def visualizer_search(query, page, limit, domains, entities, organism):
     search_dao = get_search_service_dao()
     current_app.logger.info(
         f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
             username=g.current_user.username,
-            event_type=LogEventType.VISUALIZER_SEARCH.value).to_dict()
+            event_type=LogEventType.VISUALIZER_SEARCH.value,
+        ).to_dict(),
     )
 
     results = search_dao.visualizer_search(
@@ -60,12 +55,15 @@ def visualizer_search(
         domains=domains,
         entities=entities,
     )
-    return jsonify({
-        'result': results.to_dict(),
-    })
+    return jsonify(
+        {
+            'result': results.to_dict(),
+        }
+    )
 
 
 # Start Search Helpers #
+
 
 def content_search_params_are_empty(params):
     """
@@ -111,7 +109,9 @@ def get_folders_from_params(advanced_args):
         return []
 
 
-def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: List[Projects]):
+def get_filepaths_filter(
+    accessible_folders: List[Files], accessible_projects: List[Projects]
+):
     """
     Generates an elastic boolean query which filters documents based on folder/project access. Takes
     as input two options:
@@ -122,21 +122,12 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
     Any files present in accessible_folders which are not children of accessible_projects will be
     ignored, and returned along with the query.
     """
-    accessible_projects_ids = [
-        project.id
-        for project in accessible_projects
-    ]
+    accessible_projects_ids = [project.id for project in accessible_projects]
 
     paths = [file.path for file in accessible_folders]
 
     if paths:
-        return {
-            'bool': {
-                'should': [
-                    {'terms': {'path.tree': paths}}
-                ]
-            }
-        }
+        return {'bool': {'should': [{'terms': {'path.tree': paths}}]}}
     else:
         # If there were no accessible filepaths in the given list, search all accessible projects
         return {
@@ -145,16 +136,16 @@ def get_filepaths_filter(accessible_folders: List[Files], accessible_projects: L
                     # If the user has access to the project the document is in...
                     {'terms': {'project_id': accessible_projects_ids}},
                     # OR if the document is public.
-                    {'term': {'public': True}}
+                    {'term': {'public': True}},
                 ]
             }
         }
+
 
 # End Search Helpers #
 
 
 class ContentSearchView(ProjectBaseView, FilesystemBaseView):
-
     @use_args(ContentSearchSchema)
     @use_args(PaginatedRequestSchema)
     def get(self, params: dict, pagination: Pagination):
@@ -162,20 +153,27 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             f'Term: {params["q"]}',
             extra=UserEventLog(
                 username=g.current_user.username,
-                event_type=LogEventType.CONTENT_SEARCH.value).to_dict()
+                event_type=LogEventType.CONTENT_SEARCH.value,
+            ).to_dict(),
         )
 
         current_user = g.current_user
         file_type_service = get_file_type_service()
 
         if content_search_params_are_empty(params):
-            return jsonify(ContentSearchResponseSchema(context={
-                'user_privilege_filter': g.current_user.id,
-            }).dump({
-                'total': 0,
-                'query': ResultQuery(phrases=[]),
-                'results': [],
-            }))
+            return jsonify(
+                ContentSearchResponseSchema(
+                    context={
+                        'user_privilege_filter': g.current_user.id,
+                    }
+                ).dump(
+                    {
+                        'total': 0,
+                        'query': ResultQuery(phrases=[]),
+                        'results': [],
+                    }
+                )
+            )
 
         offset = (pagination.page - 1) * pagination.limit
 
@@ -205,18 +203,18 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
 
         EXCLUDE_FIELDS = ['enrichment_annotations', 'annotations']
         # Gets the full list of projects accessible by the current user.
-        accessible_projects, _ = self.get_nondeleted_projects(None, accessible_only=True)
+        accessible_projects, _ = self.get_nondeleted_projects(
+            None, accessible_only=True
+        )
         # Gets the full list of folders accessible by the current user.
         accessible_folders = self.get_nondeleted_recycled_files(
-            Files.hash_id.in_(folders),
-            attr_excl=EXCLUDE_FIELDS
+            Files.hash_id.in_(folders), attr_excl=EXCLUDE_FIELDS
         )
         accessible_folder_hash_ids = [folder.hash_id for folder in accessible_folders]
-        dropped_folders = [folder for folder in folders if folder not in accessible_folder_hash_ids]
-        filepaths_filter = get_filepaths_filter(
-            accessible_folders,
-            accessible_projects
-        )
+        dropped_folders = [
+            folder for folder in folders if folder not in accessible_folder_hash_ids
+        ]
+        filepaths_filter = get_filepaths_filter(accessible_folders, accessible_projects)
         # These are the document fields that will be returned by elastic
         return_fields = ['id']
 
@@ -233,12 +231,12 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
                         {'term': {'mime_type': DirectoryTypeProvider.MIME_TYPE}}
                     ]
                 }
-            }
+            },
         ]
 
         elastic_service = get_elastic_service()
         elastic_result, search_phrases = elastic_service.search(
-            index_id=FILE_INDEX_ID,
+            index_id=config.get('ELASTIC_FILE_INDEX_ID'),
             user_search_query=user_search_query,
             offset=offset,
             limit=pagination.limit,
@@ -246,7 +244,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             text_field_boosts=text_field_boosts,
             return_fields=return_fields,
             filter_=filter_,
-            highlight=highlight
+            highlight=highlight,
         )
 
         elastic_result = elastic_result['hits']
@@ -261,7 +259,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             file.id: file
             for file in self.get_nondeleted_recycled_files(
                 Files.id.in_(file_ids),
-                attr_excl=['enrichment_annotations', 'annotations']
+                attr_excl=['enrichment_annotations', 'annotations'],
             )
         }
 
@@ -272,8 +270,10 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
 
             if file and file.calculated_privileges[current_user.id].readable:
                 file_type = file_type_service.get(file)
-                if file_type.should_highlight_content_text_matches() and \
-                        document.get('highlight') is not None:
+                if (
+                    file_type.should_highlight_content_text_matches()
+                    and document.get('highlight') is not None
+                ):
                     if document['highlight'].get('data.content') is not None:
                         snippets = document['highlight']['data.content']
                         for i, snippet in enumerate(snippets):
@@ -282,23 +282,30 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
                             snippets[i] = f"<snippet>{snippet}</snippet>"
                         file.calculated_highlight = snippets
 
-                results.append({
-                    'item': file,
-                    'rank': document['_score'],
-                })
+                results.append(
+                    {
+                        'item': file,
+                        'rank': document['_score'],
+                    }
+                )
 
-        return jsonify(ContentSearchResponseSchema(context={
-            'user_privilege_filter': g.current_user.id,
-        }).dump({
-            'total': elastic_result['total'],
-            'query': ResultQuery(phrases=search_phrases),
-            'results': results,
-            'dropped_folders': dropped_folders
-        }))
+        return jsonify(
+            ContentSearchResponseSchema(
+                context={
+                    'user_privilege_filter': g.current_user.id,
+                }
+            ).dump(
+                {
+                    'total': elastic_result['total'],
+                    'query': ResultQuery(phrases=search_phrases),
+                    'results': results,
+                    'dropped_folders': dropped_folders,
+                }
+            )
+        )
 
 
 class SynonymSearchView(FilesystemBaseView):
-
     @use_args(SynonymSearchSchema)
     @use_args(PaginatedRequestSchema)
     def get(self, params, pagination: Pagination):
@@ -313,9 +320,13 @@ class SynonymSearchView(FilesystemBaseView):
             types = params['types'].split(';')
 
         if search_term is None:
-            return jsonify(SynonymSearchResponseSchema().dump({
-                'data': [],
-            }))
+            return jsonify(
+                SynonymSearchResponseSchema().dump(
+                    {
+                        'data': [],
+                    }
+                )
+            )
 
         page = pagination.page
         limit = pagination.limit
@@ -323,24 +334,25 @@ class SynonymSearchView(FilesystemBaseView):
 
         try:
             search_dao = get_search_service_dao()
-            results = search_dao.get_synonyms(search_term, organisms, types, offset, limit)
+            results = search_dao.get_synonyms(
+                search_term, organisms, types, offset, limit
+            )
             count = search_dao.get_synonyms_count(search_term, organisms, types)
         except Exception as e:
             current_app.logger.error(
                 f'Failed to get synonym data for term: {search_term}',
                 exc_info=e,
-                extra=EventLog(event_type=LogEventType.CONTENT_SEARCH.value).to_dict()
+                extra=EventLog(event_type=LogEventType.CONTENT_SEARCH.value).to_dict(),
             )
             raise ServerException(
                 title='Unexpected error during synonym search',
-                message='A system error occurred while searching for synonyms, we are ' +
-                        'working on a solution. Please try again later.'
+                message='A system error occurred while searching for synonyms, we are '
+                + 'working on a solution. Please try again later.',
             ) from e
 
-        return jsonify(SynonymSearchResponseSchema().dump({
-            'data': results,
-            'count': count
-        }))
+        return jsonify(
+            SynonymSearchResponseSchema().dump({'data': results, 'count': count})
+        )
 
 
 bp.add_url_rule('content', view_func=ContentSearchView.as_view('content_search'))

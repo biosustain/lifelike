@@ -8,9 +8,7 @@ import { ScrubHtmlPipe } from './scrub-html.pipe';
 describe('ScrubHtmlPipe', () => {
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        BrowserModule
-      ]
+      imports: [BrowserModule],
     });
   });
 

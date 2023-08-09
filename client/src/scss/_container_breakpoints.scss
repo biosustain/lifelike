@@ -4,7 +4,9 @@
 
     @each $value in $displays {
       .cbp#{$infix} {
-        .d-cbp#{$infix}-#{$value} { display: $value !important; }
+        .d-cbp#{$infix}-#{$value} {
+          display: $value !important;
+        }
       }
     }
   }

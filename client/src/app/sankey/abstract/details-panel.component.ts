@@ -8,12 +8,9 @@ import { SelectionType, SelectionEntity } from '../interfaces/selection';
 import { ControllerService } from '../services/controller.service';
 import { getTraces } from '../base-views/multi-lane/utils';
 
-@Component({template: ''})
+@Component({ template: '' })
 export abstract class SankeyAbstractDetailsPanelComponent {
-  constructor(
-    protected selectionService: SankeySelectionService
-  ) {
-  }
+  constructor(protected selectionService: SankeySelectionService) {}
 
   SelectionType = SelectionType;
 

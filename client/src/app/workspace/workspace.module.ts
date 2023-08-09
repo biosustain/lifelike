@@ -12,19 +12,12 @@ const components = [
   WorkspaceComponent,
   WorkspaceOutletComponent,
   WorkspacePaneComponent,
-  WorkspaceTabComponent
+  WorkspaceTabComponent,
 ];
 
 @NgModule({
-  declarations: [
-    ...components,
-  ],
-  exports: [
-    ...components,
-  ],
-  imports: [
-    CommonModule,
-    SharedModule
-  ]
+  declarations: [...components],
+  exports: [...components],
+  imports: [CommonModule, SharedModule],
 })
-export class WorkspaceModule { }
+export class WorkspaceModule {}

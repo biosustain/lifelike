@@ -42,14 +42,12 @@ def data_upgrades():
     session = Session(op.get_bind())
 
     files_table = table(
-        'files',
-        column('id', sa.Integer),
-        column('annotations', postgresql.JSONB))
+        'files', column('id', sa.Integer), column('annotations', postgresql.JSONB)
+    )
 
-    files = session.execute(sa.select([
-        files_table.c.id,
-        files_table.c.annotations
-    ])).fetchall()
+    files = session.execute(
+        sa.select([files_table.c.id, files_table.c.annotations])
+    ).fetchall()
 
     for f in files:
         fix = False
@@ -67,12 +65,15 @@ def data_upgrades():
                 annotation['meta']['type'] = entity_type
                 updated_annotations.append(annotation)
 
-            f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+            f.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ] = updated_annotations
             session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(annotations=f.annotations))
+                files_table.update()
+                .where(files_table.c.id == f.id)
+                .values(annotations=f.annotations)
+            )
     session.commit()
-
 
 
 def data_downgrades():

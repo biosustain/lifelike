@@ -8,17 +8,8 @@ import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ObjectNavigatorComponent } from './components/object-navigator.component';
 import { AssociatedMapsComponent } from './components/associated-maps.component';
 
-
 @NgModule({
-  declarations: [
-    ObjectNavigatorComponent,
-    AssociatedMapsComponent
-  ],
-  imports: [
-    CommonModule,
-    SharedModule,
-    WordCloudModule,
-    FileBrowserModule,
-  ]
+  declarations: [ObjectNavigatorComponent, AssociatedMapsComponent],
+  imports: [CommonModule, SharedModule, WordCloudModule, FileBrowserModule],
 })
-export class FileNavigatorModule { }
+export class FileNavigatorModule {}

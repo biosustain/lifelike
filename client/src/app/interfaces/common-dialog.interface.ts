@@ -35,11 +35,13 @@ export class Progress {
   public readonly warnings?: Readonly<WarningResponse[]>;
   public readonly errors?: Readonly<ErrorResponse[]>;
 
-  constructor(args: ProgressArguments = {
-    mode: ProgressMode.Indeterminate,
-    value: 0,
-    status: 'Working...',
-  }) {
+  constructor(
+    args: ProgressArguments = {
+      mode: ProgressMode.Indeterminate,
+      value: 0,
+      status: 'Working...',
+    }
+  ) {
     this.mode = args.mode;
     this.value = args.value;
     this.status = args.status;

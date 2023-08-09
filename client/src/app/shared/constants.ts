@@ -17,7 +17,7 @@ export enum DBHostname {
   ChEBI = 'www.ebi.ac.uk',
   UniProt = 'www.uniprot.org',
   NCBI = 'www.ncbi.nlm.nih.gov',
-  GO = 'amigo.geneontology.org'
+  GO = 'amigo.geneontology.org',
 }
 
 export enum AnnotationType {
@@ -56,18 +56,20 @@ export const LINK_NODE_ICON_OBJECT = {
 export const DEFAULT_CLUSTER_ROWS = 5;
 
 export const ORGANISM_SHORTLIST = new Map<string, string>([
-  ['Escherichia coli K12 MG1655',	'511145'],
-  ['Saccharomyces cerevisiae S288C',	'559292'],
-  ['Pseudomonas aeruginosa PAO1',	'208964'],
-  ['Homo sapiens', '9606']
+  ['Escherichia coli K12 MG1655', '511145'],
+  ['Saccharomyces cerevisiae S288C', '559292'],
+  ['Pseudomonas aeruginosa PAO1', '208964'],
+  ['Homo sapiens', '9606'],
 ]);
-export const ORGANISM_AUTOCOMPLETE_DEFAULTS = Array.from(ORGANISM_SHORTLIST.entries()).map(([organismName, organismTaxId]) => {
-  return {
-    organism_name: organismName,
-    synonym: organismName,
-    tax_id: organismTaxId
-  } as OrganismAutocomplete;
-});
+export const ORGANISM_AUTOCOMPLETE_DEFAULTS = Array.from(ORGANISM_SHORTLIST.entries()).map(
+  ([organismName, organismTaxId]) => {
+    return {
+      organism_name: organismName,
+      synonym: organismName,
+      tax_id: organismTaxId,
+    } as OrganismAutocomplete;
+  }
+);
 
 export const KG_VIZ_FILTER_TYPES = [
   'Biological Process',
@@ -77,7 +79,7 @@ export const KG_VIZ_FILTER_TYPES = [
   'Gene',
   'Molecular Function',
   'Protein',
-  'Taxonomy'
+  'Taxonomy',
 ];
 
 export const KG_VIZ_DOMAINS = ['ChEBI', 'GO', 'Literature', 'MeSH', 'NCBI', 'UniProt'];
@@ -97,7 +99,7 @@ export enum FileTypeShorthand {
   Directory = 'folders',
   Graph = 'sankey',
   Pdf = 'files',
-  BioC = 'bioc'
+  BioC = 'bioc',
 }
 
 export enum MimeTypes {
@@ -106,7 +108,7 @@ export enum MimeTypes {
   Directory = 'vnd.***ARANGO_DB_NAME***.filesystem/directory',
   Graph = 'vnd.***ARANGO_DB_NAME***.document/graph',
   Pdf = 'application/pdf',
-  BioC = 'vnd.***ARANGO_DB_NAME***.document/bioc'
+  BioC = 'vnd.***ARANGO_DB_NAME***.document/bioc',
 }
 
 export enum FAClass {
@@ -121,7 +123,7 @@ export enum FAClass {
   PowerPoint = 'fak fa-powerpoint-solid',
   Word = 'fak fa-word-solid',
   Cytoscape = 'fak fa-cytoscape-solid',
-  Project = 'fas fa-layer-group'
+  Project = 'fas fa-layer-group',
 }
 
 export enum InternalURIType {
@@ -133,7 +135,7 @@ export enum InternalURIType {
   Map,
   Graph,
   Pdf,
-  Project
+  Project,
 }
 
 export enum Unicodes {
@@ -148,26 +150,32 @@ export enum Unicodes {
   Note = '\uf249',
   Default = '\uf15b',
   // Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
-// with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
-// other unicode values, they WILL NOT work.
+  // with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
+  // other unicode values, they WILL NOT work.
   Graph = '\ue000',
   Excel = '\ue001',
   Word = '\ue002',
   PowerPoint = '\ue003',
   Cytoscape = '\ue004',
   Search = '\uf002',
-  KgSearch = '\uf78a'
+  KgSearch = '\uf78a',
 }
 // Colors used to render microsoft icons - they should not change
 export enum CustomIconColors {
   Excel = '#2e7d32',
   Word = '#0d47a1',
   PowerPoint = '#e64a19',
-  Cytoscape = '#ea9123'
+  Cytoscape = '#ea9123',
 }
 
 // We need to specify different font family for custom icons (see comment about graph unicode above)
-export const FA_CUSTOM_ICONS = [Unicodes.Graph, Unicodes.Excel, Unicodes.Word, Unicodes.PowerPoint, Unicodes.Cytoscape];
+export const FA_CUSTOM_ICONS = [
+  Unicodes.Graph,
+  Unicodes.Excel,
+  Unicodes.Word,
+  Unicodes.PowerPoint,
+  Unicodes.Cytoscape,
+];
 
 // Regex used to check if a map link is pointing to a file that can be looking for associated maps
 export const ASSOCIATED_MAPS_REGEX = /^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)/;
@@ -380,5 +388,5 @@ export enum SizeUnits {
   KiB = 2e10,
   MiB = 2e20,
   GiB = 2e30,
-  TiB = 2e40
+  TiB = 2e40,
 }

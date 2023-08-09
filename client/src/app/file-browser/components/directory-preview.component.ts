@@ -9,7 +9,5 @@ import { FilesystemObject } from '../models/filesystem-object';
   templateUrl: './directory-preview.component.html',
 })
 export class DirectoryPreviewComponent {
-
   @Input() objects: CollectionModel<FilesystemObject> | undefined;
-
 }

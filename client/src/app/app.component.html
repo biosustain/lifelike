@@ -5,51 +5,105 @@
     <div class="d-flex flex-column">
       <!-- If a file is in standalone mode, workbench button opens it as tab -->
       <ng-container *ngIf="isStandaloneFileOpen; else goToWorkbench">
-        <a [appLink]="mainUrl"
-           [forceWorkbench]="true"
-           [newTab]="true"
-           [fragment]="fragment"
-           [queryParams]="queryParams"
-           preferPane="left"
-           placement="right"
-           ngbTooltip="Workbench">
+        <a
+          [appLink]="mainUrl"
+          [forceWorkbench]="true"
+          [newTab]="true"
+          [fragment]="fragment"
+          [queryParams]="queryParams"
+          preferPane="left"
+          placement="right"
+          ngbTooltip="Workbench"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="far fa-window-restore"></i>
         </a>
       </ng-container>
       <ng-template #goToWorkbench>
-        <a routerLink="/workspaces/local" placement="right" ngbTooltip="Workbench">
+        <a
+          routerLink="/workspaces/local"
+          placement="right"
+          ngbTooltip="Workbench"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="far fa-window-restore"></i>
         </a>
       </ng-template>
       <!-- TODO: Something odd is happening when OAuth is enabled and these `appLink` links are clicked when the user is not logged in. For
         some reason a bunch of redirects happen all at once, rather than just one single redirect. -->
-      <a appLink="/projects" placement="right" ngbTooltip="File Browser" matchExistingTab="/projects$"
-         [forceWorkbench]="true"
-         [newTab]="true" preferPane="left">
+      <a
+        appLink="/projects"
+        placement="right"
+        ngbTooltip="File Browser"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+        matchExistingTab="/projects$"
+        [forceWorkbench]="true"
+        [newTab]="true"
+        preferPane="left"
+      >
         <i class="fa fa-folder"></i>
       </a>
-      <a appLink="/search/graph" placement="right" ngbTooltip="Knowledge Graph" matchExistingTab="/search/graph$"
-         [forceWorkbench]="true"
-         [newTab]="true" preferPane="left">
+      <a
+        appLink="/search/graph"
+        placement="right"
+        ngbTooltip="Knowledge Graph"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+        matchExistingTab="/search/graph$"
+        [forceWorkbench]="true"
+        [newTab]="true"
+        preferPane="left"
+      >
         <i class="fas fa-chart-network"></i>
       </a>
-      <a appLink="/search/content" matchExistingTab="/search/content$" placement="right" ngbTooltip="Search"
-         [forceWorkbench]="true" [newTab]="true"
-         preferPane="left">
+      <a
+        appLink="/search/content"
+        matchExistingTab="/search/content$"
+        placement="right"
+        ngbTooltip="Search"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+        [forceWorkbench]="true"
+        [newTab]="true"
+        preferPane="left"
+      >
         <i class="fa fa-search"></i>
       </a>
-      <a routerLink="/files/starred" placement="right" ngbTooltip="Starred Content">
+      <a
+        routerLink="/files/starred"
+        placement="right"
+        ngbTooltip="Starred Content"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         <i class="fas fa-star"></i>
       </a>
       <div class="button-divider"></div>
       <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->
-      <!-- <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import">
+      <!-- <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import"
+                      #tooltipRef="ngbTooltip"
+                      [appAutoCloseTooltipOutOfView]="tooltipRef">
         <i class="fa fa-cloud-upload"></i>
       </a> -->
-      <a routerLink="/pathway-browser-prototype" placement="right" ngbTooltip="Pathway Browser Prototype">
+      <a
+        routerLink="/pathway-browser-prototype"
+        placement="right"
+        ngbTooltip="Pathway Browser Prototype"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         <i class="fas fa-drafting-compass"></i>
       </a>
-      <a routerLink="kg-statistics" placement="right" ngbTooltip="Knowledge Graph Statistics">
+      <a
+        routerLink="kg-statistics"
+        placement="right"
+        ngbTooltip="Knowledge Graph Statistics"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         <i class="fas fa-chart-bar"></i>
       </a>
     </div>
@@ -57,12 +111,27 @@
 
     <!-- Bottom buttons -->
     <div class="d-flex flex-column mt-auto">
-      <a [href]="helpDeskUrl" target="_blank" placement="right" triggers="hover" ngbTooltip="Feedback and Questions">
+      <a
+        [href]="helpDeskUrl"
+        target="_blank"
+        placement="right"
+        triggers="hover"
+        ngbTooltip="Feedback and Questions"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
         <i class="fa fa-comment"></i>
       </a>
 
       <div ngbDropdown placement="top-left" container="body">
-        <a id="terms-and-policies-dropdown" ngbDropdownToggle ngbTooltip="Terms & Policies" container="body">
+        <a
+          id="terms-and-policies-dropdown"
+          ngbDropdownToggle
+          ngbTooltip="Terms & Policies"
+          container="body"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="far fa-file-contract"></i>
         </a>
         <div ngbDropdownMenu aria-labelledby="terms-and-policies-dropdown" class="dropdown-menu">
@@ -75,39 +144,58 @@
           <a class="dropdown-item" [routerLink]="['/cookie-policy']" placement="right">
             Cookie Policy
           </a>
-          <a class="dropdown-item" [routerLink]="['/copyright-infringement-policy']" placement="right">
+          <a
+            class="dropdown-item"
+            [routerLink]="['/copyright-infringement-policy']"
+            placement="right"
+          >
             Copyright Infringement Policy
           </a>
         </div>
       </div>
 
-      <ng-container *ngIf="(loggedIn$ | async); else loggedOut">
+      <ng-container *ngIf="loggedIn$ | async; else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
-          <a id="account-dropdown" ngbDropdownToggle ngbTooltip="Options" container="body">
+          <a
+            id="account-dropdown"
+            ngbDropdownToggle
+            ngbTooltip="Options"
+            container="body"
+            #tooltipRef="ngbTooltip"
+            [appAutoCloseTooltipOutOfView]="tooltipRef"
+          >
             <i class="fa fa-user"></i>
           </a>
           <div ngbDropdownMenu aria-labelledby="account-dropdown" class="dropdown-menu">
-            <a class="dropdown-item" (click)="buildInfo()" placement="right">
-              Lifelike Info
-            </a>
-            <a class="dropdown-item" *ngIf="(userRoles$ | async)?.includes('admin')" [routerLink]="['/admin']"
-               placement="right">
+            <a class="dropdown-item" (click)="buildInfo()" placement="right"> Lifelike Info </a>
+            <a
+              class="dropdown-item"
+              *ngIf="(userRoles$ | async)?.includes('admin')"
+              [routerLink]="['/admin']"
+              placement="right"
+            >
               Administration
             </a>
-            <a class="dropdown-item" (click)="downloadManual()" placement="right">
-              User Guide
-            </a>
-            <a class="dropdown-item" [routerLink]="['/users', (appUser$ | async)?.username]" placement="right">
+            <a class="dropdown-item" (click)="downloadManual()" placement="right"> User Guide </a>
+            <a
+              class="dropdown-item"
+              [routerLink]="['/users', (appUser$ | async)?.username]"
+              placement="right"
+            >
               Account
             </a>
-            <a class="dropdown-item" (click)="logout()" placement="right">
-              Logout
-            </a>
+            <a class="dropdown-item" (click)="logout()" placement="right"> Logout </a>
           </div>
         </div>
       </ng-container>
       <ng-template #loggedOut>
-        <a (click)="login()" placement="right" ngbTooltip="Login">
+        <a
+          (click)="login()"
+          placement="right"
+          ngbTooltip="Login"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
           <i class="fas fa-user"></i>
         </a>
       </ng-template>
@@ -122,15 +210,16 @@
 
     <footer>
       <span>
-          This project uses code provided by
-          <img src="/favicon.ico" alt="Lifelike Logo" class="logo">
-          <a href="https://***ARANGO_DB_NAME***.bio" target="_blank" rel="noopener">
-              Lifelike.bio
-          </a>
+        This project uses code provided by
+        <img src="/favicon.ico" alt="Lifelike Logo" class="logo" />
+        <a href="https://***ARANGO_DB_NAME***.bio" target="_blank" rel="noopener"> Lifelike.bio </a>
       </span>
-      <a href="https://github.com/SBRG/***ARANGO_DB_NAME***" class="github-button"
-         data-color-scheme="no-preference: light; light: light; dark: light;"
-         aria-label="Lifelike Open Source Git Repository">
+      <a
+        href="https://github.com/SBRG/***ARANGO_DB_NAME***"
+        class="github-button"
+        data-color-scheme="no-preference: light; light: light; dark: light;"
+        aria-label="Lifelike Open Source Git Repository"
+      >
         View on GitHub
       </a>
     </footer>

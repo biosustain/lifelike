@@ -8,11 +8,17 @@ from config.config import Config
 import pandas as pd
 from zipfile import ZipFile
 
+
 class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
-    def __init__(self, author:str, biocyc_dbname:str, zip_data_file:str,
-                 initial_load=True):
-        ChangeLogFileGenerator.__init__(self, author, zip_data_file, DB_BIOCYC, None, initial_load)
-        self.processed_data_dir = os.path.join(self.processed_data_dir, biocyc_dbname.lower())
+    def __init__(
+        self, author: str, biocyc_dbname: str, zip_data_file: str, initial_load=True
+    ):
+        ChangeLogFileGenerator.__init__(
+            self, author, zip_data_file, DB_BIOCYC, None, initial_load
+        )
+        self.processed_data_dir = os.path.join(
+            self.processed_data_dir, biocyc_dbname.lower()
+        )
         self.biocyc_dbname = biocyc_dbname
         self.biocycdb_label = 'db_' + self.biocyc_dbname
         self.index_quieries = []
@@ -28,10 +34,16 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
         self.index_quieries.append(get_create_index_query(NODE_BIOCYC, PROP_BIOCYC_ID))
         self.index_quieries.append(get_create_index_query(NODE_BIOCYC, PROP_NAME))
         self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_ID))
-        self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_BIOCYC_ID))
-        self.index_quieries.append(get_create_index_query(self.biocycdb_label, PROP_NAME))
+        self.index_quieries.append(
+            get_create_index_query(self.biocycdb_label, PROP_BIOCYC_ID)
+        )
+        self.index_quieries.append(
+            get_create_index_query(self.biocycdb_label, PROP_NAME)
+        )
         self.index_quieries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME))
-        self.index_quieries.append(get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME))
+        self.index_quieries.append(
+            get_create_index_query(NODE_SYNONYM, PROP_LOWERCASE_NAME)
+        )
 
     def add_entity_index_queries(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -40,7 +52,9 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
             entity_data_file = f"{entity}.tsv"
             if entity_data_file in filenames:
                 self.index_quieries.append(get_create_index_query(entity, PROP_ID))
-                self.index_quieries.append(get_create_index_query(entity, PROP_BIOCYC_ID))
+                self.index_quieries.append(
+                    get_create_index_query(entity, PROP_BIOCYC_ID)
+                )
                 self.index_quieries.append(get_create_index_query(entity, PROP_NAME))
 
     def add_node_changesets(self):
@@ -52,8 +66,15 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets.append(self.get_node_changeset(df, file, entity, NODE_BIOCYC,
-                                                                        ['db_'+self.biocyc_dbname]))
+                        self.change_sets.append(
+                            self.get_node_changeset(
+                                df,
+                                file,
+                                entity,
+                                NODE_BIOCYC,
+                                ['db_' + self.biocyc_dbname],
+                            )
+                        )
 
     def add_synonym_changesets(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -64,7 +85,9 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets.append(self.get_synonym_changeset(file, entity))
+                        self.change_sets.append(
+                            self.get_synonym_changeset(file, entity)
+                        )
 
     def add_relationship_changesets(self):
         with ZipFile(os.path.join(self.processed_data_dir, self.zipfile)) as zip:
@@ -75,7 +98,9 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
                     self.logger.info(f"read {file}")
                     with zip.open(file) as f:
                         df = pd.read_csv(f, sep='\t')
-                        self.change_sets += self.get_relationships_changesets(df, file, NODE_BIOCYC, NODE_BIOCYC)
+                        self.change_sets += self.get_relationships_changesets(
+                            df, file, NODE_BIOCYC, NODE_BIOCYC
+                        )
                 file = f"{entity}-dblinks.tsv"
                 if file in filenames:
                     self.logger.info(f"read {file}")
@@ -91,19 +116,34 @@ class BioCycChangeLogsGenerator(ChangeLogFileGenerator):
             dbnode = 'db_' + dbname
             id = f'load {entity} {rel} from {self.zipfile}, date {self.date_tag}'
             comment = f'Load {entity} {rel}: {file} from {self.zipfile}'
-            query = get_create_relationships_query(NODE_BIOCYC, PROP_ID, PROP_FROM_ID,
-                                                   dbnode, PROP_ID, PROP_TO_ID, rel,
-                                                   row_filter_property=PROP_DB_NAME, row_filter_value=dbname)
-            changeset = CustomChangeSet(id, self.author, comment, query,
-                                        handler=QUERY_HANDLER,
-                                        filename=file,
-                                        zipfile=self.zipfile)
+            query = get_create_relationships_query(
+                NODE_BIOCYC,
+                PROP_ID,
+                PROP_FROM_ID,
+                dbnode,
+                PROP_ID,
+                PROP_TO_ID,
+                rel,
+                row_filter_property=PROP_DB_NAME,
+                row_filter_value=dbname,
+            )
+            changeset = CustomChangeSet(
+                id,
+                self.author,
+                comment,
+                query,
+                handler=QUERY_HANDLER,
+                filename=file,
+                zipfile=self.zipfile,
+            )
             changesets.append(changeset)
         return changesets
 
     def generate_init_changelog_file(self):
         self.add_all_change_sets()
-        changelog_file = f"changelog-{self.biocyc_dbname}-init-{self.date_tag.replace('/', '-')}.xml"
+        changelog_file = (
+            f"changelog-{self.biocyc_dbname}-init-{self.date_tag.replace('/', '-')}.xml"
+        )
         self.generate_changelog_file(changelog_file)
 
 
@@ -111,6 +151,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
     """
     Create cypher query change logs
     """
+
     def __init__(self, author, biocyc_dbname, genelink_cypher=""):
         """
         if genelink_cypher is not empty, use it to create gene-ndbi_gene links. Otherwise, use the cypher query in biocyc_cypher.yml file
@@ -147,7 +188,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
     def generate_gds_reg_collapse_changelog_file(self, filename=None):
         self.change_sets = []
         for key, content in self.cyphers.items():
-            if 'collapse' not in key  or key=='collapse_Regulation_nodes':
+            if 'collapse' not in key or key == 'collapse_Regulation_nodes':
                 self.change_sets.append(self.create_changeset(key, content))
         if not filename:
             filename = f"changelog-{self.biocyc_dbname}-gds-reg-collapse-{self.date_tag.replace('/', '-')}.xml"
@@ -163,7 +204,7 @@ class BioCycCypherChangeLogsGenerator(ChangeLogFileGenerator):
         self.logger.info("write " + filename)
         self.generate_changelog_file(filename)
 
-    def create_changeset(self, query_id, content:{}):
+    def create_changeset(self, query_id, content: {}):
         id = f"{query_id}, date {self.date_tag}"
         desc = content['description']
         isTemplate = content.get('template', False)
@@ -198,7 +239,3 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 if __name__ == "__main__":
     generate_changelog_files('EcoCyc-data-25.5.zip', DB_ECOCYC, 'rcai')
     # generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
-
-
-
-

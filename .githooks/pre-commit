@@ -7,8 +7,25 @@ __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # load utility functions
 source $__dir__/utils.sh
 
+run_prettier &&
+run_black &&
 # recurse folders and call pre-commit hook in each service .githooks folder
 recurseHook pre-commit
+
+# Runs on only files that are staged
+staged_docker_compose_files=$(getStaged . '^docker-compose\..*\.(yml)$')
+
+# shellcheck disable=SC2236
+if [[ -n $staged_docker_compose_files ]];
+then
+  (
+    echo "> Running docker compose file validation..."
+    echo ${staged_docker_compose_files} | xargs -n1 -I{} docker compose -f "{}" config -q
+    checkExitCode $?
+  )
+else
+  echo "> Skipping..."
+fi
 
 # exit with no error if no error has been found
 exit 0

@@ -33,7 +33,7 @@ def upgrade():
         sa.Column('synonym', sa.String(length=128), nullable=False),
         sa.Column('taxonomy_id', sa.String(length=128), nullable=False),
         sa.Column('organism', sa.String(length=128), nullable=False),
-        sa.PrimaryKeyConstraint('id', name=op.f('pk_organism_gene_match'))
+        sa.PrimaryKeyConstraint('id', name=op.f('pk_organism_gene_match')),
     )
     # ### end Alembic commands ###
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -65,20 +65,25 @@ def data_upgrades():
         column('gene_name', sa.String),
         column('synonym', sa.String),
         column('taxonomy_id', sa.String),
-        column('organism', sa.String))
+        column('organism', sa.String),
+    )
 
     rows = []
-    with open(path.join(directory, '../upgrade_data/gene_names_for_4organisms.csv'), 'r') as f:
+    with open(
+        path.join(directory, '../upgrade_data/gene_names_for_4organisms.csv'), 'r'
+    ) as f:
         for line in f:
             # GeneID,GeneName,Synonym,Tax_ID, Organism
             data = line.split(',')
-            rows.append({
-                'gene_id': data[0].strip(),
-                'gene_name': data[1].strip(),
-                'synonym': data[2].strip(),
-                'taxonomy_id': data[3].strip(),
-                'organism': data[4].strip()
-            })
+            rows.append(
+                {
+                    'gene_id': data[0].strip(),
+                    'gene_name': data[1].strip(),
+                    'synonym': data[2].strip(),
+                    'taxonomy_id': data[3].strip(),
+                    'organism': data[4].strip(),
+                }
+            )
 
             if len(rows) == 250:
                 try:

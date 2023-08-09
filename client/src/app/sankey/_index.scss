@@ -6,7 +6,7 @@
 
 $search-accent-color: variables.$red;
 $selection-accent-color: #ff0;
-$node-label-shadow: rgba(187, 187, 187, .9);
+$node-label-shadow: rgba(187, 187, 187, 0.9);
 $input-spacing: map-get(variables.$spacers, 2);
 $active-stroke-width: 3px;
 $trasition: 100ms;
@@ -26,7 +26,6 @@ $trasition: 100ms;
 }
 
 @mixin advanced-panel {
-
   form {
     text-align: left;
 
@@ -34,7 +33,7 @@ $trasition: 100ms;
       margin-bottom: 0;
     }
 
-    [type=checkbox] {
+    [type='checkbox'] {
       align-self: center;
       margin-right: $input-spacing;
     }
@@ -43,7 +42,8 @@ $trasition: 100ms;
       flex-grow: 1;
     }
 
-    > *, .form-group {
+    > *,
+    .form-group {
       width: 100%;
       display: flex;
       flex-wrap: wrap;
@@ -86,7 +86,7 @@ $trasition: 100ms;
 
 @mixin legend {
   $box-width: 1.75rem;
-  $box-height: .75rem;
+  $box-height: 0.75rem;
   //pointer-events: none;
   width: 100%;
   @include panel-align-presets;
@@ -110,8 +110,8 @@ $trasition: 100ms;
     grid-template-columns: auto;
     grid-auto-columns: 1fr;
     grid-auto-flow: column;
-    column-gap: .5rem;
-    row-gap: .5rem;
+    column-gap: 0.5rem;
+    row-gap: 0.5rem;
 
     > *:not(dt, dd) {
       display: contents;
@@ -148,7 +148,7 @@ $trasition: 100ms;
     line-height: 1.5;
 
     &:before {
-      border-radius: .1rem;
+      border-radius: 0.1rem;
       border-style: solid;
       border-width: 2px;
       content: '';
@@ -184,7 +184,6 @@ $trasition: 100ms;
   }
 }
 
-
 @mixin active($active) {
   @if ($active) {
     opacity: var(--active-opacity);
@@ -192,7 +191,6 @@ $trasition: 100ms;
     opacity: var(--inactive-opacity);
   }
 }
-
 
 @mixin focused {
   rect {
@@ -213,13 +211,13 @@ $trasition: 100ms;
 
   svg {
     background-color: variables.$window-background;
-    font-size: .6em;
+    font-size: 0.6em;
     height: 100%;
     width: 100%;
 
     > g {
       .nodes {
-        $label-margin: 2*$active-stroke-width;
+        $label-margin: 2 * $active-stroke-width;
         $node-width: 10px;
 
         shape-rendering: crispEdges;
@@ -248,7 +246,7 @@ $trasition: 100ms;
               // ellipsis itself is about 1.2ch wide
               max-width: calc(var(--ellipsis-after-x-characters) + 1.2ch);
               pointer-events: none;
-              padding: 0 .3em;
+              padding: 0 0.3em;
             }
 
             &[label-anchor='left'] div {
@@ -260,30 +258,29 @@ $trasition: 100ms;
             }
           }
 
-
-          &[highlighted="false"],
-          &[transitively-selected="false"],
-          &[selected="false"] {
+          &[highlighted='false'],
+          &[transitively-selected='false'],
+          &[selected='false'] {
             // fade away other nodes
             @include active($active: false);
           }
 
           &:hover,
-          &[selected="true"],
-          &[transitively-selected="true"] {
+          &[selected='true'],
+          &[transitively-selected='true'] {
             // mark nodes to not fade away
             @include active($active: true);
           }
 
           &:hover,
-          &[selected="true"] {
+          &[selected='true'] {
             // add focus border
             @include focused;
             // render label shadow
             @include labelShadow;
           }
 
-          &[searched="true"] {
+          &[searched='true'] {
             // render label shadow
             @include labelShadow;
 
@@ -294,24 +291,24 @@ $trasition: 100ms;
           }
 
           &:hover,
-          &[focused="true"],
-          &[selected="true"] {
+          &[focused='true'],
+          &[selected='true'] {
             // enlarge text on interaction
             font-size: 2em;
           }
 
           &:hover,
-          &[focused="true"],
-          &[selected="true"] {
+          &[focused='true'],
+          &[selected='true'] {
             foreignObject div {
               // allow for whole label to be visible
               max-width: fit-content;
             }
           }
 
-          &[focused="true"] foreignObject div {
+          &[focused='true'] foreignObject div {
             // blink background when focused
-            @include search-blink("background-color");
+            @include search-blink('background-color');
           }
         }
       }
@@ -323,35 +320,35 @@ $trasition: 100ms;
           stroke-dasharray: 4 4;
         }
 
-        &[thickness="0"] {
+        &[thickness='0'] {
           // Try preventing drawing line like this -=-=-=-=-=-=-
           fill: transparent;
         }
 
-        &[selected="false"],
-        &[transitively-selected="false"] {
+        &[selected='false'],
+        &[transitively-selected='false'] {
           @include active($active: false);
         }
 
         &:hover,
-        &[selected="true"] {
+        &[selected='true'] {
           stroke: $selection-accent-color;
           stroke-width: $active-stroke-width;
         }
 
         &:hover,
-        &[selected="true"],
-        &[transitively-selected="true"] {
+        &[selected='true'],
+        &[transitively-selected='true'] {
           @include active($active: true);
         }
 
-        &[searched="true"] {
+        &[searched='true'] {
           stroke: $search-accent-color;
         }
 
-        &[focused="true"] {
+        &[focused='true'] {
           fill: $search-accent-color;
-          @include search-blink("fill");
+          @include search-blink('fill');
         }
       }
     }

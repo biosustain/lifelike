@@ -49,9 +49,11 @@ function justify(node, n) {
 }
 
 function center(node) {
-  return isNotEmpty(node.targetLinks) ? node.depth
-    : isNotEmpty(node.sourceLinks) ? (min(node.sourceLinks, targetDepth) as any) - 1
-      : 0;
+  return isNotEmpty(node.targetLinks)
+    ? node.depth
+    : isNotEmpty(node.sourceLinks)
+    ? (min(node.sourceLinks, targetDepth) as any) - 1
+    : 0;
 }
 
 export const aligns: ALIGNS = {

@@ -5,17 +5,11 @@ import { SharedModule } from 'app/shared/shared.module';
 
 import { WordCloudComponent } from './word-cloud.component';
 
-const components = [
-  WordCloudComponent
-];
+const components = [WordCloudComponent];
 
 @NgModule({
   declarations: components,
-  imports: [
-    CommonModule,
-    SharedModule,
-  ],
+  imports: [CommonModule, SharedModule],
   exports: components,
 })
-export class WordCloudModule {
-}
+export class WordCloudModule {}

@@ -16,16 +16,12 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MimeTypes } from 'app/shared/constants';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
-
 @Component({
   selector: 'app-object-navigator',
   templateUrl: './object-navigator.component.html',
-  providers: [
-    ModuleContext
-  ]
+  providers: [ModuleContext],
 })
 export class ObjectNavigatorComponent implements ModuleAwareComponent {
-
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   loadTask: BackgroundTask<string, FilesystemObject>;
@@ -33,20 +29,17 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
 
   object: FilesystemObject;
 
-  constructor(protected readonly route: ActivatedRoute,
-              protected readonly filesystemService: FilesystemService,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly moduleContext: ModuleContext) {
+  constructor(
+    protected readonly route: ActivatedRoute,
+    protected readonly filesystemService: FilesystemService,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly moduleContext: ModuleContext
+  ) {
     moduleContext.register(this);
 
-    this.loadTask = new BackgroundTask(hashId =>
-        this.filesystemService.get(hashId)
-    );
+    this.loadTask = new BackgroundTask((hashId) => this.filesystemService.get(hashId));
 
-    this.fileLoadedSub = this.loadTask.results$.subscribe(({
-                                                             result: object,
-                                                             value: [],
-                                                           }) => {
+    this.fileLoadedSub = this.loadTask.results$.subscribe(({ result: object, value: [] }) => {
       this.object = object;
       this.modulePropertiesChange.emit({
         title: object.effectiveName,
@@ -63,19 +56,19 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
     if (this.object.mimeType === MimeTypes.Pdf) {
       const url = this.object.getURL();
       const matchExistingTab = `^/*${escapeRegExp(url.toString())}.*`;
-      url.fragment = new URLSearchParams({annotation: annotation.id}).toString();
+      url.fragment = new URLSearchParams({ annotation: annotation.id }).toString();
       this.workspaceManager.navigateByUrl({
         url: url.toString(),
         extras: {
           newTab: true,
           sideBySide: true,
           matchExistingTab,
-          shouldReplaceTab: component => {
-              const fileViewComponent = component as PdfViewComponent;
-              fileViewComponent.highlightAnnotation(annotation.id);
-              return false;
+          shouldReplaceTab: (component) => {
+            const fileViewComponent = component as PdfViewComponent;
+            fileViewComponent.highlightAnnotation(annotation.id);
+            return false;
           },
-        }
+        },
       });
     } else if (this.object.mimeType === ENRICHMENT_TABLE_MIMETYPE) {
       const url = this.object.getURL();
@@ -89,25 +82,27 @@ export class ObjectNavigatorComponent implements ModuleAwareComponent {
           newTab: true,
           sideBySide: true,
           matchExistingTab,
-          shouldReplaceTab: component => {
+          shouldReplaceTab: (component) => {
             const enrichmentTableViewerComponent = component as EnrichmentTableViewerComponent;
-            enrichmentTableViewerComponent.startAnnotationFind(annotation.id, annotation.text, annotation.color);
+            enrichmentTableViewerComponent.startAnnotationFind(
+              annotation.id,
+              annotation.text,
+              annotation.color
+            );
             return false;
           },
-        }
+        },
       });
     } else {
-      this.workspaceManager.navigate(
-        ['/search', 'content'], {
-          queryParams: {
-            q: `"${useKeyword ? annotation.text : annotation.primaryName}"`,
-            folders: this.object.hashId,
-            types: 'pdf'
-          },
-          newTab: true,
-          sideBySide: true,
+      this.workspaceManager.navigate(['/search', 'content'], {
+        queryParams: {
+          q: `"${useKeyword ? annotation.text : annotation.primaryName}"`,
+          folders: this.object.hashId,
+          types: 'pdf',
         },
-      );
+        newTab: true,
+        sideBySide: true,
+      });
     }
   }
 }

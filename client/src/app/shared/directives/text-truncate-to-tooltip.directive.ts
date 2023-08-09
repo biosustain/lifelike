@@ -13,7 +13,10 @@ import { createScrollObservable } from '../rxjs/scroll-observable';
 @Directive({
   selector: '[appTextTruncateToTooltip]:not([ngbTooltip])',
 })
-export class TextTruncateToTooltipDirective extends NgbTooltip implements OnDestroy, OnChanges, OnInit {
+export class TextTruncateToTooltipDirective
+  extends NgbTooltip
+  implements OnDestroy, OnChanges, OnInit
+{
   @Input('appTextTruncateToTooltip') set appTextTruncateToTooltip(title) {
     this.ngbTooltip = title;
   }
@@ -32,11 +35,13 @@ export class TextTruncateToTooltipDirective extends NgbTooltip implements OnDest
 
   // Nest observable so we can maintain subscription even if input changes
   // createScrollObservable actually creates new observable but inits it on subscription
-  // @ts-ignore - we are using private variable of parent (didn't found the way around it)
-  scroll$$ = new BehaviorSubject<Observable<any>>(createScrollObservable(this._elementRef.nativeElement, document));
+  scroll$$ = new BehaviorSubject<Observable<any>>(
+    // @ts-ignore - we are using private variable of parent (didn't found the way around it)
+    createScrollObservable(this._elementRef.nativeElement, document)
+  );
 
   // Flattern nested observable
-  _scroll$ = this.scroll$$.pipe(switchMap(scroll$ => scroll$));
+  _scroll$ = this.scroll$$.pipe(switchMap((scroll$) => scroll$));
 
   scrollSubscription: Subscription;
 
@@ -46,23 +51,27 @@ export class TextTruncateToTooltipDirective extends NgbTooltip implements OnDest
 
   get disableTooltip() {
     // @ts-ignore - we are using private variable of parent (didn't found the way around it)
-    const {scrollWidth, offsetWidth} = this._elementRef.nativeElement;
+    const { scrollWidth, offsetWidth } = this._elementRef.nativeElement;
     return scrollWidth <= offsetWidth;
   }
 
   ngOnInit() {
     // each time tooltip opens listen to scroll events and close tooltip if scroll starts
-    this.scrollSubscription = this.shown.pipe(
-      switchMap(() => this._scroll$.pipe(
-        takeUntil(this.hidden),
-        tap(() => this.close())
-      )),
-    ).subscribe();
+    this.scrollSubscription = this.shown
+      .pipe(
+        switchMap(() =>
+          this._scroll$.pipe(
+            takeUntil(this.hidden),
+            tap(() => this.close())
+          )
+        )
+      )
+      .subscribe();
 
     super.ngOnInit();
   }
 
-  ngOnChanges({scroll$}: SimpleChanges) {
+  ngOnChanges({ scroll$ }: SimpleChanges) {
     if (scroll$) {
       this.scroll$$.next(scroll$.currentValue ?? EMPTY);
     }

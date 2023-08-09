@@ -32,11 +32,11 @@
         margin-left: 0.3em;
       }
 
-      &[data-sort=asc]:after {
+      &[data-sort='asc']:after {
         content: '\f063';
       }
 
-      &[data-sort=desc]:after {
+      &[data-sort='desc']:after {
         content: '\f062';
       }
     }
@@ -61,7 +61,9 @@
     }
 
     // allow cell scrolling
-    &:focus > td > *, &:focus-within > td > *, &:hover > td > * {
+    &:focus > td > *,
+    &:focus-within > td > *,
+    &:hover > td > * {
       scroll-snap-type: y proximity;
     }
   }
@@ -73,7 +75,8 @@
     }
 
     // stop clamping while focussed
-    &:focus > td > *, &:focus-within > td > * {
+    &:focus > td > *,
+    &:focus-within > td > * {
       -webkit-line-clamp: unset;
       overflow: auto;
     }

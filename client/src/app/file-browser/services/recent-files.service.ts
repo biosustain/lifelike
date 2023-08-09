@@ -22,18 +22,14 @@ export class RecentFileHashesService implements OnDestroy {
     return [...this._hashes.value];
   }
 
-  constructor(
-    protected readonly errorHandler: ErrorHandler
-  ) {
+  constructor(protected readonly errorHandler: ErrorHandler) {
     const hashes = this.fetchHashes();
-    this._hashes = (new BehaviorSubject<string[]>(hashes));
+    this._hashes = new BehaviorSubject<string[]>(hashes);
     this.hashes = this._hashes.pipe(
       // update only upon change
       distinctUntilChanged(isEqual)
     );
-    this.hashes.subscribe(
-      () => this.saveHashes()
-    );
+    this.hashes.subscribe(() => this.saveHashes());
     this.startWatchingStorage();
   }
 
@@ -46,17 +42,14 @@ export class RecentFileHashesService implements OnDestroy {
   }
 
   private storageEventListener(event: StorageEvent) {
-    if (
-      event.storageArea === this.storage &&
-      event.key === RecentFileHashesService.RECENT_KEY
-    ) {
+    if (event.storageArea === this.storage && event.key === RecentFileHashesService.RECENT_KEY) {
       this.setHashes(this.fetchHashes());
     }
   }
 
   deleteFromHashes(hashId: string, setHashes = true) {
     const hashes = this.currentHashes;
-    remove(hashes, h => h === hashId);
+    remove(hashes, (h) => h === hashId);
     this.setHashes(hashes);
   }
 
@@ -66,7 +59,7 @@ export class RecentFileHashesService implements OnDestroy {
 
   addToHashes(hashId: string) {
     const hashes = this.currentHashes;
-    remove(hashes, h => h === hashId);
+    remove(hashes, (h) => h === hashId);
     hashes.unshift(hashId);
     this.setHashes(hashes);
   }
@@ -77,9 +70,11 @@ export class RecentFileHashesService implements OnDestroy {
       if (strValue) {
         const value = JSON.parse(strValue);
         if (Array.isArray(value)) {
-          return value.filter(v => typeof v === 'string' || v instanceof String);
+          return value.filter((v) => typeof v === 'string' || v instanceof String);
         } else {
-          this.errorHandler.logError(new Error(`Recent files list has been corrupted - refreshing`));
+          this.errorHandler.logError(
+            new Error(`Recent files list has been corrupted - refreshing`)
+          );
         }
       }
     } catch (e) {
@@ -112,30 +107,26 @@ export class RecentFileHashesService implements OnDestroy {
   }
 }
 
-
-@Injectable({providedIn: '***ARANGO_USERNAME***'})
+@Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class RecentFilesService extends RecentFileHashesService {
   list: ReplaySubject<FilesystemObject[]>;
   loadTask;
   fileObjects = new Map();
 
-  constructor(
-    protected readonly injector: Injector,
-    readonly errorHandler: ErrorHandler
-  ) {
+  constructor(protected readonly injector: Injector, readonly errorHandler: ErrorHandler) {
     super(errorHandler);
     this.loadTask = new BackgroundTask<string[], FilesystemObject[]>((fileHashes: string[]) => {
       const filesystemService = this.injector.get<FilesystemService>(FilesystemService);
       return zip(
-        ...fileHashes.map(fileHash =>
+        ...fileHashes.map((fileHash) =>
           filesystemService.get(fileHash).pipe(
             catchError(() => {
               // if file does not exist, delete from list
               this.deleteFromHashes(fileHash);
               return of(undefined);
             }),
-            tap(fileObj => {
-              const {hashId} = fileObj;
+            tap((fileObj) => {
+              const { hashId } = fileObj;
               this.fileObjects.set(hashId, fileObj);
             })
           )
@@ -143,8 +134,8 @@ export class RecentFilesService extends RecentFileHashesService {
       );
     });
     this.list = new ReplaySubject(1);
-    this.hashes.subscribe(hashes => {
-      const newHashes = hashes.filter(hash => !this.fileObjects.has(hash));
+    this.hashes.subscribe((hashes) => {
+      const newHashes = hashes.filter((hash) => !this.fileObjects.has(hash));
       if (newHashes.length) {
         this.loadTask.update(newHashes);
       } else {
@@ -167,18 +158,18 @@ export class RecentFilesService extends RecentFileHashesService {
   }
 
   mapHashes(hashes) {
-    return hashes.map(hash => this.fileObjects.get(hash)).filter(fileObj => fileObj);
+    return hashes.map((hash) => this.fileObjects.get(hash)).filter((fileObj) => fileObj);
   }
 
   addToList(fileObj: FilesystemObject) {
     if (!fileObj.isDirectory) {
-      const {hashId} = fileObj;
+      const { hashId } = fileObj;
       this.fileObjects.set(hashId, fileObj);
       this.addToHashes(hashId);
     }
   }
 
-  deleteFromList({hashId}: FilesystemObject | FilesystemObjectData) {
+  deleteFromList({ hashId }: FilesystemObject | FilesystemObjectData) {
     this.fileObjects.delete(hashId);
     this.deleteFromHashes(hashId);
   }

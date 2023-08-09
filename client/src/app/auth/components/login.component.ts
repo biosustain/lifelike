@@ -49,18 +49,16 @@ export class LoginComponent {
 
     // Reset the login error anytime the login page is loaded
     this.store.dispatch(AuthActions.loginFailureReset());
-    this.store.pipe(select(AuthSelectors.selectAuthErrorMessage)).subscribe(message => {
+    this.store.pipe(select(AuthSelectors.selectAuthErrorMessage)).subscribe((message) => {
       this.errorMessage = message;
     });
   }
 
   submit() {
     if (!this.form.invalid) {
-      const {email, password} = this.form.value;
+      const { email, password } = this.form.value;
 
-      this.store.dispatch(AuthActions.checkTermsOfService(
-        {credential: {email, password}},
-      ));
+      this.store.dispatch(AuthActions.checkTermsOfService({ credential: { email, password } }));
 
       this.form.get('password').reset('');
     } else {
@@ -75,32 +73,43 @@ export class LoginComponent {
 
   displayResetDialog() {
     const modalRef = this.modalService.open(ResetPasswordDialogComponent);
-    return modalRef.result.then(email => {
-      const progressDialogRef = this.progressDialog.display({
-        title: `Sending request`,
-        progressObservables: [new BehaviorSubject<Progress>(new Progress({
-          status: 'Sending request...',
-        }))],
-      });
-      this.accountService.resetPassword(email.email)
-        .pipe()
-        .subscribe(() => {
-          progressDialogRef.close();
-          this.snackBar.open(
-            `An email has been sent with instructions to reset your password.\n
-            If you do not receive the email after some time, please contact the administraction for help.`,
-            'close',
-            {duration: 5000},
-          );
-        }, () => {
-          progressDialogRef.close();
-          this.snackBar.open(
-            `Unable to reset the password.\n
-            Please try again or contact the administration if the issue persist.`,
-            'close',
-            {duration: 5000},
-          );
+    return modalRef.result.then(
+      (email) => {
+        const progressDialogRef = this.progressDialog.display({
+          title: `Sending request`,
+          progressObservables: [
+            new BehaviorSubject<Progress>(
+              new Progress({
+                status: 'Sending request...',
+              })
+            ),
+          ],
         });
-    }, () => {});
+        this.accountService
+          .resetPassword(email.email)
+          .pipe()
+          .subscribe(
+            () => {
+              progressDialogRef.close();
+              this.snackBar.open(
+                `An email has been sent with instructions to reset your password.\n
+            If you do not receive the email after some time, please contact the administraction for help.`,
+                'close',
+                { duration: 5000 }
+              );
+            },
+            () => {
+              progressDialogRef.close();
+              this.snackBar.open(
+                `Unable to reset the password.\n
+            Please try again or contact the administration if the issue persist.`,
+                'close',
+                { duration: 5000 }
+              );
+            }
+          );
+      },
+      () => {}
+    );
   }
 }

@@ -34,7 +34,7 @@ import { AnnotationTooltipComponent } from './components/annotation-tooltip/anno
     PdfViewComponent,
     AnnotationToolbarComponent,
     AnnotationLayerComponent,
-    AnnotationTooltipComponent
+    AnnotationTooltipComponent,
   ],
   imports: [
     PdfViewerModule,
@@ -60,10 +60,6 @@ import { AnnotationTooltipComponent } from './components/annotation-tooltip/anno
     AnnotationEditDialogComponent,
     AnnotationExcludeDialogComponent,
   ],
-  exports: [
-    PdfViewerLibComponent,
-    PdfViewComponent,
-  ],
+  exports: [PdfViewerLibComponent, PdfViewComponent],
 })
-export class PdfViewerLibModule {
-}
+export class PdfViewerLibModule {}

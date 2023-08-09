@@ -33,10 +33,9 @@ import { SankeyAdvancedPanelComponent } from './components/advanced-panel/advanc
 import { SankeyConfirmComponent } from './components/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
-import {
-  NetworktraceViewDropdownContentComponent
-} from './components/networktrace-view-dropdown-content/networktrace-view-dropdown-content.component';
+import { NetworktraceViewDropdownContentComponent } from './components/networktrace-view-dropdown-content';
 import { SankeyAbstractComponent } from './abstract/sankey.component';
+import { ValidationReportComponent } from './components/validation-report/validation-report.component';
 
 @NgModule({
   declarations: [
@@ -45,11 +44,12 @@ import { SankeyAbstractComponent } from './abstract/sankey.component';
     SankeyDetailsPanelDirective,
     SankeyAdvancedPanelDirective,
     PathReportComponent,
+    ValidationReportComponent,
     SankeyConfirmComponent,
     SankeyViewCreateComponent,
     SankeyAdvancedPanelComponent,
     StructureOverviewComponent,
-    NetworktraceViewDropdownContentComponent
+    NetworktraceViewDropdownContentComponent,
   ],
   imports: [
     CommonModule,
@@ -72,14 +72,9 @@ import { SankeyAbstractComponent } from './abstract/sankey.component';
     SankeySearchControlModule,
     MatTreeModule,
     MatIconModule,
-    NgbDropdownModule
+    NgbDropdownModule,
   ],
-  exports: [
-    SankeyViewComponent
-  ],
-  providers: [
-    ClipboardService
-  ]
+  exports: [SankeyViewComponent],
+  providers: [ClipboardService],
 })
-export class SankeyViewerLibModule {
-}
+export class SankeyViewerLibModule {}
