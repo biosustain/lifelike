@@ -2,15 +2,15 @@
 
 ## Glossary
 
-- [Introduction](#introduction)
-- [Setup the Kubernetes Cluster](#setup-the-kubernetes-cluster)
-  - [Create A New Kubernetes Cluster](#create-a-new-kubernetes-cluster)
-  - [Add the Cluster Credentials to Your Local Kube Config (Optional)](#add-the-cluster-credentials-to-your-local-kube-config-optional)
-- [Install Keycloak](#install-keycloak)
-- [Import An Existing Lifelike Realm Into the New One](#import-an-existing-lifelike-realm-into-the-new-one)
-  - [Export the Configurations for the Existing Realm](#export-the-configurations-for-the-existing-realm)
-  - [Import the Exported Keycloak Public Config to a New Realm](#import-the-exported-keycloak-public-config-to-a-new-realm)
-  - [Update Signing Keys for New Realm](#update-signing-keys-for-new-realm)
+-   [Introduction](#introduction)
+-   [Setup the Kubernetes Cluster](#setup-the-kubernetes-cluster)
+    -   [Create A New Kubernetes Cluster](#create-a-new-kubernetes-cluster)
+    -   [Add the Cluster Credentials to Your Local Kube Config (Optional)](#add-the-cluster-credentials-to-your-local-kube-config-optional)
+-   [Install Keycloak](#install-keycloak)
+-   [Import An Existing Lifelike Realm Into the New One](#import-an-existing-lifelike-realm-into-the-new-one)
+    -   [Export the Configurations for the Existing Realm](#export-the-configurations-for-the-existing-realm)
+    -   [Import the Exported Keycloak Public Config to a New Realm](#import-the-exported-keycloak-public-config-to-a-new-realm)
+    -   [Update Signing Keys for New Realm](#update-signing-keys-for-new-realm)
 
 ## Introduction
 
@@ -51,15 +51,15 @@ Once you have set your kube context to the cluster you would like to work with, 
 
 1. Create a namespace for the Keycloak resources
 
-    ```kubectl create namespace keycloak```
+    `kubectl create namespace keycloak`
 
 2. Install [Cert Manager](https://cert-manager.io/) to the cluster if it isn't installed already:
 
-    ```apply -f https://github.com/jetstack/cert-manager/releases/download/v1.8.1/cert-manager.yaml```
+    `apply -f https://github.com/jetstack/cert-manager/releases/download/v1.8.1/cert-manager.yaml`
 
 3. Install a development cluster issuer for SSL certs:
 
-    ```kubectl apply -f cluster-issuer-stg.yml -n keycloak```
+    `kubectl apply -f cluster-issuer-stg.yml -n keycloak`
 
 4. Download and install [Nginx Ingress](https://github.com/kubernetes/ingress-nginx) with Helm:
 
@@ -71,7 +71,7 @@ Once you have set your kube context to the cluster you would like to work with, 
 
 5. Install keycloak with Helm:
 
-    ```helm install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak --version=15.1.3 -n keycloak -f config.yml```
+    `helm install keycloak oci://registry-1.docker.io/bitnamicharts/keycloak --version=15.1.3 -n keycloak -f config.yml`
 
 6. Confirm that you can reach the Keycloak server in your web browser by visiting the [web GUI](https://auth.az.lifelike.bio)
 
@@ -79,7 +79,7 @@ Once you have set your kube context to the cluster you would like to work with, 
 
 7. Add the production cluster issuer:
 
-    ```kubectl apply -f cluster-issuer-prod.yml -n keycloak```
+    `kubectl apply -f cluster-issuer-prod.yml -n keycloak`
 
 8. Update the release to use the production cluster issuer:
 
@@ -94,7 +94,7 @@ Once you have set your kube context to the cluster you would like to work with, 
 
 9. Upgrade the release:
 
-    ```helm upgrade keycloak oci://registry-1.docker.io/bitnamicharts/keycloak --version=15.1.3 -n keycloak -f config.yml```
+    `helm upgrade keycloak oci://registry-1.docker.io/bitnamicharts/keycloak --version=15.1.3 -n keycloak -f config.yml`
 
 10. Confirm that you can reach the Keycloak server in your web browser by visiting the [web GUI](https://auth.az.lifelike.bio)
 
@@ -115,7 +115,7 @@ There is a backup of the public Keycloak installation in the "kg-secrets" storag
     ```yaml
     cache:
         enabled: false
-        stackFile: ""
+        stackFile: ''
         stackName: kubernetes
     ```
 
@@ -154,9 +154,9 @@ You should now see the export on your local machine! Also, don't forget to re-en
 
 ```yaml
 cache:
-  enabled: true
-  stackFile: ""
-  stackName: kubernetes
+    enabled: true
+    stackFile: ''
+    stackName: kubernetes
 ```
 
 ### Import the Exported Keycloak Public Config to a New Realm
@@ -165,13 +165,13 @@ Before you begin, make sure your export file uses a unique ID for the realm! If 
 
 ```json
 {
-  // Example:
-  "id" : "de346121-e3e2-434b-b5c8-a34e18e66c1d",
-  // ...
+    // Example:
+    "id": "de346121-e3e2-434b-b5c8-a34e18e66c1d"
+    // ...
 }
 ```
 
-In fact, you will need to remove any lines that contain a UUID, which should be a 32-character string separated by "-". You can search for "_id", "id", and "Id" to find properties with UUID values.
+In fact, you will need to remove any lines that contain a UUID, which should be a 32-character string separated by "-". You can search for "\_id", "id", and "Id" to find properties with UUID values.
 
 Unlike the export process, you can actually import a new realm from the Keycloak admin web UI. Log in with the admin credentials, then under the realm dropdown list in the top-left of the screen, select "Create Realm". On the next page, simply copy/paste your export file or use the file select widget to browse your filesystem. Click "Create" and your new realm should be created automatically.
 

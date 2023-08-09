@@ -41,9 +41,9 @@ customReadinessProbe: {}
 customStartupProbe: {}
 diagnosticMode:
   args:
-  - infinity
+    - infinity
   command:
-  - sleep
+    - sleep
   enabled: false
 dnsConfig: {}
 dnsPolicy: ""
@@ -64,8 +64,8 @@ externalDatabase:
 extraContainerPorts: []
 extraDeploy: []
 extraEnvVars:
-- name: KEYCLOAK_EXTRA_ARGS
-  value: -Dkeycloak.profile.feature.upload_scripts=enabled
+  - name: KEYCLOAK_EXTRA_ARGS
+    value: -Dkeycloak.profile.feature.upload_scripts=enabled
 extraEnvVarsCM: ""
 extraEnvVarsSecret: ""
 extraStartupArgs: ""
@@ -165,15 +165,15 @@ metrics:
     namespace: ""
   service:
     annotations:
-      prometheus.io/port: '{{ .Values.metrics.service.ports.http }}'
+      prometheus.io/port: "{{ .Values.metrics.service.ports.http }}"
       prometheus.io/scrape: "true"
     ports:
       http: 8080
   serviceMonitor:
     enabled: false
     endpoints:
-    - path: /metrics
-    - path: /realms/master/metrics
+      - path: /metrics
+      - path: /realms/master/metrics
     honorLabels: false
     interval: 30s
     jobLabel: ""
@@ -260,9 +260,9 @@ postgresql:
     postgresql: 5432
   diagnosticMode:
     args:
-    - infinity
+      - infinity
     command:
-    - sleep
+      - sleep
     enabled: false
   enabled: true
   extraDeploy: []
@@ -353,7 +353,7 @@ postgresql:
       requests: {}
     service:
       annotations:
-        prometheus.io/port: '{{ .Values.metrics.service.ports.metrics }}'
+        prometheus.io/port: "{{ .Values.metrics.service.ports.metrics }}"
         prometheus.io/scrape: "true"
       clusterIP: ""
       ports:
@@ -450,7 +450,7 @@ postgresql:
     nodeSelector: {}
     persistence:
       accessModes:
-      - ReadWriteOnce
+        - ReadWriteOnce
       annotations: {}
       dataSource: {}
       enabled: true
@@ -561,7 +561,7 @@ postgresql:
     nodeSelector: {}
     persistence:
       accessModes:
-      - ReadWriteOnce
+        - ReadWriteOnce
       annotations: {}
       dataSource: {}
       enabled: true
