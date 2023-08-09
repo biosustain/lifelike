@@ -110,12 +110,15 @@ def enrich_context():
     term = data.get('term', '')
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
-    print(request.get_json())
-    response = ChatGPT.Completion.create(
+    create_params = dict(
         model="text-davinci-003",
         prompt=composePrompt(organism, term, context, gene_name),
         temperature=0,
         max_tokens=500,
     )
+    response = ChatGPT.Completion.create(**create_params)
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {
+            "result": choice.get('text').strip(),
+            "query_params": create_params,
+        }

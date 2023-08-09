@@ -59,7 +59,14 @@
                 else loading
               "
             >
-              {{ termContextExplanation }}
+              <span
+                style="float: right;"
+                class="ml-2 mb-2"
+                (click)="openInfo(termContextExplanation.query_params)"
+              >
+                <i class="fas fa-info-circle"></i>
+              </span>
+              {{ termContextExplanation.result }}
             </ng-container>
           </ng-template>
           <ngb-highlight
