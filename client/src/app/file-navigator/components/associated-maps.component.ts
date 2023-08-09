@@ -13,6 +13,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { CreateActionOptions } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { MimeTypes } from 'app/shared/constants';
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-associated-maps',
@@ -23,26 +25,27 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
 
   private loadTaskSubscription: Subscription;
 
-  readonly loadTask: BackgroundTask<string, FilesystemObjectList> = new BackgroundTask(
-    hashId => this.filesystemService.search({
+  readonly loadTask: BackgroundTask<string, FilesystemObjectList> = new BackgroundTask((hashId) =>
+    this.filesystemService.search({
       type: 'linked',
       linkedHashId: hashId,
       mimeTypes: ['vnd.lifelike.document/map'],
-    }),
+    })
   );
 
   hashId: string;
-  list: FilesystemObjectList;
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
-  constructor(protected readonly filesystemService: FilesystemService,
-              protected readonly filesystemObjectActions: FilesystemObjectActions,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly objectTypeService: ObjectTypeService,
-              protected readonly errorHandler: ErrorHandler) {
-  }
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    protected readonly filesystemObjectActions: FilesystemObjectActions,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly errorHandler: ErrorHandler
+  ) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 
@@ -67,15 +70,23 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
 
     const testMap = new FilesystemObject();
     testMap.mimeType = MimeTypes.Map;
-    this.objectTypeService.get(testMap).pipe(
-      tap(provider => provider.getCreateDialogOptions()[0].item.create(options).then(
-        object => this.workspaceManager.navigate(object.getCommands(), {
-          newTab: true,
-        }),
-        () => {
-        },
-      )),
-      this.errorHandler.create({label: 'Create map'}),
-    ).subscribe();
+    this.objectTypeService
+      .get(testMap)
+      .pipe(
+        tap((provider) =>
+          provider
+            .getCreateDialogOptions()[0]
+            .item.create(options)
+            .then(
+              (object) =>
+                this.workspaceManager.navigate(object.getCommands(), {
+                  newTab: true,
+                }),
+              () => {}
+            )
+        ),
+        this.errorHandler.create({ label: 'Create map' })
+      )
+      .subscribe();
   }
 }

@@ -2,10 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "nodes",
-    "edges"
-  ],
+  "required": ["nodes", "edges"],
   "definitions": {
     "position": {
       "type": "number",
@@ -104,10 +101,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "url",
-          "domain"
-        ],
+        "required": ["url", "domain"],
         "properties": {
           "url": {
             "$ref": "#/definitions/unsafeUrlOrBlank",
@@ -131,10 +125,7 @@
     "icon": {
       "$comment": "icons have a lot of attributes, but most are legacy from when object styles and semantics were not separate; note that icons themselves have no semantic meaning and are codepoints in Font Awesome, which is pretty bad but this is due to legacy as well",
       "additionalProperties": false,
-      "required": [
-        "code",
-        "face"
-      ],
+      "required": ["code", "face"],
       "properties": {
         "code": {
           "type": "string",
@@ -178,9 +169,7 @@
           "items": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "type"
-            ],
+            "required": ["type"],
             "$comment": "unfortunately, due to the lack of schema, some maps use ID whereas others use URL",
             "properties": {
               "type": {
@@ -196,23 +185,17 @@
             },
             "oneOf": [
               {
-                "required": [
-                  "url"
-                ]
+                "required": ["url"]
               },
               {
-                "required": [
-                  "id"
-                ]
+                "required": ["id"]
               }
             ]
           }
         },
         "sources": {
           "additionalProperties": false,
-          "required": [
-            "url"
-          ],
+          "required": ["url"],
           "properties": {
             "type": {
               "$ref": "#/definitions/referenceType"
@@ -258,11 +241,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "hash",
-          "display_name",
-          "label"
-        ],
+        "required": ["hash", "display_name", "label"],
         "properties": {
           "hash": {
             "$ref": "#/definitions/hash"
@@ -331,10 +310,7 @@
           },
           "data": {
             "additionalProperties": false,
-            "required": [
-              "x",
-              "y"
-            ],
+            "required": ["x", "y"],
             "properties": {
               "references": {},
               "hyperlinks": {},
@@ -373,10 +349,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "from",
-          "to"
-        ],
+        "required": ["from", "to"],
         "properties": {
           "label": {
             "type": ["string", "null"],

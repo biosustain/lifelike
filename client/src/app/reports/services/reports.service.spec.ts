@@ -10,7 +10,7 @@ describe('ReportsService', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [ HttpClientModule ]
+      imports: [HttpClientModule],
     });
   });
 

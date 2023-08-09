@@ -1,13 +1,14 @@
 import codecs
-import os
 import re
 import string
 
 from datetime import timezone
 from enum import Enum
-from sendgrid import SendGridAPIClient
+
+from werkzeug.local import LocalProxy
 
 from neo4japp.util import Enumd
+from neo4japp.utils.globals import config
 
 TIMEZONE = timezone.utc
 
@@ -53,7 +54,7 @@ class SortDirection(Enum):
     DESC = 'desc'
 
 
-KEGG_ENABLED = bool(os.getenv('KEGG_ENABLED', False))
+KEGG_ENABLED = LocalProxy(lambda: config.get('KEGG_ENABLED', False))
 
 
 # enrichment labels
@@ -88,13 +89,14 @@ class LogEventType(Enum):
     LAST_ACTIVE = 'last_active'
     MAP_EXPORT_FAILURE = 'map-export-failure'
     RESET_PASSWORD = 'reset_password'
-    SENTRY_HANDLED = 'handled_exception'
-    SENTRY_WARNINIG = 'handled_warning'
-    SENTRY_UNHANDLED = 'unhandled_exception'
     SYSTEM = 'system'
     VISUALIZER = 'visualizer'
     VISUALIZER_SEARCH = 'visualizer_search'
     REDIS = 'redis'
+
+    HANDLED = 'handled_exception'
+    WARNINIG = 'handled_warning'
+    UNHANDLED = 'unhandled_exception'
 
 
 DOMAIN_LABELS = [
@@ -247,10 +249,7 @@ ANNOTATION_STYLES_DICT = {
         'color': '#0202bd',
         'label': 'anatomy',
     },
-    'entity': {
-        'color': '#7f7f7f',
-        'label': 'ENTITY'
-    },
+    'entity': {'color': '#7f7f7f', 'label': 'ENTITY'},
     'lab strain': {
         'color': '#8eff69',
         'label': 'lab strain',
@@ -263,105 +262,44 @@ ANNOTATION_STYLES_DICT = {
         'label': 'link',
         'color': '#000000',
         'bgcolor': '#dcf1f1',
-        'defaultimagecolor': '#669999'
+        'defaultimagecolor': '#669999',
     },
-    'map': {
-        'label': 'map',
-        'color': '#0277bd',
-        'defaultimagecolor': '#0277bd'
-    },
+    'map': {'label': 'map', 'color': '#0277bd', 'defaultimagecolor': '#0277bd'},
     'note': {
         'label': 'note',
         'color': '#000000',
         'bgcolor': '#fff6d5',
-        'defaultimagecolor': '#edc949'
+        'defaultimagecolor': '#edc949',
     },
-    'reaction': {
-        'label': 'reaction',
-        'color': '#ebb434'
-    },
-    'enzreaction': {
-        'label': 'enzreaction',
-        'color': '#b32b7f'
-    },
-    'geneproduct': {
-        'label': 'geneproduct',
-        'color': '#eb333d'
-    },
-    'operon': {
-        'label': 'operon',
-        'color': '#439641'
-    },
-    'promoter': {
-        'label': 'promoter',
-        'color': '#5bc9ca'
-    },
-    'regulation': {
-        'label': 'regulation',
-        'color': '#bf5858'
-    },
-    'rna': {
-        'label': 'rna',
-        'color': '#5c98d1'
-    },
-    'transcriptionfactor': {
-        'label': 'transcriptionfactor',
-        'color': '#ea3cf7'
-    },
-    'transcriptionunit': {
-        'label': 'transcriptionunit',
-        'color': '#cccdfb'
-    },
+    'reaction': {'label': 'reaction', 'color': '#ebb434'},
+    'enzreaction': {'label': 'enzreaction', 'color': '#b32b7f'},
+    'geneproduct': {'label': 'geneproduct', 'color': '#eb333d'},
+    'operon': {'label': 'operon', 'color': '#439641'},
+    'promoter': {'label': 'promoter', 'color': '#5bc9ca'},
+    'regulation': {'label': 'regulation', 'color': '#bf5858'},
+    'rna': {'label': 'rna', 'color': '#5c98d1'},
+    'transcriptionfactor': {'label': 'transcriptionfactor', 'color': '#ea3cf7'},
+    'transcriptionunit': {'label': 'transcriptionunit', 'color': '#cccdfb'},
     # Non - Entity Types
-    'correlation': {
-        'label': 'correlation',
-        'color': '#d7d9f8'
-    },
-    'cause': {
-        'label': 'cause',
-        'color': '#d7d9f8'
-    },
-    'effect': {
-        'label': 'effect',
-        'color': '#d7d9f8'
-    },
-    'observation': {
-        'label': 'observation',
-        'color': '#d7d9f8'
-    },
-    'association': {
-        'label': 'association',
-        'color': '#d7d9f8'
-    },
+    'correlation': {'label': 'correlation', 'color': '#d7d9f8'},
+    'cause': {'label': 'cause', 'color': '#d7d9f8'},
+    'effect': {'label': 'effect', 'color': '#d7d9f8'},
+    'observation': {'label': 'observation', 'color': '#d7d9f8'},
+    'association': {'label': 'association', 'color': '#d7d9f8'},
     'phentotype': {
         'color': '#edc949',
         'label': 'phentotype',
     },
     # KG Types that are NOT annotation types
-    'biologicalprocess': {
-        'color': '#eb4034',
-        'label': 'biologicalprocess'
-    },
-    'cellularcomponent': {
-        'color': '#34ebd3',
-        'label': 'biologicalprocess'
-    },
-    'class': {
-        'color': '#f1587a',
-        'label': 'class'
-    },
-    'molecularfunction': {
-        'color': '#eb34dc',
-        'label': 'biologicalprocess'
-    },
+    'biologicalprocess': {'color': '#eb4034', 'label': 'biologicalprocess'},
+    'cellularcomponent': {'color': '#34ebd3', 'label': 'biologicalprocess'},
+    'class': {'color': '#f1587a', 'label': 'class'},
+    'molecularfunction': {'color': '#eb34dc', 'label': 'biologicalprocess'},
     'taxonomy': {
         'color': '#0277bd',
         'label': 'taxonomy',
     },
-    'terminator': {
-        'color': '#e5a731',
-        'label': 'terminator'
-    },
+    'terminator': {'color': '#e5a731', 'label': 'terminator'},
     # Literature types
     'literaturegene': {
         'color': '#673ab7',
@@ -379,8 +317,8 @@ ANNOTATION_STYLES_DICT = {
         'ms-word': '#0d47a1',
         'ms-excel': '#2e7d32',
         'ms-powerpoint': '#e64a19',
-        'cytoscape': '#ea9123'
-    }
+        'cytoscape': '#ea9123',
+    },
 }
 
 # Style constants
@@ -425,7 +363,7 @@ BORDER_STYLES_DICT = {
     'dotted': 'dotted',
     # Currently not implemented in Graphviz
     'double-dashed': 'dashed',
-    'long-dashed': 'dashed'
+    'long-dashed': 'dashed',
 }
 
 ARROW_STYLE_DICT = {
@@ -440,7 +378,7 @@ ARROW_STYLE_DICT = {
     'cross-axis-arrow': 'normalnonetee',
     'double-cross-axis': 'teetee',
     'square-arrow': 'normalnonebox',
-    'circle-arrow': 'normalnonedot'
+    'circle-arrow': 'normalnonedot',
 }
 
 RELATION_NODES = ['association', 'correlation', 'cause', 'effect', 'observation']
@@ -449,7 +387,9 @@ DETAIL_TEXT_LIMIT = 250
 
 # Start shared security constants
 # This can be customized to disable login lockouts by setting the value to <= 0
-MAX_ALLOWED_LOGIN_FAILURES = int(os.getenv('MAX_ALLOWED_LOGIN_FAILURES', '6'))
+MAX_ALLOWED_LOGIN_FAILURES = LocalProxy(
+    lambda: config.get('MAX_ALLOWED_LOGIN_FAILURES')
+)
 MIN_TEMP_PASS_LENGTH = 18
 MAX_TEMP_PASS_LENGTH = 24
 RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
@@ -458,22 +398,20 @@ RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string
 # Start email constants
 LIFELIKE_EMAIL_ACCOUNT = 'lifelike.science@gmail.com'
 MESSAGE_SENDER_IDENTITY = 'lifelike-account-service@lifelike.bio'
-MAILING_API_KEY = os.getenv('SEND_GRID_EMAIL_API_KEY')
+MAILING_API_KEY = LocalProxy(lambda: config.get('SEND_GRID_EMAIL_API_KEY'))
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
 RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', 'r').read()
-COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = 'Lifelike: Copyright Infringement Report Confirmation'
+COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = (
+    'Lifelike: Copyright Infringement Report Confirmation'
+)
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
-    r'/home/n4j/assets/copyright_report_confirmation.html',
-    'r'
+    r'/home/n4j/assets/copyright_report_confirmation.html', 'r'
 ).read()
-SEND_GRID_API_CLIENT = SendGridAPIClient(MAILING_API_KEY)
 
 # Start shared Elastic constants
-FILE_INDEX_ID = os.environ['ELASTIC_FILE_INDEX_ID']
 FRAGMENT_SIZE = 1024
 
-LIFELIKE_DOMAIN = os.getenv('DOMAIN')
-ASSETS_PATH = os.getenv('ASSETS_FOLDER') or '/home/n4j/assets/'
+ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_PATH'))
 
 # Start constants for export of merged maps
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
@@ -481,7 +419,7 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 
 # Start SVG map export data constants
-IMAGES_RE = re.compile(f'{ASSETS_PATH}.*.png')
+IMAGES_RE = LocalProxy(lambda: re.compile(f"{config.get('ASSETS_PATH')}.*.png"))
 BYTE_ENCODING = 'utf-8'
 
 # Start filesystem API constants
@@ -505,7 +443,7 @@ UPDATE_DATE_MODIFIED_COLUMNS = [
     'excluded_annotations',
     'organism_name',
     'organism_synonym',
-    'organism_taxonomy_id'
+    'organism_taxonomy_id',
 ]
 
 UPDATE_ELASTIC_DOC_COLUMNS = [
@@ -523,9 +461,12 @@ UPDATE_ELASTIC_DOC_COLUMNS = [
     'excluded_annotations',
     'organism_name',
     'organism_synonym',
-    'organism_taxonomy_id'
+    'organism_taxonomy_id',
 ]
 
 SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
 SEED_FILE_KEY_USER = 'neo4japp.models.AppUser'
 SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
+
+MAX_CONTEXT_PARAM_LENGTH = 20
+MAX_CONTEXT_PARAMS = 20

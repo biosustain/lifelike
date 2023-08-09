@@ -8,7 +8,7 @@ from .enrich_methods import fisher
 from ..rcache import redis_cached, redis_server
 
 
-class EnrichmentVisualisationService():
+class EnrichmentVisualisationService:
     def __init__(self, graph):
         self.graph = graph
 
@@ -62,21 +62,23 @@ class EnrichmentVisualisationService():
                         [g IN go_genes |g.name] AS geneNames
                     """,
                     taxId=organism_id,
-                    gene_names=gene_names
+                    gene_names=gene_names,
                 ).data()
             )
         )
         if not r:
-            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(
+                f'Could not find related GO terms for organism id: {organism_id}'
+            )
         return r
 
     def get_go_terms(self, organism, gene_names):
         cache_id = f"get_go_terms_{organism}_{','.join(gene_names)}"
         return redis_cached(
-                cache_id,
-                partial(self.query_go_term, organism.id, gene_names),
-                load=json.loads,
-                dump=json.dumps
+            cache_id,
+            partial(self.query_go_term, organism.id, gene_names),
+            load=json.loads,
+            dump=json.dumps,
         )
 
     def query_go_term_count(self, organism_id):
@@ -96,19 +98,21 @@ class EnrichmentVisualisationService():
                     }
                     return count(distinct go) as go_count
                     """,
-                    taxId=organism_id
+                    taxId=organism_id,
                 )
             )
         )
         if not r:
-            current_app.logger.warning(f'Could not find related GO terms for organism id: {organism_id}')
+            current_app.logger.warning(
+                f'Could not find related GO terms for organism id: {organism_id}'
+            )
         return r[0]['go_count']
 
     def get_go_term_count(self, organism):
         cache_id = f"go_term_count_{organism}"
         return redis_cached(
-                cache_id,
-                partial(self.query_go_term_count, organism.id),
-                load=json.loads,
-                dump=json.dumps
+            cache_id,
+            partial(self.query_go_term_count, organism.id),
+            load=json.loads,
+            dump=json.dumps,
         )

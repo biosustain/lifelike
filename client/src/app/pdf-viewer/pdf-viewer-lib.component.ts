@@ -12,7 +12,8 @@ import {
   OnDestroy,
   OnChanges,
   OnInit,
-  Output, SimpleChanges,
+  Output,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation,
   AfterViewInit,
@@ -22,7 +23,14 @@ import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { defer, forEach, isEqual, uniqueId, kebabCase, first as _first, isEmpty } from 'lodash-es';
-import { BehaviorSubject, Observable, ReplaySubject, Subject, Subscription, combineLatest } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  ReplaySubject,
+  Subject,
+  Subscription,
+  combineLatest,
+} from 'rxjs';
 import {
   distinctUntilChanged,
   switchMap,
@@ -41,7 +49,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
-import { mapIterable, isNotEmpty } from 'app/shared/utils';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { Annotation, Location, Meta, Rect } from './annotation-type';
@@ -70,7 +78,7 @@ const MATCH_SCROLL_OFFSET_LEFT = -400; // px
   selector: 'app-lib-pdf-viewer-lib',
   templateUrl: './pdf-viewer-lib.component.html',
   styleUrls: ['./pdf-viewer-lib.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, AfterViewInit {
   constructor(
@@ -87,15 +95,15 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     protected readonly clipboard: ClipboardService,
     readonly search: PDFSearchService
   ) {
-    this.search.query$.pipe(
-      filter(query => isNotEmpty(query)),
-      takeUntil(this.destroy$)
-    ).subscribe(() =>
-      this.pdfAnnService.highlightAllAnnotations(null)
-    );
+    this.search.query$
+      .pipe(
+        filter((query) => isNotEmpty(query)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.pdfAnnService.highlightAllAnnotations(null));
   }
 
-  @ViewChild('container', {static: true}) containerRef: ElementRef;
+  @ViewChild('container', { static: true }) containerRef: ElementRef;
 
   @Input() pdfSrc: PDFSource;
   @Input() goToPosition$: Subject<Location>;
@@ -108,8 +116,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   @Output() annotationDragStart = new EventEmitter<AnnotationDragEvent>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() goToPositionVisit = new EventEmitter<Location>();
-
-
 
   pendingHighlights = {};
 
@@ -144,7 +150,6 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   currentPage: number;
   selectedElements: HTMLElement[] = [];
 
-
   dragAndDropOriginCoord;
   dragAndDropOriginHoverCount;
   dragAndDropDestinationCoord;
@@ -155,7 +160,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   private firstAnnotationRange: Range | undefined;
   private requestAnimationFrameId: number | undefined;
 
-  @ViewChild(PdfViewerComponent, {static: false})
+  @ViewChild(PdfViewerComponent, { static: false })
   private pdfComponent: PdfViewerComponent;
 
   selection: Selection;
@@ -191,18 +196,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     if (this.showNextFindFeedback) {
       if (event.state === FindState.FOUND) {
         this.showNextFindFeedback = false;
-        this.snackBar.open('Found the text in the document.', 'Close', {duration: 5000});
+        this.snackBar.open('Found the text in the document.', 'Close', { duration: 5000 });
       } else if (event.state === FindState.NOT_FOUND) {
         this.showNextFindFeedback = false;
-        this.snackBar.open('Could not find the text in the document.', 'Close', {duration: 5000});
+        this.snackBar.open('Could not find the text in the document.', 'Close', { duration: 5000 });
       }
     }
   }
 
   ngOnInit() {
-    this.goToPosition$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((sub) => {
+    this.goToPosition$.pipe(takeUntil(this.destroy$)).subscribe((sub) => {
       if (!this.isLoadCompleted && sub) {
         // Pdf viewer is not ready to go to a position
         return;
@@ -225,7 +228,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     });
   }
 
-  ngOnChanges({showExcludedAnnotations, entityTypeVisibilityMap}: SimpleChanges) {
+  ngOnChanges({ showExcludedAnnotations, entityTypeVisibilityMap }: SimpleChanges) {
     if (showExcludedAnnotations) {
       this.elementRef.nativeElement.style.setProperty(
         '--show-excluded',
@@ -234,29 +237,29 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     }
     if (entityTypeVisibilityMap) {
       [...entityTypeVisibilityMap.currentValue.entries()].forEach(([id, state]) => {
-        this.elementRef.nativeElement.style.setProperty(
-          '--' + kebabCase(id),
-          state ? '' : 'none',
-        );
+        this.elementRef.nativeElement.style.setProperty('--' + kebabCase(id), state ? '' : 'none');
       });
     }
   }
 
   ngAfterViewInit() {
-    this.pdfAnnService.highlightedAnnotation$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(highlightedAnnotation => {
-      if (highlightedAnnotation) {
-        this.addHighlightItem(highlightedAnnotation.pageNumber, _first(highlightedAnnotation.rects));
-      }
-      this.search.query$.next(null);
-    });
-    this.search.next$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.pdfComponent.searchNext());
-    this.search.prev$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(() => this.pdfComponent.searchPrev());
+    this.pdfAnnService.highlightedAnnotation$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((highlightedAnnotation) => {
+        if (highlightedAnnotation) {
+          this.addHighlightItem(
+            highlightedAnnotation.pageNumber,
+            _first(highlightedAnnotation.rects)
+          );
+        }
+        this.search.query$.next(null);
+      });
+    this.search.next$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.pdfComponent.searchNext());
+    this.search.prev$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.pdfComponent.searchPrev());
   }
 
   ngOnDestroy(): void {
@@ -264,7 +267,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
 
     this.destroy$.next();
 
-    this.textLayerPortalOutlets.forEach(p => p.dispose());
+    this.textLayerPortalOutlets.forEach((p) => p.dispose());
   }
 
   @HostListener('window:mouseup', ['$event'])
@@ -336,11 +339,13 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
    * Clone elements and reposition them to match originals
    */
   cloneRangeContents(range: Range) {
-    const {startOffset, endOffset} = range;
+    const { startOffset, endOffset } = range;
     const rangeDocumentFragment = range.cloneContents();
     // if selection is within singular span and not empty
     if (!rangeDocumentFragment.children.length && !range.collapsed) {
-      const clonedElement = range.commonAncestorContainer.parentElement.cloneNode(true) as HTMLElement;
+      const clonedElement = range.commonAncestorContainer.parentElement.cloneNode(
+        true
+      ) as HTMLElement;
       clonedElement.innerText = clonedElement.innerText.slice(startOffset, endOffset);
       rangeDocumentFragment.appendChild(clonedElement);
     }
@@ -369,7 +374,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   selectionEnd(event: Event) {
     if (this.firstAnnotationRange) {
       if (IS_MAC) {
-        const textLayer = this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+        const textLayer = this.getClosestTextLayer(
+          this.firstAnnotationRange.commonAncestorContainer
+        );
         // if it is not multiple page selection (not-supported - still would work just without behaviour adjustment for mac)
         if (textLayer) {
           this.removeSelectionDragContainer();
@@ -395,8 +402,9 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
    * @param event - event to decorate
    */
   setDragImage(node, event) {
-    const draggedElementRef = IS_MAC ? this.selectionDragContainer :
-      this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
+    const draggedElementRef = IS_MAC
+      ? this.selectionDragContainer
+      : this.getClosestTextLayer(this.firstAnnotationRange.commonAncestorContainer);
 
     draggedElementRef.classList.add('dragged');
     // event.dataTransfer.setDragImage runs in async after dragstart but does not return the handle
@@ -406,7 +414,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
 
   @HostListener('dragstart', ['$event'])
   dragStart(event: DragEvent) {
-    const {selection, ranges} = this;
+    const { selection, ranges } = this;
     this.setDragImage(this.selectionDragContainer, event);
     const currentPage = this.detectPageFromRanges(ranges);
     if (ranges.length && currentPage != null) {
@@ -418,7 +426,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
         },
         location: {
           pageNumber: currentPage,
-          rect: this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()))[0],
+          rect: this.toPDFRelativeRects(
+            currentPage,
+            ranges.map((range) => range.getBoundingClientRect())
+          )[0],
         },
       });
 
@@ -452,15 +463,22 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
       const dialogRef = openModal(this.modalService, AnnotationEditDialogComponent);
       dialogRef.componentInstance.allText = text;
       dialogRef.componentInstance.keywords = [text];
-      dialogRef.componentInstance.coords = this.toPDFRelativeRects(currentPage, ranges.map(range => range.getBoundingClientRect()));
+      dialogRef.componentInstance.coords = this.toPDFRelativeRects(
+        currentPage,
+        ranges.map((range) => range.getBoundingClientRect())
+      );
       dialogRef.componentInstance.pageNumber = currentPage;
-      dialogRef.result.then(annotation => {
-        this.pdfAnnService.annotationCreated(annotation);
-        window.getSelection().empty();
-      }, () => {
-      });
+      dialogRef.result.then(
+        (annotation) => {
+          this.pdfAnnService.annotationCreated(annotation);
+          window.getSelection().empty();
+        },
+        () => {}
+      );
     } else {
-      this.errorHandler.showError(new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer'));
+      this.errorHandler.showError(
+        new Error('openAnnotationPanel(): failed to get selection or page on PDF viewer')
+      );
     }
   }
 
@@ -474,7 +492,10 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     const container = this.elementRef.nativeElement;
     for (let i = 0; i < selection.rangeCount; i++) {
       const range = selection.getRangeAt(i);
-      if (!range.collapsed && (container.contains(range.startContainer) || container.contains(range.endContainer))) {
+      if (
+        !range.collapsed &&
+        (container.contains(range.startContainer) || container.contains(range.endContainer))
+      ) {
         ranges.push(range);
       }
     }
@@ -534,7 +555,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
         const rect = rangeRects.item(0);
         this.annotationToolbarRef.instance.position = {
           left: rect.left - containerRect.left,
-          top: rect.top - containerRect.top
+          top: rect.top - containerRect.top,
         };
       }
     }
@@ -546,15 +567,18 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   }
 
   copySelectionText() {
-    navigator.clipboard.writeText(window.getSelection().toString()).then(() => {
-      this.snackBar.open('Copied text to clipboard.', null, {
-        duration: 2000,
-      });
-    }, () => {
-      this.snackBar.open('Failed to copy text.', null, {
-        duration: 2000,
-      });
-    });
+    navigator.clipboard.writeText(window.getSelection().toString()).then(
+      () => {
+        this.snackBar.open('Copied text to clipboard.', null, {
+          duration: 2000,
+        });
+      },
+      () => {
+        this.snackBar.open('Failed to copy text.', null, {
+          duration: 2000,
+        });
+      }
+    );
   }
 
   removeAnnotationExclusion(annExclusion) {
@@ -655,22 +679,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
    * Scroll view
    */
   scrollToPage(pageNum: number, highlightRect?: number[]) {
-    const dest = {pageNumber: pageNum} as ScrollDestination;
+    const dest = { pageNumber: pageNum } as ScrollDestination;
     // Alike PDF.js search navigation
     // https://github.com/mozilla/pdf.js/blob/5e4b3d13ebc6eb2453f0cad12f33964e2d4fc6fc/web/pdf_find_controller.js#L502:L522
     if (highlightRect.length) {
       const [left, bottom, right, top] = highlightRect;
       dest.destArray = [
         null,
-        {name: 'XYZ'},
+        { name: 'XYZ' },
         left - MATCH_SCROLL_OFFSET_LEFT,
         top - MATCH_SCROLL_OFFSET_TOP,
-        null
+        null,
       ];
     }
     this.pdfComponent.pdfViewer.scrollPageIntoView(dest);
   }
-
 
   addHighlightItem(pageNum: number, highlightRect: number[]) {
     const annotationLayerComponentRef = this.annotationLayerComponentRef.get(pageNum);
@@ -683,13 +706,8 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     this.scrollToPage(pageNum, highlightRect);
   }
 
-  createTextLayerPortalOutlet({pageNumber, textLayerDiv}: TextLayerBuilder) {
-    const portalOutlet = new DomPortalOutlet(
-      textLayerDiv,
-      this.cfr,
-      this.appRef,
-      this.injector
-    );
+  createTextLayerPortalOutlet({ pageNumber, textLayerDiv }: TextLayerBuilder) {
+    const portalOutlet = new DomPortalOutlet(textLayerDiv, this.cfr, this.appRef, this.injector);
     this.textLayerPortalOutlets.set(pageNumber, portalOutlet);
     return portalOutlet;
   }
@@ -697,7 +715,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   /**
    * Page rendered callback, which is called when a page is rendered (called multiple times)
    */
-  pageRendered({pageNumber, source}: PDFPageRenderEvent) {
+  pageRendered({ pageNumber, source }: PDFPageRenderEvent) {
     this.allPages = this.pdf.numPages;
     this.currentRenderedPage = pageNumber;
     this.pageRef[pageNumber] = source;
@@ -705,13 +723,21 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     const annotationLayerComponentRef = portalOutlet.attachComponentPortal(
       new ComponentPortal(AnnotationLayerComponent)
     );
-    annotationLayerComponentRef.instance.dragStart.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(this.annotationDragStart);
+    annotationLayerComponentRef.instance.dragStart
+      .pipe(
+        takeUntil(this.destroy$),
+        map(({ rect, ...rest }) => ({
+          ...rest,
+          location: {
+            rect,
+            pageNumber,
+          },
+        }))
+      )
+      .subscribe(this.annotationDragStart);
     annotationLayerComponentRef.instance.pdfPageView = source;
     this.annotationLayerComponentRef.set(pageNumber, annotationLayerComponentRef);
   }
-
 
   @HostListener('keydown.control.c')
   @HostListener('keydown.meta.c')
@@ -719,20 +745,22 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     if (!this.selection) {
       return;
     }
-    this.clipboard.copy(this.selection.toString(), {success: 'It has been copied to clipboard'});
+    this.clipboard.copy(this.selection.toString(), { success: 'It has been copied to clipboard' });
   }
-
 
   getMultilinedRect() {
     // Find min value for bottom left point and max value for top right point
     // to save the coordinates of the rect that represents multiple lines
-    return this.selectedTextCoords.reduce((result, rect) => {
-      result[0] = Math.min(result[0], rect[0]);
-      result[1] = Math.max(result[1], rect[1]);
-      result[2] = Math.max(result[2], rect[2]);
-      result[3] = Math.min(result[3], rect[3]);
-      return result;
-    }, [Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]);
+    return this.selectedTextCoords.reduce(
+      (result, rect) => {
+        result[0] = Math.min(result[0], rect[0]);
+        result[1] = Math.max(result[1], rect[1]);
+        result[2] = Math.max(result[2], rect[2]);
+        result[3] = Math.min(result[3], rect[3]);
+        return result;
+      },
+      [Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]
+    );
   }
 
   private detectPageFromRanges(ranges: Range[]): number | undefined {
@@ -752,8 +780,11 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
     const pageRect = pdfPageView.canvas.getClientRects()[0];
     const ret: Rect[] = [];
     for (const r of rects) {
-      ret.push(viewport.convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
-        .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top)));
+      ret.push(
+        viewport
+          .convertToPdfPoint(r.left - pageRect.left, r.top - pageRect.top)
+          .concat(viewport.convertToPdfPoint(r.right - pageRect.left, r.bottom - pageRect.top))
+      );
     }
     return ret;
   }
@@ -765,6 +796,12 @@ export interface AnnotationHighlightResult {
   firstPageNumber: number;
   found: number;
   index$: BehaviorSubject<number>;
+}
+
+export interface AnnotationLayerDragEvent {
+  event: DragEvent;
+  meta: Meta;
+  rect: Rect;
 }
 
 export interface AnnotationDragEvent {

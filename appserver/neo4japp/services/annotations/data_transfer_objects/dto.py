@@ -6,7 +6,7 @@ from neo4japp.util import CamelDictMixin
 
 
 @attr.s(slots=True)
-class NLPResults():
+class NLPResults:
     anatomy: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
     chemicals: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
     compounds: Set[Tuple[int, int]] = attr.ib(default=attr.Factory(set))
@@ -20,7 +20,7 @@ class NLPResults():
 
 
 @attr.s(slots=True)
-class PDFWord():
+class PDFWord:
     keyword: str = attr.ib()
     normalized_keyword: str = attr.ib()
     page_number: int = attr.ib()
@@ -58,7 +58,7 @@ class Annotation(CamelDictMixin):
         all_text: str = attr.ib(default='')
 
     @attr.s(frozen=False)
-    class EnrichmentDomain():
+    class EnrichmentDomain:
         domain: str = attr.ib(default='')
         sub_domain: str = attr.ib(default='')
 
@@ -79,7 +79,9 @@ class Annotation(CamelDictMixin):
     uuid: str = attr.ib()
     primary_name: str = attr.ib(default='')
     enrichment_gene: str = attr.ib(default='')
-    enrichment_domain: EnrichmentDomain = attr.ib(default=attr.Factory(EnrichmentDomain))
+    enrichment_domain: EnrichmentDomain = attr.ib(
+        default=attr.Factory(EnrichmentDomain)
+    )
 
 
 @attr.s(frozen=False)
@@ -97,13 +99,13 @@ class GeneAnnotation(Annotation):
 
 
 @attr.s(slots=True)
-class LMDBMatch():
+class LMDBMatch:
     entities: List[dict] = attr.ib()
     token: PDFWord = attr.ib()
 
 
 @attr.s(slots=True)
-class RecognizedEntities():
+class RecognizedEntities:
     recognized_anatomy: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     recognized_chemicals: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
     recognized_compounds: List[LMDBMatch] = attr.ib(default=attr.Factory(list))
@@ -123,7 +125,7 @@ class RecognizedEntities():
 
 
 @attr.s(slots=True)
-class GlobalExclusions():
+class GlobalExclusions:
     excluded_anatomy: Set[str] = attr.ib(default=attr.Factory(set))
     excluded_chemicals: Set[str] = attr.ib(default=attr.Factory(set))
     excluded_compounds: Set[str] = attr.ib(default=attr.Factory(set))
@@ -144,7 +146,7 @@ class GlobalExclusions():
 
 
 @attr.s(slots=True)
-class GlobalInclusions():
+class GlobalInclusions:
     included_anatomy: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
     included_chemicals: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
     included_compounds: Dict[str, List[dict]] = attr.ib(default=attr.Factory(dict))
@@ -164,14 +166,14 @@ class GlobalInclusions():
 
 
 @attr.s(slots=True)
-class SpecifiedOrganismStrain():
+class SpecifiedOrganismStrain:
     synonym: str = attr.ib()
     organism_id: str = attr.ib()
     category: str = attr.ib()
 
 
 @attr.s(slots=True)
-class BestOrganismMatch():
+class BestOrganismMatch:
     entity_id: str = attr.ib()
     organism_id: str = attr.ib()
     closest_distance: float = attr.ib()
@@ -179,7 +181,7 @@ class BestOrganismMatch():
 
 
 @attr.s(slots=True)
-class GeneOrProteinToOrganism():
+class GeneOrProteinToOrganism:
     matches: dict = attr.ib(default=attr.Factory(dict))
     data_sources: dict = attr.ib(default=attr.Factory(dict))
     primary_names: dict = attr.ib(default=attr.Factory(dict))

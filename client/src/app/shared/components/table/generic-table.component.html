@@ -1,5 +1,5 @@
 <table class="table table-hover">
-  <thead *ngIf="HEADER">
+  <thead *ngIf="HEADER" #head>
     <ng-container>
       <tr class="table-secondary" *ngFor="let row of HEADER">
         <th
@@ -15,10 +15,15 @@
   </thead>
 
   <!-- Make it relative so tooltips are aligned correctly when header is sticky -->
-  <tbody *ngIf="entries" [style.position]="'relative'">
+  <tbody *ngIf="entries" [style.position]="'relative'" #body>
     <ng-container>
       <tr *ngFor="let row of entries">
-        <td *ngFor="let entry of row" style="white-space:pre-wrap; word-wrap:break-word" class="overflow-auto resizeable" [ngClass]="{ 'error': entry.highlight}">
+        <td
+          *ngFor="let entry of row"
+          style="white-space: pre-wrap; word-wrap: break-word"
+          class="overflow-auto resizeable"
+          [ngClass]="{ error: entry.highlight }"
+        >
           <div>
             <span *ngIf="entry.text && entry.text.indexOf('snippet') > -1; else noHighlight">
               <app-highlight-text [appInnerXML]="entry.text" [object]="object"></app-highlight-text>
@@ -27,7 +32,11 @@
           </div>
           <ng-container *ngIf="entry.multiLink">
             <ul *ngFor="let link of entry.multiLink">
-              <li><a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{ link.linkText }}</a></li>
+              <li>
+                <a target="_blank" rel="noopener noreferrer" href="{{ link.link }}">{{
+                  link.linkText
+                }}</a>
+              </li>
             </ul>
           </ng-container>
           <ng-container *ngIf="entry.singleLink">

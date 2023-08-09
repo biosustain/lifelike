@@ -12,17 +12,21 @@ export function createNodeDragImage(d: UniversalGraphNode): DragImage {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
 
-  const placedNode: PlacedNode = style.placeNode({
-    ...d,
-    data: {
-      ...d.data,
-      x: 0,
-      y: 0,
+  const placedNode: PlacedNode = style.placeNode(
+    {
+      ...d,
+      data: {
+        ...d.data,
+        x: 0,
+        y: 0,
+      },
+    },
+    ctx,
+    {
+      highlighted: false,
+      selected: false,
     }
-  }, ctx, {
-    highlighted: false,
-    selected: false,
-  });
+  );
   const bbox = placedNode.getBoundingBox();
   const width = bbox.maxX - bbox.minX;
   const height = bbox.maxY - bbox.minY;

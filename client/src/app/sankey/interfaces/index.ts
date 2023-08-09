@@ -7,7 +7,7 @@ import {
   LINK_VALUE_GENERATORS,
   PREDEFINED_VALUE_ACCESSORS,
   LinkValueAccessor,
-  NodeValueAccessor
+  NodeValueAccessor,
 } from './valueAccessors';
 import { SankeyViews } from './view';
 import { TraceNetwork, Trace } from '../model/sankey-document';
@@ -44,10 +44,12 @@ export interface SankeyState {
   networkTraceIdx?: number;
   prescalerId?: string;
   normalizeLinks?: boolean;
-  labelEllipsis?: {
-    enabled: boolean,
-    value: number
-  } | undefined;
+  labelEllipsis?:
+    | {
+        enabled: boolean;
+        value: number;
+      }
+    | undefined;
   fontSizeScale?: number;
   viewName?: string;
   baseViewName?: ViewBase;
@@ -63,7 +65,7 @@ export interface SankeyTraceNetwork extends GraphTraceNetwork {
 // Do not change these strings! They are tightly coupled with urls.
 export enum ViewBase {
   sankeyMultiLane = 'sankey',
-  sankeySingleLane = 'sankey-many-to-many'
+  sankeySingleLane = 'sankey-many-to-many',
 }
 
 export interface TypeContext {

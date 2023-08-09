@@ -5,7 +5,7 @@ import { pick } from 'lodash-es';
 export enum SortDirection {
   asc = 'asc',
   desc = 'desc',
-  none = 'none'
+  none = 'none',
 }
 
 export type SortDirectionType = keyof typeof SortDirection | false | 0 | '' | null | undefined;
@@ -13,7 +13,7 @@ export type SortDirectionType = keyof typeof SortDirection | false | 0 | '' | nu
 const rotate: { [key: string]: SortDirectionType } = {
   [SortDirection.asc]: SortDirection.desc,
   [SortDirection.desc]: SortDirection.none,
-  [SortDirection.none]: SortDirection.asc
+  [SortDirection.none]: SortDirection.asc,
 };
 
 export interface SortEvent<ID = string> {
@@ -23,7 +23,7 @@ export interface SortEvent<ID = string> {
 
 @Directive({
   selector: 'th[appSortable]',
-  exportAs: 'appSortable'
+  exportAs: 'appSortable',
 })
 export class SortableTableHeaderDirective<ID = string> {
   // tslint:disable-next-line:no-input-rename

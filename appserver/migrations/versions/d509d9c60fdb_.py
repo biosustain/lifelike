@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 import fastjsonschema
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.constants import FILE_MIME_TYPE_MAP
 from neo4japp.models import FileContent
@@ -60,22 +61,21 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('content_id', sa.Integer),
-        column('mime_type', sa.String))
+        column('mime_type', sa.String),
+    )
 
     tableclause2 = table(
-        'files_content',
-        column('id', sa.Integer),
-        column('raw_file', sa.LargeBinary))
+        'files_content', column('id', sa.Integer), column('raw_file', sa.LargeBinary)
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause2.c.id,
-        tableclause2.c.raw_file
-    ]).where(
-        and_(
-            tableclause1.c.mime_type == FILE_MIME_TYPE_MAP,
-            tableclause1.c.content_id == tableclause2.c.id
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause2.c.id, tableclause2.c.raw_file]).where(
+            and_(
+                tableclause1.c.mime_type == FILE_MIME_TYPE_MAP,
+                tableclause1.c.content_id == tableclause2.c.id,
+            )
         )
-    ))
+    )
 
     with open(schema_file, 'rb') as f:
         validate_map = fastjsonschema.compile(json.load(f))
@@ -96,10 +96,18 @@ def data_upgrades():
                             for link in edge.get('data', {}).get('hyperlinks', []):
                                 link.pop('isDatabase', None)
 
-                        byte_graph = json.dumps(graph, separators=(',', ':')).encode('utf-8')
+                        byte_graph = json.dumps(graph, separators=(',', ':')).encode(
+                            'utf-8'
+                        )
                         new_hash = hashlib.sha256(byte_graph).digest()
                         validate_map(json.loads(byte_graph))
-                        need_to_update.append({'id': fcid, 'raw_file': byte_graph, 'checksum_sha256': new_hash})  # noqa
+                        need_to_update.append(
+                            {
+                                'id': fcid,
+                                'raw_file': byte_graph,
+                                'checksum_sha256': new_hash,
+                            }
+                        )  # noqa
             try:
                 session.bulk_update_mappings(FileContent, need_to_update)
                 session.commit()

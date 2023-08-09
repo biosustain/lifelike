@@ -22,13 +22,17 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
   failed: object[] = [];
   // TODO: show missing files?
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal
+  ) {
     super(modal, messageDialog);
   }
 
-  get results() { return this._results; }
+  get results() {
+    return this._results;
+  }
 
   @Input()
   set results(values: ResultMapping<AnnotationGenerationResultData>[]) {
@@ -48,7 +52,7 @@ export class ObjectReannotateResultsDialogComponent extends ConfirmDialogCompone
         if (result.success) {
           this.success.push(f.filename);
         } else {
-          this.failed.push({filename: f.filename, error: result.error});
+          this.failed.push({ filename: f.filename, error: result.error });
         }
       }
     }

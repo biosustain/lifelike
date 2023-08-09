@@ -12,6 +12,7 @@ match(n:Gene:db_BsubCyc) where not (n)-[:HAS_GENE]-() and size(n.name)>0 with n
 match (g:Gene) where g.name = n.name and g.tax_id='224308' merge (n)-[:IS]->(g);
 """
 
+
 def generate_changelog_files(zip_datafile, biocyc_dbname, author):
     proc = BioCycChangeLogsGenerator(author, biocyc_dbname, zip_datafile, True)
     proc.generate_init_changelog_file()
@@ -25,4 +26,3 @@ def generate_changelog_files(zip_datafile, biocyc_dbname, author):
 
 if __name__ == "__main__":
     generate_changelog_files('BsubCyc-data-47.zip', DB_BSUBCYC, 'rcai')
-

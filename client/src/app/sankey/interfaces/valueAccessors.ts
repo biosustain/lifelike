@@ -8,9 +8,10 @@ export interface ValueAccessor extends Property {
   type?: LINK_PROPERTY_GENERATORS;
 }
 
-export type ValueProcessingStep<Base extends TypeContext> =
-  (this: DefaultLayoutService, v: NetworkTraceData<Base>) =>
-    (Partial<NetworkTraceData<Base>> & IntermediateProcessedData) | undefined;
+export type ValueProcessingStep<Base extends TypeContext> = (
+  this: DefaultLayoutService,
+  v: NetworkTraceData<Base>
+) => (Partial<NetworkTraceData<Base>> & IntermediateProcessedData) | undefined;
 
 export interface ValueGenerator<Base extends TypeContext> {
   preprocessing: ValueProcessingStep<Base>;
@@ -34,7 +35,7 @@ export interface LinkValueAccessor {
 }
 
 export type PREDEFINED_VALUE_ACCESSORS = {
-  [linkValueGeneratorId in PREDEFINED_VALUE | string]?: MultiValueAccessor
+  [linkValueGeneratorId in PREDEFINED_VALUE | string]?: MultiValueAccessor;
 };
 
 export enum LINK_VALUE_GENERATOR {
@@ -50,18 +51,18 @@ export enum LINK_PROPERTY_GENERATORS {
 }
 
 export type LINK_VALUE_GENERATORS = {
-  [linkValueGeneratorId in LINK_VALUE_GENERATOR]?: ValueAccessor
+  [linkValueGeneratorId in LINK_VALUE_GENERATOR]?: ValueAccessor;
 };
 export type NODE_VALUE_GENERATORS = {
-  [linkValueGeneratorId in NODE_VALUE_GENERATOR]: ValueAccessor
+  [linkValueGeneratorId in NODE_VALUE_GENERATOR]: ValueAccessor;
 };
 
 export enum NODE_VALUE_GENERATOR {
   none = 'None',
-  fixedValue1 = 'Fixed Value = 1'
+  fixedValue1 = 'Fixed Value = 1',
 }
 
 export enum PREDEFINED_VALUE {
   fixed_height = 'Fixed height',
-  input_count = 'Input count'
+  input_count = 'Input count',
 }

@@ -2,15 +2,16 @@ import { Observable, of } from 'rxjs';
 import { isEqual } from 'lodash-es';
 
 import { TableCell, TableHeader } from 'app/shared/components/table/generic-table.component';
+import { isNotEmpty } from 'app/shared/utils';
 
 import { EnrichmentDocument, EnrichmentResult } from './enrichment-document';
 
 export class EnrichmentTable {
   DEFAULT_HEADERS = [
-    {name: 'Imported', span: '1'},
-    {name: 'Value', span: '1'},
-    {name: 'Matched', span: '1'},
-    {name: 'NCBI Gene Full Name', span: '1'},
+    { name: 'Imported', span: '1' },
+    { name: 'Value', span: '1' },
+    { name: 'Matched', span: '1' },
+    { name: 'NCBI Gene Full Name', span: '1' },
   ];
 
   protected readonly usePlainText: boolean;
@@ -23,7 +24,7 @@ export class EnrichmentTable {
 
   load(document: EnrichmentDocument): Observable<this> {
     const tableCells: TableCell[][] = [];
-    const tableHeader: TableHeader[][] = [this.DEFAULT_HEADERS];
+    const tableHeader: TableHeader[][] = [[...this.DEFAULT_HEADERS]];
 
     const result: EnrichmentResult | undefined = document.result;
 
@@ -32,9 +33,18 @@ export class EnrichmentTable {
 
       // Some domains have multiple labels so we need to activate a
       // second header line in those cases
-      let tableHeaderLine2Needed = false;
+      let tableHeaderLine2Needed = true;
       const tableHeaderLine2: TableHeader[] = [
-        {name: '', span: this.DEFAULT_HEADERS.length.toString()},
+        {
+          name: `Count: ${result.genes.filter(({ imported }) => isNotEmpty(imported)).length}`,
+          span: '1',
+        },
+        { name: '', span: '1' },
+        {
+          name: `Count: ${result.genes.filter(({ matched }) => isNotEmpty(matched)).length}`,
+          span: '1',
+        },
+        { name: '', span: (this.DEFAULT_HEADERS.length - 3).toString() },
       ];
 
       for (const domainId of document.domains) {
@@ -44,8 +54,7 @@ export class EnrichmentTable {
         // row like (Domain) (Label), otherwise we put each label in its own cell on the
         // second header row
         tableHeader[0].push({
-          name: domainId + (domainInfo.labels.length > 1 ? '' : ' ' +
-            domainInfo.labels[0] ?? ''),
+          name: domainId + (domainInfo.labels.length > 1 ? '' : ' ' + domainInfo.labels[0] ?? ''),
           span: String(domainInfo.labels.length),
         });
 
@@ -73,11 +82,15 @@ export class EnrichmentTable {
       // if enrichment is not annotated, annotatedText == text
       // that's why can set text properties like this
       for (const resultGene of result.genes) {
-        const row: TableCell[] = [{
-          text: this.usePlainText ? resultGene.imported : resultGene.annotatedImported || resultGene.imported,
-        }];
+        const row: TableCell[] = [
+          {
+            text: this.usePlainText
+              ? resultGene.imported
+              : resultGene.annotatedImported || resultGene.imported,
+          },
+        ];
 
-        row.push({text: resultGene.value});
+        row.push({ text: resultGene.value });
 
         if (resultGene.domains) {
           // There was a match
@@ -94,13 +107,14 @@ export class EnrichmentTable {
               },
             });
           } else {
-            row.push({text: ''});
+            row.push({ text: '' });
           }
 
           for (const domainId of document.domains) {
             const domainInfo = domainInfoMap[domainId];
             for (const label of domainInfo.labels) {
-              const geneDomainResult = resultGene.domains[domainId] && resultGene.domains[domainId][label];
+              const geneDomainResult =
+                resultGene.domains[domainId] && resultGene.domains[domainId][label];
               if (geneDomainResult) {
                 row.push({
                   text: this.usePlainText ? geneDomainResult.text : geneDomainResult.annotatedText,
@@ -110,21 +124,20 @@ export class EnrichmentTable {
                   },
                 });
               } else {
-                row.push({text: ''});
+                row.push({ text: '' });
               }
             }
           }
-
         } else {
           // No gene match
-          row.push({text: 'No match found.'});
-          row.push({text: ''});
+          row.push({ text: 'No match found.' });
+          row.push({ text: '' });
 
           // Add a bunch of empty cells
           for (const domainId of document.domains) {
             const domainInfo = domainInfoMap[domainId];
             for (const label of domainInfo.labels) {
-              row.push({text: ''});
+              row.push({ text: '' });
             }
           }
         }
@@ -140,7 +153,8 @@ export class EnrichmentTable {
   }
 
   equals(other: EnrichmentTable) {
-    return isEqual(this.tableHeader, other.tableHeader) && isEqual(this.tableCells, other.tableCells);
+    return (
+      isEqual(this.tableHeader, other.tableHeader) && isEqual(this.tableCells, other.tableCells)
+    );
   }
-
 }

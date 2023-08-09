@@ -5,16 +5,14 @@ import requests
 from collections import namedtuple
 from os import path
 
-from neo4japp.models import (
-    AppUser,
-    Files,
-    FileContent,
-    Projects
+from neo4japp.models import AppUser, Files, FileContent, Projects
+from neo4japp.services.file_types.providers import (
+    DirectoryTypeProvider,
+    PDFTypeProvider,
 )
-from neo4japp.services.file_types.providers import DirectoryTypeProvider, PDFTypeProvider
 
 
-class MockResponse():
+class MockResponse:
     def __init__(self, data):
         self.data = data
 
@@ -28,10 +26,20 @@ class MockResponse():
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
 
-ParameterizedFile = namedtuple('ParameterizedFile', (
-    'public', 'in_folder', 'user_roles_for_folder', 'user_roles_for_file',
-    'recycled', 'folder_recycled', 'deleted', 'folder_deleted',
-), defaults=(False, False, [], [], False, False, False, False))
+ParameterizedFile = namedtuple(
+    'ParameterizedFile',
+    (
+        'public',
+        'in_folder',
+        'user_roles_for_folder',
+        'user_roles_for_file',
+        'recycled',
+        'folder_recycled',
+        'deleted',
+        'folder_deleted',
+    ),
+    defaults=(False, False, [], [], False, False, False, False),
+)
 
 
 @pytest.fixture(scope='function')
@@ -71,19 +79,16 @@ def project(session, project_owner):
 @pytest.fixture(scope='function')
 def basic_file_content(session):
     content = FileContent()
-    content.raw_file_utf8 = 'I just caught a Pikachu! That\'s right, I caught a Pikachu.'
+    content.raw_file_utf8 = (
+        'I just caught a Pikachu! That\'s right, I caught a Pikachu.'
+    )
     session.add(content)
     session.flush()
     return content
 
 
 @pytest.fixture(scope='function')
-def file_in_project(
-    session,
-    project,
-    project_owner,
-    basic_file_content
-):
+def file_in_project(session, project, project_owner, basic_file_content):
     param = ParameterizedFile()
 
     file = Files(
@@ -104,8 +109,10 @@ def file_in_project(
 def mock_add_custom_annotation_inclusion(monkeypatch):
     def get_parsed(*args, **kwargs):
         pdf = path.join(
-            directory, '..',
-            'pdf_samples/manual_annotations_test/test_add_custom_annotation_inclusion.json')
+            directory,
+            '..',
+            'pdf_samples/manual_annotations_test/test_add_custom_annotation_inclusion.json',
+        )
         with open(pdf, 'rb') as f:
             return MockResponse(json.load(f))
 

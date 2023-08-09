@@ -10,6 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 
@@ -46,14 +47,14 @@ def data_upgrades():
         sa.column('id', sa.Integer),
         sa.column('filename', sa.String),
         sa.column('parent_id', sa.Integer),
-        sa.column('modified_date', sa.TIMESTAMP(timezone=True))
+        sa.column('modified_date', sa.TIMESTAMP(timezone=True)),
     )
 
     t_projects = sa.table(
         'projects',
         sa.column('id', sa.Integer),
         sa.column('name', sa.String),
-        sa.column('root_id', sa.Integer)
+        sa.column('root_id', sa.Integer),
     )
 
     def _get_file_path(file_id, parent_id, filename):
@@ -66,23 +67,30 @@ def data_upgrades():
         while current_parent is not None:
             # Ignore top level filenames, we'll get the proper name from the parent project later
             file_path.append(filename)
-            current_file, current_parent, filename = conn.execution_options(
-                stream_results=True
-            ).execute(
-                sa.select([
-                    t_files.c.id,
-                    t_files.c.parent_id,
-                    t_files.c.filename,
-                ]).where(
-                    t_files.c.id == current_parent
+            current_file, current_parent, filename = (
+                conn.execution_options(stream_results=True)
+                .execute(
+                    sa.select(
+                        [
+                            t_files.c.id,
+                            t_files.c.parent_id,
+                            t_files.c.filename,
+                        ]
+                    ).where(t_files.c.id == current_parent)
                 )
-            ).first()
-        project_name = conn.execution_options(stream_results=True).execute(sa.select([
-                t_projects.c.name,
-            ]).where(
-                t_projects.c.root_id == current_file
+                .first()
             )
-        ).scalar()
+        project_name = (
+            conn.execution_options(stream_results=True)
+            .execute(
+                sa.select(
+                    [
+                        t_projects.c.name,
+                    ]
+                ).where(t_projects.c.root_id == current_file)
+            )
+            .scalar()
+        )
 
         # This *should never* happen. But, we have a single weird file on staging that has no
         # children and no associated project. Yet another reason to refactor the projects table...
@@ -93,13 +101,16 @@ def data_upgrades():
 
         return '/' + '/'.join(file_path[::-1])
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_files.c.id,
-        t_files.c.parent_id,
-        t_files.c.filename,
-        t_files.c.modified_date
-
-    ]))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select(
+            [
+                t_files.c.id,
+                t_files.c.parent_id,
+                t_files.c.filename,
+                t_files.c.modified_date,
+            ]
+        )
+    )
 
     for chunk in window_chunk(files, 25):
         files_to_update = []
@@ -107,7 +118,9 @@ def data_upgrades():
             path = _get_file_path(id, parent_id, filename)
             # Include the existing modified date here to make sure the ORM doesn't automatically
             # update it
-            files_to_update.append({'id': id, 'path': path, 'modified_date': modified_date})
+            files_to_update.append(
+                {'id': id, 'path': path, 'modified_date': modified_date}
+            )
         try:
             session.bulk_update_mappings(Files, files_to_update)
             session.commit()

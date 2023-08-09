@@ -12,22 +12,22 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { AccountService } from 'app/users/services/account.service';
 
-
 @Component({
   selector: 'app-missing-roles-dialog',
-  templateUrl: './missing-roles-dialog.component.html'
+  templateUrl: './missing-roles-dialog.component.html',
 })
 export class MissingRolesDialogComponent extends CommonFormDialogComponent<boolean> {
-
   users: AppUser[];
   modified = false;
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              private readonly accountService: AccountService,
-              private readonly progressDialog: ProgressDialog,
-              private readonly snackBar: MatSnackBar,
-              private readonly errorHandler: ErrorHandler) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    private readonly accountService: AccountService,
+    private readonly progressDialog: ProgressDialog,
+    private readonly snackBar: MatSnackBar,
+    private readonly errorHandler: ErrorHandler
+  ) {
     super(modal, messageDialog);
     this.accountService = accountService;
   }
@@ -43,37 +43,37 @@ export class MissingRolesDialogComponent extends CommonFormDialogComponent<boole
   }
 
   fixMissingUserRole(user: AppUser) {
-    const updateData: UserUpdateData = {roles: ['user']};
+    const updateData: UserUpdateData = { roles: ['user'] };
     const progressDialogRef = this.progressDialog.display({
-            title: `Updating User`,
-            progressObservables: [new BehaviorSubject<Progress>(new Progress({
-              status: 'Updating user...',
-            }))],
-          });
-    this.accountService.updateUser(updateData, user.hashId)
-    .pipe(this.errorHandler.create({label: 'Update user role'}))
-    .subscribe(() => {
-      progressDialogRef.close();
-      this.modified = true;
-      const index = this.users.indexOf(user);
-      this.users.splice(index, 1);
-      if (this.users.length === 0) {
-      this.snackBar.open(
-        `All roles fixed!`,
-        'close',
-        {duration: 5000},
-      );
-      this.close();
-    } else {
-        this.snackBar.open(
-        `User ${user.username} role fixed!`,
-        'close',
-        {duration: 5000},
-      );
-    }
-    }, () => {
-      progressDialogRef.close();
+      title: `Updating User`,
+      progressObservables: [
+        new BehaviorSubject<Progress>(
+          new Progress({
+            status: 'Updating user...',
+          })
+        ),
+      ],
     });
+    this.accountService
+      .updateUser(updateData, user.hashId)
+      .pipe(this.errorHandler.create({ label: 'Update user role' }))
+      .subscribe(
+        () => {
+          progressDialogRef.close();
+          this.modified = true;
+          const index = this.users.indexOf(user);
+          this.users.splice(index, 1);
+          if (this.users.length === 0) {
+            this.snackBar.open(`All roles fixed!`, 'close', { duration: 5000 });
+            this.close();
+          } else {
+            this.snackBar.open(`User ${user.username} role fixed!`, 'close', { duration: 5000 });
+          }
+        },
+        () => {
+          progressDialogRef.close();
+        }
+      );
   }
 
   getValue(): boolean {

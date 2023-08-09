@@ -9,8 +9,7 @@ export abstract class FormComponent<O> {
   abstract form: AbstractControl;
   abstract formResult: EventEmitter<O>;
 
-  constructor(protected readonly messageDialog: MessageDialog) {
-  }
+  constructor(protected readonly messageDialog: MessageDialog) {}
 
   set params(params: O) {
     if (params != null) {
@@ -20,7 +19,7 @@ export abstract class FormComponent<O> {
 
   submit() {
     if (!this.form.invalid) {
-      this.formResult.emit({...this.form.value});
+      this.formResult.emit({ ...this.form.value });
     } else {
       this.messageDialog.display({
         title: 'Invalid Input',

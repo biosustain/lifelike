@@ -1,4 +1,10 @@
-import { Component, ViewEncapsulation, ViewChildren, AfterViewInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ViewEncapsulation,
+  ViewChildren,
+  AfterViewInit,
+  ViewChild,
+} from '@angular/core';
 
 import { Observable } from 'rxjs';
 import { groupBy, defer, sortBy } from 'lodash-es';
@@ -13,14 +19,10 @@ import { SearchResultComponent } from './search-result/search-result.component';
   selector: 'app-sankey-search-panel',
   templateUrl: './search-panel.component.html',
   styleUrls: ['./search-panel.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.None,
 })
 export class SankeySearchPanelComponent implements AfterViewInit {
-  constructor(
-    private search: SankeySearchService,
-    private common: ControllerService
-  ) {
-  }
+  constructor(private search: SankeySearchService, private common: ControllerService) {}
 
   term$ = this.search.term$;
   searchTokens$ = this.search.searchTokens$;
@@ -30,14 +32,11 @@ export class SankeySearchPanelComponent implements AfterViewInit {
   networkTraceIdx$ = this.common.networkTraceIdx$;
 
   groupedMatches$ = this.search.preprocessedMatches$.pipe(
-    map(matches =>
+    map((matches) =>
       // grouping by network trace idx preserves priority order
       groupBy(
         // matches are sorted by their priority
-        sortBy(
-          matches,
-          'priority'
-        ),
+        sortBy(matches, 'priority'),
         'networkTraceIdx'
       )
     )
@@ -51,17 +50,20 @@ export class SankeySearchPanelComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.search.searchFocus$.pipe(
-      filter(d => Boolean(d))
-    ).subscribe(({networkTraceIdx, idx}) => {
-      this.accordion.expand(String(networkTraceIdx));
-      defer(() => this.scrollIntoView(idx));
-    });
+    this.search.searchFocus$
+      .pipe(filter((d) => Boolean(d)))
+      .subscribe(({ networkTraceIdx, idx }) => {
+        this.accordion.expand(String(networkTraceIdx));
+        defer(() => this.scrollIntoView(idx));
+      });
   }
 
   networkTraceIdxToName(networkTraceIdx: number): Observable<string> {
     return this.common.networkTraces$.pipe(
-      map(networkTraces => networkTraces[networkTraceIdx].name ?? networkTraces[networkTraceIdx].description)
+      map(
+        (networkTraces) =>
+          networkTraces[networkTraceIdx].name ?? networkTraces[networkTraceIdx].description
+      )
     );
   }
 
@@ -69,9 +71,11 @@ export class SankeySearchPanelComponent implements AfterViewInit {
     if (focusedIdx >= 0 && this.listItems) {
       // allow casting matches "0" == 0 => true
       // tslint:disable-next-line:triple-equals
-      const itemNode = this.listItems.toArray().find(({result: {idx}}) => focusedIdx == idx);
+      const itemNode = this.listItems.toArray().find(({ result: { idx } }) => focusedIdx == idx);
       if (itemNode) {
-        const {element: {nativeElement}} = itemNode;
+        const {
+          element: { nativeElement },
+        } = itemNode;
         if (nativeElement.scrollIntoViewIfNeeded) {
           nativeElement.scrollIntoViewIfNeeded();
         } else {

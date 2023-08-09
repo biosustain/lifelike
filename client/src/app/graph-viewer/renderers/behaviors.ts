@@ -6,10 +6,13 @@ import { ZoomTransform } from 'd3-zoom';
 import { GraphEntity } from 'app/drawing-tool/services/interfaces';
 
 export class BehaviorList<T extends Behavior> {
-  private behaviorsMap: Map<string, {
-    priority: number,
-    behavior: T
-  }> = new Map();
+  private behaviorsMap: Map<
+    string,
+    {
+      priority: number;
+      behavior: T;
+    }
+  > = new Map();
   private behaviorsIndexedByMethod: Map<string, Set<T>> = new Map();
 
   /**
@@ -33,9 +36,9 @@ export class BehaviorList<T extends Behavior> {
       throw new Error(`behavior by key '${key}' already added`);
     }
 
-    const behaviors: [string, { priority: number, behavior: T }][] = [
+    const behaviors: [string, { priority: number; behavior: T }][] = [
       ...this.behaviorsMap.entries(),
-      [key, {behavior, priority}],
+      [key, { behavior, priority }],
     ];
 
     // Slow priority queue
@@ -97,7 +100,7 @@ export class BehaviorList<T extends Behavior> {
    * @return the final result
    */
   apply(callable: (behavior: T) => BehaviorResult): BehaviorResult {
-    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+    for (const [key, { behavior, priority }] of this.behaviorsMap.entries()) {
       const result = callable(behavior);
       if (result === BehaviorResult.Stop) {
         return BehaviorResult.Stop;
@@ -134,8 +137,8 @@ export class BehaviorList<T extends Behavior> {
   /**
    * Get a list of behaviors.
    */
-  * getBehaviors(): IterableIterator<T> {
-    for (const [key, {behavior, priority}] of this.behaviorsMap.entries()) {
+  *getBehaviors(): IterableIterator<T> {
+    for (const [key, { behavior, priority }] of this.behaviorsMap.entries()) {
       yield behavior;
     }
   }
@@ -202,11 +205,9 @@ export interface CanvasBehavior extends Behavior {
  * An abstract behavior that has all methods already implemented.
  */
 export abstract class AbstractCanvasBehavior implements CanvasBehavior {
-  setup() {
-  }
+  setup() {}
 
-  destroy() {
-  }
+  destroy() {}
 
   shouldDrag(event: BehaviorEvent<MouseEvent>): boolean {
     return undefined;
@@ -252,8 +253,7 @@ export abstract class AbstractCanvasBehavior implements CanvasBehavior {
     return BehaviorResult.Continue;
   }
 
-  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {
-  }
+  draw(ctx: CanvasRenderingContext2D, transform: ZoomTransform) {}
 }
 
 export class BehaviorEvent<T> {

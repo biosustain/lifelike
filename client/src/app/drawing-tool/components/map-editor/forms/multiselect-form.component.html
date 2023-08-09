@@ -1,0 +1,43 @@
+<div class="d-flex flex-column h-100">
+  <ul ngbNav #nav="ngbNav" [(activeId)]="infoPanel.activeTab" class="nav-tabs nav-sidebar-tabs">
+    <li ngbNavItem="graph">
+      <a ngbNavLink>Selection</a>
+      <ng-template ngbNavContent>
+        <div class="module-body" *ngIf="groupedSelection$ | async as groupedSelection">
+          <div class="row align-items-center mb-0">
+            <div class="col-sm-6">Node Count:</div>
+            <div class="col-sm-6 text-right">
+              {{ groupedSelection.node?.length || 0 | number }}
+            </div>
+          </div>
+
+          <div class="row align-items-center">
+            <div class="col-sm-6">Edge Count:</div>
+            <div class="col-sm-6 text-right">
+              {{ groupedSelection.edge?.length || 0 | number }}
+            </div>
+          </div>
+
+          <div class="row align-items-center">
+            <div class="col-sm-6">Group Count:</div>
+            <div class="col-sm-6 text-right">
+              {{ groupedSelection.group?.length || 0 | number }}
+            </div>
+          </div>
+
+          <ng-content></ng-content>
+        </div>
+      </ng-template>
+    </li>
+    <li ngbNavItem="explanation">
+      <a ngbNavLink>Explanation</a>
+      <ng-template ngbNavContent>
+        <div class="module-body">
+          <app-prompt [entities]="entities$ | async"></app-prompt>
+        </div>
+      </ng-template>
+    </li>
+  </ul>
+
+  <div [ngbNavOutlet]="nav" class="flex-fill overflow-auto"></div>
+</div>

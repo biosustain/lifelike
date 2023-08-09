@@ -1,8 +1,8 @@
-// @ts-nocheck
 import { isDevMode } from '@angular/core';
 
 import { tap, finalize } from 'rxjs/operators';
 import { isInteger, isString } from 'lodash-es';
+import { MonoTypeOperatorFunction, Observable } from 'rxjs';
 
 import { skipStep } from './skipStep';
 
@@ -16,12 +16,11 @@ const composeLabelFormatMapping = (label, bgColor, color) => ({
   value: [
     `background-color: ${bgColor}; color: ${color}; padding: 2px 4px;`,
     label.toUpperCase(),
-    `background-color: initial;`
-  ]
+    `background-color: initial;`,
+  ],
 });
 
-
-const mapEntityToFormat = entity => {
+const mapEntityToFormat = (entity) => {
   if (entity instanceof Node) {
     return '%o';
   }
@@ -34,24 +33,21 @@ const mapEntityToFormat = entity => {
   return '%O';
 };
 
-const composeTitleFormatMapping = params => ({
+const composeTitleFormatMapping = (params) => ({
   format: ` %c${params.map(mapEntityToFormat).join('')}%c`,
-  value: [
-    `font-weight: bold;`,
-    ...params,
-    `font-weight: initial;`
-  ]
+  value: [`font-weight: bold;`, ...params, `font-weight: initial;`],
 });
 
-const combineFormatedValues = (...formatedValues: FormatedValue[]) => formatedValues.reduce(
-  (r, formatedValue) => ({
-    format: r.format + formatedValue.format,
-    value: r.value.concat(formatedValue.value)
-  }),
-  {format: '', value: []} as FormatedValue
-);
+const combineFormatedValues = (...formatedValues: FormatedValue[]) =>
+  formatedValues.reduce(
+    (r, formatedValue) => ({
+      format: r.format + formatedValue.format,
+      value: r.value.concat(formatedValue.value),
+    }),
+    { format: '', value: [] } as FormatedValue
+  );
 
-const composeFormatMapping = ({args, label, params = [''], bgColor, color}) => {
+const composeFormatMapping = ({ args, label, params = [''], bgColor, color }) => {
   const formatedValue = combineFormatedValues(
     composeLabelFormatMapping(label, bgColor, color),
     composeTitleFormatMapping(params)
@@ -59,25 +55,51 @@ const composeFormatMapping = ({args, label, params = [''], bgColor, color}) => {
   return [formatedValue.format, ...formatedValue.value, ...args];
 };
 
-const statusMessage = ({level, ...rest}) => (...args) => console[level](
-  ...composeFormatMapping({args, ...rest})
-);
+const statusMessage =
+  ({ level, ...rest }) =>
+  (...args) =>
+    console[level](...composeFormatMapping({ args, ...rest } as any));
 
-const init = params => statusMessage({
-  label: 'init', level: 'debug', bgColor: 'deeppink', color: 'white', ...params
-});
-const updated = params => statusMessage({
-  label: 'updated', level: 'log', bgColor: 'green', color: 'white', ...params
-});
-const error = params => statusMessage({
-  label: 'error', level: 'error', bgColor: 'red', color: 'white', ...params
-});
-const completed = params => statusMessage({
-  label: 'completed', level: 'info', bgColor: 'blue', color: 'white', ...params
-});
-const unsubscribed = params => statusMessage({
-  label: 'unsubscribed', level: 'info', bgColor: 'yellow', color: 'black', ...params
-});
+const init = (params) =>
+  statusMessage({
+    label: 'init',
+    level: 'debug',
+    bgColor: 'deeppink',
+    color: 'white',
+    ...params,
+  });
+const updated = (params) =>
+  statusMessage({
+    label: 'updated',
+    level: 'log',
+    bgColor: 'green',
+    color: 'white',
+    ...params,
+  });
+const error = (params) =>
+  statusMessage({
+    label: 'error',
+    level: 'error',
+    bgColor: 'red',
+    color: 'white',
+    ...params,
+  });
+const completed = (params) =>
+  statusMessage({
+    label: 'completed',
+    level: 'info',
+    bgColor: 'blue',
+    color: 'white',
+    ...params,
+  });
+const unsubscribed = (params) =>
+  statusMessage({
+    label: 'unsubscribed',
+    level: 'info',
+    bgColor: 'yellow',
+    color: 'black',
+    ...params,
+  });
 
 /**
  * console interface mapping for rxjs - console as operator
@@ -96,21 +118,29 @@ const unsubscribed = params => statusMessage({
  *     (level info) UNSUSCRIBED ABC
  * @param params set of params as we would use for console.log
  */
-export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = (...params) => isDevMode() ?
-  (source: Observable<T>): Observable<T> => {
-    init({params})(source);
-    // Makes all debugged observables hot - very useful for debugging
-    // source.subscribe(
-    //   updated(id, 'forced hot updated'),
-    //   error(id, 'forced hot error'),
-    //   completed(id, 'forced hot completed'),
-    // );
-    return source.pipe(
-      tap(
-        updated({params}),
-        error({params}),
-        completed({params}),
-      ),
-      finalize(unsubscribed({params}))
-    );
-  } : skipStep as MonoTypeOperatorFunction<T>;
+export const debug: <T>(message?: any, ...optionalParams: any[]) => MonoTypeOperatorFunction<T> = <
+  T
+>(
+  ...params
+) =>
+  isDevMode()
+    ? (source: Observable<T>): Observable<T> => {
+        init({ params })(source);
+        // Makes all debugged observables hot - very useful for debugging
+        // source.subscribe(
+        //   updated(id, 'forced hot updated'),
+        //   error(id, 'forced hot error'),
+        //   completed(id, 'forced hot completed'),
+        // );
+        return source.pipe(
+          tap(updated({ params }), error({ params }), completed({ params })),
+          finalize(unsubscribed({ params }))
+        );
+      }
+    : (skipStep as MonoTypeOperatorFunction<T>);
+
+export const inDevModeTap: <T>(
+  next?: (x: T) => void,
+  error?: (e: any) => void,
+  complete?: () => void
+) => MonoTypeOperatorFunction<T> = <T>(n, e, c) => (isDevMode() ? tap(n, e, c) : skipStep);

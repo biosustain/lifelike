@@ -37,7 +37,7 @@ def downgrade():
 
 def get_updated_entity_type(entity_type):
     if entity_type == 'Chemicals':
-        return 'Chemical',
+        return ('Chemical',)
     elif entity_type == 'Companies':
         return 'Company'
     elif entity_type == 'Compounds':
@@ -66,13 +66,18 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
-        column('custom_annotations', postgresql.JSONB))
+        column('custom_annotations', postgresql.JSONB),
+    )
 
-    files = session.execute(sa.select([
-        files_table.c.id,
-        files_table.c.annotations,
-        files_table.c.custom_annotations
-    ])).fetchall()
+    files = session.execute(
+        sa.select(
+            [
+                files_table.c.id,
+                files_table.c.annotations,
+                files_table.c.custom_annotations,
+            ]
+        )
+    ).fetchall()
 
     types_to_update = [
         'Chemicals',
@@ -84,12 +89,14 @@ def data_upgrades():
         'Mutations',
         'Pathways',
         'Phenotypes',
-        'Proteins'
+        'Proteins',
     ]
 
     for f in files:
         if f.annotations:
-            annotations_list = f.annotations['documents'][0]['passages'][0]['annotations']
+            annotations_list = f.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ]
 
             updated_annotations = []
             for annotation in annotations_list:
@@ -100,10 +107,14 @@ def data_upgrades():
 
                 updated_annotations.append(annotation)
 
-            f.annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+            f.annotations['documents'][0]['passages'][0][
+                'annotations'
+            ] = updated_annotations
             session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(annotations=f.annotations))
+                files_table.update()
+                .where(files_table.c.id == f.id)
+                .values(annotations=f.annotations)
+            )
 
         if f.custom_annotations:
             custom_annotations_list = f.custom_annotations
@@ -113,13 +124,17 @@ def data_upgrades():
                 entity_type = custom_annotation['meta']['type']
 
                 if entity_type in types_to_update:
-                    custom_annotation['meta']['type'] = get_updated_entity_type(entity_type)
+                    custom_annotation['meta']['type'] = get_updated_entity_type(
+                        entity_type
+                    )
 
                 updated_custom_annotations.append(custom_annotation)
 
             session.execute(
-                files_table.update().where(
-                    files_table.c.id == f.id).values(custom_annotations=updated_custom_annotations))
+                files_table.update()
+                .where(files_table.c.id == f.id)
+                .values(custom_annotations=updated_custom_annotations)
+            )
 
     session.commit()
 

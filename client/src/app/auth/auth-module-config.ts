@@ -5,5 +5,5 @@ export const authModuleConfig: OAuthModuleConfig = {
     // TODO: These should probably be specified in some kind of environment variable
     allowedUrls: ['/api', 'https://keycloak.apps.lifelike.cloud'],
     sendAccessToken: true,
-  }
+  },
 };

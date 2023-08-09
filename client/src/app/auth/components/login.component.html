@@ -1,50 +1,51 @@
 <div class="card m-auto" style="width: 500px">
-  <div class="card-header">
-    Login to Lifelike
-  </div>
+  <div class="card-header">Login to Lifelike</div>
   <div class="card-body">
     <form [formGroup]="form" (ngSubmit)="submit()">
       <app-form-row for="email" label="Email" [control]="form.get('email')">
-        <input type="email" formControlName="email" id="email" [appFormInput]="form.get('email')" appAutoFocus>
+        <input
+          type="email"
+          formControlName="email"
+          id="email"
+          [appFormInput]="form.get('email')"
+          appAutoFocus
+        />
       </app-form-row>
 
-      <app-password-input [formRef]="form"
-                          controlId="password"
-                          controlName="password"
-                          controlLabel="Password"
+      <app-password-input
+        [formRef]="form"
+        controlId="password"
+        controlName="password"
+        controlLabel="Password"
       ></app-password-input>
 
-      <button type="submit" class="btn btn-primary btn-block">
-        Login
-      </button>
+      <button type="submit" class="btn btn-primary btn-block">Login</button>
     </form>
-    <button (click)="displayResetDialog()" class="btn btn-secondary btn-block mt-3 ">
+    <button (click)="displayResetDialog()" class="btn btn-secondary btn-block mt-3">
       Reset password
     </button>
 
-    <div *ngIf="errorMessage" class="alert alert-danger d-flex justify-content-center mt-3" role="alert">
-      <i class="fas fa-exclamation-triangle fa-2xl d-flex align-items-center mr-3"></i>{{ errorMessage }}
+    <div
+      *ngIf="errorMessage"
+      class="alert alert-danger d-flex justify-content-center mt-3"
+      role="alert"
+    >
+      <i class="fas fa-exclamation-triangle fa-2xl d-flex align-items-center mr-3"></i
+      >{{ errorMessage }}
     </div>
   </div>
   <details class="card-footer small disabled" *ngIf="buildInfo$ | async as buildInfo">
-    <summary>
-      <span>Lifelike version:</span> {{ buildInfo.appVersion || 'Unknown' }}
-    </summary>
-    <div>
-      <span>Last updated:</span> {{ buildInfo.buildTimestamp || 'Unknown'  }}
-    </div>
-    <div>
-      <span>Build number:</span> {{ buildInfo.appBuildNumber || 'Unknown' }}
-    </div>
-    <div>
-      <span>Build identifier:</span> {{ buildInfo.gitHash || 'Unknown' }}
-    </div>
+    <summary><span>Lifelike version:</span> {{ buildInfo.appVersion || 'Unknown' }}</summary>
+    <div><span>Last updated:</span> {{ buildInfo.buildTimestamp || 'Unknown' }}</div>
+    <div><span>Build number:</span> {{ buildInfo.appBuildNumber || 'Unknown' }}</div>
+    <div><span>Build identifier:</span> {{ buildInfo.gitHash || 'Unknown' }}</div>
   </details>
 
   <div *ngIf="unsupportedBrowser" class="alert alert-warning m-0">
     <p>
       You seem to be using a browser which might provide a diminished experience within Lifelike.
-      For the best experience, please use <a target="_blank" href="https://www.google.com/chrome/">Google Chrome</a>.
+      For the best experience, please use
+      <a target="_blank" href="https://www.google.com/chrome/">Google Chrome</a>.
     </p>
   </div>
 </div>

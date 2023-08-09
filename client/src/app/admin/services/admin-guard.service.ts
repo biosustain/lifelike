@@ -10,9 +10,10 @@ import { AppUser } from 'app/interfaces';
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(private readonly accountService: AccountService,
-              public readonly snackBar: MatSnackBar) {
-  }
+  constructor(
+    private readonly accountService: AccountService,
+    public readonly snackBar: MatSnackBar
+  ) {}
 
   canActivate(routeSnapshot: ActivatedRouteSnapshot): Observable<boolean> {
     return this.accountService.currentUser().pipe(
@@ -23,11 +24,11 @@ export class AdminGuard implements CanActivate {
         }
         return isAdmin;
       }),
-      take(1),
+      take(1)
     );
   }
 
   openSnackBar(message: string, action: string) {
-    this.snackBar.open(message, action, {duration: 5000});
+    this.snackBar.open(message, action, { duration: 5000 });
   }
 }

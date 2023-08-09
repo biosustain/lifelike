@@ -2,7 +2,7 @@ from dataclasses import dataclass, asdict
 from typing import Optional, Tuple
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, frozen=True)
 class ServerMessage:
     title: Optional[str] = None
     message: Optional[str] = None

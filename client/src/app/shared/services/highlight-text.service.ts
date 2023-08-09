@@ -11,20 +11,21 @@ interface XMLTagMapping {
   attributes: string[];
 }
 
-export const HIGHLIGHT_TEXT_TAG_HANDLER = new InjectionToken<XMLTagMapping[]>('highlightTextTagHandler');
+export const HIGHLIGHT_TEXT_TAG_HANDLER = new InjectionToken<XMLTagMapping[]>(
+  'highlightTextTagHandler'
+);
 
 @Injectable()
 export class HighlightTextService {
   public object: FilesystemObject;
 
-  constructor(private readonly internalSearch: InternalSearchService) {
-  }
+  constructor(private readonly internalSearch: InternalSearchService) {}
 
   composeSearchInternalLinks(text) {
     const organism = this.object?.fallbackOrganism?.tax_id;
     return [
       {
-        navigate: this.internalSearch.getVisualizerArguments(text, {organism}),
+        navigate: this.internalSearch.getVisualizerArguments(text, { organism }),
         label: 'Knowledge Graph',
       },
       {
@@ -32,7 +33,7 @@ export class HighlightTextService {
         label: 'File Content',
       },
       {
-        navigate: this.internalSearch.getFileContentsArguments(text, {types: ['map']}),
+        navigate: this.internalSearch.getFileContentsArguments(text, { types: ['map'] }),
         label: 'Map Content',
       },
     ];
@@ -43,12 +44,14 @@ export class HighlightTextService {
   }
 
   addDataTransferData(dataTransfer) {
-    const {object} = this;
+    const { object } = this;
     if (object) {
-      GenericDataProvider.setURIs(dataTransfer, [{
-        title: object.filename,
-        uri: object.getURL(false).toAbsolute(),
-      }]);
+      GenericDataProvider.setURIs(dataTransfer, [
+        {
+          title: object.filename,
+          uri: object.getURL(false).toAbsolute(),
+        },
+      ]);
     }
   }
 }

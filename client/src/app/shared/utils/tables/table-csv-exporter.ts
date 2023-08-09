@@ -6,7 +6,6 @@ import { TableCell, TableHeader } from '../../components/table/generic-table.com
  * Generates a CSV from a generic table.
  */
 export class TableCSVExporter {
-
   lineSeparator = '\r\n';
 
   generate(headers: TableHeader[][], cells: TableCell[][]): Observable<Blob> {
@@ -52,5 +51,4 @@ export class TableCSVExporter {
     }
     return value;
   }
-
 }

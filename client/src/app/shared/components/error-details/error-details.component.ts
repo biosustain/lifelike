@@ -21,13 +21,13 @@ export class ErrorDetailsComponent implements AfterViewInit {
   @ViewChild(TreeViewComponent) causeView: TreeViewComponent;
 
   ngAfterViewInit() {
-    const {causeView} = this;
+    const { causeView } = this;
     if (causeView) {
       causeView.treeControl.dataNodes = this.causeView?.dataSource;
       causeView.treeControl.expandAll();
     }
   }
 
-  causeAccessor = ({cause}) => [cause];
-  hasCauseAccessor = (_, {cause}) => Boolean(cause);
+  causeAccessor = ({ cause }) => [cause];
+  hasCauseAccessor = (_, { cause }) => Boolean(cause);
 }

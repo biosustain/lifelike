@@ -7,13 +7,13 @@ import { GraphData } from 'app/interfaces/vis-js.interface';
 
 export enum DisplayType {
   NETWORK = 'network',
-  SANKEY = 'sankey'
+  SANKEY = 'sankey',
 }
 
 @Component({
   selector: 'app-route-display',
   templateUrl: './route-display.component.html',
-  styleUrls: ['./route-display.component.scss']
+  styleUrls: ['./route-display.component.scss'],
 })
 export class RouteDisplayComponent {
   @Input() set displayType(displayType: DisplayType) {
@@ -107,7 +107,7 @@ export class RouteDisplayComponent {
     });
 
     const seenEdges = new Map<string, number>();
-    edges.forEach(edge => {
+    edges.forEach((edge) => {
       const sankeyEdge = [nodeIdentityMap.get(edge.from), nodeIdentityMap.get(edge.to)];
       if (seenEdges.has(sankeyEdge.toString())) {
         value[seenEdges.get(sankeyEdge.toString())] += 1;
@@ -128,7 +128,7 @@ export class RouteDisplayComponent {
         thickness: 20,
         line: {
           color: 'black',
-          width: 0.5
+          width: 0.5,
         },
         label,
         color,
@@ -136,8 +136,8 @@ export class RouteDisplayComponent {
       link: {
         source,
         target,
-        value
-      }
+        value,
+      },
     };
   }
 
@@ -152,7 +152,7 @@ export class RouteDisplayComponent {
         thickness: 20,
         line: {
           color: 'black',
-          width: 0.5
+          width: 0.5,
         },
         label: [],
         color: [],
@@ -161,14 +161,14 @@ export class RouteDisplayComponent {
       link: {
         source: [],
         target: [],
-        value: []
-      }
+        value: [],
+      },
     };
 
     this.sankeyConfig = {
       font: {
-        size: 10
-      }
+        size: 10,
+      },
     };
   }
 
@@ -186,5 +186,4 @@ export class RouteDisplayComponent {
       }
     });
   }
-
 }

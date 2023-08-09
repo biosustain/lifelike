@@ -19,11 +19,7 @@ import { SankeySearchPanelComponent } from './search-panel.component';
 import { SearchResultComponent } from './search-result/search-result.component';
 
 @NgModule({
-  declarations: [
-    SankeySearchPanelComponent,
-    SearchResultComponent,
-    SearchResultComponent
-  ],
+  declarations: [SankeySearchPanelComponent, SearchResultComponent, SearchResultComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -38,11 +34,8 @@ import { SearchResultComponent } from './search-result/search-result.component';
     FlexLayoutModule,
     MatButtonModule,
     MatRadioModule,
-    SharedModule
+    SharedModule,
   ],
-  exports: [
-    SankeySearchPanelComponent
-  ],
+  exports: [SankeySearchPanelComponent],
 })
-export class SankeySearchPanelModule {
-}
+export class SankeySearchPanelModule {}

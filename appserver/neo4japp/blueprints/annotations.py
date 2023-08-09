@@ -3,8 +3,9 @@ import hashlib
 import html
 import io
 import json
-import sqlalchemy as sa
 import time
+
+import sqlalchemy as sa
 
 from datetime import datetime
 from flask import (
@@ -16,6 +17,7 @@ from flask import (
     jsonify,
 )
 from flask.views import MethodView
+from http import HTTPStatus
 from json import JSONDecodeError
 from marshmallow import validate, fields
 from sqlalchemy import and_
@@ -23,6 +25,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
 from webargs.flaskparser import use_args
 
+from neo4japp.exceptions import wrap_exceptions
 from .auth import login_exempt
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
@@ -32,9 +35,9 @@ from ..database import (
     db,
     get_excel_export_service,
     get_enrichment_table_service,
-    get_or_create_arango_client
+    get_or_create_arango_client,
 )
-from ..exceptions import AnnotationError, ServerException
+from neo4japp.exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
@@ -55,7 +58,7 @@ from ..schemas.annotations import (
     AnnotationExclusionCreateSchema,
     AnnotationExclusionDeleteSchema,
     SystemAnnotationListSchema,
-    CustomAnnotationListSchema
+    CustomAnnotationListSchema,
 )
 from ..schemas.common import PaginatedRequestSchema
 from ..schemas.enrichment import EnrichmentTableSchema
@@ -76,11 +79,11 @@ from ..services.annotations.initializer import (
     get_enrichment_annotation_service,
     get_manual_annotation_service,
     get_recognition_service,
-    get_sorted_annotation_service
+    get_sorted_annotation_service,
 )
 from ..services.annotations.sorted_annotation_service import (
     default_sorted_annotation,
-    sorted_annotations_dict
+    sorted_annotations_dict,
 )
 from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_paginated_query,
@@ -90,18 +93,22 @@ from ..services.annotations.utils.graph_queries import (
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
+from ..utils.string import sub_whitespace
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 class FileAnnotationsView(FilesystemBaseView):
-
     def get(self, hash_id: str):
         """Fetch annotations for a file.."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['readable'], permit_recycled=True
+        )
 
         if file.annotations:
             annotations = file.annotations['documents'][0]['passages'][0]['annotations']
@@ -114,11 +121,13 @@ class FileAnnotationsView(FilesystemBaseView):
             # Add additional information for annotations that were excluded
             for annotation in annotations:
                 for exclusion in file.excluded_annotations:
-                    if (exclusion.get('type') == annotation['meta']['type'] and
-                        terms_match(
-                            exclusion.get('text', 'True'),
-                            annotation.get('textInDocument', 'False'),
-                            exclusion['isCaseInsensitive'])):
+                    if exclusion.get('type') == annotation['meta'][
+                        'type'
+                    ] and terms_match(
+                        exclusion.get('text', 'True'),
+                        annotation.get('textInDocument', 'False'),
+                        exclusion['isCaseInsensitive'],
+                    ):
                         annotation['meta']['isExcluded'] = True
                         annotation['meta']['exclusionReason'] = exclusion['reason']
                         annotation['meta']['exclusionComment'] = exclusion['comment']
@@ -127,80 +136,102 @@ class FileAnnotationsView(FilesystemBaseView):
 
         results = annotations + file.custom_annotations
 
-        return jsonify(SystemAnnotationListSchema().dump({
-            'results': results,
-            'total': len(results),
-        }))
+        return jsonify(
+            SystemAnnotationListSchema().dump(
+                {
+                    'results': results,
+                    'total': len(results),
+                }
+            )
+        )
 
 
 class EnrichmentAnnotationsView(FilesystemBaseView):
-
     def get(self, hash_id: str):
         """Fetch annotations for enrichment table."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['readable'], permit_recycled=True
+        )
 
         if file.enrichment_annotations:
             annotations = file.enrichment_annotations
         else:
             annotations = None
 
-        return jsonify({
-            'results': EnrichmentTableSchema().dump(annotations)
-        })
+        return jsonify({'results': EnrichmentTableSchema().dump(annotations)})
 
 
 class FileCustomAnnotationsListView(FilesystemBaseView):
-
     @use_args(CustomAnnotationCreateSchema)
     def post(self, params, hash_id):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['writable'], permit_recycled=True
+        )
 
         results = manual_annotation_service.add_inclusions(
             file, current_user, params['annotation'], params['annotate_all']
         )
 
-        return jsonify(CustomAnnotationListSchema().dump({
-            'results': results,
-            'total': len(results),
-        }))
+        return jsonify(
+            CustomAnnotationListSchema().dump(
+                {
+                    'results': results,
+                    'total': len(results),
+                }
+            )
+        )
 
 
 class FileCustomAnnotationsDetailView(FilesystemBaseView):
-
     @use_args(CustomAnnotationDeleteSchema)
     def delete(self, params, hash_id, uuid):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['writable'], permit_recycled=True
+        )
 
         results = manual_annotation_service.remove_inclusions(
             file, current_user, uuid, params['remove_all']
         )
 
-        return jsonify(AnnotationUUIDListSchema().dump({
-            'results': results,
-            'total': len(results),
-        }))
+        return jsonify(
+            AnnotationUUIDListSchema().dump(
+                {
+                    'results': results,
+                    'total': len(results),
+                }
+            )
+        )
 
 
 class FileAnnotationExclusionsListView(FilesystemBaseView):
-
     @use_args(AnnotationExclusionCreateSchema)
     def post(self, params, hash_id):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['writable'], permit_recycled=True
+        )
 
         manual_annotation_service.add_exclusion(file, current_user, params['exclusion'])
 
@@ -211,17 +242,21 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['writable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['writable'], permit_recycled=True
+        )
 
-        manual_annotation_service.remove_exclusion(file, current_user, params['type'],
-                                                   params['text'])
+        manual_annotation_service.remove_exclusion(
+            file, current_user, params['type'], params['text']
+        )
 
         return jsonify({})
 
 
 class FileAnnotationCountsView(FilesystemBaseView):
-
     def get_rows(self, files):
         manual_annotations_service = get_manual_annotation_service()
 
@@ -240,18 +275,11 @@ class FileAnnotationCountsView(FilesystemBaseView):
             for annotation in annotations:
                 key = annotation['meta']['id']
                 if key not in counts:
-                    counts[key] = {
-                        'annotation': annotation,
-                        'count': 1
-                    }
+                    counts[key] = {'annotation': annotation, 'count': 1}
                 else:
                     counts[key]['count'] += 1
 
-        count_keys = sorted(
-            counts,
-            key=lambda key: counts[key]['count'],
-            reverse=True
-        )
+        count_keys = sorted(counts, key=lambda key: counts[key]['count'], reverse=True)
 
         for key in count_keys:
             annotation = counts[key]['annotation']
@@ -261,22 +289,26 @@ class FileAnnotationCountsView(FilesystemBaseView):
             else:
                 text = annotation['meta']['allText'].strip()
             yield [
-                meta['id'],
+                sub_whitespace(meta['id']),
                 meta['type'],
-                text,
-                annotation.get('primaryName', '').strip(),
-                counts[key]['count']
+                sub_whitespace(text),
+                sub_whitespace(annotation.get('primaryName', '').strip()),
+                counts[key]['count'],
             ]
 
     def post(self, hash_id: str):
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['readable'], permit_recycled=True
+        )
         files = get_nondeleted_recycled_children_query(
             Files.id == file.id,
             children_filter=Files.mime_type == 'application/pdf',
-            lazy_load_content=True
+            lazy_load_content=True,
         ).all()
 
         buffer = io.StringIO()
@@ -291,12 +323,11 @@ class FileAnnotationCountsView(FilesystemBaseView):
             result,
             etag=hashlib.sha256(result).hexdigest(),
             filename=f'{file.filename} - Annotations.tsv',
-            mime_type='text/tsv'
+            mime_type='text/tsv',
         )
 
 
 class FileAnnotationSortedView(FilesystemBaseView):
-
     def get_rows(self, files, annotation_service):
         values = annotation_service.get_annotations(files)
 
@@ -308,11 +339,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
             'value',
         ]
 
-        value_keys = sorted(
-            values,
-            key=lambda key: values[key]['value'],
-            reverse=True
-        )
+        value_keys = sorted(values, key=lambda key: values[key]['value'], reverse=True)
 
         for key in value_keys:
             annotation = values[key]['annotation']
@@ -322,47 +349,53 @@ class FileAnnotationSortedView(FilesystemBaseView):
             else:
                 text = annotation['meta']['allText'].strip()
             yield [
-                meta['id'],
+                sub_whitespace(meta['id']),
                 meta['type'],
-                text,
-                annotation.get('primaryName', '').strip(),
-                values[key]['value']
+                sub_whitespace(text),
+                sub_whitespace(annotation.get('primaryName', '').strip()),
+                values[key]['value'],
             ]
 
-    @use_args({
-        "sort": fields.Str(
-            missing=default_sorted_annotation.id,
-            validate=validate.OneOf(sorted_annotations_dict)
-        ),
-        "hash_id": fields.Str()
-    })
+    @use_args(
+        {
+            "sort": fields.Str(
+                missing=default_sorted_annotation.id,
+                validate=validate.OneOf(sorted_annotations_dict),
+            ),
+            "hash_id": fields.Str(),
+        }
+    )
     def post(self, args: Dict[str, str], hash_id: str):
         sort = args['sort']
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(Files.hash_id == hash_id, lazy_load_content=True)
-        self.check_file_permissions([file], current_user, ['readable'], permit_recycled=True)
+        file = self.get_nondeleted_recycled_file(
+            Files.hash_id == hash_id, lazy_load_content=True
+        )
+        self.check_file_permissions(
+            [file], current_user, ['readable'], permit_recycled=True
+        )
 
         buffer = io.StringIO()
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
 
         if file.mime_type == 'vnd.lifelike.document/enrichment-table':
             files = self.get_nondeleted_recycled_files(
-                Files.id == file.id,
-                lazy_load_content=True
+                Files.id == file.id, lazy_load_content=True
             )
 
-            annotation_service = get_sorted_annotation_service(sort, mime_type=file.mime_type)
+            annotation_service = get_sorted_annotation_service(
+                sort, mime_type=file.mime_type
+            )
             for row in self.get_rows(files, annotation_service):
                 writer.writerow(row)
         else:
             files = get_nondeleted_recycled_children_query(
                 Files.id == file.id,
                 children_filter=and_(
-                    Files.mime_type == 'application/pdf',
-                    Files.recycling_date.is_(None)
+                    Files.mime_type == 'application/pdf', Files.recycling_date.is_(None)
                 ),
-                lazy_load_content=True
+                lazy_load_content=True,
             ).all()
 
             annotation_service = get_sorted_annotation_service(sort)
@@ -376,7 +409,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
             result,
             etag=hashlib.sha256(result).hexdigest(),
             filename=f'{file.filename} - {sort} - Annotations.tsv',
-            mime_type='text/tsv'
+            mime_type='text/tsv',
         )
 
 
@@ -390,7 +423,7 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
             'gene_name',
             'organism_id',
             'organism_name',
-            'gene_annotation_count'
+            'gene_annotation_count',
         ]
 
         gene_ids: Dict[Any, int] = {}
@@ -407,9 +440,7 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
         gene_organism_pairs = get_organisms_from_gene_ids(arango_client, gene_ids)
         sorted_pairs = sorted(
-            gene_organism_pairs,
-            key=lambda p: gene_ids[p['gene_id']],
-            reverse=True
+            gene_organism_pairs, key=lambda p: gene_ids[p['gene_id']], reverse=True
         )
 
         for pair in sorted_pairs:
@@ -424,11 +455,7 @@ class FileAnnotationGeneCountsView(FileAnnotationCountsView):
 
 class FileAnnotationsGenerationView(FilesystemBaseView):
     def annotate_files(
-        self,
-        files,
-        user_id,
-        override_organism=None,
-        override_annotation_configs=None
+        self, files, user_id, override_organism=None, override_annotation_configs=None
     ):
         updated_files = []
         versions = []
@@ -454,39 +481,51 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
                         configs=effective_annotation_configs,
                         organism=effective_organism,
-                        user_id=user_id
+                        user_id=user_id,
                     )
                 except AnnotationError as e:
                     current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e)
+                        'Could not annotate file: %s, %s, %s',
+                        file.hash_id,
+                        file.filename,
+                        e,
+                    )
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
-                        'error': e.message
+                        'error': e.message,
                     }
                 else:
                     current_app.logger.debug(
-                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
+                        'File successfully annotated: %s, %s',
+                        file.hash_id,
+                        file.filename,
+                    )
                     updated_files.append(annotations)
                     versions.append(version)
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
-                        'error': ''
+                        'error': '',
                     }
             elif file.mime_type == 'vnd.lifelike.document/enrichment-table':
                 try:
                     enrichment = json.loads(file.content.raw_file_utf8)
-                except JSONDecodeError:
-                    current_app.logger.error(
+                except JSONDecodeError as e:
+                    message = (
                         f'Cannot annotate file with invalid content: {file.hash_id}, '
                         f'{file.filename}'
                     )
-                    # TODO: warning
+                    current_app.logger.error(message)
+                    # warn(
+                    #     ServerWarning(message=message),
+                    #     cause=e
+                    # )
+                    # TODO: warning should be part of status
                     results[file.hash_id] = {
                         'attempted': False,
                         'success': False,
-                        'error': 'Enrichment table content is not valid JSON.'
+                        'error': 'Enrichment table content is not valid JSON.',
                     }
                     continue
                 enrich_service = get_enrichment_table_service()
@@ -501,34 +540,40 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         configs=effective_annotation_configs,
                         organism=effective_organism,
                         user_id=user_id,
-                        enrichment=enrichment
+                        enrichment=enrichment,
                     )
 
                     validate_enrichment_table(annotations['enrichment_annotations'])
                 except AnnotationError as e:
                     current_app.logger.error(
-                        'Could not annotate file: %s, %s, %s', file.hash_id, file.filename, e
+                        'Could not annotate file: %s, %s, %s',
+                        file.hash_id,
+                        file.filename,
+                        e,
                     )
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': False,
-                        'error': e.message
+                        'error': e.message,
                     }
                 else:
                     current_app.logger.debug(
-                        'File successfully annotated: %s, %s', file.hash_id, file.filename)
+                        'File successfully annotated: %s, %s',
+                        file.hash_id,
+                        file.filename,
+                    )
                     updated_files.append(annotations)
                     versions.append(version)
                     results[file.hash_id] = {
                         'attempted': True,
                         'success': True,
-                        'error': ''
+                        'error': '',
                     }
             else:
                 results[file.hash_id] = {
                     'attempted': False,
                     'success': False,
-                    'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.'
+                    'error': 'Invalid file type, can only annotate PDFs or Enrichment tables.',
                 }
 
         return updated_files, versions, results
@@ -539,9 +584,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         """Generate annotations for one or more files."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
-                                                   lazy_load_content=True)
-        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
+        )
+        self.check_file_permissions(
+            files, current_user, ['writable'], permit_recycled=False
+        )
 
         override_organism = None
         override_annotation_configs = None
@@ -555,10 +603,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         missing = self.get_missing_hash_ids(targets['hash_ids'], files)
 
         updated_files, versions, results = self.annotate_files(
-            files,
-            current_user.id,
-            override_organism,
-            override_annotation_configs
+            files, current_user.id, override_organism, override_annotation_configs
         )
 
         db.session.bulk_insert_mappings(FileAnnotationsVersion, versions)
@@ -566,10 +611,14 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         db.session.commit()
         # rollback in case of error?
 
-        return jsonify(MultipleAnnotationGenerationResponseSchema().dump({
-            'mapping': results,
-            'missing': missing,
-        }))
+        return jsonify(
+            MultipleAnnotationGenerationResponseSchema().dump(
+                {
+                    'mapping': results,
+                    'missing': missing,
+                }
+            )
+        )
 
     def _annotate(
         self,
@@ -577,11 +626,14 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         cause: AnnotationChangeCause,
         configs: dict,
         organism: Optional[Dict] = None,
-        user_id: int = None
+        user_id: int = None,
     ):
         """Annotate PDF files."""
         text, parsed = Pipeline.parse(
-            file.mime_type, file_id=file.id, exclude_references=configs['exclude_references'])
+            file.mime_type,
+            file_id=file.id,
+            exclude_references=configs['exclude_references'],
+        )
 
         pipeline = Pipeline(
             {
@@ -590,20 +642,25 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_annotation_service,
-                'bs': get_bioc_document_service
+                'bs': get_bioc_document_service,
             },
-            text=text, parsed=parsed)
+            text=text,
+            parsed=parsed,
+        )
 
-        annotations_json = pipeline.get_globals(
-            excluded_annotations=file.excluded_annotations or [],
-            custom_annotations=file.custom_annotations or []
-        ).identify(
-            annotation_methods=configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',
-            custom_annotations=file.custom_annotations or [],
-            filename=file.filename)
+        annotations_json = (
+            pipeline.get_globals(
+                excluded_annotations=file.excluded_annotations or [],
+                custom_annotations=file.custom_annotations or [],
+            )
+            .identify(annotation_methods=configs['annotation_methods'])
+            .annotate(
+                specified_organism_synonym=organism.get('synonym') if organism else '',
+                specified_organism_tax_id=organism.get('tax_id') if organism else '',
+                custom_annotations=file.custom_annotations or [],
+                filename=file.filename,
+            )
+        )
 
         update = {
             'id': file.id,
@@ -614,7 +671,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         if organism:
             update['organism_name'] = organism.get('organism_name')
             update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = organism.get('tax_id'),
+            update['organism_taxonomy_id'] = (organism.get('tax_id'),)
 
         version = {
             'file_id': file.id,
@@ -634,7 +691,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         user_id: int,
         enrichment: dict,
         configs: dict,
-        organism: Optional[Dict] = None
+        organism: Optional[Dict] = None,
     ):
         """Annotate all text in enrichment table."""
         text, parsed = Pipeline.parse(file.mime_type, text=enriched.text)
@@ -646,37 +703,50 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_enrichment_annotation_service,
-                'bs': get_bioc_document_service
+                'bs': get_bioc_document_service,
             },
-            text=text, parsed=parsed)
+            text=text,
+            parsed=parsed,
+        )
 
-        annotations_json = pipeline.get_globals(
-            excluded_annotations=file.excluded_annotations or [],
-            custom_annotations=file.custom_annotations or []
-        ).identify(
-            annotation_methods=configs['annotation_methods']
-        ).annotate(
-            specified_organism_synonym=organism.get('synonym') if organism else '',
-            specified_organism_tax_id=organism.get('tax_id') if organism else '',
-            custom_annotations=file.custom_annotations or [],
-            filename=file.filename,
-            enrichment_mappings=enriched.text_index_map)
+        annotations_json = (
+            pipeline.get_globals(
+                excluded_annotations=file.excluded_annotations or [],
+                custom_annotations=file.custom_annotations or [],
+            )
+            .identify(annotation_methods=configs['annotation_methods'])
+            .annotate(
+                specified_organism_synonym=organism.get('synonym') if organism else '',
+                specified_organism_tax_id=organism.get('tax_id') if organism else '',
+                custom_annotations=file.custom_annotations or [],
+                filename=file.filename,
+                enrichment_mappings=enriched.text_index_map,
+            )
+        )
 
         # NOTE: code below to calculate the correct offsets for enrichment table
         # and correctly highlight based on cell is not pretty
-        annotations_list = annotations_json['documents'][0]['passages'][0]['annotations']
+        annotations_list = annotations_json['documents'][0]['passages'][0][
+            'annotations'
+        ]
         # sort by lo_location_offset to go from beginning to end
-        sorted_annotations_list = sorted(annotations_list, key=lambda x: x['loLocationOffset'])
+        sorted_annotations_list = sorted(
+            annotations_list, key=lambda x: x['loLocationOffset']
+        )
 
         prev_index = -1
         enriched_gene = ''
 
         start = time.time()
         for index, cell_text in enriched.text_index_map:
-            annotation_chunk = [anno for anno in sorted_annotations_list if anno.get(
-                'hiLocationOffset', None) and anno.get('hiLocationOffset') <= index]
+            annotation_chunk = [
+                anno
+                for anno in sorted_annotations_list
+                if anno.get('hiLocationOffset', None)
+                and anno.get('hiLocationOffset') <= index
+            ]
             # it's sorted so we can do this to make the list shorter every iteration
-            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk):]
+            sorted_annotations_list = sorted_annotations_list[len(annotation_chunk) :]
 
             # update JSON to have enrichment row and domain...
             for anno in annotation_chunk:
@@ -685,10 +755,12 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     # first cell will always have the correct index
                     # update index offset to be relative to the cell again
                     # since they're relative to the combined text
-                    anno['loLocationOffset'] = \
+                    anno['loLocationOffset'] = (
                         anno['loLocationOffset'] - (prev_index + 1) - 1
-                    anno['hiLocationOffset'] = \
+                    )
+                    anno['hiLocationOffset'] = (
                         anno['loLocationOffset'] + anno['keywordLength'] - 1
+                    )
 
                 if 'domain' in cell_text:
                     # imported should come first for each row
@@ -702,8 +774,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                         anno['enrichmentDomain']['domain'] = cell_text['domain']
 
             snippet = self._highlight_annotations(
-                original_text=cell_text['text'],
-                annotations=annotation_chunk
+                original_text=cell_text['text'], annotations=annotation_chunk
             )
             enrichment_genes_index = enrichment['result']['genes'][cell_text['index']]
             if cell_text['domain'] == 'Imported':
@@ -713,28 +784,27 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             elif cell_text['domain'] == 'Full Name':
                 enrichment_genes_index['annotatedFullName'] = snippet
             else:
-                enrichment_genes_index \
-                    .get('domains') \
-                    .get(cell_text['domain']) \
-                    .get(cell_text['label'])['annotatedText'] = \
-                    snippet
+                enrichment_genes_index.get('domains').get(cell_text['domain']).get(
+                    cell_text['label']
+                )['annotatedText'] = snippet
 
             prev_index = index
 
         current_app.logger.info(
-            f'Time to create enrichment snippets {time.time() - start}')
+            f'Time to create enrichment snippets {time.time() - start}'
+        )
 
         update = {
             'id': file.id,
             'annotations': annotations_json,
             'annotations_date': datetime.now(TIMEZONE),
-            'enrichment_annotations': enrichment
+            'enrichment_annotations': enrichment,
         }
 
         if organism:
             update['organism_name'] = organism.get('organism_name')
             update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = organism.get('tax_id'),
+            update['organism_taxonomy_id'] = (organism.get('tax_id'),)
 
         version = {
             'file_id': file.id,
@@ -761,9 +831,11 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             lo_location_offset = annotation['loLocationOffset']
             hi_location_offset = annotation['hiLocationOffset']
 
-            text = f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">' \
-                   f'{term}' \
-                   f'</annotation>'
+            text = (
+                f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">'
+                f'{term}'
+                f'</annotation>'
+            )
 
             if lo_location_offset == 0:
                 prev_ending_index = hi_location_offset
@@ -776,25 +848,29 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 else:
                     # TODO: would lo_location_offset == prev_ending_index ever happen?
                     # if yes, need to handle it
-                    texts.append(original_text[prev_ending_index + 1:lo_location_offset])
+                    texts.append(
+                        original_text[prev_ending_index + 1 : lo_location_offset]
+                    )
                     prev_ending_index = hi_location_offset
                     texts.append(text)
 
-        texts.append(original_text[prev_ending_index + 1:])
+        texts.append(original_text[prev_ending_index + 1 :])
         final_text = ''.join(texts)
         return f'<snippet>{final_text}</snippet>'
 
 
 class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
-
     @use_args(lambda request: BulkFileRequestSchema())
     def post(self, targets):
         """Clear out the annotations."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(Files.hash_id.in_(targets['hash_ids']),
-                                                   lazy_load_content=True)
-        self.check_file_permissions(files, current_user, ['writable'], permit_recycled=False)
+        files = self.get_nondeleted_recycled_files(
+            Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
+        )
+        self.check_file_permissions(
+            files, current_user, ['writable'], permit_recycled=False
+        )
 
         updated_files = []
         for file in files:
@@ -802,7 +878,7 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
                 'id': file.id,
                 'annotations': [],
                 'annotations_date': None,
-                'enrichment_annotations': None
+                'enrichment_annotations': None,
             }
             updated_files.append(update)
         db.session.bulk_update_mappings(Files, updated_files)
@@ -822,11 +898,8 @@ class GlobalAnnotationExportInclusions(MethodView):
 
         file_uuids = {inclusion['file_reference'] for inclusion in inclusions}
         file_data_query = db.session.query(
-            Files.hash_id.label('file_uuid'),
-            Files.deleter_id.label('file_deleted_by')
-        ).filter(
-            Files.hash_id.in_([fid for fid in file_uuids])
-        )
+            Files.hash_id.label('file_uuid'), Files.deleter_id.label('file_deleted_by')
+        ).filter(Files.hash_id.in_([fid for fid in file_uuids]))
 
         file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
 
@@ -844,13 +917,15 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'file_uuid': inclusion['file_reference'],
                 'file_deleted': deleter,
                 'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': str(graph.convert_datetime(inclusion['creation_date'])),
+                'creation_date': str(
+                    graph.convert_datetime(inclusion['creation_date'])
+                ),
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
                 'entity_id': inclusion['entity_id'],
                 'reason': '',
-                'comment': ''
+                'comment': '',
             }
 
         data = [
@@ -860,10 +935,11 @@ class GlobalAnnotationExportInclusions(MethodView):
         ]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
-        response.headers['Content-Disposition'] = \
-            f'attachment; filename={exporter.get_filename("global_inclusions")}'
+        response.headers[
+            'Content-Disposition'
+        ] = f'attachment; filename={exporter.get_filename("global_inclusions")}'
         yield response
 
 
@@ -873,28 +949,26 @@ class GlobalAnnotationExportExclusions(MethodView):
     def get(self):
         yield g.current_user
 
-        exclusions = db.session.query(
-            GlobalList.id.label('global_list_id'),
-            AppUser.username.label('creator'),
-            Files.hash_id.label('file_uuid'),
-            Files.deleter_id.label('file_deleted_by'),
-            GlobalList.creation_date.label('creation_date'),
-            GlobalList.annotation['text'].astext.label('text'),
-            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
-            GlobalList.annotation['type'].astext.label('entity_type'),
-            GlobalList.annotation['id'].astext.label('entity_id'),
-            GlobalList.annotation['reason'].astext.label('reason'),
-            GlobalList.annotation['comment'].astext.label('comment')
-        ).join(
-            AppUser,
-            AppUser.id == GlobalList.annotation['user_id'].as_integer()
-        ).outerjoin(
-            Files,
-            Files.id == GlobalList.file_id
-        ).filter(
-            GlobalList.type == ManualAnnotationType.EXCLUSION.value
-        ).order_by(
-            sa.asc(GlobalList.annotation['text'].astext.label('text'))
+        exclusions = (
+            db.session.query(
+                GlobalList.id.label('global_list_id'),
+                AppUser.username.label('creator'),
+                Files.hash_id.label('file_uuid'),
+                Files.deleter_id.label('file_deleted_by'),
+                GlobalList.creation_date.label('creation_date'),
+                GlobalList.annotation['text'].astext.label('text'),
+                GlobalList.annotation['isCaseInsensitive'].astext.label(
+                    'case_insensitive'
+                ),
+                GlobalList.annotation['type'].astext.label('entity_type'),
+                GlobalList.annotation['id'].astext.label('entity_id'),
+                GlobalList.annotation['reason'].astext.label('reason'),
+                GlobalList.annotation['comment'].astext.label('comment'),
+            )
+            .join(AppUser, AppUser.id == GlobalList.annotation['user_id'].as_integer())
+            .outerjoin(Files, Files.id == GlobalList.file_id)
+            .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+            .order_by(sa.asc(GlobalList.annotation['text'].astext.label('text')))
         )
 
         def get_exclusion_for_review(exclusion):
@@ -912,20 +986,23 @@ class GlobalAnnotationExportExclusions(MethodView):
                 'type': ManualAnnotationType.EXCLUSION.value,
                 'creation_date': str(exclusion.creation_date),
                 'text': exclusion.text,
-                'case_insensitive': True if exclusion.case_insensitive == 'true' else False,
+                'case_insensitive': True
+                if exclusion.case_insensitive == 'true'
+                else False,
                 'entity_type': exclusion.entity_type,
                 'entity_id': exclusion.entity_id,
                 'reason': exclusion.reason,
-                'comment': exclusion.comment
+                'comment': exclusion.comment,
             }
 
         data = [get_exclusion_for_review(exclusion) for exclusion in exclusions]
 
         exporter = get_excel_export_service()
-        response = make_response(exporter.get_bytes(data), 200)
+        response = make_response(exporter.get_bytes(data), HTTPStatus.OK)
         response.headers['Content-Type'] = exporter.mimetype
-        response.headers['Content-Disposition'] = \
-            f'attachment; filename={exporter.get_filename("global_exclusions")}'
+        response.headers[
+            'Content-Disposition'
+        ] = f'attachment; filename={exporter.get_filename("global_exclusions")}'
         yield response
 
 
@@ -944,91 +1021,102 @@ class GlobalAnnotationListView(MethodView):
         limit = min(200, int(params.limit))
         page = max(1, int(params.page))
 
-        if global_type['global_annotation_type'] == ManualAnnotationType.EXCLUSION.value:
-            exclusions = db.session.query(
-                GlobalList.id.label('global_list_id'),
-                AppUser.username.label('creator'),
-                Files.hash_id.label('file_uuid'),
-                Files.deleter_id.label('file_deleted_by'),
-                GlobalList.creation_date.label('creation_date'),
-                GlobalList.annotation['text'].astext.label('text'),
-                GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
-                GlobalList.annotation['type'].astext.label('entity_type'),
-                GlobalList.annotation['id'].astext.label('entity_id'),
-                GlobalList.annotation['reason'].astext.label('reason'),
-                GlobalList.annotation['comment'].astext.label('comment')
-            ).join(
-                AppUser,
-                AppUser.id == GlobalList.annotation['user_id'].as_integer()
-            ).outerjoin(
-                Files,
-                Files.id == GlobalList.file_id
-            ).filter(
-                GlobalList.type == ManualAnnotationType.EXCLUSION.value
-            ).order_by(
-                sa.asc(GlobalList.annotation['text'].astext.label('text'))
-            ).paginate(page, limit)
+        if (
+            global_type['global_annotation_type']
+            == ManualAnnotationType.EXCLUSION.value
+        ):
+            exclusions = (
+                db.session.query(
+                    GlobalList.id.label('global_list_id'),
+                    AppUser.username.label('creator'),
+                    Files.hash_id.label('file_uuid'),
+                    Files.deleter_id.label('file_deleted_by'),
+                    GlobalList.creation_date.label('creation_date'),
+                    GlobalList.annotation['text'].astext.label('text'),
+                    GlobalList.annotation['isCaseInsensitive'].astext.label(
+                        'case_insensitive'
+                    ),
+                    GlobalList.annotation['type'].astext.label('entity_type'),
+                    GlobalList.annotation['id'].astext.label('entity_id'),
+                    GlobalList.annotation['reason'].astext.label('reason'),
+                    GlobalList.annotation['comment'].astext.label('comment'),
+                )
+                .join(
+                    AppUser, AppUser.id == GlobalList.annotation['user_id'].as_integer()
+                )
+                .outerjoin(Files, Files.id == GlobalList.file_id)
+                .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+                .order_by(sa.asc(GlobalList.annotation['text'].astext.label('text')))
+                .paginate(page, limit)
+            )
 
-            data = [{
-                'global_id': r.global_list_id,
-                'creator': r.creator,
-                'file_uuid': r.file_uuid if r.file_uuid else '',
-                'file_deleted': True if r.file_deleted_by else False,
-                'type': ManualAnnotationType.EXCLUSION.value,
-                'creation_date': r.creation_date,
-                'text': r.text,
-                'case_insensitive': True if r.case_insensitive == 'true' else False,
-                'entity_type': r.entity_type,
-                'entity_id': r.entity_id,
-                'reason': r.reason,
-                'comment': r.comment
-            } for r in exclusions.items]
+            data = [
+                {
+                    'global_id': r.global_list_id,
+                    'creator': r.creator,
+                    'file_uuid': r.file_uuid if r.file_uuid else '',
+                    'file_deleted': True if r.file_deleted_by else False,
+                    'type': ManualAnnotationType.EXCLUSION.value,
+                    'creation_date': r.creation_date,
+                    'text': r.text,
+                    'case_insensitive': True if r.case_insensitive == 'true' else False,
+                    'entity_type': r.entity_type,
+                    'entity_id': r.entity_id,
+                    'reason': r.reason,
+                    'comment': r.comment,
+                }
+                for r in exclusions.items
+            ]
             query_total = exclusions.total
         else:
             graph = get_annotation_graph_service()
             global_inclusions = graph.exec_read_query_with_params(
                 get_global_inclusions_paginated_query(),
-                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit}
+                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit},
             )
 
-            file_uuids = {inclusion['file_reference'] for inclusion in global_inclusions}
+            file_uuids = {
+                inclusion['file_reference'] for inclusion in global_inclusions
+            }
             file_data_query = db.session.query(
                 Files.hash_id.label('file_uuid'),
-                Files.deleter_id.label('file_deleted_by')
-            ).filter(
-                Files.hash_id.in_([fid for fid in file_uuids])
-            )
+                Files.deleter_id.label('file_deleted_by'),
+            ).filter(Files.hash_id.in_([fid for fid in file_uuids]))
 
             file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
-            data = [{
-                'global_id': i['node_internal_id'],
-                'synonym_id': i['syn_node_internal_id'],
-                'creator': i['creator'],
-                'file_uuid': i['file_reference'],
-                # if not in this something must've happened to the file
-                # since a global inclusion referenced it
-                # so mark it as deleted
-                # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
-                'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
-                'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': graph.convert_datetime(i['creation_date']),
-                'text': i['synonym'],
-                'case_insensitive': True,
-                'entity_type': i['entity_type'],
-                'entity_id': i['entity_id'],
-                'reason': '',
-                'comment': ''
-            } for i in global_inclusions]
-            query_total = graph.exec_read_query(
-                get_global_inclusions_count_query())[0]['total']
+            data = [
+                {
+                    'global_id': i['node_internal_id'],
+                    'synonym_id': i['syn_node_internal_id'],
+                    'creator': i['creator'],
+                    'file_uuid': i['file_reference'],
+                    # if not in this something must've happened to the file
+                    # since a global inclusion referenced it
+                    # so mark it as deleted
+                    # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+                    'file_deleted': True
+                    if file_uuids_map.get(i['file_reference'], True)
+                    else False,
+                    'type': ManualAnnotationType.INCLUSION.value,
+                    'creation_date': graph.convert_datetime(i['creation_date']),
+                    'text': i['synonym'],
+                    'case_insensitive': True,
+                    'entity_type': i['entity_type'],
+                    'entity_id': i['entity_id'],
+                    'reason': '',
+                    'comment': '',
+                }
+                for i in global_inclusions
+            ]
+            query_total = graph.exec_read_query(get_global_inclusions_count_query())[0][
+                'total'
+            ]
 
-        results = {
-            'total': query_total,
-            'results': data
-        }
+        results = {'total': query_total, 'results': data}
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())
+    @wrap_exceptions(ServerException, title='Could not delete exclusion')
     def delete(self, params):
         yield g.current_user
 
@@ -1047,14 +1135,15 @@ class GlobalAnnotationListView(MethodView):
                 except SQLAlchemyError as e:
                     raise ServerException(
                         title='Could not delete exclusion',
-                        message='A database error occurred when deleting the global exclusion(s).'
+                        message='A database error occurred when deleting the global exclusion(s).',
                     ) from e
                 else:
                     current_app.logger.info(
                         f'Deleted {len(exclusion_pids)} global exclusions',
                         extra=UserEventLog(
                             username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                            event_type=LogEventType.ANNOTATION.value,
+                        ).to_dict(),
                     )
 
             if inclusion_pids:
@@ -1065,17 +1154,18 @@ class GlobalAnnotationListView(MethodView):
                         f'Deleted {len(inclusion_pids)} global inclusions',
                         extra=UserEventLog(
                             username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                            event_type=LogEventType.ANNOTATION.value,
+                        ).to_dict(),
                     )
                 except Exception as e:
                     current_app.logger.error(
                         f'{str(e)}',
                         extra=UserEventLog(
                             username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value).to_dict()
+                            event_type=LogEventType.ANNOTATION.value,
+                        ).to_dict(),
                     )
                     raise ServerException(
-                        title='Could not delete inclusion',
                         message='A database error occurred when deleting the global inclusion(s).'
                     ) from e
 
@@ -1087,6 +1177,7 @@ class GlobalAnnotationListView(MethodView):
 # credentials when pinging this endpoint, or we should block this endpoint via nginx and whitelist
 # the pdfparser on that endpoint.
 @login_exempt
+@wrap_exceptions(AnnotationError)
 def get_pdf_to_annotate(file_id):
     """This endpoint is sent by the annotation pipeline to the
     pdfparse service, and acts as a resource pull.
@@ -1095,11 +1186,7 @@ def get_pdf_to_annotate(file_id):
     doc = Files.query.get(file_id)
 
     if not doc:
-        raise AnnotationError(
-            title='Failed to Annotate',
-            message=f'File with file id {file_id} not found.',
-            code=404
-        )
+        raise FileNotFoundError(message=f'File with file id {file_id} not found.')
 
     res = make_response(doc.content.raw_file)
     res.headers['Content-Type'] = 'application/pdf'
@@ -1109,41 +1196,56 @@ def get_pdf_to_annotate(file_id):
 
 bp.add_url_rule(
     '/global-list',
-    view_func=GlobalAnnotationListView.as_view('global_annotations_list'))
+    view_func=GlobalAnnotationListView.as_view('global_annotations_list'),
+)
 bp.add_url_rule(
     '/global-list/exclusions',
-    view_func=GlobalAnnotationExportExclusions.as_view('export_global_exclusions'))
+    view_func=GlobalAnnotationExportExclusions.as_view('export_global_exclusions'),
+)
 bp.add_url_rule(
     '/global-list/inclusions',
-    view_func=GlobalAnnotationExportInclusions.as_view('export_global_inclusions'))
+    view_func=GlobalAnnotationExportInclusions.as_view('export_global_inclusions'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations',
-    view_func=FileAnnotationsView.as_view('file_annotations_list'))
+    view_func=FileAnnotationsView.as_view('file_annotations_list'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/enrichment/annotations',
-    view_func=EnrichmentAnnotationsView.as_view('enrichment_file_annotations_list'))
+    view_func=EnrichmentAnnotationsView.as_view('enrichment_file_annotations_list'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/custom',
-    view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'))
+    view_func=FileCustomAnnotationsListView.as_view('file_custom_annotations_list'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/custom/<string:uuid>',
-    view_func=FileCustomAnnotationsDetailView.as_view('file_custom_annotations_detail'))
+    view_func=FileCustomAnnotationsDetailView.as_view('file_custom_annotations_detail'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/exclusions',
-    view_func=FileAnnotationExclusionsListView.as_view('file_annotation_exclusions_list'))
+    view_func=FileAnnotationExclusionsListView.as_view(
+        'file_annotation_exclusions_list'
+    ),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/counts',
-    view_func=FileAnnotationCountsView.as_view('file_annotation_counts'))
+    view_func=FileAnnotationCountsView.as_view('file_annotation_counts'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/sorted',
-    view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'))
+    view_func=FileAnnotationSortedView.as_view('file_annotation_sorted'),
+)
 filesystem_bp.add_url_rule(
     'objects/<string:hash_id>/annotations/gene-counts',
-    view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'))
+    view_func=FileAnnotationGeneCountsView.as_view('file_annotation_gene_counts'),
+)
 filesystem_bp.add_url_rule(
     'annotations/generate',
-    view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'))
+    view_func=FileAnnotationsGenerationView.as_view('file_annotation_generation'),
+)
 filesystem_bp.add_url_rule(
     'annotations/refresh',
     # TODO: this can potentially become a generic annotations refresh
-    view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'))
+    view_func=RefreshEnrichmentAnnotationsView.as_view('refresh_annotations'),
+)

@@ -43,7 +43,6 @@ interface AppURLInterface {
  * For more documentation check: https://url.spec.whatwg.org/#url-class
  */
 export class AppURL implements URL, AppURLInterface {
-
   get searchParamsObject() {
     return Object.fromEntries(this.searchParams.entries());
   }
@@ -57,7 +56,7 @@ export class AppURL implements URL, AppURLInterface {
   }
 
   get pathname(): string {
-    return this.pathSegments.map(segment => `/${segment}`).join('');
+    return this.pathSegments.map((segment) => `/${segment}`).join('');
   }
 
   set search(value: string) {
@@ -123,7 +122,7 @@ export class AppURL implements URL, AppURLInterface {
 
   pathSegments: string[];
 
-  static from(url: string|URL|AppURL): AppURL {
+  static from(url: string | URL | AppURL): AppURL {
     return url instanceof this ? url : new AppURL(String(url));
   }
 
@@ -155,7 +154,8 @@ export class AppURL implements URL, AppURLInterface {
 }
 
 export const lifelikeUrl = Object.freeze(new AppURL().toAbsolute());
-export const isInternalUri = (uri: AppURL): boolean => uri.isRelative || uri.origin === lifelikeUrl.origin;
+export const isInternalUri = (uri: AppURL): boolean =>
+  uri.isRelative || uri.origin === lifelikeUrl.origin;
 
 /**This is mapping between indexed path segments and uri types
  * Examples:
@@ -168,30 +168,27 @@ export const isInternalUri = (uri: AppURL): boolean => uri.isRelative || uri.ori
 const internalURITypeMapping: Map<object, InternalURIType> = new Map([
   [['search', 'content'], InternalURIType.Search],
   [['search', 'graph'], InternalURIType.KgSearch],
-  [{pathSegments: ['folders'], fragment: 'project'}, InternalURIType.Project],
+  [{ pathSegments: ['folders'], fragment: 'project' }, InternalURIType.Project],
   [['folders'], InternalURIType.Directory],
-  [{pathSegments: {...['projects', , 'folders']}, fragment: 'project'}, InternalURIType.Project],
+  [
+    { pathSegments: { ...['projects', , 'folders'] }, fragment: 'project' },
+    InternalURIType.Project,
+  ],
   [['projects', , 'folders'], InternalURIType.Directory],
   [['projects', , 'bioc'], InternalURIType.BioC],
   [['projects', , 'enrichment-table'], InternalURIType.EnrichmentTable],
   [['projects', , 'maps'], InternalURIType.Map],
   [['projects', , 'sankey'], InternalURIType.Graph],
   [['projects', , 'sankey-many-to-many'], InternalURIType.Graph],
-  [['projects', , 'files'], InternalURIType.Pdf]
+  [['projects', , 'files'], InternalURIType.Pdf],
 ]);
 
 export const getInternalURIType = (uri: AppURL) => {
   if (isInternalUri(uri)) {
     return findEntriesValue(
       internalURITypeMapping,
-        // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
-        expected =>
-          isMatch(
-            uri,
-            isArray(expected) ?
-              { pathSegments: expected } :
-              expected
-          )
+      // Current version of lodash has problem with sparse arrays (https://github.com/lodash/lodash/issues/5554)
+      (expected) => isMatch(uri, isArray(expected) ? { pathSegments: expected } : expected)
     );
   }
 };

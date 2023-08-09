@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { uniqueId } from 'lodash-es';
 import { finalize, tap } from 'rxjs/operators';
 
@@ -15,6 +15,9 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { collaboratorLoadingMock } from 'app/shared/mocks/loading/user';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { ProjectImpl } from '../../models/filesystem-object';
 import { Collaborator } from '../../models/collaborator';
@@ -29,18 +32,23 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
   private _project: ProjectImpl;
-  collaborators$: Observable<ModelList<Collaborator>> = of(new ModelList<Collaborator>());
+  collaborators$: Subject<ModelList<Collaborator>> = new Subject<ModelList<Collaborator>>();
+  collaboratorsWithStatus$ = this.collaborators$.pipe(
+    addStatus(new ModelList(mockArrayOf(collaboratorLoadingMock)))
+  );
   readonly addForm: FormGroup = new FormGroup({
     roleName: new FormControl('project-read', Validators.required),
     users: new FormControl([], nonEmptyList),
   });
 
-  constructor(modal: NgbActiveModal,
-              messageDialog: MessageDialog,
-              protected readonly modalService: NgbModal,
-              protected readonly projectsService: ProjectsService,
-              protected readonly progressDialog: ProgressDialog,
-              protected readonly errorHandler: ErrorHandler) {
+  constructor(
+    modal: NgbActiveModal,
+    messageDialog: MessageDialog,
+    protected readonly modalService: NgbModal,
+    protected readonly projectsService: ProjectsService,
+    protected readonly progressDialog: ProgressDialog,
+    protected readonly errorHandler: ErrorHandler
+  ) {
     super(modal, messageDialog);
   }
 
@@ -57,9 +65,11 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   getValue() {}
 
   refresh() {
-    this.collaborators$ = this.projectsService.getCollaborators(this.project.hashId, {
-      limit: 100, // TODO: Implement pagination
-    });
+    this.projectsService
+      .getCollaborators(this.project.hashId, {
+        limit: 100, // TODO: Implement pagination
+      })
+      .subscribe((result) => this.collaborators$.next(result));
   }
 
   addCollaborator() {
@@ -67,15 +77,15 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
       const roleName: string = this.addForm.value.roleName;
       const users: AppUser[] = this.addForm.value.users;
       const request: MultiCollaboratorUpdateRequest = {
-        updateOrCreate: users.map(user => ({
+        updateOrCreate: users.map((user) => ({
           userHashId: user.hashId,
           roleName,
         })),
       };
 
-      this.saveCollaborators(request).pipe(
-        this.errorHandler.createFormErrorHandler(this.addForm),
-      ).subscribe();
+      this.saveCollaborators(request)
+        .pipe(this.errorHandler.createFormErrorHandler(this.addForm))
+        .subscribe();
     } else {
       this.addForm.markAsDirty();
       this.messageDialog.display({
@@ -88,39 +98,45 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
 
   removeCollaborator(collaborator: Collaborator) {
     this.saveCollaborators({
-      removeUserHashIds: [
-        collaborator.user.hashId,
-      ],
+      removeUserHashIds: [collaborator.user.hashId],
     }).subscribe();
   }
 
   changeCollaboratorRole(collaborator: Collaborator, roleName: string) {
     this.saveCollaborators({
-      updateOrCreate: [{
-        userHashId: collaborator.user.hashId,
-        roleName,
-      }],
+      updateOrCreate: [
+        {
+          userHashId: collaborator.user.hashId,
+          roleName,
+        },
+      ],
     }).subscribe();
   }
 
-  private saveCollaborators(request: MultiCollaboratorUpdateRequest): Observable<ModelList<Collaborator>> {
+  private saveCollaborators(
+    request: MultiCollaboratorUpdateRequest
+  ): Observable<ModelList<Collaborator>> {
     const progressDialogRef = this.progressDialog.display({
       title: 'Updating Collaborators',
-      progressObservables: [new BehaviorSubject<Progress>(new Progress({
-        status: 'Updating collaborators',
-      }))],
+      progressObservables: [
+        new BehaviorSubject<Progress>(
+          new Progress({
+            status: 'Updating collaborators',
+          })
+        ),
+      ],
     });
 
     return this.projectsService.saveCollaborators(this.project.hashId, request).pipe(
-      tap(collaborators => {
+      tap((collaborators) => {
         this.addForm.patchValue({
           users: [],
         });
         this.addForm.markAsPristine();
-        this.collaborators$ = of(collaborators);
+        this.collaborators$.next(collaborators);
       }),
       finalize(() => progressDialogRef.close()),
-      this.errorHandler.create({label: 'Save project collaborators'}),
+      this.errorHandler.create({ label: 'Save project collaborators' })
     );
   }
 }

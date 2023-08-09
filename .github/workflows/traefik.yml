@@ -1,0 +1,46 @@
+name: Lifelike Traefik deployment
+
+on:
+  workflow_call:
+    inputs:
+      playbook_path:
+        description: File path to Ansible playbook
+        required: true
+        type: string
+      inventory_path:
+        description: File path to Ansible inventory
+        required: true
+        type: string
+    secrets:
+      VAULT_PASSWORD:
+        required: true
+      SSH_KEY:
+        required: true
+      INFRA_PAT:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.INFRA_PAT }}
+          submodules: recursive
+
+      - name: Run Ansible deployment action
+        uses: ./.github/actions/ansible
+        with:
+          workspace_dir: deployment/ansible
+          playbook_file_path: ${{ inputs.playbook_path }}
+          inventory_file_path: ${{ inputs.inventory_path }}
+          vault_password: ${{ secrets.VAULT_PASSWORD }}
+          ssh_key: ${{ secrets.SSH_KEY }}
+          options: |
+            --user ansible
+            --verbose

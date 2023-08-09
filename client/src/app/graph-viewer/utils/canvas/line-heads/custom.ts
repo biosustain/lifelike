@@ -13,9 +13,11 @@ export class CustomHead extends AbstractPathHead {
    * @param startControlPoint the start control point
    * @param options additional options
    */
-  constructor(controlPoints: number[],
-              startControlPoint: [number, number],
-              options: ShapeTerminatorOptions = {}) {
+  constructor(
+    controlPoints: number[],
+    startControlPoint: [number, number],
+    options: ShapeTerminatorOptions = {}
+  ) {
     super(options);
     this.controlPoints = controlPoints;
     this.startControlPoint = startControlPoint;

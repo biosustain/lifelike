@@ -1,16 +1,7 @@
+@import 'src/scss/variables';
+
 $placeholder-bg: $gray-200;
 $placeholder-border-radius: $border-radius;
-
-.placeholder-box {
-  position: relative;
-  display: inline-block;
-  background: $placeholder-bg;
-  color: transparent;
-  min-height: 1rem;
-  border-radius: $placeholder-border-radius;
-  user-select: none;
-  animation: 1s linear infinite alternate placeholder-pulse;
-}
 
 @keyframes placeholder-pulse {
   0% {
@@ -19,5 +10,42 @@ $placeholder-border-radius: $border-radius;
 
   100% {
     opacity: 0.2;
+  }
+}
+
+// Class beeing added by 'appShowPlaceholders' attribute when we want to render content as placeholder
+// This class should not be assigned manually!!!
+.show-placeholders {
+  //background-color: deeppink !important; // good for visual debugging
+
+  // Actual placeholder styling assigned by 'appHasPlaceholder' attribute
+  // It is better to assign it with the directive to cover all edge cases
+  .placeholder-slot {
+    //background-color: deepskyblue !important; // good for visual debugging
+    position: relative;
+    background: $placeholder-bg;
+    color: transparent !important;
+    border-radius: $placeholder-border-radius;
+    pointer-events: none;
+    user-select: none;
+    animation: 1s linear infinite alternate placeholder-pulse;
+
+    // If placeholder slot is empty it's most likely cause of missing value in loading mock
+    // catch and handle gracefully
+    &:empty:before {
+      content: 'Loading Loading';
+    }
+
+    // icon within shown placeholder slot should not be visible
+    i.fas {
+      color: transparent !important;
+    }
+  }
+
+  // if placeholder is truncated dont show (black) ellipsis
+  .placeholder-slot .text-truncate,
+  // works only in newest browsers but it is just an eye candy
+  .text-truncate:has(.placeholder-slot) {
+    text-overflow: clip !important;
   }
 }

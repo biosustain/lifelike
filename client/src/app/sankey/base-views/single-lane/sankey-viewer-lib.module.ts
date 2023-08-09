@@ -34,14 +34,14 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
     SingleLaneBaseControllerService,
     {
       provide: BaseControllerService,
-      useExisting: SingleLaneBaseControllerService
+      useExisting: SingleLaneBaseControllerService,
     },
     SankeySelectionService,
     ClipboardService,
     // Core components substitution
-    {provide: SANKEY_ADVANCED, useValue: SankeySingleLaneAdvancedPanelComponent},
-    {provide: SANKEY_GRAPH, useValue: SankeySingleLaneComponent},
-    {provide: SANKEY_DETAILS, useValue: SankeySingleLaneDetailsPanelComponent}
+    { provide: SANKEY_ADVANCED, useValue: SankeySingleLaneAdvancedPanelComponent },
+    { provide: SANKEY_GRAPH, useValue: SankeySingleLaneComponent },
+    { provide: SANKEY_DETAILS, useValue: SankeySingleLaneDetailsPanelComponent },
   ],
   imports: [
     CommonModule,
@@ -59,13 +59,12 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
     SharedModule,
     FileBrowserModule,
     RouterModule.forChild([]),
-    SankeySingleLaneDetailsPanelModule
+    SankeySingleLaneDetailsPanelModule,
   ],
   declarations: [
     SankeySingleLaneAdvancedPanelComponent,
     SankeySingleLaneComponent,
-    SankeyLegendComponent
-  ]
+    SankeyLegendComponent,
+  ],
 })
-export class SingleLaneBaseModule {
-}
+export class SingleLaneBaseModule {}

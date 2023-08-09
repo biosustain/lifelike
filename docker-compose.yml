@@ -1,20 +1,20 @@
-version: '3.8'
+version: "3.8"
 
 services:
-    appserver:
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
+  appserver:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}
 
-    webserver:
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
+  webserver:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-webserver:${GITHUB_HASH:-latest}
 
-    pdfparser:
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-pdfparser:latest
+  pdfparser:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-pdfparser:latest
 
-    filebeat:
-        image: ${REGISTRY:-lifelike.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
+  filebeat:
+    image: ${REGISTRY:-lifelike.azurecr.io}/filebeat:${GITHUB_HASH:-latest}
 
-    cache-invalidator:
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
+  cache-invalidator:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
 
-    statistical-enrichment:
-        image: ${REGISTRY:-lifelike.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}
+  statistical-enrichment:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}

@@ -5,28 +5,28 @@ import { Subscription } from 'rxjs';
 import { FilesystemObjectList } from 'app/file-browser/models/filesystem-object-list';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-
+import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
+import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 @Component({
   selector: 'app-browser-pinned-list',
   templateUrl: './browser-pinned-list.component.html',
 })
 export class BrowserPinnedListComponent implements OnInit, OnDestroy {
-
-  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(
-    () => this.filesystemService.search({
+  readonly loadTask: BackgroundTask<void, FilesystemObjectList> = new BackgroundTask(() =>
+    this.filesystemService.search({
       type: 'pinned',
       sort: '-modificationDate',
-    }),
+    })
   );
   private loadTaskSubscription: Subscription;
 
-  list: FilesystemObjectList = new FilesystemObjectList();
+  list: FilesystemObjectList = new FilesystemObjectList(mockArrayOf(filesystemObjectLoadingMock));
 
   constructor(protected readonly filesystemService: FilesystemService) {}
 
   ngOnInit() {
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({result: list}) => {
+    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result: list }) => {
       this.list = list;
     });
 

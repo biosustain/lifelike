@@ -1,4 +1,14 @@
-import { AfterViewInit, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 
 import { LINE_TYPES } from 'app/drawing-tool/services/line-types';
 import { BG_PALETTE_COLORS, PALETTE_COLORS } from 'app/drawing-tool/services/palette';
@@ -6,14 +16,17 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
-export abstract class EntityForm implements AfterViewInit {
-  @ViewChild('displayName', {static: false}) displayNameRef: ElementRef;
-  @ViewChild('scrollWrapper', {static: false}) scrollWrapper: ElementRef;
+export abstract class EntityForm implements AfterViewInit, OnChanges {
+  @ViewChild('displayName', { static: false }) displayNameRef: ElementRef;
+  @ViewChild('scrollWrapper', { static: false }) scrollWrapper: ElementRef;
 
   lineTypeChoices = [
-    [null, {
-      name: '(Default)',
-    }],
+    [
+      null,
+      {
+        name: '(Default)',
+      },
+    ],
     ...LINE_TYPES.entries(),
   ];
 
@@ -26,16 +39,20 @@ export abstract class EntityForm implements AfterViewInit {
   @Output() sourceOpen = new EventEmitter<string>();
 
   overflow = false;
+  protected abstract readonly TABS: string[];
 
-  protected constructor(
-    protected readonly workspaceManager: WorkspaceManager,
-  ) {
-  }
+  protected constructor(protected readonly workspaceManager: WorkspaceManager) {}
 
   /**
    * Emit save event on user changes
    */
   abstract doSave();
+
+  ngOnChanges({ infoPanel }: SimpleChanges) {
+    if (infoPanel?.currentValue) {
+      infoPanel.currentValue.tabs = this.TABS;
+    }
+  }
 
   changeOverflow(newValue) {
     if (this.overflow !== newValue) {
@@ -51,11 +68,9 @@ export abstract class EntityForm implements AfterViewInit {
   onResize() {
     const {
       scrollWrapper: {
-        nativeElement: {
-          offsetHeight
-        }
+        nativeElement: { offsetHeight },
       },
-      ASSUMED_PANEL_HEIGHT
+      ASSUMED_PANEL_HEIGHT,
     } = this;
     this.changeOverflow(offsetHeight < ASSUMED_PANEL_HEIGHT * 2);
   }
@@ -75,10 +90,8 @@ export abstract class EntityForm implements AfterViewInit {
    * Allow user to navigate to a link in a new tab
    */
   goToLink(hyperlink) {
-    openPotentialExternalLink(this.workspaceManager, hyperlink, {newTab: true, sideBySide: true});
+    openPotentialExternalLink(this.workspaceManager, hyperlink, { newTab: true, sideBySide: true });
   }
-
-
 
   /**
    * Bring user to original source of entity information

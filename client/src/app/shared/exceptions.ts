@@ -2,14 +2,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 
 export class UserError {
   constructor({
-                title,
-                message,
-                type = null,
-                additionalMsgs = [],
-                stacktrace = null,
-                cause = null,
-                transactionId = null
-              }) {
+    title,
+    message,
+    type = null,
+    additionalMsgs = [],
+    stacktrace = null,
+    cause = null,
+    transactionId = null,
+  }) {
     this.title = title;
     this.message = message;
     this.type = type;
@@ -28,7 +28,7 @@ export class UserError {
   transactionId: string;
 }
 
-export class DeleteNonEmpty extends UserError {
-}
+export class DeleteNonEmpty extends UserError {}
 
-export const isOfflineError = (error) => (error as HttpErrorResponse)?.status === 0 && !navigator.onLine;
+export const isOfflineError = (error) =>
+  (error as HttpErrorResponse)?.status === 0 && !navigator.onLine;

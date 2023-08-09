@@ -18,18 +18,26 @@ depends_on = None
 
 
 def upgrade():
-    actions = postgresql.ENUM('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                              name='annotationchangecause')
+    actions = postgresql.ENUM(
+        'USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION', name='annotationchangecause'
+    )
     actions.create(op.get_bind(), checkfirst=True)
     op.alter_column(
-        'file_annotations_version', 'cause',
-        existing_type=postgresql.ENUM('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                                      name='annotationcause'),
-        type_=sa.Enum('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                      name='annotationchangecause'),
+        'file_annotations_version',
+        'cause',
+        existing_type=postgresql.ENUM(
+            'USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION', name='annotationcause'
+        ),
+        type_=sa.Enum(
+            'USER',
+            'USER_REANNOTATION',
+            'SYSTEM_REANNOTATION',
+            name='annotationchangecause',
+        ),
         existing_nullable=False,
         # Cast cause column as text, then as the new Enum
-        postgresql_using='cause::text::annotationchangecause')
+        postgresql_using='cause::text::annotationchangecause',
+    )
     op.execute("DROP TYPE annotationcause")
 
     if context.get_x_argument(as_dictionary=True).get('data_migrate', None):
@@ -37,17 +45,25 @@ def upgrade():
 
 
 def downgrade():
-    actions = postgresql.ENUM('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                              name='annotationcause')
+    actions = postgresql.ENUM(
+        'USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION', name='annotationcause'
+    )
     actions.create(op.get_bind(), checkfirst=True)
     op.alter_column(
-        'file_annotations_version', 'cause',
-        existing_type=sa.Enum('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                              name='annotationchangecause'),
-        type_=postgresql.ENUM('USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION',
-                              name='annotationcause'),
+        'file_annotations_version',
+        'cause',
+        existing_type=sa.Enum(
+            'USER',
+            'USER_REANNOTATION',
+            'SYSTEM_REANNOTATION',
+            name='annotationchangecause',
+        ),
+        type_=postgresql.ENUM(
+            'USER', 'USER_REANNOTATION', 'SYSTEM_REANNOTATION', name='annotationcause'
+        ),
         existing_nullable=False,
-        postgresql_using='cause::text::annotationcause')
+        postgresql_using='cause::text::annotationcause',
+    )
     op.execute("DROP TYPE annotationchangecause")
 
 

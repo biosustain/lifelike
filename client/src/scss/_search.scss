@@ -16,7 +16,6 @@
 }
 
 .search-results-item-body {
-
 }
 
 .search-results-selectable {
@@ -29,7 +28,8 @@
       box-shadow: $focus-box-shadow;
     }
 
-    &:focus, &.active:hover {
+    &:focus,
+    &.active:hover {
       box-shadow: $focus-box-shadow;
     }
   }

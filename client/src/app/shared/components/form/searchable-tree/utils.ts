@@ -10,16 +10,13 @@ export const filterSearchableTreeNode = (
 ): SearchableTreeNode => {
   let parsedNode;
   if (node.children) {
-    const newChildren = node.children.reduce(
-      (filteredChildren, child) => {
-        const newChild = filterSearchableTreeNode(child, filter);
-        if (newChild) {
-          filteredChildren.push(newChild);
-        }
-        return filteredChildren;
-      },
-      []
-    );
+    const newChildren = node.children.reduce((filteredChildren, child) => {
+      const newChild = filterSearchableTreeNode(child, filter);
+      if (newChild) {
+        filteredChildren.push(newChild);
+      }
+      return filteredChildren;
+    }, []);
     if (newChildren.length !== node.children.length) {
       parsedNode = { ...node, children: newChildren };
     }
