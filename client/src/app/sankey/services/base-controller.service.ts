@@ -23,7 +23,7 @@ import {
   MultiValueAccessor,
   LINK_VALUE_GENERATOR,
   LINK_PROPERTY_GENERATORS,
-  NODE_VALUE_GENERATOR
+  NODE_VALUE_GENERATOR,
 } from '../interfaces/valueAccessors';
 import { SankeyView } from '../interfaces/view';
 import { EditService } from './edit.service';
@@ -38,25 +38,24 @@ export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
  */
 @Injectable()
 export class BaseControllerService<Base extends TypeContext>
-  extends StateControlAbstractService<Base['options'], Base['state']> implements ServiceOnInit, OnDestroy {
-
+  extends StateControlAbstractService<Base['options'], Base['state']>
+  implements ServiceOnInit, OnDestroy
+{
   hasPendingChanges$ = combineLatest([
     this.update.edited$,
     this.delta$.pipe(
-      switchMap(baseViewDelta =>
+      switchMap((baseViewDelta) =>
         iif(
           () => isEmpty(baseViewDelta),
           this.common.delta$.pipe(
-            map(commonDelta => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
-            map(commonDelta => !isEmpty(commonDelta))
+            map((commonDelta) => omit(commonDelta, ['viewName', 'networkTraceIdx'])),
+            map((commonDelta) => !isEmpty(commonDelta))
           ),
           of(true)
         )
       )
-    )
-  ]).pipe(
-    map(editFlags => editFlags.some(f => f)),
-  );
+    ),
+  ]).pipe(map((editFlags) => editFlags.some((f) => f)));
 
   destroy$ = new Subject<void>();
 
@@ -71,13 +70,13 @@ export class BaseControllerService<Base extends TypeContext>
 
   // @ts-ignore
   readonly linkValueAccessors: {
-    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator<Base>
+    [generatorId in LINK_VALUE_GENERATOR]: ValueGenerator<Base>;
   } = Object.freeze({
     [LINK_VALUE_GENERATOR.fixedValue0]: {
-      preprocessing: linkValues.fixedValue(0)
+      preprocessing: linkValues.fixedValue(0),
     },
     [LINK_VALUE_GENERATOR.fixedValue1]: {
-      preprocessing: linkValues.fixedValue(1)
+      preprocessing: linkValues.fixedValue(1),
     },
     // [LINK_VALUE_GENERATOR.fraction_of_fixed_nodevalue]: {
     //   requires: ({node}) => node.fixedValue,
@@ -87,59 +86,62 @@ export class BaseControllerService<Base extends TypeContext>
     [LINK_VALUE_GENERATOR.input_count]: {
       preprocessing: () => {
         throw new NotImplemented();
-      }
-    }
+      },
+    },
   });
 
   linkPropertyAcessors: {
-    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator<Base>
+    [generatorId in LINK_PROPERTY_GENERATORS]: (k) => ValueGenerator<Base>;
   } = {
-    [LINK_PROPERTY_GENERATORS.byProperty]: k => ({
+    [LINK_PROPERTY_GENERATORS.byProperty]: (k) => ({
       // @ts-ignore
       preprocessing: linkValues.byProperty(k),
-      postprocessing: ({links}) => {
-        links.forEach(l => {
-          l.value /= (l.adjacentDivider || 1);
+      postprocessing: ({ links }) => {
+        links.forEach((l) => {
+          l.value /= l.adjacentDivider || 1;
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              value: true
-            }
-          }
+              value: true,
+            },
+          },
         };
-      }
+      },
     }),
-    [LINK_PROPERTY_GENERATORS.byArrayProperty]: k => ({
+    [LINK_PROPERTY_GENERATORS.byArrayProperty]: (k) => ({
       // @ts-ignore
       preprocessing: linkValues.byArrayProperty(k),
-      postprocessing: ({links}) => {
-        links.forEach(l => {
-          l.multipleValues = l.multipleValues.map(d => d / (l.adjacentDivider || 1)) as [number, number];
+      postprocessing: ({ links }) => {
+        links.forEach((l) => {
+          l.multipleValues = l.multipleValues.map((d) => d / (l.adjacentDivider || 1)) as [
+            number,
+            number
+          ];
           // take max for layer calculation
         });
         return {
           _sets: {
             link: {
-              multipleValues: true
-            }
-          }
+              multipleValues: true,
+            },
+          },
         };
-      }
+      },
     }),
   };
 
   nodeValueAccessors: {
-    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator<Base>
+    [generatorId in NODE_VALUE_GENERATOR]: ValueGenerator<Base>;
   } = {
     [NODE_VALUE_GENERATOR.none]: {
-      preprocessing: nodeValues.noneNodeValue
+      preprocessing: nodeValues.noneNodeValue,
     },
     [NODE_VALUE_GENERATOR.fixedValue1]: {
       // @ts-ignore
-      preprocessing: nodeValues.fixedValue(1)
-    }
+      preprocessing: nodeValues.fixedValue(1),
+    },
   };
 
   constructor(
@@ -159,53 +161,48 @@ export class BaseControllerService<Base extends TypeContext>
    * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
    */
   onInit() {
-    this.nodeValueAccessor$ = unifiedSingularAccessor(
-      this.state$,
-      'nodeValueAccessorId',
-    ).pipe(
+    this.nodeValueAccessor$ = unifiedSingularAccessor(this.state$, 'nodeValueAccessorId').pipe(
       map((nodeValueAccessorId) =>
-        nodeValueAccessorId ? (
-          this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
-          this.nodePropertyAcessor(nodeValueAccessorId)
-        ) : (
-          this.warningController.warn(ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)),
-            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none]
-        )
+        nodeValueAccessorId
+          ? this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
+            this.nodePropertyAcessor(nodeValueAccessorId)
+          : (this.warningController.warn(
+              ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)
+            ),
+            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none])
       )
     );
 
-    this.linkValueAccessor$ = unifiedSingularAccessor(
-      this.state$, 'linkValueAccessorId'
-    ).pipe(
+    this.linkValueAccessor$ = unifiedSingularAccessor(this.state$, 'linkValueAccessorId').pipe(
       switchMap((linkValueAccessorId) =>
         iif(
           () => has(this.linkValueAccessors, linkValueAccessorId),
           of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
-          unifiedSingularAccessor(
-            this.common.options$,
-            'linkValueAccessors'
-          ).pipe(
-            map(linkValueAccessors =>
-                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(linkValueAccessorId) ?? (
-                  this.warningController.warn(ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)),
-                    this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0]
-                )
+          unifiedSingularAccessor(this.common.options$, 'linkValueAccessors').pipe(
+            map(
+              (linkValueAccessors) =>
+                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(
+                  linkValueAccessorId
+                ) ??
+                (this.warningController.warn(
+                  ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)
+                ),
+                this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0])
             )
           )
         )
-      ));
+      )
+    );
 
     this.predefinedValueAccessor$ = unifiedSingularAccessor(
       this.common.options$,
       'predefinedValueAccessors'
     ).pipe(
-      switchMap(predefinedValueAccessors => unifiedSingularAccessor(
-        this.state$,
-        'predefinedValueAccessorId'
-      ).pipe(
-        map(predefinedValueAccessorId =>
-          predefinedValueAccessors[predefinedValueAccessorId]
-        )))
+      switchMap((predefinedValueAccessors) =>
+        unifiedSingularAccessor(this.state$, 'predefinedValueAccessorId').pipe(
+          map((predefinedValueAccessorId) => predefinedValueAccessors[predefinedValueAccessorId])
+        )
+      )
     );
 
     this.nodeHeight$ = this.stateAccessor('nodeHeight');
@@ -276,25 +273,18 @@ export class BaseControllerService<Base extends TypeContext>
   patchState(statePatch) {
     return this.delta$.pipe(
       first(),
-      map(currentStateDelta =>
+      map((currentStateDelta) =>
         // ommit empty values so they can be overridden by defaultState
-        omitBy(
-          merge(
-            {},
-            currentStateDelta,
-            statePatch,
-          ),
-          isNil
-        )
+        omitBy(merge({}, currentStateDelta, statePatch), isNil)
       ),
-      tap(stateDelta => {
+      tap((stateDelta) => {
         this.delta$.next(stateDelta as Partial<Base['state']>);
       })
     );
   }
 
-  nodePropertyAcessor: (k) => ValueGenerator<Base> = k => ({
+  nodePropertyAcessor: (k) => ValueGenerator<Base> = (k) => ({
     // @ts-ignore
-    preprocessing: nodeValues.byProperty(k)
-  })
+    preprocessing: nodeValues.byProperty(k),
+  });
 }

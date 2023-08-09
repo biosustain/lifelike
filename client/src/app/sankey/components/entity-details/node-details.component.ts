@@ -1,14 +1,13 @@
-import { Component, } from '@angular/core';
+import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { SankeyEntityDetailsComponent } from '../../abstract/entity-details/entity-details.component';
 import { BaseControllerService } from '../../services/base-controller.service';
 import { TypeContext } from '../../interfaces';
 
-
 @Component({
   selector: 'app-sankey-node-details',
-  templateUrl: './node-details.component.html'
+  templateUrl: './node-details.component.html',
 })
 export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
   constructor(
@@ -27,7 +26,7 @@ export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
       const partedUrl = link.split('?');
       if (partedUrl.length === 2) {
         const [url, search] = partedUrl;
-        const params = search.split('&').map(e => {
+        const params = search.split('&').map((e) => {
           const [k, v] = e.split('=');
           return `${k}=${encodeURIComponent(v)}`;
         });

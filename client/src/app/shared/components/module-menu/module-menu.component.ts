@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnChanges, } from '@angular/core';
+import { AfterViewInit, Component, OnChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -24,23 +24,23 @@ import { ModuleContext } from '../../services/module-context.service';
   templateUrl: '../object-menu/object-menu.component.html',
 })
 export class ModuleMenuComponent extends ObjectMenuComponent implements AfterViewInit, OnChanges {
-  constructor(readonly router: Router,
-              protected readonly snackBar: MatSnackBar,
-              protected readonly errorHandler: ErrorHandler,
-              protected readonly route: ActivatedRoute,
-              protected readonly workspaceManager: WorkspaceManager,
-              protected readonly actions: FilesystemObjectActions,
-              protected readonly objectTypeService: ObjectTypeService,
-              protected readonly clipboard: ClipboardService,
-              private tabUrlService: ModuleContext
+  constructor(
+    readonly router: Router,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly route: ActivatedRoute,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly actions: FilesystemObjectActions,
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly clipboard: ClipboardService,
+    private tabUrlService: ModuleContext
   ) {
     super(router, snackBar, errorHandler, route, workspaceManager, actions, objectTypeService);
   }
 
   async openShareDialog(target: FilesystemObject) {
-    return await this.clipboard.copy(
-      this.tabUrlService.shareableLink,
-      {intermediate: 'Generating link...'}
-    );
+    return await this.clipboard.copy(this.tabUrlService.shareableLink, {
+      intermediate: 'Generating link...',
+    });
   }
 }

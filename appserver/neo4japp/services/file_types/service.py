@@ -17,6 +17,7 @@ class Certanity(IntEnum):
 
     The higher the number the more certain we are about given result
     """
+
     default = -100
     assumed = -1
     match = 0
@@ -47,7 +48,9 @@ class BaseFileTypeProvider:
         """
         return file.mime_type.lower() in self.mime_types
 
-    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
+    def detect_provider(
+        self, file: Files
+    ) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
         Larger numbers indicate a higher confidence and negative
@@ -59,15 +62,17 @@ class BaseFileTypeProvider:
         :param file: the file
         :return: whether this provide should be used
         """
-        return [(Certanity.match, self)] if file.mime_type.lower() in self.mime_types else []
+        return (
+            [(Certanity.match, self)]
+            if file.mime_type.lower() in self.mime_types
+            else []
+        )
 
     def convert(self, buffer):
         raise NotImplementedError
 
     def detect_mime_type(
-        self,
-        buffer: FileContentBuffer,
-        extension: str = None
+        self, buffer: FileContentBuffer, extension: str = None
     ) -> List[Tuple[Certanity, str]]:
         """
         Given the byte buffer, return a list of possible mime types with
@@ -185,18 +190,19 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
     """
     A generic file type provider that handles all miscellaneous types of files.
     """
+
     def __init__(self, mime_type='application/octet-stream'):
         self.mime_type = mime_type
         self.mime_types = (mime_type,)
 
-    def detect_provider(self, file: Files) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
+    def detect_provider(
+        self, file: Files
+    ) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
         return [(Certanity.default, GenericFileTypeProvider(file.mime_type))]
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension: str = None
-            ) -> List[Tuple[Certanity, str]]:
+        self, buffer: FileContentBuffer, extension: str = None
+    ) -> List[Tuple[Certanity, str]]:
         with buffer as bufferView:
             mime_type = magic.from_buffer(bufferView.read(2048), mime=True)
             return [(Certanity.default, mime_type)]
@@ -228,6 +234,7 @@ class DefaultFileTypeProvider(BaseFileTypeProvider):
     A fallback file type provider that is returned when we don't know what
     type of file it is or we don't support it.
     """
+
     mime_types = ('application/octet-stream',)
 
 
@@ -236,6 +243,7 @@ class FileTypeService:
     The file type service returns file type providers for given files. It supports detection
     of file formats based on content as well.
     """
+
     providers: List[BaseFileTypeProvider]
     default_provider = DefaultFileTypeProvider()
 

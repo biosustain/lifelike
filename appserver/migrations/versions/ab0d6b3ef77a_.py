@@ -11,6 +11,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models.auth import AppUser
 
@@ -42,13 +43,17 @@ def data_upgrades():
         sa.column('id', sa.Integer),
     )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        t_appuser.c.id,
-    ]))
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select(
+            [
+                t_appuser.c.id,
+            ]
+        )
+    )
 
     for chunk in window_chunk(files, 25):
         appusers_to_update = []
-        for id, in chunk:
+        for (id,) in chunk:
             appusers_to_update.append({'id': id, 'failed_login_count': 0})
         try:
             session.bulk_update_mappings(AppUser, appusers_to_update)

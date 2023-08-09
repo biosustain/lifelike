@@ -13,6 +13,7 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm.session import Session
 
 from migrations.utils import window_chunk
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 
@@ -50,26 +51,28 @@ def data_upgrades():
         'files',
         column('id', sa.Integer),
         column('annotations', postgresql.JSONB),
-        column('mime_type', sa.String))
+        column('mime_type', sa.String),
+    )
 
-    files = conn.execution_options(stream_results=True).execute(sa.select([
-        tableclause.c.id,
-        tableclause.c.annotations
-    ]).where(
-        sa.and_(
-            sa.or_(
-                tableclause.c.mime_type == 'application/pdf',
-                tableclause.c.mime_type == 'vnd.lifelike.document/enrichment-table'
-            ),
-            tableclause.c.annotations != '[]'
+    files = conn.execution_options(stream_results=True).execute(
+        sa.select([tableclause.c.id, tableclause.c.annotations]).where(
+            sa.and_(
+                sa.or_(
+                    tableclause.c.mime_type == 'application/pdf',
+                    tableclause.c.mime_type == 'vnd.lifelike.document/enrichment-table',
+                ),
+                tableclause.c.annotations != '[]',
+            )
         )
-    ))
+    )
 
     for chunk in window_chunk(files, 25):
         collected = []
         for fid, file_annotations in chunk:
             try:
-                annotations_list = file_annotations['documents'][0]['passages'][0]['annotations']
+                annotations_list = file_annotations['documents'][0]['passages'][0][
+                    'annotations'
+                ]
             except TypeError:
                 # probably enrichment annotations w/ old format
                 collected.append({'id': fid, 'annotations': None})
@@ -81,7 +84,9 @@ def data_upgrades():
                 annotation['enrichmentDomain'] = {'domain': '', 'subDomain': ''}
                 updated_annotations.append(annotation)
 
-            file_annotations['documents'][0]['passages'][0]['annotations'] = updated_annotations
+            file_annotations['documents'][0]['passages'][0][
+                'annotations'
+            ] = updated_annotations
             collected.append({'id': fid, 'annotations': file_annotations})
         try:
             session.bulk_update_mappings(Files, collected)

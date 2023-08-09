@@ -5,5 +5,9 @@ import { SankeyAbstractDetailsPanelComponent } from '../abstract/details-panel.c
 import { DefaultAbstractAdvancedPanelComponent } from '../abstract/advanced-panel.component';
 
 export const SANKEY_GRAPH = new InjectionToken<DefaultSankeyAbstractComponent>('SankeyGraph');
-export const SANKEY_DETAILS = new InjectionToken<SankeyAbstractDetailsPanelComponent>('SankeyDetails');
-export const SANKEY_ADVANCED = new InjectionToken<DefaultAbstractAdvancedPanelComponent>('SankeyAdvanced');
+export const SANKEY_DETAILS = new InjectionToken<SankeyAbstractDetailsPanelComponent>(
+  'SankeyDetails'
+);
+export const SANKEY_ADVANCED = new InjectionToken<DefaultAbstractAdvancedPanelComponent>(
+  'SankeyAdvanced'
+);

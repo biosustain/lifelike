@@ -1,0 +1,30 @@
+<div class="modal-header">
+  <h4 class="modal-title">Validation report</h4>
+  <button (click)="activeModal.dismiss()" aria-label="Close" class="close ml-1" type="button">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body" *ngIf="validationReport$ | addStatus | async as reportWithStatus">
+  <app-module-progress *ngIf="reportWithStatus.loading"></app-module-progress>
+  <div class="scroll" *ngIf="reportWithStatus.value || reportWithStatus.error as report">
+    <ngb-alert *ngFor="let warning of report.warnings || []" [dismissible]="false" class="mt-1">
+      <strong *ngIf="warning.title">{{ warning.title }}<br /></strong>{{ warning.message }}
+      <p *ngFor="let additionalMsg of warning.additionalMsgs || []">{{ additionalMsg }}</p>
+    </ngb-alert>
+
+    <ngb-alert
+      *ngFor="let error of report.errors || []"
+      [dismissible]="false"
+      type="danger"
+      class="mt-1"
+    >
+      <strong *ngIf="error.title">{{ error.title }}<br /></strong>{{ error.message }}
+    </ngb-alert>
+    <span
+      *ngIf="
+        !((report.warnings && report.warnings.length) || (report.errors && report.errors.length))
+      "
+      >File passes all sanity checks.</span
+    >
+  </div>
+</div>

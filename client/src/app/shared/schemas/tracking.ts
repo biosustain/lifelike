@@ -6,7 +6,7 @@ export enum TRACKING_CATEGORIES {
   filesystem = 'filesystem',
   sankey = 'sankey',
   visualiser = 'visualiser',
-  search = 'search'
+  search = 'search',
 }
 
 /**
@@ -18,7 +18,7 @@ export enum TRACKING_ACTIONS {
   openedFile = 'opened_file',
   search = 'search',
   openTerm = 'open_term',
-  expandNode = 'expand_node'
+  expandNode = 'expand_node',
 }
 
 /**

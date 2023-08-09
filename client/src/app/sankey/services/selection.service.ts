@@ -9,10 +9,7 @@ import { SelectionEntity, SelectionType } from '../interfaces/selection';
 
 @Injectable()
 export class SankeySelectionService {
-  constructor(
-    private sankeyController: ControllerService
-  ) {
-  }
+  constructor(private sankeyController: ControllerService) {}
 
   multiselect$ = new BehaviorSubject<boolean>(true);
 
@@ -21,39 +18,40 @@ export class SankeySelectionService {
   }
 
   private _selection$ = new BehaviorSubject<SelectionEntity[]>([]);
-  selection$ = combineLatest([
-    this._selection$,
-    this.multiselect$
-  ]).pipe(
-    map(([selection, multiselect]) => multiselect ? selection : first(selection) || {} as SelectionEntity)
+  selection$ = combineLatest([this._selection$, this.multiselect$]).pipe(
+    map(([selection, multiselect]) =>
+      multiselect ? selection : first(selection) || ({} as SelectionEntity)
+    )
   );
 
-  toggleSelect(entity, type: SelectionType): Promise<void>|void {
+  toggleSelect(entity, type: SelectionType): Promise<void> | void {
     if (this.multiselect$.value) {
-      return this._selection$.pipe(
-        rxjs_first(),
-        map(selection => {
-          const idxOfSelectedLink = selection.findIndex(
-            d => d.entity === entity
-          );
+      return this._selection$
+        .pipe(
+          rxjs_first(),
+          map((selection) => {
+            const idxOfSelectedLink = selection.findIndex((d) => d.entity === entity);
 
-          if (idxOfSelectedLink !== -1) {
-            selection.splice(idxOfSelectedLink, 1);
-          } else {
-            selection.unshift({
-              type,
-              entity
-            });
-          }
+            if (idxOfSelectedLink !== -1) {
+              selection.splice(idxOfSelectedLink, 1);
+            } else {
+              selection.unshift({
+                type,
+                entity,
+              });
+            }
 
-          this._selection$.next(selection);
-        })
-      ).toPromise();
+            this._selection$.next(selection);
+          })
+        )
+        .toPromise();
     } else {
-      this._selection$.next([{
-        type,
-        entity
-      }]);
+      this._selection$.next([
+        {
+          type,
+          entity,
+        },
+      ]);
     }
   }
 

@@ -17,8 +17,7 @@ export class CacheGuardedEntityList {
    */
   readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
 
-  constructor(private readonly graphView: GraphView<Behavior>) {
-  }
+  constructor(private readonly graphView: GraphView<Behavior>) {}
 
   replace(items: GraphEntity[]) {
     if (items == null) {
@@ -43,7 +42,12 @@ export class CacheGuardedEntityList {
     }
 
     // Emit event if it changed
-    if (!this.arraysEqual(this.items.map(item => item.entity), items.map(item => item.entity))) {
+    if (
+      !this.arraysEqual(
+        this.items.map((item) => item.entity),
+        items.map((item) => item.entity)
+      )
+    ) {
       this.changeObservable.next([[...items], this.items]);
     }
 

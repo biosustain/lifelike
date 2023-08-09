@@ -25,57 +25,47 @@ import { TraceNode } from './interfaces';
   selector: 'app-sankey-viewer',
   templateUrl: './trace-view.component.html',
   styleUrls: ['./trace-view.component.scss'],
-  providers: [
-    TruncatePipe,
-    WarningControllerService,
-    ModuleContext
-  ]
+  providers: [TruncatePipe, WarningControllerService, ModuleContext],
 })
 export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
   destroyed = new Subject();
 
   loadTask = new BackgroundTask((id: string) =>
-      combineLatest([
-        this.filesystemService.open(id),
-        this.filesystemService.getContent(id).pipe(
-          mapBlobToBuffer(),
-          mapBufferToJson(),
-          switchMap(({graph: {trace_networks}, nodes}: Graph.File) =>
-            this.route.params.pipe(
-              map(({hash_id, network_trace_idx, trace_idx}) => {
-                const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
-                const parsedTraceData = this.parseTraceDetails(traceData, nodes);
-                return getTraceDetailsGraph(parsedTraceData);
-              }),
-            ),
-          ),
-        ),
-      ]).pipe(
-        takeUntil(this.destroyed),
-        tap(() => this.cdr.detectChanges()),
-        shareReplay({refCount: true, bufferSize: 1}),
-      )
+    combineLatest([
+      this.filesystemService.open(id),
+      this.filesystemService.getContent(id).pipe(
+        mapBlobToBuffer(),
+        mapBufferToJson(),
+        switchMap(({ graph: { trace_networks }, nodes }: Graph.File) =>
+          this.route.params.pipe(
+            map(({ hash_id, network_trace_idx, trace_idx }) => {
+              const traceData = this.getMatchingTrace(trace_networks, network_trace_idx, trace_idx);
+              const parsedTraceData = this.parseTraceDetails(traceData, nodes);
+              return getTraceDetailsGraph(parsedTraceData);
+            })
+          )
+        )
+      ),
+    ]).pipe(
+      takeUntil(this.destroyed),
+      tap(() => this.cdr.detectChanges()),
+      shareReplay({ refCount: true, bufferSize: 1 })
+    )
   );
 
-  data$ = this.loadTask.results$.pipe(
-    map(({result: [, fileContent]}) => fileContent)
-  );
+  data$ = this.loadTask.results$.pipe(map(({ result: [, fileContent] }) => fileContent));
 
   title$ = this.data$.pipe(
-    map(({startNode, endNode}) => `${startNode.title} → ${endNode.title}`)
+    map(({ startNode, endNode }) => `${startNode.title} → ${endNode.title}`)
   );
 
   header$ = combineLatest([
     this.title$,
-    this.loadTask.results$.pipe(
-      map(({result: [object]}) => object)
-    )
-  ]).pipe(
-    map(([title, object]) => ({title, object}))
-  );
+    this.loadTask.results$.pipe(map(({ result: [object] }) => object)),
+  ]).pipe(map(([title, object]) => ({ title, object })));
 
   modulePropertiesChange = this.title$.pipe(
-    map(title => ({
+    map((title) => ({
       title,
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
     }))
@@ -92,62 +82,66 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
   ) {
     moduleContext.register(this);
 
-    this.route.params.subscribe(({hash_id, network_trace_idx, trace_idx}) => {
+    this.route.params.subscribe(({ hash_id, network_trace_idx, trace_idx }) => {
       this.loadTask.update(hash_id);
-      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`).update({search: {network_trace_idx, trace_idx}});
+      this.sourceFileURL = new AppURL(`/projects/xxx/sankey/${hash_id}`).update({
+        search: { network_trace_idx, trace_idx },
+      });
     });
   }
 
-  sourceData$ = defer(() => of([{
-      domain: 'Source File',
-      url: this.sourceFileURL.toString()
-    }]));
-
+  sourceData$ = defer(() =>
+    of([
+      {
+        domain: 'Source File',
+        url: this.sourceFileURL.toString(),
+      },
+    ])
+  );
 
   ngOnDestroy() {
     this.destroyed.next();
   }
 
   parseTraceDetails(trace: Graph.Trace, mainNodes) {
-    const edges: visNetwork.Edge[] = trace.detail_edges.map(
-      ([from, to, d]) => ({
-        from,
-        to,
-        id: uuidv4(),
-        arrows: 'to',
-        label: d.type,
-        color: 'black',
-        ...(d || {})
-      })
-    );
-    const nodeIds: Array<visNetwork.IdType> = [...edges.reduce(
-      (nodesSet, {from, to}) => {
+    const edges: visNetwork.Edge[] = trace.detail_edges.map(([from, to, d]) => ({
+      from,
+      to,
+      id: uuidv4(),
+      arrows: 'to',
+      label: d.type,
+      color: 'black',
+      ...(d || {}),
+    }));
+    const nodeIds: Array<visNetwork.IdType> = [
+      ...edges.reduce((nodesSet, { from, to }) => {
         nodesSet.add(from);
         nodesSet.add(to);
         return nodesSet;
-      },
-      new Set<visNetwork.IdType>()
-    )];
-    const nodes = nodeIds.map(nodeId => {
-      const node = mainNodes.find(({id}) => id === nodeId);
+      }, new Set<visNetwork.IdType>()),
+    ];
+    const nodes = nodeIds.map((nodeId) => {
+      const node = mainNodes.find(({ id }) => id === nodeId);
       if (node) {
         const label = node.label;
-        const labelShort = truncate(label, {length: 20});
+        const labelShort = truncate(label, { length: 20 });
         this.warningController.assert(label, `Node ${node.id} has no label property.`);
         return {
           ...node,
           label: labelShort,
           fullLabel: label,
           labelShort,
-          title: label
+          title: label,
         } as TraceNode;
       } else {
-        this.warningController.warn(`Details nodes should never be implicitly define, yet ${nodeId} has not been found.`);
+        this.warningController.warn(
+          `Details nodes should never be implicitly define, yet ${nodeId} has not been found.`
+        );
         return {
           id: nodeId,
           label: nodeId,
           type: 'Implicitly defined',
-          color: 'red'
+          color: 'red',
         } as TraceNode;
       }
     });
@@ -155,7 +149,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     return {
       ...trace,
       nodes,
-      edges
+      edges,
     };
   }
 
@@ -171,7 +165,8 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     }
     throw new UserError({
       title: 'Could Not Find Trace in Source',
-      message: 'This trace could not be found in the source file. Please find the trace in the source, and try again'
+      message:
+        'This trace could not be found in the source file. Please find the trace in the source, and try again',
     });
   }
 }

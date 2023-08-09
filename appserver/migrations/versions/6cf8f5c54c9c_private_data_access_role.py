@@ -25,6 +25,7 @@ t_app_role = sa.Table(
     sa.Column('name'),
 )
 
+
 def upgrade():
     session = Session(op.get_bind())
     session.execute(t_app_role.insert().values(name="private-data-access"))

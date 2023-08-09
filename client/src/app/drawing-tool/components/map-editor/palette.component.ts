@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnChanges } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AnnotationStyle, annotationTypes } from 'app/shared/annotation-styles';
@@ -12,28 +12,23 @@ import { createNodeDragImage } from '../../utils/drag';
   styleUrls: ['./palette.component.scss'],
 })
 export class PaletteComponent {
-  nodeTemplates = annotationTypes;
   expanded = false;
 
-  constructor(
-    private readonly snackBar: MatSnackBar,
-  ) {
-  }
-
   /**
-   * Get the node templates that we plan to show, based on whether
-   * we have this baby expanded.
+   * Node templates that we plan to show, based on whether we have the palette expanded.
    */
-  get nodeTemplatesShown() {
-    if (this.expanded) {
-      return this.nodeTemplates;
-    } else {
-      return this.nodeTemplates.slice(0, 8);
-    }
-  }
+  nodeTemplates: AnnotationStyle[] = annotationTypes.slice(0, 8);
+
+  constructor(private readonly snackBar: MatSnackBar) {}
 
   toggleExpansion() {
     this.expanded = !this.expanded;
+
+    if (this.expanded) {
+      this.nodeTemplates = annotationTypes;
+    } else {
+      this.nodeTemplates = annotationTypes.slice(0, 8);
+    }
   }
 
   dragStart(event: DragEvent, annotationStyle: AnnotationStyle) {

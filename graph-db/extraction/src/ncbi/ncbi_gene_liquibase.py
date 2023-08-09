@@ -31,8 +31,12 @@ class NcbiGeneChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = 'Load NCBI gene nodes'
-        query = get_create_update_nodes_query(NODE_GENE, PROP_ID, NODE_ATTRS, [NODE_NCBI, NODE_MASTER])
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{NCBI_GENE_FILE}')
+        query = get_create_update_nodes_query(
+            NODE_GENE, PROP_ID, NODE_ATTRS, [NODE_NCBI, NODE_MASTER]
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{NCBI_GENE_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_ncbi_gene_synonym_rels(self):
@@ -40,8 +44,16 @@ class NcbiGeneChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = 'Load NCBI gene synonym relationship'
-        query = get_create_synonym_relationships_query(NODE_GENE, PROP_ID, PROP_ID, 'synonym')
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{NCBI_GENE_SYNONYM_FILE}')
+        query = get_create_synonym_relationships_query(
+            NODE_GENE, PROP_ID, PROP_ID, 'synonym'
+        )
+        changeset = CustomChangeSet(
+            id,
+            self.author,
+            comment,
+            query,
+            f'{self.file_prefix}{NCBI_GENE_SYNONYM_FILE}',
+        )
         self.change_sets.append(changeset)
 
     def load_ncbi_gene2go(self):
@@ -49,8 +61,12 @@ class NcbiGeneChangeLog(ChangeLog):
         if self.id_prefix:
             id = f'{self.id_prefix} {id}'
         comment = f'Load NCBI gene to GO'
-        query = get_create_relationships_query(NODE_GENE, PROP_ID, 'GeneID', NODE_GO, PROP_ID, 'GO_ID', REL_GO_LINK)
-        changeset = CustomChangeSet(id, self.author, comment, query, f'{self.file_prefix}{NCBI_GENE_GO_FILE}')
+        query = get_create_relationships_query(
+            NODE_GENE, PROP_ID, 'GeneID', NODE_GO, PROP_ID, 'GO_ID', REL_GO_LINK
+        )
+        changeset = CustomChangeSet(
+            id, self.author, comment, query, f'{self.file_prefix}{NCBI_GENE_GO_FILE}'
+        )
         self.change_sets.append(changeset)
 
     def load_ncbi_gene_taxonomy_rels(self):
@@ -95,11 +111,24 @@ class NcbiGeneChangeLog(ChangeLog):
 
     def create_indexes(self):
         queries = []
-        queries.append(get_create_constraint_query(NODE_GENE, PROP_ID, 'constraint_gene_id') + ';')
-        queries.append(get_create_constraint_query(NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name') + ';')
-        queries.append(get_create_index_query(NODE_GENE, PROP_NAME, 'index_gene_name') + ';')
-        queries.append(get_create_index_query(NODE_GENE, PROP_LOCUS_TAG, 'index_locus_tag') + ';')
-        queries.append(get_create_index_query(NODE_GENE, PROP_TAX_ID, 'index_gene_taxid') + ';')
+        queries.append(
+            get_create_constraint_query(NODE_GENE, PROP_ID, 'constraint_gene_id') + ';'
+        )
+        queries.append(
+            get_create_constraint_query(
+                NODE_SYNONYM, PROP_NAME, 'constraint_synonym_name'
+            )
+            + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_GENE, PROP_NAME, 'index_gene_name') + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_GENE, PROP_LOCUS_TAG, 'index_locus_tag') + ';'
+        )
+        queries.append(
+            get_create_index_query(NODE_GENE, PROP_TAX_ID, 'index_gene_taxid') + ';'
+        )
         return queries
 
     def add_index_change_set(self):

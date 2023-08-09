@@ -21,6 +21,7 @@ import { getObjectLabel } from 'app/file-browser/utils/objects';
 import { DataTransferDataService } from 'app/shared/services/data-transfer-data.service';
 import { ImageBlob } from 'app/shared/utils/forms';
 import { ModuleContext } from 'app/shared/services/module-context.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -29,44 +30,57 @@ import { GraphActionsService } from '../services/graph-actions.service';
 @Component({
   selector: 'app-map-view',
   templateUrl: './map-view.component.html',
-  styleUrls: [
-    './map.component.scss',
-  ],
-  providers: [
-    ModuleContext
-  ]
+  styleUrls: ['./map.component.scss'],
+  providers: [ModuleContext, OpenFileProvider],
 })
-export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResult>
-  implements OnDestroy, AfterViewInit, ModuleAwareComponent {
-
-  constructor(filesystemService: FilesystemService,
-              objectTypeService: ObjectTypeService,
-              snackBar: MatSnackBar,
-              modalService: NgbModal,
-              messageDialog: MessageDialog,
-              ngZone: NgZone, route: ActivatedRoute,
-              errorHandler: ErrorHandler,
-              workspaceManager: WorkspaceManager,
-              filesystemObjectActions: FilesystemObjectActions,
-              dataTransferDataService: DataTransferDataService,
-              mapImageProviderService: MapImageProviderService,
-              graphActionsService: GraphActionsService,
-              public readonly progressDialog: ProgressDialog,
-              protected readonly moduleContext: ModuleContext) {
-    super(filesystemService, snackBar, modalService, messageDialog, ngZone, route,
-      errorHandler, workspaceManager, filesystemObjectActions, dataTransferDataService,
-      mapImageProviderService, objectTypeService, graphActionsService);
+export class MapViewComponent<ExtraResult = void>
+  extends MapComponent<ExtraResult>
+  implements OnDestroy, AfterViewInit, ModuleAwareComponent
+{
+  constructor(
+    filesystemService: FilesystemService,
+    objectTypeService: ObjectTypeService,
+    snackBar: MatSnackBar,
+    modalService: NgbModal,
+    messageDialog: MessageDialog,
+    ngZone: NgZone,
+    route: ActivatedRoute,
+    errorHandler: ErrorHandler,
+    workspaceManager: WorkspaceManager,
+    filesystemObjectActions: FilesystemObjectActions,
+    dataTransferDataService: DataTransferDataService,
+    mapImageProviderService: MapImageProviderService,
+    graphActionsService: GraphActionsService,
+    public readonly progressDialog: ProgressDialog,
+    openFileProvider: OpenFileProvider,
+    protected readonly moduleContext: ModuleContext
+  ) {
+    super(
+      filesystemService,
+      snackBar,
+      modalService,
+      messageDialog,
+      ngZone,
+      route,
+      errorHandler,
+      workspaceManager,
+      filesystemObjectActions,
+      dataTransferDataService,
+      mapImageProviderService,
+      objectTypeService,
+      graphActionsService,
+      openFileProvider
+    );
     moduleContext.register(this);
 
-    this.queryParamsSubscription = this.route.queryParams.subscribe(params => {
+    this.queryParamsSubscription = this.route.queryParams.subscribe((params) => {
       this.returnUrl = params.return;
     });
 
-    this.paramsSubscription = this.route.params.subscribe(params => {
+    this.paramsSubscription = this.route.params.subscribe((params) => {
       this.locator = params.hash_id;
     });
   }
-
 
   @Input() titleVisible = true;
 
@@ -85,7 +99,6 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     return this.unsavedChanges$.getValue();
   }
 
-
   ngOnDestroy() {
     super.ngOnDestroy();
     this.queryParamsSubscription.unsubscribe();
@@ -100,53 +113,67 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
     this.isSaving = true;
 
     const { newImageHashes, deletedImages } = this.graphCanvas.getImageChanges();
-    const newImageBlobs = newImageHashes.map(hash => this.mapImageProviderService.getBlob(hash));
+    const newImageBlobs = newImageHashes.map((hash) => this.mapImageProviderService.getBlob(hash));
     const graphString = JSON.stringify(this.graphCanvas.getExportableGraph());
     const bytes = new TextEncoder().encode(graphString);
     const content = new Blob([bytes], {
-      type: 'application/json;charset=utf-8'
+      type: 'application/json;charset=utf-8',
     });
     const hashesOfLinked: string[] = Array.from(this.graphCanvas.getHashesOfLinked());
     // DefaultIfEmpty ensures that we always call the subscription - even if there are no images
-    forkJoin(newImageBlobs).pipe(defaultIfEmpty([])).subscribe((imageBlobs: Blob[]) => {
-      const newImages: ImageBlob[] = [];
-      for (let i = 0; i < imageBlobs.length; i++) {
-        newImages.push({
-          blob: imageBlobs[i],
-          filename: newImageHashes[i],
-        });
-      }
-      this.filesystemService.save([this.locator], {
-        contentValue: content, newImages, hashesOfLinked, deletedImages
-      })
-        .pipe(this.errorHandler.create({label: 'Update map'}))
-        .subscribe(() => {
-          this.graphCanvas.saveImagesState();
-          this.isSaving = false;
-          this.emitModuleProperties();
-          this.snackBar.open('Map saved.', null, {
-            duration: 2000,
+    forkJoin(newImageBlobs)
+      .pipe(defaultIfEmpty([]))
+      .subscribe((imageBlobs: Blob[]) => {
+        const newImages: ImageBlob[] = [];
+        for (let i = 0; i < imageBlobs.length; i++) {
+          newImages.push({
+            blob: imageBlobs[i],
+            filename: newImageHashes[i],
           });
-        }, () => {
-          this.unsavedChanges$.next(true);
-          this.isSaving = false;
-        });
-    });
-
+        }
+        this.filesystemService
+          .save([this.locator], {
+            contentValue: content,
+            newImages,
+            hashesOfLinked,
+            deletedImages,
+          })
+          .pipe(this.errorHandler.create({ label: 'Update map' }))
+          .subscribe(
+            () => {
+              this.graphCanvas.saveImagesState();
+              this.isSaving = false;
+              this.emitModuleProperties();
+              this.snackBar.open('Map saved.', null, {
+                duration: 2000,
+              });
+            },
+            () => {
+              this.unsavedChanges$.next(true);
+              this.isSaving = false;
+            }
+          );
+      });
   }
 
   openCloneDialog() {
     const newTarget: FilesystemObject = cloneDeep(this.map);
     newTarget.public = false;
-    return this.filesystemObjectActions.openCloneDialog(newTarget).then(clone => {
-      this.workspaceManager.navigate(clone.getCommands(), {
-        newTab: true,
-      });
-      this.snackBar.open(`Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`, 'Close', {
-        duration: 5000,
-      });
-    }, () => {
-    });
+    return this.filesystemObjectActions.openCloneDialog(newTarget).then(
+      (clone) => {
+        this.workspaceManager.navigate(clone.getCommands(), {
+          newTab: true,
+        });
+        this.snackBar.open(
+          `Copied ${getObjectLabel(this.map)} to ${getObjectLabel(clone)}.`,
+          'Close',
+          {
+            duration: 5000,
+          }
+        );
+      },
+      () => {}
+    );
   }
 
   openVersionHistoryDialog() {
@@ -175,7 +202,9 @@ export class MapViewComponent<ExtraResult = void> extends MapComponent<ExtraResu
 
   goToReturnUrl() {
     return Promise.resolve(this.shouldConfirmUnload)
-      .then(shouldConfirmUnload => shouldConfirmUnload ? confirm('Leave editor? Changes you made may not be saved.') : true)
-      .then(navigate => navigate && this.workspaceManager.navigateByUrl({url: this.returnUrl}));
+      .then((shouldConfirmUnload) =>
+        shouldConfirmUnload ? confirm('Leave editor? Changes you made may not be saved.') : true
+      )
+      .then((navigate) => navigate && this.workspaceManager.navigateByUrl({ url: this.returnUrl }));
   }
 }

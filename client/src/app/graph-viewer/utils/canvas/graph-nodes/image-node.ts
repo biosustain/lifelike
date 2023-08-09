@@ -18,7 +18,6 @@ export interface ImageNodeOptions extends BaseRectangleNodeOptions {
  * Draws an image.
  */
 export class ImageNode extends BaseRectangleNode implements ResourceOwner {
-
   readonly textbox: TextElement;
   resourceOwnerClass = 'image-node';
   readonly resizable = true;
@@ -40,10 +39,12 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
 
   objectDidBind() {
     super.objectDidBind();
-    this.subscriptions.add(this.imageManager.acquire(this, this.imageId).subscribe(image => {
-      this.image = image;
-      this.forceRender();
-    }));
+    this.subscriptions.add(
+      this.imageManager.acquire(this, this.imageId).subscribe((image) => {
+        this.image = image;
+        this.forceRender();
+      })
+    );
   }
 
   objectWillUnbind() {
@@ -64,7 +65,13 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     this.ctx.globalCompositeOperation = 'destination-over';
     let lineWidth = 0;
     if (this.image) {
-      this.ctx.drawImage(this.image, this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
+      this.ctx.drawImage(
+        this.image,
+        this.bbox.minX,
+        this.bbox.minY,
+        this.nodeWidth,
+        this.nodeHeight
+      );
       const ctx = this.ctx;
 
       if (this.stroke) {
@@ -80,12 +87,7 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
         ctx.stroke();
       }
     } else {
-      this.ctx.rect(
-        this.bbox.minX,
-        this.bbox.minY,
-        this.nodeWidth,
-        this.nodeHeight
-      );
+      this.ctx.rect(this.bbox.minX, this.bbox.minY, this.nodeWidth, this.nodeHeight);
       this.ctx.lineWidth = zoomResetScale;
       this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
       this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
@@ -94,11 +96,16 @@ export class ImageNode extends BaseRectangleNode implements ResourceOwner {
     }
     if (transform.k > NO_TEXT_THRESHOLD) {
       this.textbox.maxWidth = this.width;
-      this.textbox.drawCenteredAt(this.x, this.y + (this.nodeHeight / 2) + this.LABEL_OFFSET +
-        this.textbox.actualHeightWithInsets / 2.0 + lineWidth);
+      this.textbox.drawCenteredAt(
+        this.x,
+        this.y +
+          this.nodeHeight / 2 +
+          this.LABEL_OFFSET +
+          this.textbox.actualHeightWithInsets / 2.0 +
+          lineWidth
+      );
     }
 
     this.ctx.restore();
   }
-
 }

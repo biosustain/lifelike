@@ -16,11 +16,8 @@ describe('RouteDisplayComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         RouteDisplayComponent,
-        MockComponents(
-          PlotlySankeyDiagramComponent,
-          VisJsNetworkComponent
-        )
-      ]
+        MockComponents(PlotlySankeyDiagramComponent, VisJsNetworkComponent),
+      ],
     });
   });
 

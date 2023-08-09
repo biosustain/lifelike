@@ -4,6 +4,7 @@
 
 interface EnvironmentVars {
   production: boolean;
+  chatGPTPlaygroundEnabled: boolean;
   keggEnabled: boolean;
   oauthEnabled: boolean;
   testVar: string;
@@ -15,10 +16,13 @@ interface EnvironmentVars {
 // Read environment variables (set by env.js) from browser window
 const browserWindow = window || {};
 const envAccessor = '__env';
-const browserWindowEnv = (browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}) as EnvironmentVars;
+const browserWindowEnv = (
+  browserWindow.hasOwnProperty(envAccessor) ? browserWindow[envAccessor] : {}
+) as EnvironmentVars;
 
 export const environment = {
   production: browserWindowEnv.production || false,
+  chatGPTPlaygroundEnabled: browserWindowEnv.chatGPTPlaygroundEnabled || false,
   keggEnabled: browserWindowEnv.keggEnabled || false,
   oauthEnabled: browserWindowEnv.oauthEnabled || false,
   oauthIssuer: browserWindowEnv.oauthIssuer || 'https://example/auth/master',

@@ -9,7 +9,7 @@ export interface FilterEntity {
 export interface Visibility {
   identifier: string;
   visible: boolean;
-  entity: FilterEntity|WordCloudFilterEntity;
+  entity: FilterEntity | WordCloudFilterEntity;
 }
 
 export interface WordCloudFilterEntity extends FilterEntity {
@@ -32,5 +32,5 @@ export enum DefaultOrderByOptions {
 
 export enum OrderDirection {
   ASCENDING = 'Ascending',
-  DESCENDING = 'Descending'
+  DESCENDING = 'Descending',
 }

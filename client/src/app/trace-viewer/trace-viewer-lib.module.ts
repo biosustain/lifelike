@@ -21,10 +21,7 @@ import { TraceViewComponent } from './components/trace-view.component';
 import { TraceDetailsComponent } from './components/trace-details.component';
 
 @NgModule({
-  declarations: [
-    TraceViewComponent,
-    TraceDetailsComponent
-  ],
+  declarations: [TraceViewComponent, TraceDetailsComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -41,9 +38,8 @@ import { TraceDetailsComponent } from './components/trace-details.component';
     MatRadioModule,
     SharedModule,
     FileBrowserModule,
-    RouterModule.forRoot([])
+    RouterModule.forRoot([]),
   ],
-  entryComponents: []
+  entryComponents: [],
 })
-export class TraceViewerLibModule {
-}
+export class TraceViewerLibModule {}

@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import bioc
 import graphviz
 import io
@@ -48,7 +50,6 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_GRAPH,
     FILE_MIME_TYPE_ENRICHMENT_TABLE,
     ICON_SIZE,
-    LIFELIKE_DOMAIN,
     BYTE_ENCODING,
     LABEL_OFFSET,
     PDF_MARGIN,
@@ -72,24 +73,34 @@ from neo4japp.constants import (
     DEFAULT_FONT_RATIO,
     NODE_LINE_HEIGHT,
     MAX_NODE_HEIGHT,
-    NODE_INSET
+    NODE_INSET,
 )
-from neo4japp.exceptions import FileUploadError, HandledException, ContentValidationError
+from neo4japp.exceptions import (
+    HandledException,
+    ContentValidationError,
+    ContentValidationWarning,
+    ServerWarning,
+)
+from neo4japp.exceptions.exceptions import FileUploadError
 from neo4japp.info import ContentValidationInfo
 from neo4japp.models import Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.schemas.formats.graph import validate_graph_format, validate_graph_content, \
-    ContentValidationNotDefinedSourceTargetMessage
+from neo4japp.schemas.formats.graph import (
+    validate_graph_format,
+    validate_graph_content,
+    ContentValidationNotDefinedSourceTargetMessage,
+)
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
 from neo4japp.utils import FileContentBuffer
-from neo4japp.utils.globals import warn, info
+from neo4japp.utils.globals import warn, inform
 from neo4japp.utils.logger import EventLog
+
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.string import extract_text, compose_lines
-from neo4japp.warnings import ServerWarning, ContentValidationWarning
+from neo4japp.utils.globals import config
 
 extension_mime_types = {
     '.pdf': 'application/pdf',
@@ -105,15 +116,16 @@ extension_mime_types = {
 def is_valid_doi(doi):
     try:
         # not [bad request, not found] but yes to 403 - no access
-        return requests.get(doi,
-                            headers={
-                                # sometimes request is filtered if there is no user-agent header
-                                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
-                                              "AppleWebKit/537.36 "
-                                              "(KHTML, like Gecko) Chrome/51.0.2704.103 "
-                                              "Safari/537.36"
-                            }
-                            ).status_code not in [400, 404]
+        return requests.get(
+            doi,
+            headers={
+                # sometimes request is filtered if there is no user-agent header
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) "
+                "AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/51.0.2704.103 "
+                "Safari/537.36"
+            },
+        ).status_code not in [HTTPStatus.BAD_REQUEST, HTTPStatus.NOT_FOUND]
     except Exception as e:
         current_app.logger.error(
             f'An unexpected error occurred while requesting DOI: {doi}',
@@ -139,7 +151,7 @@ doi_re = re.compile(
     rb'([^ \n\f#]*)'
     # match up to 20 characters in the same line (values after # are ~ignored anyway)
     rb'([^\n\f#]{0,20})',
-    flags=re.IGNORECASE
+    flags=re.IGNORECASE,
 )
 protocol_re = re.compile(r'https?:\/\/')
 unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -158,7 +170,9 @@ BIOC_RE = re.compile(r'^ */projects/.+/bioc/.+$')
 ANY_FILE_RE = re.compile(r'^ */files/.+$')
 # As other links begin with "projects" as well, we are looking for those without additional slashes
 # looking like /projects/Example or /projects/COVID-19
-PROJECTS_RE = re.compile(r'(^ */projects/(?!.*/.+).*)|(^ */(projects/.+/)?folders/.*#project)')
+PROJECTS_RE = re.compile(
+    r'(^ */projects/(?!.*/.+).*)|(^ */(projects/.+/)?folders/.*#project)'
+)
 ICON_DATA: dict = {}
 PDF_PAD = 1.0
 
@@ -167,17 +181,20 @@ def _search_doi_in(content: bytes) -> Optional[str]:
     doi: Optional[str]
     try:
         for match in doi_re.finditer(content):
-            label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = \
-                [s.decode(BYTE_ENCODING, errors='ignore') if s else '' for s in match.groups()]
+            label, url, folderRegistrant, likelyDOIName, tillSpace, DOISuffix = [
+                s.decode(BYTE_ENCODING, errors='ignore') if s else ''
+                for s in match.groups()
+            ]
             certainly_doi = label + url
             url = 'https://doi.org/'
             # is whole match a DOI? (finished on \n, trimmed whitespaces)
-            doi = ((url + folderRegistrant + likelyDOIName + tillSpace +
-                    DOISuffix).strip())
+            doi = (
+                url + folderRegistrant + likelyDOIName + tillSpace + DOISuffix
+            ).strip()
             if is_valid_doi(doi):
                 return doi
             # is match till space a DOI?
-            doi = (url + folderRegistrant + likelyDOIName + tillSpace)
+            doi = url + folderRegistrant + likelyDOIName + tillSpace
             if is_valid_doi(doi):
                 return doi
             # make deep search only if there was clear indicator that it is a doi
@@ -185,19 +202,13 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # if contains escape patterns try substitute them
                 if common_escape_patterns_re.search(match.group()):
                     doi = _search_doi_in(
-                        common_escape_patterns_re.sub(
-                            b'', match.group()
-                        )
+                        common_escape_patterns_re.sub(b'', match.group())
                     )
                     if is_valid_doi(doi):
                         return doi
                 # try substitute different dash types
                 if dash_types_re.search(match.group()):
-                    doi = _search_doi_in(
-                        dash_types_re.sub(
-                            b'-', match.group()
-                        )
-                    )
+                    doi = _search_doi_in(dash_types_re.sub(b'-', match.group()))
                     if is_valid_doi(doi):
                         return doi
                 # we iteratively start cutting off suffix on each group of
@@ -206,9 +217,13 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (tillSpace + DOISuffix)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                            reversedDOIEnding, 1)
+                            reversedDOIEnding, 1
+                        )
                         doi = (
-                                url + folderRegistrant + likelyDOIName + reversedDOIEnding[::-1]
+                            url
+                            + folderRegistrant
+                            + likelyDOIName
+                            + reversedDOIEnding[::-1]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -222,10 +237,9 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                     reversedDOIEnding = (likelyDOIName + tillSpace)[::-1]
                     while reversedDOIEnding:
                         _, _, reversedDOIEnding = characters_groups_re.split(
-                            reversedDOIEnding, 1)
-                        doi = (
-                                url + folderRegistrant + reversedDOIEnding[::-1]
+                            reversedDOIEnding, 1
                         )
+                        doi = url + folderRegistrant + reversedDOIEnding[::-1]
                         if is_valid_doi(doi):
                             return doi
                 except Exception:
@@ -239,12 +253,14 @@ def _search_doi_in(content: bytes) -> Optional[str]:
                 # in very rare cases there is \n in text containing doi
                 try:
                     end_of_match_idx = match.end(0)
-                    first_char_after_match = content[end_of_match_idx:end_of_match_idx + 1]
+                    first_char_after_match = content[
+                        end_of_match_idx : end_of_match_idx + 1
+                    ]
                     if first_char_after_match == b'\n':
                         doi = _search_doi_in(
                             # new input = match + 50 chars after new line
-                            match.group() +
-                            content[end_of_match_idx + 1:end_of_match_idx + 1 + 50]
+                            match.group()
+                            + content[end_of_match_idx + 1 : end_of_match_idx + 1 + 50]
                         )
                         if is_valid_doi(doi):
                             return doi
@@ -271,12 +287,12 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             raise ValueError("Directories can't have content")
 
 
-@dataclass
+@dataclass(repr=False, frozen=True)
 class TextExtractionNotAllowedWarning(ServerWarning):
-    title: str = \
-        "Author of this PDF disallowed content extraction"
-    message: Optional[str] = \
-        "Content of this file will not be automatically annotated within lifelike"
+    title: str = "Author of this PDF disallowed content extraction"
+    message: Optional[
+        str
+    ] = "Content of this file will not be automatically annotated within lifelike"
 
 
 class PDFTypeProvider(BaseFileTypeProvider):
@@ -285,12 +301,14 @@ class PDFTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension=None
-            ) -> List[typing.Tuple[Certanity, str]]:
+        self, buffer: FileContentBuffer, extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         with buffer as bufferView:
-            return [(Certanity.match, self.MIME_TYPE)] if bufferView.read(5) == b'%PDF-' else []
+            return (
+                [(Certanity.match, self.MIME_TYPE)]
+                if bufferView.read(5) == b'%PDF-'
+                else []
+            )
 
     def can_create(self) -> bool:
         return True
@@ -311,19 +329,19 @@ class PDFTypeProvider(BaseFileTypeProvider):
             except PDFEncryptionError as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
-                    message='This pdf is locked and cannot be loaded into Lifelike.'
+                    message='This pdf is locked and cannot be loaded into Lifelike.',
                 ) from e
             except Exception as e:
                 raise FileUploadError(
                     title='Failed to Read PDF',
                     message='An error occurred while reading this pdf.'
-                            ' Please check if the pdf is unlocked and openable.'
+                    ' Please check if the pdf is unlocked and openable.',
                 ) from e
 
     def extract_doi(self, buffer: FileContentBuffer) -> Optional[str]:
         with buffer as bufferView:
             # Attempt 1: search through the first N bytes (most probably containing only metadata)
-            chunk = bufferView.read(2 ** 17)
+            chunk = bufferView.read(2**17)
             doi = _search_doi_in(chunk)
             if doi is not None:
                 return doi
@@ -331,7 +349,9 @@ class PDFTypeProvider(BaseFileTypeProvider):
             bufferView.seek(0)
             # Attempt 2: search through the first two pages of text (no metadata)
             try:
-                text = high_level.extract_text(bufferView, page_numbers=[0, 1], caching=False)
+                text = high_level.extract_text(
+                    bufferView, page_numbers=[0, 1], caching=False
+                )
             except PDFTextExtractionNotAllowed as e:
                 # TODO once we migrate to python 3.11: add PDFTextExtractionNotAllowed as __cause__
                 warn(TextExtractionNotAllowedWarning())
@@ -340,7 +360,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
                 raise FileUploadError(
                     title='Failed to Read PDF',
                     message='An error occurred while reading this pdf.'
-                            ' Please check if the pdf is unlocked and openable.'
+                    ' Please check if the pdf is unlocked and openable.',
                 ) from e
             else:
                 return _search_doi_in(bytes(text, encoding='utf8'))
@@ -362,7 +382,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
         rb'([^ \n\f#]*)'
         # match up to 20 characters in the same line (values after # are ~ignored anyway)
         rb'([^\n\f#]{0,20})',
-        flags=re.IGNORECASE
+        flags=re.IGNORECASE,
     )
     protocol_re = re.compile(r'https?:\/\/')
     unusual_characters_re = re.compile(r'([^-A-z0-9]+)')
@@ -384,10 +404,8 @@ class BiocTypeProvider(BaseFileTypeProvider):
     ALLOWED_TYPES = ['.xml', '.bioc']
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension=None
-            ) -> List[typing.Tuple[Certanity, str]]:
+        self, buffer: FileContentBuffer, extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         with buffer as bufferView:
             try:
                 # If it is xml file and bioc
@@ -412,7 +430,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
         with buffer as bufferView:
             data = bufferView.read()
 
-            chunk = data[:2 ** 17]
+            chunk = data[: 2**17]
             doi = _search_doi_in(chunk)
             return doi
 
@@ -434,9 +452,13 @@ class BiocTypeProvider(BaseFileTypeProvider):
             raise ValueError()
 
 
-def substitute_svg_images(map_content: FileContentBuffer, images: list, zip_file: zipfile.ZipFile,
-                          folder_name: str):
-    """ Match every link inside SVG file and replace it with raw PNG data of icons or images from
+def substitute_svg_images(
+    map_content: FileContentBuffer,
+    images: list,
+    zip_file: zipfile.ZipFile,
+    folder_name: str,
+):
+    """Match every link inside SVG file and replace it with raw PNG data of icons or images from
     zip file. This has to be done after the graphviz call, as base64 PNG data is often longer than
     graphviz max length limit (~16k chars)
     params:
@@ -449,11 +471,17 @@ def substitute_svg_images(map_content: FileContentBuffer, images: list, zip_file
     icon_data = get_icons_data()
     with map_content as bufferView:
         text_content = bufferView.read().decode(BYTE_ENCODING)
-        text_content = IMAGES_RE.sub(lambda match: icon_data[match.group(0)], text_content)
+        text_content = IMAGES_RE.sub(
+            lambda match: icon_data[match.group(0)], text_content
+        )
         for image in images:
             text_content = text_content.replace(
-                folder_name + '/' + image, 'data:image/png;base64,' + b64encode(
-                    zip_file.read("".join(['images/', image]))).decode(BYTE_ENCODING))
+                folder_name + '/' + image,
+                'data:image/png;base64,'
+                + b64encode(zip_file.read("".join(['images/', image]))).decode(
+                    BYTE_ENCODING
+                ),
+            )
         return FileContentBuffer(bytes(text_content, BYTE_ENCODING))
 
 
@@ -465,12 +493,13 @@ def get_fitting_lines(text, style, data):
     node_effective_height = data.get('height', MAX_NODE_HEIGHT - 2 * NODE_INSET)
     max_lines = floor(node_effective_height / line_height)
     if 'width' in data:
-        max_character_per_line = (data['width'] - 2 * NODE_INSET) / (fontsize * DEFAULT_FONT_RATIO)
+        max_character_per_line = (data['width'] - 2 * NODE_INSET) / (
+            fontsize * DEFAULT_FONT_RATIO
+        )
     else:
         max_character_per_line = min(10 + len(text) // 4, MAX_LINE_WIDTH)
     line_wrapper = textwrap.TextWrapper(
-        width=ceil(max_character_per_line),
-        replace_whitespace=False
+        width=ceil(max_character_per_line), replace_whitespace=False
     )
     # TextWrapper wrap is to be called per paragraf
     # (https://docs.python.org/3/library/textwrap.html#textwrap.TextWrapper.replace_whitespace)
@@ -490,12 +519,26 @@ def get_icons_data():
     if ICON_DATA:
         return ICON_DATA
     else:
-        for key in ['map', 'link', 'email', 'sankey', 'document', 'enrichment_table', 'note',
-                    'ms-word', 'ms-excel', 'ms-powerpoint', 'cytoscape', 'lifelike']:
+        for key in [
+            'map',
+            'link',
+            'email',
+            'sankey',
+            'document',
+            'enrichment_table',
+            'note',
+            'ms-word',
+            'ms-excel',
+            'ms-powerpoint',
+            'cytoscape',
+            'lifelike',
+        ]:
             with open(f'{ASSETS_PATH}{key}.png', 'rb') as file:
-                ICON_DATA[f'{ASSETS_PATH}{key}.png'] = 'data:image/png;base64,' \
-                                                       + b64encode(file.read()) \
-                                                           .decode(BYTE_ENCODING)
+                ICON_DATA[
+                    f'{ASSETS_PATH}{key}.png'
+                ] = 'data:image/png;base64,' + b64encode(file.read()).decode(
+                    BYTE_ENCODING
+                )
         return ICON_DATA
 
 
@@ -532,7 +575,7 @@ def create_group_node(group: dict):
         'margin': "0.2,0.0",
         'fillcolor': style.get('bgColor') or 'white',
         # Setting penwidth to 0 removes the border
-        'penwidth': f"{style.get('lineWidthScale', 1.0)}" if has_border else '0.0'
+        'penwidth': f"{style.get('lineWidthScale', 1.0)}" if has_border else '0.0',
     }
 
     if not display_name:
@@ -540,9 +583,13 @@ def create_group_node(group: dict):
 
     border_width = style.get('lineWidthScale', 1.0) if has_border else 0.0
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
-    label_lines = get_fitting_lines(display_name, style, params['data'])
-    label_offset = -group['data']['height'] / 2.0 - LABEL_OFFSET - \
-        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
+    label_lines = get_fitting_lines(display_name, style, group['data'])
+    label_offset = (
+        -group['data']['height'] / 2.0
+        - LABEL_OFFSET
+        - (label_font_size / 2.0 * (1 + len(label_lines)))
+        - border_width
+    )
     label_params = {
         'name': group['hash'] + '_label',
         'label': escape(compose_lines(*label_lines)),
@@ -577,10 +624,7 @@ def create_default_node(node: dict):
         # Graphviz offer no text break utility - it has to be done outside of it
         'label': escape(compose_lines(*label_lines)),
         # We have to inverse the y axis, as Graphviz coordinate system origin is at the bottom
-        'pos': (
-            f"{data['x'] / SCALING_FACTOR},"
-            f"{-data['y'] / SCALING_FACTOR}!"
-        ),
+        'pos': (f"{data['x'] / SCALING_FACTOR}," f"{-data['y'] / SCALING_FACTOR}!"),
         # Resize the node base on font size, as otherwise the margin would be smaller than
         # in the Lifelike map editor
         'width': f"{data.get('width', DEFAULT_NODE_WIDTH) / SCALING_FACTOR}",
@@ -588,15 +632,16 @@ def create_default_node(node: dict):
         'shape': 'box',
         'style': 'rounded,filled,' + BORDER_STYLES_DICT.get(style.get('lineType'), ''),
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
-        'fontcolor': style.get('fillColor') or ANNOTATION_STYLES_DICT.get(
-            node['label'], {'color': 'black'}).get('color'),
+        'fontcolor': style.get('fillColor')
+        or ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'}).get('color'),
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fillcolor': style.get('bgColor') or 'white',
         'fontsize': f"{style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE}",
         # Setting penwidth to 0 removes the border
         'penwidth': f"{style.get('lineWidthScale', 1.0)}"
-        if style.get('lineType') != 'none' else '0.0'
+        if style.get('lineType') != 'none'
+        else '0.0',
     }
 
 
@@ -611,11 +656,17 @@ def create_image_label(node: dict):
     data = node['data']
     height = data.get('height', DEFAULT_IMAGE_NODE_HEIGHT)
     # width = data.get('width', DEFAULT_IMAGE_NODE_WIDTH)
-    border_width = style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
+    border_width = (
+        style.get('lineWidthScale', 1.0) if style.get('lineType') != 'none' else 0.0
+    )
     label_font_size = style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE
     label_lines = get_fitting_lines(node['display_name'], style, data)
-    label_offset = -height / 2.0 - LABEL_OFFSET - \
-        (label_font_size / 2.0 * (1 + len(label_lines))) - border_width
+    label_offset = (
+        -height / 2.0
+        - LABEL_OFFSET
+        - (label_font_size / 2.0 * (1 + len(label_lines)))
+        - border_width
+    )
     return {
         'label': escape(compose_lines(*label_lines)),
         'pos': (
@@ -626,7 +677,7 @@ def create_image_label(node: dict):
         'penwidth': '0.0',
         'fontcolor': style.get('fillColor') or 'black',
         'fontname': 'sans-serif',
-        'name': node['hash'] + '_label'
+        'name': node['hash'] + '_label',
     }
 
 
@@ -643,8 +694,11 @@ def create_image_node(node: dict, params: dict):
     params['label'] = ""
     height = node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT)
     width = node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
-    params['penwidth'] = f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}" \
-        if style.get('lineType') != 'none' else '0.0'
+    params['penwidth'] = (
+        f"{style.get('lineWidthScale', 1.0) * IMAGE_BORDER_SCALE}"
+        if style.get('lineType') != 'none'
+        else '0.0'
+    )
     params['width'] = f"{width / SCALING_FACTOR}"
     params['height'] = f"{height / SCALING_FACTOR}"
     params['fixedsize'] = 'true'
@@ -671,21 +725,24 @@ def create_detail_node(node: dict, params: dict):
     style = node.get('style', {})
     detail_text = node['data'].get('detail', '')
     # Check if the node was dragged from the pdf - if so, it will have a source link
-    if (
-            detail_text
-            and (any(DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources', []))
-                 and len(detail_text) > DETAIL_TEXT_LIMIT)
+    if detail_text and (
+        any(
+            DOCUMENT_RE.match(src.get('url')) for src in node['data'].get('sources', [])
+        )
+        and len(detail_text) > DETAIL_TEXT_LIMIT
     ):
         detail_text = detail_text[:DETAIL_TEXT_LIMIT]
         detail_text = detail_text.rstrip('\\')
     detail_lines = get_fitting_lines(detail_text, style, node['data'])
     # '\l' is graphviz special new line, which placed at the end of the line will align it
     # to the left - we use that instead of \n (and add one at the end to align last line)
-    params['label'] = '\l'.join(map(escape, detail_lines)).replace('\n', '\l') + '\l'  # noqa: W605
+    params['label'] = (
+        '\l'.join(map(escape, detail_lines)).replace('\n', '\l') + '\l'
+    )  # noqa: W605
     if params['fillcolor'] == 'white':
-        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                         {'bgcolor': 'black'}
-                                                         ).get('bgcolor')
+        params['fillcolor'] = ANNOTATION_STYLES_DICT.get(
+            node['label'], {'bgcolor': 'black'}
+        ).get('bgcolor')
 
     doi_src = look_for_doi_link(node)
     if doi_src:
@@ -707,8 +764,9 @@ def look_for_doi_link(node: dict):
     return: doi if present and valid, None if not
     """
     doi_src = next(
-        (src for src in node['data'].get('sources', []) if src.get(
-            'domain') == "DOI"), None)
+        (src for src in node['data'].get('sources', []) if src.get('domain') == "DOI"),
+        None,
+    )
     # NOTE: As is_valid_doi sends a request, this increases export time for each doi that we have
     # If this is too costly, we can remove this
     if doi_src and is_valid_doi(doi_src['url']):
@@ -788,8 +846,11 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
     params['penwidth'] = '0.0'
     params['fillcolor'] = 'white'
     # Calculate the distance between icon and the label center
-    distance_from_the_label = BASE_ICON_DISTANCE + params['label'].count('\n') \
-        * IMAGE_HEIGHT_INCREMENT + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
+    distance_from_the_label = (
+        BASE_ICON_DISTANCE
+        + params['label'].count('\n') * IMAGE_HEIGHT_INCREMENT
+        + FONT_SIZE_MULTIPLIER * (style.get('fontSizeScale', 1.0) - 1.0)
+    )
 
     node_height = distance_from_the_label * 2 + float(ICON_SIZE)
     node_height *= SCALING_FACTOR
@@ -811,9 +872,9 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
         ),
         'label': "",
     }
-    default_icon_color = ANNOTATION_STYLES_DICT.get(node['label'],
-                                                    {'defaultimagecolor': 'black'}
-                                                    )['defaultimagecolor']
+    default_icon_color = ANNOTATION_STYLES_DICT.get(
+        node['label'], {'defaultimagecolor': 'black'}
+    )['defaultimagecolor']
     custom_icons = ANNOTATION_STYLES_DICT.get('custom_icons', {})
     if label == 'link':
         label, link = get_link_icon_type(node)
@@ -824,9 +885,7 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
         if label in custom_icons.keys():
             default_icon_color = custom_icons.get(label, default_icon_color)
 
-    icon_params['image'] = (
-        f'{ASSETS_PATH}{label}.png'
-    )
+    icon_params['image'] = f'{ASSETS_PATH}{label}.png'
 
     fill_color = style.get("fillColor") or default_icon_color
     if label not in custom_icons.keys():
@@ -863,7 +922,9 @@ def create_relation_node(node: dict, params: dict):
     :returns: altered params dict
     """
     style = node.get('style', {})
-    default_color = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})['color']
+    default_color = ANNOTATION_STYLES_DICT.get(node['label'], {'color': 'black'})[
+        'color'
+    ]
     params['color'] = style.get('strokeColor') or default_color
     params['fillcolor'] = style.get('bgColor') or default_color
     params['fontcolor'] = style.get('fillColor') or 'black'
@@ -904,7 +965,7 @@ def get_node_href(node: dict):
             # And search again
             href = get_node_href(node)
         else:
-            href = (LIFELIKE_DOMAIN or '') + href
+            href = (config.get('DOMAIN') or '') + href
     # For some reason, ' inside link breaks graphviz export. We need to encode it to %27 - LL-3924
     return href.replace("'", '%27')
 
@@ -915,12 +976,13 @@ def create_map_name_node():
     :retuns: dict describing the name node with Graphviz parameters
     """
     return {
-        'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'}
-                                                )['defaultimagecolor'],
+        'fontcolor': ANNOTATION_STYLES_DICT.get('map', {'defaultimagecolor': 'black'})[
+            'defaultimagecolor'
+        ],
         'fontsize': str(FILENAME_LABEL_FONT_SIZE),
         'shape': 'box',
         'style': 'rounded',
-        'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}'
+        'margin': f'{FILENAME_LABEL_MARGIN * 2},{FILENAME_LABEL_MARGIN}',
     }
 
 
@@ -939,8 +1001,10 @@ def create_edge(edge: dict, node_hash_type_dict: dict):
     edge_data = edge.get('data', {})
     url_data = edge_data.get('hyperlinks', []) + edge_data.get('sources', [])
     url = url_data[-1]['url'] if len(url_data) else ''
-    if any(item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]] for
-           item in ['link', 'note', 'image']):
+    if any(
+        item in [node_hash_type_dict[edge['from']], node_hash_type_dict[edge['to']]]
+        for item in ['link', 'note', 'image']
+    ):
         default_line_style = 'dashed'
         default_arrow_head = 'none'
     return {
@@ -953,14 +1017,15 @@ def create_edge(edge: dict, node_hash_type_dict: dict):
         'color': style.get('strokeColor') or DEFAULT_BORDER_COLOR,
         'arrowtail': ARROW_STYLE_DICT.get(style.get('sourceHeadType') or 'none'),
         'arrowhead': ARROW_STYLE_DICT.get(
-            style.get('targetHeadType') or default_arrow_head),
-        'penwidth': str(style.get('lineWidthScale', 1.0)) if style.get(
-            'lineType') != 'none'
+            style.get('targetHeadType') or default_arrow_head
+        ),
+        'penwidth': str(style.get('lineWidthScale', 1.0))
+        if style.get('lineType') != 'none'
         else '0.0',
         'fontsize': str(style.get('fontSizeScale', 1.0) * DEFAULT_FONT_SIZE),
         'style': BORDER_STYLES_DICT.get(style.get('lineType') or default_line_style),
         # We need to encode ', or export will fail - LL-3924
-        'URL': url.replace("'", "%27")
+        'URL': url.replace("'", "%27"),
     }
 
 
@@ -983,22 +1048,19 @@ def create_watermark():
         'margin': "0.2,0.0",
         'fontsize': f"{DEFAULT_FONT_SIZE}",
         'penwidth': '0.0',
-
     }
     url_params = {
         'name': 'watermark_hyper',
         'label': 'lifelike.bio',
         'href': 'https://lifelike.bio',
-        'pos': (
-            f"0,{-DEFAULT_NODE_HEIGHT / 2.0 / SCALING_FACTOR}!"
-        ),
+        'pos': (f"0,{-DEFAULT_NODE_HEIGHT / 2.0 / SCALING_FACTOR}!"),
         'width': f"{WATERMARK_WIDTH / SCALING_FACTOR}",
         'height': f"{DEFAULT_NODE_HEIGHT / SCALING_FACTOR}",
         'fontcolor': 'blue',
         'fontname': 'sans-serif',
         'margin': "0.2,0.0",
         'fontsize': f"{DEFAULT_FONT_SIZE - 2}",
-        'penwidth': '0.0'
+        'penwidth': '0.0',
     }
     icon_params = {
         'name': 'watermark_icon',
@@ -1013,7 +1075,7 @@ def create_watermark():
         'image': ASSETS_PATH + 'lifelike.png',
         'width': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
         'height': f"{WATERMARK_ICON_SIZE / SCALING_FACTOR}",
-        'penwidth': '0.0'
+        'penwidth': '0.0',
     }
     return label_params, url_params, icon_params
 
@@ -1024,9 +1086,7 @@ class MapTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
 
     def detect_mime_type(
-        self,
-        buffer: FileContentBuffer,
-        extension=None
+        self, buffer: FileContentBuffer, extension=None
     ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
@@ -1058,7 +1118,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                     validate_map(json_graph)
                     for node in json_graph['nodes']:
                         if node.get('image_id'):
-                            zip_file.read("".join(['images/', node.get('image_id'), '.png']))
+                            zip_file.read(
+                                "".join(['images/', node.get('image_id'), '.png'])
+                            )
             except (zipfile.BadZipFile, KeyError):
                 raise ValueError
 
@@ -1091,7 +1153,9 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             return FileContentBuffer(' '.join(string_list).encode(BYTE_ENCODING))
 
-    def generate_export(self, file: Files, format: str, self_contained_export=False) -> FileExport:
+    def generate_export(
+        self, file: Files, format: str, self_contained_export=False
+    ) -> FileExport:
         """
         Generates the map as a file in provided format. While working with this, remember that:
          - Most of the node parameters is optional (including width and height).
@@ -1112,7 +1176,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} Cannot find map graph inside the zip!',
                 extra=EventLog(
-                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value
+                ).to_dict(),
             )
             raise ValidationError(
                 'Cannot retrieve contents of the file - it might be corrupted'
@@ -1121,7 +1186,8 @@ class MapTypeProvider(BaseFileTypeProvider):
             current_app.logger.info(
                 f'Invalid map file: {file.hash_id} File is a bad zipfile.',
                 extra=EventLog(
-                    event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                    event_type=LogEventType.MAP_EXPORT_FAILURE.value
+                ).to_dict(),
             )
             raise ValidationError(
                 'Cannot retrieve contents of the file - it might be corrupted'
@@ -1129,16 +1195,18 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         graph = graphviz.Digraph(
             escape(file.filename),
-            comment=file.description.encode('unicode_escape') if file.description else None,
+            comment=file.description.encode('unicode_escape')
+            if file.description
+            else None,
             engine='fdp',
-            format=format
+            format=format,
         )
 
         graph.attr(
             margin=str(PDF_MARGIN),
             outputorder='nodesfirst',
             pad=str(PDF_PAD),
-            overlap='false'
+            overlap='false',
         )
 
         if format == 'png':
@@ -1188,10 +1256,18 @@ class MapTypeProvider(BaseFileTypeProvider):
                         # (it is either size >~1MB or resolution but no clear error is given)
                         # If an image is too big Graphviz will log cryptic warning that
                         # the image could not be found
-                        im.resize((
-                            int(node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)),
-                            int(node['data'].get('height', DEFAULT_IMAGE_NODE_HEIGHT))
-                        ))
+                        im.resize(
+                            (
+                                int(
+                                    node['data'].get('width', DEFAULT_IMAGE_NODE_WIDTH)
+                                ),
+                                int(
+                                    node['data'].get(
+                                        'height', DEFAULT_IMAGE_NODE_HEIGHT
+                                    )
+                                ),
+                            )
+                        )
                         file_path = os.path.sep.join([folder.name, image_name])
                         im.save(file_path)
                     # Note: Add placeholder images instead?
@@ -1200,7 +1276,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                         current_app.logger.info(
                             f'Invalid map file: {file.hash_id} Cannot retrieve image {name}.',
                             extra=EventLog(
-                                event_type=LogEventType.MAP_EXPORT_FAILURE.value).to_dict()
+                                event_type=LogEventType.MAP_EXPORT_FAILURE.value
+                            ).to_dict(),
                         )
                         raise ValidationError(
                             f"Cannot retrieve image: {name} - file might be corrupted"
@@ -1213,12 +1290,16 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if node['label'] in ICON_NODES:
                     # map and note should point to the first source or hyperlink, if the are no
                     # sources
-                    link_data = node['data'].get('sources', []) + node['data'].get('hyperlinks', [])
+                    link_data = node['data'].get('sources', []) + node['data'].get(
+                        'hyperlinks', []
+                    )
                     node['link'] = link_data[0].get('url') if link_data else None
                     if style.get('showDetail'):
                         params = create_detail_node(node, params)
                     else:
-                        params, icon_params, node_height = create_icon_node(node, params, folder)
+                        params, icon_params, node_height = create_icon_node(
+                            node, params, folder
+                        )
                         icon_params['href'] = get_node_href(node)
                         # We need to set this to ensure that watermark is not intersect some edge
                         # cases
@@ -1242,14 +1323,16 @@ class MapTypeProvider(BaseFileTypeProvider):
                 footer.node(**params)
 
         graph.edge(
-            'cluster_title', 'cluster_body',
+            'cluster_title',
+            'cluster_body',
             len=str(NAME_NODE_OFFSET / SCALING_FACTOR),
-            style='invis'
+            style='invis',
         )
         graph.edge(
-            'cluster_body', 'cluster_footer',
+            'cluster_body',
+            'cluster_footer',
             len=str(WATERMARK_DISTANCE / SCALING_FACTOR),
-            style='invis'
+            style='invis',
         )
 
         ext = f".{format}"
@@ -1264,11 +1347,11 @@ class MapTypeProvider(BaseFileTypeProvider):
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
-            filename=f"{file.filename}{ext}"
+            filename=f"{file.filename}{ext}",
         )
 
     def merge(self, files: List[Files], requested_format: str, links=None):
-        """ Export, merge and prepare as FileExport the list of files
+        """Export, merge and prepare as FileExport the list of files
         :param files: List of Files objects. The first entry is always the main map,
         :param requested_format: export format
         :param links: List of dict objects storing info about links that should be embedded:
@@ -1285,35 +1368,40 @@ class MapTypeProvider(BaseFileTypeProvider):
         elif requested_format == 'svg':
             merger = self.merge_svgs
         else:
-            raise ValidationError("Unknown or invalid export format for the requested file.",
-                                  requested_format)
+            raise ValidationError(
+                "Unknown or invalid export format for the requested file.",
+                requested_format,
+            )
         ext = f'.{requested_format}'
         content = merger(files, links)
         return FileExport(
             content=content,
             mime_type=extension_mime_types[ext],
-            filename=f"{files[0].filename}{ext}"
+            filename=f"{files[0].filename}{ext}",
         )
 
     def get_file_export(self, file, format):
-        """ Get the exported version of the file in requested format
-            wrapper around abstract method to add map specific params and catch exception
-         params
-         :param file: map file to export
-         :param format: wanted format
-         :raises ValidationError: When provided format is invalid
-         :return: Exported map as FileContentBuffer
-         """
+        """Get the exported version of the file in requested format
+           wrapper around abstract method to add map specific params and catch exception
+        params
+        :param file: map file to export
+        :param format: wanted format
+        :raises ValidationError: When provided format is invalid
+        :return: Exported map as FileContentBuffer
+        """
         try:
             return FileContentBuffer(
-                self.generate_export(file, format, self_contained_export=True).content.getvalue()
+                self.generate_export(
+                    file, format, self_contained_export=True
+                ).content.getvalue()
             )
         except ExportFormatError as e:
-            raise ValidationError("Unknown or invalid export "
-                                  "format for the requested file.", format) from e
+            raise ValidationError(
+                "Unknown or invalid export " "format for the requested file.", format
+            ) from e
 
     def merge_pngs_vertically(self, files, _=None):
-        """ Append pngs vertically.
+        """Append pngs vertically.
         params:
         :param files: list of files to export
         :param _: links: omitted in case of png, added to match the merge_pdfs signature
@@ -1322,13 +1410,17 @@ class MapTypeProvider(BaseFileTypeProvider):
         """
         final_bytes = FileContentBuffer()
         try:
+
             def openImage(image):
                 with image as bufferView:
                     return Image.open(bufferView)
+
             images = [openImage(self.get_file_export(file, 'png')) for file in files]
         except Image.DecompressionBombError as e:
-            raise SystemError('One of the files exceeds the maximum size - it cannot be exported'
-                              'as part of the linked export')
+            raise SystemError(
+                'One of the files exceeds the maximum size - it cannot be exported'
+                'as part of the linked export'
+            )
         cropped_images = [image.crop(image.getbbox()) for image in images]
         widths, heights = zip(*(i.size for i in cropped_images))
 
@@ -1354,9 +1446,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             f'Creation date:\t{file.creation_date}',
             f'Modified date:\t{file.modified_date}',
         ):
-            writer.addBookmark(
-                line, page_number, file_bookmark
-            )
+            writer.addBookmark(line, page_number, file_bookmark)
 
     @classmethod
     def _add_file_bookmark_to_pdf_content(cls, content: FileContentBuffer, file: Files):
@@ -1371,7 +1461,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             return new_content
 
     def merge_pdfs(self, files: List[Files], link_to_page_map=None):
-        """ Merge pdfs and add links to map.
+        """Merge pdfs and add links to map.
         params:
         :param files: list of files to export.
         :param link_to_page_map: dict mapping url to pdf page number
@@ -1387,11 +1477,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                 # region Find internal links in pdf
                 for page in map(reader.getPage, range(reader.getNumPages())):
                     for annot in filter(
-                        lambda o: isinstance(o, DictionaryObject) and o.get('/Subtype') == '/Link',
-                        map(
-                            lambda o: reader.getObject(o),
-                            page.get('/Annots', [])
-                        )
+                        lambda o: isinstance(o, DictionaryObject)
+                        and o.get('/Subtype') == '/Link',
+                        map(lambda o: reader.getObject(o), page.get('/Annots', [])),
                     ):
                         annotation = annot.get('/A')
                         if annotation:
@@ -1399,13 +1487,17 @@ class MapTypeProvider(BaseFileTypeProvider):
                             rect = annot.get('/Rect')
                             destination_page = link_to_page_map.get(uri)
                             if destination_page is not None:
-                                links.append(dict(
-                                    pagenum=origin_page,
-                                    pagedest=destination_page,
-                                    rect=rect
-                                ))
+                                links.append(
+                                    dict(
+                                        pagenum=origin_page,
+                                        pagedest=destination_page,
+                                        rect=rect,
+                                    )
+                                )
                 # endregion
-                num_of_pages = writer.getNumPages()  # index of first attached page since this point
+                num_of_pages = (
+                    writer.getNumPages()
+                )  # index of first attached page since this point
                 writer.appendPagesFromReader(reader)
                 self._add_file_bookmark(writer, num_of_pages, file)
 
@@ -1416,7 +1508,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         return final_bytes
 
     def merge_svgs(self, files: list, _=None):
-        """ Merge svg files together with svg_stack
+        """Merge svg files together with svg_stack
         params:
         :param files: list of files to be merged
         :param _: links: omitted in case of svg, added to match the merge_pdfs signature
@@ -1426,17 +1518,23 @@ class MapTypeProvider(BaseFileTypeProvider):
         # String is used, since svg_stack cannot save to IOBytes - raises an error
         result_string = io.StringIO()
         for file in files:
-            layout2.addSVG(self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter)
+            layout2.addSVG(
+                self.get_file_export(file, 'svg'), alignment=svg_stack.AlignCenter
+            )
         doc.setLayout(layout2)
         doc.save(result_string)
         return FileContentBuffer(result_string.getvalue().encode(BYTE_ENCODING))
 
-    def update_map(self, params: dict, file_content: FileContentBuffer, updater=lambda x: x):
+    def update_map(
+        self, params: dict, file_content: FileContentBuffer, updater=lambda x: x
+    ):
         with file_content as bufferView:
             try:
                 zip_file = zipfile.ZipFile(bufferView)
             except zipfile.BadZipfile as e:
-                raise ValidationError('Previous content of the map is corrupted!') from e
+                raise ValidationError(
+                    'Previous content of the map is corrupted!'
+                ) from e
 
         images_to_delete = params.get('deleted_images') or []
         new_images = params.get('new_images') or []
@@ -1444,29 +1542,33 @@ class MapTypeProvider(BaseFileTypeProvider):
         new_content = FileContentBuffer()
         with new_content as bufferView:
             new_zip = zipfile.ZipFile(
-                bufferView,
-                'w',
-                zipfile.ZIP_DEFLATED,
-                strict_timestamps=False
+                bufferView, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
             )
 
             # Weirdly, zipfile will store both files rather than override on duplicate name,
             # so we need to make sure that the graph.json is not copied as well.
             images_to_delete.append('graph')
-            files_to_copy = [hash_id for hash_id in zip_file.namelist() if
-                             os.path.basename(hash_id).split('.')[0] not in images_to_delete]
+            files_to_copy = [
+                hash_id
+                for hash_id in zip_file.namelist()
+                if os.path.basename(hash_id).split('.')[0] not in images_to_delete
+            ]
             for filename in files_to_copy:
                 new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
 
             for image in new_images:
-                new_zip.writestr(zipfile.ZipInfo('images/' + image.filename + '.png'), image.read())
+                new_zip.writestr(
+                    zipfile.ZipInfo('images/' + image.filename + '.png'), image.read()
+                )
             if params.get('content_value') is not None:
                 new_graph = params['content_value'].read()
             else:
                 graph_json = json.loads(zip_file.read('graph.json'))
                 new_graph_json = updater(graph_json)
                 validate_map(new_graph_json)
-                new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode('utf-8')
+                new_graph = json.dumps(new_graph_json, separators=(',', ':')).encode(
+                    'utf-8'
+                )
 
             # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata!
             # If the timestamp is included, otherwise identical zips will have different checksums.
@@ -1477,7 +1579,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         return new_content
 
     def prepare_content(
-            self, buffer: FileContentBuffer, params: dict, file: Files
+        self, buffer: FileContentBuffer, params: dict, file: Files
     ) -> FileContentBuffer:
         """
         Evaluate the changes in the images and create a new blob to store in the content.
@@ -1500,10 +1602,8 @@ class GraphTypeProvider(BaseFileTypeProvider):
     EXTENSIONS = {'.graph'}
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension=None
-            ) -> List[typing.Tuple[Certanity, str]]:
+        self, buffer: FileContentBuffer, extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         certanity = None
         if extension in self.EXTENSIONS:
             certanity = Certanity.assumed
@@ -1530,19 +1630,25 @@ class GraphTypeProvider(BaseFileTypeProvider):
                 raise ContentValidationError(**message.to_dict())
             else:
                 if log_status_messages:
-                    if isinstance(message, ContentValidationNotDefinedSourceTargetMessage):
-                        info(
-                            ContentValidationInfo(**{  # type: ignore
-                                **message.to_dict(),
-                                'title': ContentValidationInfo.title
-                            })
+                    if isinstance(
+                        message, ContentValidationNotDefinedSourceTargetMessage
+                    ):
+                        inform(
+                            ContentValidationInfo(
+                                **{  # type: ignore
+                                    **message.to_dict(),
+                                    'title': ContentValidationInfo.title,  # type: ignore
+                                }
+                            )
                         )
                     else:
                         warn(
-                            ContentValidationWarning(**{  # type: ignore
-                                **message.to_dict(),
-                                'title': ContentValidationWarning.title
-                            })
+                            ContentValidationWarning(
+                                **{  # type: ignore
+                                    **message.to_dict(),
+                                    'title': ContentValidationWarning.title,  # type: ignore
+                                }
+                            )
                         )
 
     def to_indexable_content(self, buffer: FileContentBuffer):
@@ -1561,10 +1667,8 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
     mime_types = (MIME_TYPE,)
 
     def detect_mime_type(
-            self,
-            buffer: FileContentBuffer,
-            extension=None
-            ) -> List[typing.Tuple[Certanity, str]]:
+        self, buffer: FileContentBuffer, extension=None
+    ) -> List[typing.Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic

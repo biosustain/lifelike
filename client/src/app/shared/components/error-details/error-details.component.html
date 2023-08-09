@@ -1,20 +1,22 @@
 <div *ngIf="error.stacktrace || error.transactionId || error.cause" class="detail">
   <header>Technical Details</header>
   <section>
-    <ng-container *ngIf="error.transactionId">Transaction id: {{error.transactionId}}</ng-container>
+    <ng-container *ngIf="error.transactionId"
+      >Transaction id: {{ error.transactionId }}</ng-container
+    >
     <ng-template #errorCause let-error>
       <li class="breadcrumb-item">
         <ng-template #tooltip>
-          <header class="h6">{{error.title}}</header>
-          {{error.message}}
-          <p *ngFor="let msg of error.additionalMsgs">{{msg}}</p>
+          <header class="h6">{{ error.title }}</header>
+          {{ error.message }}
+          <p *ngFor="let msg of error.additionalMsgs">{{ msg }}</p>
           <details *ngIf="error.stackTrace">
             <summary>Stack trace</summary>
-            <p>{{error.stackTrace}}</p>
+            <p>{{ error.stackTrace }}</p>
           </details>
         </ng-template>
         <span [ngbTooltip]="tooltip">
-            {{ error.type }}
+          {{ error.type }}
         </span>
       </li>
       <ng-container *ngIf="error.cause">
@@ -22,16 +24,13 @@
         </ng-container>
       </ng-container>
     </ng-template>
-    <ol *ngIf="error.cause"
-        class="breadcrumb"
-        [style.flex-wrap]="'wrap'"
-        [style.color]="'black'">
+    <ol *ngIf="error.cause" class="breadcrumb" [style.flex-wrap]="'wrap'" [style.color]="'black'">
       <span class="mr-1">Cause chain:</span>
       <ng-container *ngTemplateOutlet="errorCause; context: { $implicit: error }"></ng-container>
     </ol>
   </section>
   <section *ngIf="error.stacktrace">
     <header>Stack trace:</header>
-    <pre>{{error.stacktrace}}</pre>
+    <pre>{{ error.stacktrace }}</pre>
   </section>
 </div>

@@ -23,4 +23,6 @@ import { skipStep } from './skipStep';
  *
  * PS isDevMode cannot be called on load of this file, as of Angular limitation.
  */
-export const $freezeInDev: MonoTypeOperatorFunction<any> = map(d => isDevMode() ? cloneDeepWith(d, Object.freeze) : d);
+export const $freezeInDev: MonoTypeOperatorFunction<any> = map((d) =>
+  isDevMode() ? cloneDeepWith(d, Object.freeze) : d
+);

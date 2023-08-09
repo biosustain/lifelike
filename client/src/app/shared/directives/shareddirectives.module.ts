@@ -2,12 +2,20 @@ import { NgModule } from '@angular/core';
 
 import { DebounceInputDirective } from './debounceInput';
 import { DebounceClickDirective } from './debounceClick';
-import { LinkWithHrefDirective, LinkWithoutHrefDirective, AbstractLinkDirective } from './link.directive';
+import {
+  LinkWithHrefDirective,
+  LinkWithoutHrefDirective,
+  AbstractLinkDirective,
+} from './link.directive';
 import { FormInputDirective } from './form-input.directive';
 import { AutoFocusDirective } from './auto-focus.directive';
 import { ContainerBreakpointsDirective } from './container-breakpoints.directive';
 import { TabSelectableDirective } from './tab-selectable.directive';
-import { ContextMenuBodyDirective, ContextMenuDirective, ContextMenuItemDirective } from './context-menu.directive';
+import {
+  ContextMenuBodyDirective,
+  ContextMenuDirective,
+  ContextMenuItemDirective,
+} from './context-menu.directive';
 import { MouseNavigableDirective, MouseNavigableItemDirective } from './mouse-navigable.directive';
 import { DataTransferDataDirective } from './data-transfer-data.directive';
 import { FilesystemObjectTargetDirective } from './filesystem-object-target.directive';
@@ -20,8 +28,16 @@ import { UidDirective } from './uid.directive';
 import { AutoGrowDirective } from './auto-grow.directive';
 import { InnerXMLDirective } from './innerXML.directive';
 import { AutoCloseTooltipOutOfViewDirective } from './auto-close-tooltip-out-of-view.directive';
+import {
+  HasPlaceholderDirective,
+  InteractiveInterfaceHasPlaceholderDirective,
+  ShowPlaceholderDirective,
+} from './placeholder.directive';
 
 const directives = [
+  HasPlaceholderDirective,
+  InteractiveInterfaceHasPlaceholderDirective,
+  ShowPlaceholderDirective,
   AbstractLinkDirective,
   DebounceClickDirective,
   DebounceInputDirective,
@@ -46,17 +62,12 @@ const directives = [
   AutoGrowDirective,
   UidDirective,
   ElementObserverDirective,
-  AutoCloseTooltipOutOfViewDirective
+  AutoCloseTooltipOutOfViewDirective,
 ];
 
 @NgModule({
   imports: [],
-  declarations: [
-    ...directives,
-  ],
-  exports: [
-    ...directives,
-  ],
+  declarations: [...directives],
+  exports: [...directives],
 })
-export class SharedDirectivesModule {
-}
+export class SharedDirectivesModule {}

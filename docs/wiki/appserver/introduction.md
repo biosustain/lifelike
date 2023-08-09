@@ -2,26 +2,26 @@
 
 ## Python Dependencies
 
-We manage dependencies through *pipenv*. Dependencies are stored in `Pipfile` but their specific versions are stored in an automatically-managed `Pipfile.lock`.
+We manage dependencies through _pipenv_. Dependencies are stored in `Pipfile` but their specific versions are stored in an automatically-managed `Pipfile.lock`.
 
 ### Making Changes
 
 Use the following command to install dependencies:
 
 ```sh
-docker-compose exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
+docker compose exec appserver pipenv install --keep-outdated --python /usr/bin/python3 $dependency_name
 ```
 
 Note: The `--python` argument is only required if there is a mismatch between the Python version in the Docker container and the Python version in the Pipfile, although it doesn't hurt to add it.
 
 ### Dealing with Pipfile Merge Conflicts
 
-If two people add dependencies on different branches, you will run into a merge conflict with `Pipfile`. 
+If two people add dependencies on different branches, you will run into a merge conflict with `Pipfile`.
 
 To solve this problem, first combine the changes in `Pipfile`, and then choose one of the versions of `Pipfile.lock`. Afterwards, run this command:
 
 ```sh
-docker-compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
+docker compose exec appserver pipenv lock --keep-outdated --python /usr/bin/python3
 ```
 
 ## PostgreSQL Migrations
@@ -35,38 +35,39 @@ Alembic migrations are of a tree structure, so each migration has a "prior" migr
 By default, the database is empty, so you will have to run all the existing migrations to bring your database up to date using the following command:
 
 ```sh
-docker-compose exec appserver flask db upgrade
+docker compose exec appserver flask db upgrade
 ```
 
 or
 
 ```sh
-docker-compose run appserver flask db upgrade
+docker compose run appserver flask db upgrade
 ```
 
 to run the migration without starting the flask application. Remember that this will create a single-use container that should be removed with `docker volume prune` or `make docker-stop`.
 Alternatively, you can run it with `--rm` flag - but this requires `pgdatabase` to be up as well.
+
 ### Importing Seed Data
 
 While the migrations create the schema, the database still has no data and it may be difficult to develop without any data. We've provided some "seed data" that has dummy accounts and dummy data for you to work with. To **clear your current local database** and import the seed data (from the specified file), run:
 
 ```sh
-docker-compose exec appserver flask seed fixtures/seed.json
+docker compose exec appserver flask seed fixtures/seed.json
 ```
 
 ### Extending Seed Data
 
 Since seed files contain the content data of the example files, there are pretty cumbersome to modify manually. If you feel that there is a file that is lacking in the example data (e.g. new Lifelike file type), you can:
 
- - Import seed data from a specific file
- - Create/Upload the file(s) you want to include
- - Run `append_seed` CLI command, specifying seed file and list of filenames to append:
+-   Import seed data from a specific file
+-   Create/Upload the file(s) you want to include
+-   Run `append_seed` CLI command, specifying seed file and list of filenames to append:
 
 ```shell
-docker-compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
+docker compose exec appserver flask append_seed fixtures/seed.json [LIST_OF_FILENAMES]
 ```
 
-If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`. 
+If you are using a different file than the default `seed.json`, you might want to specify another directory and/or owner. You can set that using `-d, --directory` and `-o, --owner` flags, followed by `id`.
 
 ### Making Schema Changes
 
@@ -82,13 +83,13 @@ ERROR [root] Error: Target database is not up to date.
 Once you are up-to-date, you can have Alembic generate a migration script for you by automatically inspecting the current schema structure as described in the code and comparing it to the one in the database. Run the following command to create a new migration script in `appserver/migrations`:
 
 ```sh
-docker-compose exec appserver flask db migrate -m "Describe the change here"
+docker compose exec appserver flask db migrate -m "Describe the change here"
 ```
 
 If you don't want an auto-generated migration file, you can run this command instead:
 
 ```sh
-docker-compose exec appserver flask db revision -m "Describe the change here"
+docker compose exec appserver flask db revision -m "Describe the change here"
 ```
 
 #### Don't Forget About Data Migrations
@@ -130,15 +131,16 @@ for chunk in window_chunk(users, 25):
         session.rollback()
         raise
 ```
+
 #### Misc
 
 Before pushing, test the migrations by first **downgrading** and then **upgrading** with data migration:
 
 ```sh
-docker-compose exec appserver flask db upgrade -x data_migrate=True
+docker compose exec appserver flask db upgrade -x data_migrate=True
 ```
 
-When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the *restore from history* functionality will not work.
+When updating `FileContent`, remember to match `contentID` with both `Files` and `FileVersion` tables, as it contains both current and previous versions. If you migrate only current `Files`, the _restore from history_ functionality will not work.
 
 ### Merging Migration Conflicts
 
@@ -151,7 +153,7 @@ ERROR [root] Error: Multiple head revisions are present for given argument 'head
 If you want to see which two (or more) migrations are conflicting, use this command:
 
 ```sh
-docker-compose exec appserver flask db heads
+docker compose exec appserver flask db heads
 ```
 
 #### Option 1: Merging Heads
@@ -159,7 +161,7 @@ docker-compose exec appserver flask db heads
 If both heads can be merged together because they don't conflict, you can simply run the following command to automatically create another migration that merges the two forks together:
 
 ```sh
-docker-compose exec appserver flask db merge -m "Describe the merge here"
+docker compose exec appserver flask db merge -m "Describe the merge here"
 ```
 
 #### Option 2: 'Rebasing' Heads
@@ -188,7 +190,7 @@ pdb.set_trace()
 Restart the application with the following commands:
 
 ```bash
-docker-compose down && docker-compose up -d
+docker compose down && docker compose up -d
 # seed if needed...
 docker attach <service_name> # e.g n4j-appserver
 ```
@@ -202,42 +204,47 @@ To exit out of attach mode, can do either `Ctrl+C` to exit and kill the containe
 To run the unit tests for Flask, use the following commands when Flask is running:
 
 ```sh
-docker-compose exec appserver pytest
+docker compose exec appserver pytest
 ```
 
 To run a specific test file you can:
 
- - Provide path to the file
+-   Provide path to the file
+
 ```sh
-docker-compose exec appserver pytest tests/api/filesystem/object_test.py
+docker compose exec appserver pytest tests/api/filesystem/object_test.py
 ```
- - Use `-k` flag with filename:
+
+-   Use `-k` flag with filename:
+
 ```sh
-docker-compose exec appserver pytest  -k 'object_test.py'
+docker compose exec appserver pytest  -k 'object_test.py'
 ```
+
 To run a specific test:
 
 ```sh
-docker-compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
+docker compose exec appserver pytest tests/api/filesystem/object_test.py::test_patch_file
 ```
+
 or
 
 ```sh
-docker-compose exec appserver pytest -k 'test_patch_file'
+docker compose exec appserver pytest -k 'test_patch_file'
 ```
 
 Some additional flags that may make tests easier to read include:
 
-* `--disable-pytest-warnings` to disable warning summaries
-* `--capture=no` to show stdout/stderr for all and not just failed tests
-* `--verbose` to show test names and not just '.'
-* `--tb=native` to show stack traces the normal Python way
-* `--ignore=tests/some/test.py` to ignore a specific test or folder
+-   `--disable-pytest-warnings` to disable warning summaries
+-   `--capture=no` to show stdout/stderr for all and not just failed tests
+-   `--verbose` to show test names and not just '.'
+-   `--tb=native` to show stack traces the normal Python way
+-   `--ignore=tests/some/test.py` to ignore a specific test or folder
 
 Together:
 
 ```sh
-docker-compose exec appserver pytest --disable-pytest-warnings --capture=no --verbose --tb=native
+docker compose exec appserver pytest --disable-pytest-warnings --capture=no --verbose --tb=native
 ```
 
 ## Lint Checks
@@ -245,6 +252,6 @@ docker-compose exec appserver pytest --disable-pytest-warnings --capture=no --ve
 ### Running Checks
 
 ```sh
-docker-compose exec appserver pycodestyle .
-docker-compose exec appserver mypy .
+docker compose exec appserver pycodestyle .
+docker compose exec appserver mypy .
 ```

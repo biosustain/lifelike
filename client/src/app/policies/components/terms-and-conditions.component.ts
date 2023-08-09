@@ -5,6 +5,5 @@ import { Component } from '@angular/core';
   templateUrl: './terms-and-conditions.component.html',
 })
 export class TermsAndConditionsComponent {
-
-  constructor() { }
+  constructor() {}
 }

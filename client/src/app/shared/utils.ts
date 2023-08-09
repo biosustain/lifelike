@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { catchError } from 'rxjs/operators';
-import { from, Observable, pipe, throwError } from 'rxjs';
+import { from, never, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
 import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } from 'lodash-es';
 
@@ -16,16 +16,18 @@ import { RecursiveReadonly } from './utils/types';
  * @returns the input string with the words split by " "
  */
 export function splitPascalCaseStr(str: string): string {
-  return str
-    // Look for long acronyms and filter out the last letter
-    .replace(/([A-Z]+)([A-Z][a-z])/g, ' $1 $2')
-    // Look for lower-case letters followed by upper-case letters
-    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
-    // Look for lower-case letters followed by numbers
-    .replace(/([a-zA-Z])(\d)/g, '$1 $2')
-    .replace(/^./, (s) => s.toUpperCase())
-    // Remove any white space left around the word
-    .trim();
+  return (
+    str
+      // Look for long acronyms and filter out the last letter
+      .replace(/([A-Z]+)([A-Z][a-z])/g, ' $1 $2')
+      // Look for lower-case letters followed by upper-case letters
+      .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+      // Look for lower-case letters followed by numbers
+      .replace(/([a-zA-Z])(\d)/g, '$1 $2')
+      .replace(/^./, (s) => s.toUpperCase())
+      // Remove any white space left around the word
+      .trim()
+  );
 }
 
 /**
@@ -37,21 +39,16 @@ export function splitPascalCaseStr(str: string): string {
  * @returns the title-cased version of the input string
  */
 export function toTitleCase(str: string) {
-  return str.replace(
-    /\w\S*/g,
-    (txt: string) => {
-      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    }
-  );
+  return str.replace(/\w\S*/g, (txt: string) => {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
 }
 
 export function getRandomColor() {
   const letters = '0123456789ABCDEF';
   let color = '#';
 
-  [...Array(6).keys()].forEach(
-    _ => color += letters[Math.floor(Math.random() * 16)],
-  );
+  [...Array(6).keys()].forEach((_) => (color += letters[Math.floor(Math.random() * 16)]));
 
   return color;
 }
@@ -97,12 +94,11 @@ export function hexToRGBA(hex: string, opacity: number) {
  */
 export function uuidv4(): string {
   // @ts-ignore
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
     /* tslint:disable:no-bitwise*/
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16),
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
   );
 }
-
 
 export function getClientOS() {
   if (navigator.appVersion.indexOf('Linux') !== -1) {
@@ -115,7 +111,6 @@ export function getClientOS() {
     return OperatingSystems.WINDOWS;
   }
   return OperatingSystems.UNKNOWN;
-
 }
 
 export function keyCodeRepresentsCopyEvent(event: any) {
@@ -159,15 +154,17 @@ export function keyCodeRepresentsPasteEvent(event: any) {
  * from bubbling up.
  */
 export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>> {
-  return pipe(catchError(error => {
-    if (error instanceof HttpErrorResponse) {
-      const res = error as HttpErrorResponse;
-      if (res.status === 404) {
-        return from([null]);
+  return pipe(
+    catchError((error) => {
+      if (error instanceof HttpErrorResponse) {
+        const res = error as HttpErrorResponse;
+        if (res.status === 404) {
+          return from([null]);
+        }
       }
-    }
-    return throwError(error);
-  }));
+      return throwError(error);
+    })
+  );
 }
 
 /**
@@ -176,7 +173,7 @@ export function ignore404Errors<T>(): UnaryFunction<Observable<T>, Observable<T>
  * @param second set to check against
  */
 export function setDifference<T>(first: Set<T>, second: Set<T | any>): T[] {
-  return [...first].filter(i => !second.has(i));
+  return [...first].filter((i) => !second.has(i));
 }
 
 /**
@@ -187,30 +184,29 @@ export function getSupportedFileCodes(text: string): SupportedExtensionInfo {
     return {
       unicode: Unicodes.Word,
       FAClass: FAClass.Word,
-      color: CustomIconColors.Word
+      color: CustomIconColors.Word,
     };
   } else if (text.endsWith('.xlsx') || text.endsWith('.xls')) {
     return {
       unicode: Unicodes.Excel,
       FAClass: FAClass.Excel,
-      color: CustomIconColors.Excel
+      color: CustomIconColors.Excel,
     };
   } else if (text.endsWith('.pptx') || text.endsWith('.ppt')) {
     return {
       unicode: Unicodes.PowerPoint,
       FAClass: FAClass.PowerPoint,
-      color: CustomIconColors.PowerPoint
+      color: CustomIconColors.PowerPoint,
     };
   } else if (text.endsWith('.cys')) {
     return {
       unicode: Unicodes.Cytoscape,
       FAClass: FAClass.Cytoscape,
-      color: CustomIconColors.Cytoscape
+      color: CustomIconColors.Cytoscape,
     };
   }
   return undefined;
 }
-
 
 export interface SupportedExtensionInfo {
   unicode: Unicodes;
@@ -224,13 +220,14 @@ export interface SupportedExtensionInfo {
  */
 export const deepDiff = ([a, b]) =>
   transform(a, (result, value, key) => {
-      if (!isEqual(value, b[key])) {
-        result[key] = isObject(value) && isObject(b[key]) ? deepDiff([value, b[key]]) : b[key];
-      }
+    if (!isEqual(value, b[key])) {
+      result[key] = isObject(value) && isObject(b[key]) ? deepDiff([value, b[key]]) : b[key];
     }
-  );
+  });
 
-export const isNotEmpty = obj => !isEmpty(obj);
+export const isNotEmpty = (obj) => !isEmpty(obj);
+
+type IterableType<T> = T extends Iterable<infer U> ? U : never;
 
 /**
  * Helper mapper function, that works not only with arrays, but also with objects, sets, maps etc.
@@ -247,8 +244,24 @@ export const isNotEmpty = obj => !isEmpty(obj);
  * @param mapping - the mapping function
  * @param mappedObjectConstructor - contructor
  */
-export const mapIterable = <O, R>(itrable, mapping, mappedObjectConstructor?) =>
-  new (mappedObjectConstructor ?? itrable.constructor)(Array.from(itrable, mapping));
+export const mapIterable = <
+  InputType extends Iterable<Value>,
+  Mapping extends (v: Value, k: number) => Result,
+  MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => any,
+  Value,
+  Result
+>(
+  itrable: InputType,
+  mapping: (v: Value, k: number) => ReturnType<Mapping>,
+  mappedObjectConstructor?: MappedTypeConstructor
+) =>
+  new (mappedObjectConstructor ?? (itrable.constructor as any))(
+    Array.from<Value, ReturnType<Mapping>>(itrable, mapping)
+  ) as MappedTypeConstructor extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : InputType extends new (args: ReturnType<Mapping>[]) => infer ResultType
+    ? ResultType
+    : never;
 
 /** Unique Symbol to be used as defualt value of parameter.
  * We want to use it so we are not running into issue of differentiate between
@@ -284,7 +297,7 @@ export const reduceIterable = (iterable, callbackfn, initialValue: any = notDefi
   const interator = iterable[Symbol.iterator]();
   let currentIndex = 0;
   if (initialValue === notDefined) {
-    const {done, value} = interator.next();
+    const { done, value } = interator.next();
     if (done) {
       return undefined;
     }
@@ -297,14 +310,17 @@ export const reduceIterable = (iterable, callbackfn, initialValue: any = notDefi
   return initialValue;
 };
 
-export const isPromise = value => typeof value?.then === 'function';
+export const isPromise = (value) => typeof value?.then === 'function';
 
 export const inText = (pattern: string, flags: string = 'i') => {
   const compiledExpresion = new RegExp(pattern, flags);
   return (text: string) => compiledExpresion.test(text);
 };
 
-export const findEntriesKey = <K, V>(iterable: Iterable<[K, V]>, predicate: (v: V) => boolean = identity) => {
+export const findEntriesKey = <K, V>(
+  iterable: Iterable<[K, V]>,
+  predicate: (v: V) => boolean = identity
+) => {
   for (const [k, v] of iterable) {
     if (predicate(v)) {
       return k;
@@ -312,7 +328,10 @@ export const findEntriesKey = <K, V>(iterable: Iterable<[K, V]>, predicate: (v: 
   }
 };
 
-export const findEntriesValue = <K, V>(iterable: Iterable<[K, V]>, predicate: (k: K) => boolean = identity) => {
+export const findEntriesValue = <K, V>(
+  iterable: Iterable<[K, V]>,
+  predicate: (k: K) => boolean = identity
+) => {
   for (const [k, v] of iterable) {
     if (predicate(k)) {
       return v;
@@ -326,9 +345,9 @@ export const freezeDeep = <O extends Record<string, any>>(obj: O) =>
       obj,
       (result, value, key) => {
         if (isObjectLike(value)) {
-          result[key] = freezeDeep((value as object));
+          result[key] = freezeDeep(value as object);
         }
       },
-      obj as Record<string, any>,
-    ),
+      obj as Record<string, any>
+    )
   ) as RecursiveReadonly<O>;

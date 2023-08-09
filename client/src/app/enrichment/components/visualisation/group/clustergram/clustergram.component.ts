@@ -2,7 +2,10 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { KeyValue } from '@angular/common';
 
 import { annotationTypesMap } from 'app/shared/annotation-styles';
-import { EnrichWithGOTermsResult, EnrichmentVisualisationService } from 'app/enrichment/services/enrichment-visualisation.service';
+import {
+  EnrichWithGOTermsResult,
+  EnrichmentVisualisationService,
+} from 'app/enrichment/services/enrichment-visualisation.service';
 
 class GeneRow {
   values: boolean[];
@@ -19,7 +22,7 @@ class GeneRow {
 @Component({
   selector: 'app-clustergram',
   templateUrl: './clustergram.component.html',
-  styleUrls: ['./clustergram.component.scss']
+  styleUrls: ['./clustergram.component.scss'],
 })
 export class ClustergramComponent implements OnChanges {
   @Input() data: EnrichWithGOTermsResult[];
@@ -31,8 +34,7 @@ export class ClustergramComponent implements OnChanges {
   goTerms: EnrichWithGOTermsResult[] = [];
   geneColor: string = annotationTypesMap.get('gene').color;
 
-  constructor(readonly enrichmentService: EnrichmentVisualisationService) {
-  }
+  constructor(readonly enrichmentService: EnrichmentVisualisationService) {}
 
   rowOrder(a: KeyValue<string, GeneRow>, b: KeyValue<string, GeneRow>) {
     return b.value.frequency - a.value.frequency;
@@ -49,8 +51,8 @@ export class ClustergramComponent implements OnChanges {
       const genes = new Map<string, GeneRow>();
       let others: GeneRow | undefined;
       const goTerms = data.slice(0, sliceSize);
-      data.forEach(({geneNames}, goIndex) => {
-        geneNames.forEach(g => {
+      data.forEach(({ geneNames }, goIndex) => {
+        geneNames.forEach((g) => {
           let geneRow = genes.get(g);
           if (!geneRow) {
             if (goIndex < sliceSize) {

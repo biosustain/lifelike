@@ -6,7 +6,6 @@ import { AbstractCanvasBehavior, BehaviorEvent, BehaviorResult } from '../../beh
 import { CanvasGraphView } from '../canvas-graph-view';
 
 export class DragDropEntityBehavior extends AbstractCanvasBehavior {
-
   constructor(private readonly graphView: CanvasGraphView) {
     super();
   }
@@ -44,12 +43,12 @@ export class DragDropEntityBehavior extends AbstractCanvasBehavior {
             },
           }),
           true,
-          true,
-      ));
+          true
+        )
+      );
     }
 
     dragEvent.preventDefault();
     return BehaviorResult.Stop;
   }
-
 }

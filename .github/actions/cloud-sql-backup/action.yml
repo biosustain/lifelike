@@ -41,4 +41,3 @@ runs:
             --instance="${{ inputs.cloud_sql_instance_name }}" \
             --format=json --limit 1 | jq -r ".[0].selfLink" )
       shell: bash
-

@@ -54,7 +54,7 @@ export class ProjectImpl implements ObservableObject {
 
   set starred(value) {
     if (this.root) {
-      this.root.update({starred: value});
+      this.root.update({ starred: value });
     }
   }
 
@@ -64,7 +64,7 @@ export class ProjectImpl implements ObservableObject {
 
   set public(value) {
     if (this.root) {
-      this.root.update({public: value});
+      this.root.update({ public: value });
     }
   }
 
@@ -84,8 +84,15 @@ export class ProjectImpl implements ObservableObject {
     if (data == null) {
       return this;
     }
-    for (const key of ['hashId', 'name', 'description', 'creationDate', 'modifiedDate',
-      'privileges', 'starred']) {
+    for (const key of [
+      'hashId',
+      'name',
+      'description',
+      'creationDate',
+      'modifiedDate',
+      'privileges',
+      'starred',
+    ]) {
       if (data.hasOwnProperty(key)) {
         this[key] = data[key];
       }
@@ -111,10 +118,8 @@ export class ProjectImpl implements ObservableObject {
 
   getURL(): AppURL {
     return new AppURL().update({
-      pathSegments: this.getCommands().map(item =>
-          encodeURIComponent(item.replace(/^\//, ''))
-      ),
-      fragment: 'project'
+      pathSegments: this.getCommands().map((item) => encodeURIComponent(item.replace(/^\//, ''))),
+      fragment: 'project',
     });
   }
 
@@ -122,38 +127,49 @@ export class ProjectImpl implements ObservableObject {
     let hash = 3242;
     for (let i = 0; i < this.hashId.length; i++) {
       // tslint:disable-next-line:no-bitwise
-      hash = ((hash << 3) + hash) + this.hashId.codePointAt(i);
+      hash = (hash << 3) + hash + this.hashId.codePointAt(i);
     }
-    return hash % 100 / 100;
+    return (hash % 100) / 100;
   }
 
   addDataTransferData(dataTransfer: DataTransfer) {
     createProjectDragImage(this).addDataTransferData(dataTransfer);
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.name,
-      label: 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.id + '',
-        }],
-        sources: [{
-          domain: 'File Source',
-          url: this.getURL().toAbsolute().toString(),
-        }],
-      },
-    };
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } =
+      {
+        display_name: this.name,
+        label: 'link',
+        sub_labels: [],
+        data: {
+          references: [
+            {
+              type: 'PROJECT_OBJECT',
+              id: this.id + '',
+            },
+          ],
+          sources: [
+            {
+              domain: 'File Source',
+              url: this.getURL().toAbsolute().toString(),
+            },
+          ],
+        },
+      };
 
     dataTransfer.effectAllowed = 'all';
     dataTransfer.setData('text/plain', this.effectiveName);
     dataTransfer.setData('application/lifelike-node', JSON.stringify(node));
 
-    GenericDataProvider.setURIs(dataTransfer, [{
-      title: this.effectiveName,
-      uri: this.getURL().toAbsolute(),
-    }], {action: 'append'});
+    GenericDataProvider.setURIs(
+      dataTransfer,
+      [
+        {
+          title: this.effectiveName,
+          uri: this.getURL().toAbsolute(),
+        },
+      ],
+      { action: 'append' }
+    );
   }
 }
 
@@ -194,6 +210,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   path: string;
   size: string;
 
+  contexts: string[];
   highlight?: string[];
   highlightAnnotated?: boolean[];
   annotationsTooltipContent: string;
@@ -236,8 +253,10 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   get isAnnotatable() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.mimeType === 'application/pdf' ||
-      this.mimeType === 'vnd.lifelike.document/enrichment-table';
+    return (
+      this.mimeType === 'application/pdf' ||
+      this.mimeType === 'vnd.lifelike.document/enrichment-table'
+    );
   }
 
   get promptOrganism() {
@@ -271,7 +290,11 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   get hasWordCloud() {
     // TODO: Move this method to ObjectTypeProvider
-    return this.isDirectory || this.mimeType === MimeTypes.Pdf || this.mimeType === MimeTypes.EnrichmentTable;
+    return (
+      this.isDirectory ||
+      this.mimeType === MimeTypes.Pdf ||
+      this.mimeType === MimeTypes.EnrichmentTable
+    );
   }
 
   /**
@@ -439,8 +462,10 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   filterChildren(filter: string) {
     const normalizedFilter = FilesystemObject.normalizeFilename(filter);
     this.children.setFilter(
-      isEmpty(normalizedFilter) ? null :
-        (item: FilesystemObject) => FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
+      isEmpty(normalizedFilter)
+        ? null
+        : (item: FilesystemObject) =>
+            FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
     );
   }
 
@@ -468,10 +493,10 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   // TODO: Move this method to ObjectTypeProvider
   getURL(forEditing = true, meta?: Meta): AppURL {
     const url = new AppURL().update({
-      pathSegments: this.getCommands(forEditing).map(item =>
+      pathSegments: this.getCommands(forEditing).map((item) =>
         encodeURIComponent(item.replace(/^\//, ''))
       ),
-      fragment: this.isProjectRoot ? 'project' : ''
+      fragment: this.isProjectRoot ? 'project' : '',
     });
     switch (this.mimeType) {
       case MimeTypes.EnrichmentTable:
@@ -479,7 +504,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
           url.fragment = new URLSearchParams({
             id: meta.id,
             text: meta.allText,
-            color: annotationTypesMap.get(meta.type.toLowerCase()).color
+            color: annotationTypesMap.get(meta.type.toLowerCase()).color,
           }).toString();
         }
     }
@@ -519,32 +544,37 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
     const sources: Source[] = this.getGraphEntitySources();
 
-    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } = {
-      display_name: this.effectiveName,
-      label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
-      sub_labels: [],
-      data: {
-        references: [{
-          type: 'PROJECT_OBJECT',
-          id: this.hashId + '',
-        }],
-        sources,
-      },
-    };
+    const node: Partial<Omit<UniversalGraphNode, 'data'>> & { data: Partial<UniversalEntityData> } =
+      {
+        display_name: this.effectiveName,
+        label: this.mimeType === MimeTypes.Map ? 'map' : 'link',
+        sub_labels: [],
+        data: {
+          references: [
+            {
+              type: 'PROJECT_OBJECT',
+              id: this.hashId + '',
+            },
+          ],
+          sources,
+        },
+      };
     if (this.mimeType.trim().startsWith('image/')) {
       return {
         [FILESYSTEM_IMAGE_HASHID_TYPE]: this.hashId,
-        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node)
+        [FILESYSTEM_IMAGE_TRANSFER_TYPE]: JSON.stringify(node),
       };
     }
     return {
       'text/plain': this.effectiveName,
       [FILESYSTEM_OBJECT_TRANSFER_TYPE]: JSON.stringify(filesystemObjectTransfer),
       ['application/lifelike-node']: JSON.stringify(node),
-      ...GenericDataProvider.getURIs([{
-        uri: this.getURL(false).toAbsolute(),
-        title: this.filename,
-      }]),
+      ...GenericDataProvider.getURIs([
+        {
+          uri: this.getURL(false).toAbsolute(),
+          title: this.filename,
+        },
+      ]),
     };
   }
 
@@ -553,12 +583,18 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     createObjectDragImage(this).addDataTransferData(dataTransfer);
 
     const dragData = this.getTransferData();
-    toPairs(dragData).forEach(args => dataTransfer.setData(...args));
+    toPairs(dragData).forEach((args) => dataTransfer.setData(...args));
 
-    GenericDataProvider.setURIs(dataTransfer, [{
-      title: this.effectiveName,
-      uri: this.getURL(false).toAbsolute(),
-    }], {action: 'append'});
+    GenericDataProvider.setURIs(
+      dataTransfer,
+      [
+        {
+          title: this.effectiveName,
+          uri: this.getURL(false).toAbsolute(),
+        },
+      ],
+      { action: 'append' }
+    );
   }
 
   private defaultSort(a: FilesystemObject, b: FilesystemObject) {
@@ -579,14 +615,36 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
       return this;
     }
 
-    assign(this, pick(
-      data,
-      [
-        'hashId', 'size', 'filename', 'user', 'description', 'mimeType', 'doi', 'public', 'pinned', 'annotationsDate', 'uploadUrl',
-        'highlight', 'fallbackOrganism', 'creationDate', 'modifiedDate', 'recyclingDate', 'privileges', 'recycled', 'effectivelyRecycled',
-        'fallbackOrganism', 'annotationConfigs', 'path', 'trueFilename', 'starred'
-      ]
-    ));
+    assign(
+      this,
+      pick(data, [
+        'hashId',
+        'size',
+        'filename',
+        'user',
+        'description',
+        'mimeType',
+        'doi',
+        'public',
+        'contexts',
+        'pinned',
+        'annotationsDate',
+        'uploadUrl',
+        'highlight',
+        'fallbackOrganism',
+        'creationDate',
+        'modifiedDate',
+        'recyclingDate',
+        'privileges',
+        'recycled',
+        'effectivelyRecycled',
+        'fallbackOrganism',
+        'annotationConfigs',
+        'path',
+        'trueFilename',
+        'starred',
+      ])
+    );
 
     if (has(data, 'modifiedDate')) {
       this.updatedTimestamp = Date.parse(data.modifiedDate);
@@ -613,15 +671,16 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     }
     if ('children' in data) {
       if (data.children != null) {
-        this.children.replace(data.children.map(
-          itemData => {
+        this.children.replace(
+          data.children.map((itemData) => {
             const child = new FilesystemObject();
             child.parent = this;
             if (this.project != null) {
               child.project = this.project;
             }
             return child.update(itemData);
-          }));
+          })
+        );
       } else {
         this.children.replace([]);
       }

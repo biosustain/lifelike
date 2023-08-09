@@ -5,12 +5,9 @@ import { escapeRegExp } from 'lodash-es';
  * @param s the term
  * @param options extra tokenization options
  */
-export function tokenizeQuery(s: string,
-                              options: TokenizationOptions = {}): string[] {
+export function tokenizeQuery(s: string, options: TokenizationOptions = {}): string[] {
   if (options.singleTerm) {
-    return [
-      s.trim()
-    ];
+    return [s.trim()];
   } else {
     const terms = [];
     let term = '';
@@ -60,7 +57,7 @@ export function compileFind(terms: string[], options: FindOptions = {}): Matcher
   let termPatterns;
 
   if (options.keepSearchSpecialChars) {
-    termPatterns = terms.map(term => {
+    termPatterns = terms.map((term) => {
       const pat = escapeRegExp(term)
         .replace(' ', ' +')
         .replace(/(\\\*)/g, '\\w*')
@@ -68,9 +65,7 @@ export function compileFind(terms: string[], options: FindOptions = {}): Matcher
       return wrapper + pat + wrapper;
     });
   } else {
-    termPatterns = terms.map(
-      term => wrapper + escapeRegExp(term).replace(' ', ' +') + wrapper
-    );
+    termPatterns = terms.map((term) => wrapper + escapeRegExp(term).replace(' ', ' +') + wrapper);
   }
 
   const pattern = new RegExp(termPatterns.join('|'), 'i');
@@ -79,7 +74,7 @@ export function compileFind(terms: string[], options: FindOptions = {}): Matcher
   const matcher = RegExp.prototype.test.bind(pattern);
   Object.assign(matcher, {
     pattern,
-    termPatterns
+    termPatterns,
   });
   return matcher as Matcher;
 }

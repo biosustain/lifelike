@@ -12,10 +12,8 @@ describe('RouteSearchComponent', () => {
 
   configureTestSuite(() => {
     TestBed.configureTestingModule({
-      imports: [
-        RootStoreModule
-      ],
-      declarations: [ RouteSearchComponent ]
+      imports: [RootStoreModule],
+      declarations: [RouteSearchComponent],
     });
   });
 

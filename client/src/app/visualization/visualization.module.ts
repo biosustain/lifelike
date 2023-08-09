@@ -35,5 +35,4 @@ const components = [
   exports: components,
   // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
 })
-export class VisualizationModule {
-}
+export class VisualizationModule {}

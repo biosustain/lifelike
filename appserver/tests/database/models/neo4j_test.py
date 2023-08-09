@@ -9,28 +9,31 @@ from neo4japp.exceptions import (
 )
 
 
-@pytest.mark.parametrize('vis_edge_dict', [
-    {
-        'id': 1,
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 1,
-        'from_': 2,
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-    },
-    {
-        'id': 1,
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 1,
-        'from': 2,
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-    },
-])
+@pytest.mark.parametrize(
+    'vis_edge_dict',
+    [
+        {
+            'id': 1,
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 1,
+            'from_': 2,
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+        },
+        {
+            'id': 1,
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 1,
+            'from': 2,
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+        },
+    ],
+)
 def test_can_build_vis_edge_from_dict(vis_edge_dict):
     vis_edge = VisEdge.build_from_dict(vis_edge_dict)
 
@@ -41,45 +44,51 @@ def test_can_build_vis_edge_from_dict(vis_edge_dict):
     assert vis_edge.from_ == 2
 
 
-@pytest.mark.parametrize('vis_edge_dict', [
-    {
-        'id': 1,
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 1,
-        'from_': 2,
-        'from': 2,
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-    },
-    {
-        'id': 1,
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 1,
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-    },
-])
+@pytest.mark.parametrize(
+    'vis_edge_dict',
+    [
+        {
+            'id': 1,
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 1,
+            'from_': 2,
+            'from': 2,
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+        },
+        {
+            'id': 1,
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 1,
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+        },
+    ],
+)
 def test_cannot_build_vis_edge_from_invalid_dict(vis_edge_dict):
     with pytest.raises(FormatterException):
         VisEdge.build_from_dict(vis_edge_dict)
 
 
-@pytest.mark.parametrize('vis_edge', [
-    VisEdge(
-        id=1,
-        label='Test Edge Label',
-        data={},
-        to=1,
-        from_=2,
-        to_label='Test Node',
-        from_label='Test Node',
-        arrows='to',
-    ),
-])
+@pytest.mark.parametrize(
+    'vis_edge',
+    [
+        VisEdge(
+            id=1,
+            label='Test Edge Label',
+            data={},
+            to=1,
+            from_=2,
+            to_label='Test Node',
+            from_label='Test Node',
+            arrows='to',
+        ),
+    ],
+)
 def test_can_create_dict_from_vis_edge(vis_edge):
     vis_edge_dict = vis_edge.to_dict()
 
@@ -91,34 +100,37 @@ def test_can_create_dict_from_vis_edge(vis_edge):
     assert vis_edge_dict['arrows'] == 'to'
 
 
-@pytest.mark.parametrize('duplicate_vis_edge_dict', [
-    {
-        'id': 'duplicateEdge:1',
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 'duplicateNode:1',
-        'from_': 'duplicateNode:2',
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-        'duplicate_of': 1,
-        'original_from': 2,
-        'original_to': 1,
-    },
-    {
-        'id': 'duplicateEdge:1',
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 'duplicateNode:1',
-        'from': 'duplicateNode:2',
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-        'duplicate_of': 1,
-        'original_from': 2,
-        'original_to': 1,
-    },
-])
+@pytest.mark.parametrize(
+    'duplicate_vis_edge_dict',
+    [
+        {
+            'id': 'duplicateEdge:1',
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 'duplicateNode:1',
+            'from_': 'duplicateNode:2',
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+            'duplicate_of': 1,
+            'original_from': 2,
+            'original_to': 1,
+        },
+        {
+            'id': 'duplicateEdge:1',
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 'duplicateNode:1',
+            'from': 'duplicateNode:2',
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+            'duplicate_of': 1,
+            'original_from': 2,
+            'original_to': 1,
+        },
+    ],
+)
 def test_can_build_duplicate_vis_edge_from_dict(duplicate_vis_edge_dict):
     duplicate_vis_edge = DuplicateVisEdge.build_from_dict(duplicate_vis_edge_dict)
     assert duplicate_vis_edge.id == 'duplicateEdge:1'
@@ -131,54 +143,60 @@ def test_can_build_duplicate_vis_edge_from_dict(duplicate_vis_edge_dict):
     assert duplicate_vis_edge.original_to == 1
 
 
-@pytest.mark.parametrize('duplicate_vis_edge_dict', [
-    {
-        'id': 'duplicateEdge:1',
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 'duplicateNode:1',
-        'from_': 'duplicateNode:2',
-        'from': 'duplicateNode:2',
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-        'duplicate_of': 1,
-        'original_from': 2,
-        'original_to': 1,
-    },
-    {
-        'id': 'duplicateEdge:1',
-        'label': 'Test Edge Label',
-        'data': {},
-        'to': 'duplicateNode:1',
-        'to_label': 'Test Node',
-        'from_label': 'Test Node',
-        'arrows': 'to',
-        'duplicate_of': 1,
-        'original_from': 2,
-        'original_to': 1,
-    },
-])
+@pytest.mark.parametrize(
+    'duplicate_vis_edge_dict',
+    [
+        {
+            'id': 'duplicateEdge:1',
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 'duplicateNode:1',
+            'from_': 'duplicateNode:2',
+            'from': 'duplicateNode:2',
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+            'duplicate_of': 1,
+            'original_from': 2,
+            'original_to': 1,
+        },
+        {
+            'id': 'duplicateEdge:1',
+            'label': 'Test Edge Label',
+            'data': {},
+            'to': 'duplicateNode:1',
+            'to_label': 'Test Node',
+            'from_label': 'Test Node',
+            'arrows': 'to',
+            'duplicate_of': 1,
+            'original_from': 2,
+            'original_to': 1,
+        },
+    ],
+)
 def test_cannot_build_duplicate_vis_edge_from_invalid_dict(duplicate_vis_edge_dict):
     with pytest.raises(FormatterException):
         DuplicateVisEdge.build_from_dict(duplicate_vis_edge_dict)
 
 
-@pytest.mark.parametrize('duplicate_vis_edge', [
-    DuplicateVisEdge(
-        id='duplicateEdge:1',
-        label='Test Edge Label',
-        data={},
-        to='duplicateNode:1',
-        from_='duplicateNode:2',
-        to_label='Test Node',
-        from_label='Test Node',
-        arrows='to',
-        duplicate_of=1,
-        original_from=2,
-        original_to=1,
-    ),
-])
+@pytest.mark.parametrize(
+    'duplicate_vis_edge',
+    [
+        DuplicateVisEdge(
+            id='duplicateEdge:1',
+            label='Test Edge Label',
+            data={},
+            to='duplicateNode:1',
+            from_='duplicateNode:2',
+            to_label='Test Node',
+            from_label='Test Node',
+            arrows='to',
+            duplicate_of=1,
+            original_from=2,
+            original_to=1,
+        ),
+    ],
+)
 def test_can_create_dict_from_duplicate_vis_edge(duplicate_vis_edge):
     duplicate_vis_edge_dict = duplicate_vis_edge.to_dict()
 

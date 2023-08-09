@@ -15,15 +15,12 @@ export class AccountsService {
   constructor(protected readonly http: HttpClient) {}
 
   search(options: AccountSearchRequest): Observable<ModelList<AppUser>> {
-    return this.http.post<ResultList<AppUser>>(
-      `/api/accounts/search`,
-      options,
-    ).pipe(
-      map(data => {
+    return this.http.post<ResultList<AppUser>>(`/api/accounts/search`, options).pipe(
+      map((data) => {
         const list = new ModelList<AppUser>();
         list.results.replace(data.results);
         return list;
-      }),
+      })
     );
   }
 }

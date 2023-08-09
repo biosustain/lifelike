@@ -22,7 +22,7 @@ export class ObjectInfoComponent implements OnInit {
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   _object: FilesystemObject | undefined;
   highlightLimit = this.defaultHighlightLimit;
-  highlightOptions: FindOptions = {keepSearchSpecialChars: true, wholeWord: true};
+  highlightOptions: FindOptions = { keepSearchSpecialChars: true, wholeWord: true };
 
   @Input()
   set object(object: FilesystemObject | undefined) {
@@ -30,8 +30,10 @@ export class ObjectInfoComponent implements OnInit {
     this.highlightLimit = this.defaultHighlightLimit;
     this.highlightDisplayLimitChange.emit({
       previous: 0,
-      limit: Math.min(this.highlightLimit,
-        this._object.highlight != null ? this._object.highlight.length : 0),
+      limit: Math.min(
+        this.highlightLimit,
+        this._object.highlight != null ? this._object.highlight.length : 0
+      ),
     });
   }
 
@@ -42,8 +44,10 @@ export class ObjectInfoComponent implements OnInit {
   ngOnInit() {
     this.highlightDisplayLimitChange.emit({
       previous: 0,
-      limit: Math.min(this.highlightLimit,
-        this.object.highlight != null ? this.object.highlight.length : 0),
+      limit: Math.min(
+        this.highlightLimit,
+        this.object.highlight != null ? this.object.highlight.length : 0
+      ),
     });
   }
 
@@ -60,8 +64,10 @@ export class ObjectInfoComponent implements OnInit {
     this.highlightLimit = Math.min(this.object.highlight.length, this.highlightLimit + 5);
     this.highlightDisplayLimitChange.emit({
       previous,
-      limit: Math.min(this.highlightLimit,
-        this.object.highlight != null ? this.object.highlight.length : 0),
+      limit: Math.min(
+        this.highlightLimit,
+        this.object.highlight != null ? this.object.highlight.length : 0
+      ),
     });
   }
 
@@ -69,10 +75,16 @@ export class ObjectInfoComponent implements OnInit {
     // do not propagate so workspace attached event is not fired
     event.stopPropagation();
 
-    GenericDataProvider.setURIs(event.dataTransfer, [{
-      title: this.object.effectiveName,
-      uri: this.object.getURL(false).toAbsolute(),
-    }], {action: 'append'});
+    GenericDataProvider.setURIs(
+      event.dataTransfer,
+      [
+        {
+          title: this.object.effectiveName,
+          uri: this.object.getURL(false).toAbsolute(),
+        },
+      ],
+      { action: 'append' }
+    );
   }
 }
 

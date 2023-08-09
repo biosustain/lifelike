@@ -9,14 +9,11 @@ import { createScrollObservable } from '../rxjs/scroll-observable';
  */
 @Directive({
   selector: '[appElementObserver]',
-  exportAs: 'appElementObserver'
+  exportAs: 'appElementObserver',
 })
 export class ElementObserverDirective {
-  constructor(
-    protected _elementRef: ElementRef<HTMLElement>
-  ) {
-  }
+  constructor(protected _elementRef: ElementRef<HTMLElement>) {}
 
-  size$ = createResizeObservable(this._elementRef.nativeElement, {leading: true});
+  size$ = createResizeObservable(this._elementRef.nativeElement, { leading: true });
   scroll$ = createScrollObservable(this._elementRef.nativeElement);
 }

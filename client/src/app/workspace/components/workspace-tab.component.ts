@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  NgZone,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 
 import { combineLatest, defer, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -32,23 +40,27 @@ export class WorkspaceTabComponent implements OnChanges {
 
   fontAwesomeIconClass: string;
 
-
   constructor(
     protected readonly viewService: ViewService,
-    protected readonly clipboard: ClipboardService
-  ) {
-  }
+    protected readonly clipboard: ClipboardService,
+    protected readonly ngZone: NgZone
+  ) {}
 
   dragData$ = defer(() =>
-    combineLatest(compact([
-      this.tab.component?.sourceData$,
-      this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
-        map(({href}) => [{
-          url: href,
-          domain: this.tab.title,
-        } as Source])),
-    ])).pipe(
-      map(sources => concat(...sources)),
+    combineLatest(
+      compact([
+        this.tab.component?.sourceData$,
+        this.viewService.getShareableLink(this.tab.component, this.tab.url).pipe(
+          map(({ href }) => [
+            {
+              url: href,
+              domain: this.tab.title,
+            } as Source,
+          ])
+        ),
+      ])
+    ).pipe(
+      map((sources) => concat(...sources)),
       map((sources: Source[]) => ({
         'application/lifelike-node': JSON.stringify({
           display_name: this.tab.title,
@@ -59,31 +71,35 @@ export class WorkspaceTabComponent implements OnChanges {
           },
         } as Partial<UniversalGraphNode>),
         ...GenericDataProvider.getURIs(
-          sources.map(({url, domain}) => ({
+          sources.map(({ url, domain }) => ({
             uri: AppURL.from(url).toAbsolute(),
             title: domain,
-          })),
+          }))
         ),
-      })),
+      }))
     )
   );
 
-  drag = new CdkNativeDragItegration(this.dragData$);
+  drag = new CdkNativeDragItegration(this.dragData$, this.ngZone);
 
-  ngOnChanges({tab}: SimpleChanges) {
+  ngOnChanges({ tab }: SimpleChanges) {
     if (tab) {
-      this.fontAwesomeIconClass = this.calculateFontAwesomeIcon((tab.currentValue as Tab).fontAwesomeIcon);
+      this.fontAwesomeIconClass = this.calculateFontAwesomeIcon(
+        (tab.currentValue as Tab).fontAwesomeIcon
+      );
     }
   }
 
   openCopyLinkDialog() {
     return this.clipboard.copy(
-      this.viewService.getShareableLink(this.tab.component, this.tab.url).toPromise()
+      this.viewService
+        .getShareableLink(this.tab.component, this.tab.url)
+        .toPromise()
         .then((url) => {
           this.tab.url = url.pathname + url.search + url.hash;
           return url.href;
         }),
-      {intermediate: 'Generating link...'}
+      { intermediate: 'Generating link...' }
     );
   }
 

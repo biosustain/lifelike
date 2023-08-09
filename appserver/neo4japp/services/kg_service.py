@@ -1,33 +1,40 @@
 import json
 import os
 import time
+from typing import List
 from urllib.parse import urlencode
 
 from flask import current_app
 from neo4j import Transaction as Neo4jTx
 from neo4j.graph import Node as N4jDriverNode, Relationship as N4jDriverRelationship
-from typing import List
 
-from neo4japp.constants import (
-    BIOCYC_ORG_ID_DICT, KGDomain,
-)
-from neo4japp.exceptions import ServerException
-from neo4japp.services.common import HybridDBDao
-from neo4japp.models import (
-    DomainURLsMap,
-    GraphNode,
-    GraphRelationship
-)
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
     DISPLAY_NAME_MAP,
     LogEventType,
 )
-from neo4japp.util import (
-    snake_to_camel_dict, compact
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT,
+    KGDomain,
 )
-from neo4japp.utils.labels import get_first_known_label_from_node, get_first_known_label_from_list
+from neo4japp.exceptions import ServerException
+from neo4japp.models import (
+    DomainURLsMap,
+    GraphNode,
+    GraphRelationship,
+)
+from neo4japp.services.common import HybridDBDao
+from neo4japp.util import (
+    snake_to_camel_dict,
+    compact,
+)
+from neo4japp.utils.globals import warn
+from neo4japp.utils.labels import (
+    get_first_known_label_from_node,
+    get_first_known_label_from_list,
+)
 from neo4japp.utils.logger import EventLog
+from neo4japp.exceptions import ServerWarning
 
 
 class KgService(HybridDBDao):
@@ -52,13 +59,17 @@ class KgService(HybridDBDao):
                 label = get_first_known_label_from_node(node)
             except ValueError as e:
                 label = 'Unknown'
+                message = (
+                    f"Node with ID {node.id}"
+                    f" had an unexpected list of labels: {list(node.labels)}"
+                )
                 current_app.logger.warning(
-                    f"Node with ID {node.id} had an unexpected list of labels: {list(node.labels)}",
+                    message,
                     extra=EventLog(
                         event_type=LogEventType.KNOWLEDGE_GRAPH.value
-                    ).to_dict()
+                    ).to_dict(),
                 )
-                # TODO warning
+                warn(ServerWarning(message=message), cause=e)
             graph_node = GraphNode(
                 id=node.id,
                 label=get_first_known_label_from_node(node),
@@ -66,7 +77,7 @@ class KgService(HybridDBDao):
                 domain_labels=[],
                 display_name=node.get(DISPLAY_NAME_MAP[label], 'Unknown'),
                 data=snake_to_camel_dict(dict(node), {}),
-                url=None
+                url=None,
             )
             node_dict[graph_node.id] = graph_node
 
@@ -78,16 +89,16 @@ class KgService(HybridDBDao):
                 to=rel.end_node.id,
                 _from=rel.start_node.id,
                 to_label=list(rel.end_node.labels)[0],
-                from_label=list(rel.start_node.labels)[0]
+                from_label=list(rel.start_node.labels)[0],
             )
             rel_dict[graph_rel.id] = graph_rel
         return {
             'nodes': [n.to_dict() for n in node_dict.values()],
-            'edges': [r.to_dict() for r in rel_dict.values()]
+            'edges': [r.to_dict() for r in rel_dict.values()],
         }
 
     def query_batch(self, data_query: str):
-        """ query batch uses a custom query language (one we make up here)
+        """query batch uses a custom query language (one we make up here)
         for returning a list of nodes and their relationships.
         It also works on single nodes with no relationship.
 
@@ -109,7 +120,7 @@ class KgService(HybridDBDao):
                 lambda tx: list(
                     tx.run(
                         'MATCH (n) WHERE ID(n)=$node_id RETURN n AS node',
-                        node_id=int(split_data_query.pop())
+                        node_id=int(split_data_query.pop()),
                     )
                 )
             )
@@ -133,7 +144,7 @@ class KgService(HybridDBDao):
                             apoc.convert.toSet(collect(a) + collect(b)) as nodes,
                             apoc.convert.toSet(collect(relationship)) as relationships
                         """,
-                        data=data
+                        data=data,
                     )
                 )
             )
@@ -149,71 +160,80 @@ class KgService(HybridDBDao):
     def get_uniprot_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(
-            self.get_uniprot_genes_query,
-            ncbi_gene_ids
+            self.get_uniprot_genes_query, ncbi_gene_ids
         )
 
         current_app.logger.info(
             f'Enrichment UniProt KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
-        domain = self.session.query(DomainURLsMap).filter(
-            DomainURLsMap.domain == 'uniprot').one_or_none()
+        domain = (
+            self.session.query(DomainURLsMap)
+            .filter(DomainURLsMap.domain == 'uniprot')
+            .one_or_none()
+        )
 
         if domain is None:
             raise ServerException(
-                title='Could not create enrichment table',
                 message='There was a problem finding UniProt domain URLs.'
             )
 
         return {
             result['node_id']: {
                 'result': {'id': result['uniprot_id'], 'function': result['function']},
-                'link': domain.base_URL.format(result['uniprot_id'])
-            } for result in results}
+                'link': domain.base_URL.format(result['uniprot_id']),
+            }
+            for result in results
+        }
 
     def get_string_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(
-            self.get_string_genes_query,
-            ncbi_gene_ids
+            self.get_string_genes_query, ncbi_gene_ids
         )
 
         current_app.logger.info(
             f'Enrichment String KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
         return {
             result['node_id']: {
-                'result': {'id': result['string_id'], 'annotation': result['annotation']},
-                'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}"
-            } for result in results}
+                'result': {
+                    'id': result['string_id'],
+                    'annotation': result['annotation'],
+                },
+                'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}",
+            }
+            for result in results
+        }
 
-    def get_biocyc_genes(
-        self,
-        ncbi_gene_ids: List[int],
-        tax_id: str
-    ):
+    def get_biocyc_genes(self, ncbi_gene_ids: List[int], tax_id: str):
         start = time.time()
         results = self.graph.read_transaction(
-            self.get_biocyc_genes_query,
-            ncbi_gene_ids
+            self.get_biocyc_genes_query, ncbi_gene_ids
         )
 
         current_app.logger.info(
             f'Enrichment Biocyc KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
         return {
             result['node_id']: {
                 'result': result['pathways'],
-                'link': "https://biocyc.org/gene?" + urlencode(compact(dict(
-                    orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None), id=result['biocyc_id'])
-                ))
-            } for result in results
+                'link': "https://biocyc.org/gene?"
+                + urlencode(
+                    compact(
+                        dict(
+                            orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None),
+                            id=result['biocyc_id'],
+                        )
+                    )
+                ),
+            }
+            for result in results
         }
 
     def get_go_genes(self, ncbi_gene_ids: List[int]):
@@ -225,37 +245,45 @@ class KgService(HybridDBDao):
 
         current_app.logger.info(
             f'Enrichment GO KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
         return {
             result['node_id']: {
                 'result': result['go_terms'],
-                'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId='
-            } for result in results}
+                'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=',
+            }
+            for result in results
+        }
 
     def get_regulon_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
         results = self.graph.read_transaction(
-            self.get_regulon_genes_query,
-            ncbi_gene_ids
+            self.get_regulon_genes_query, ncbi_gene_ids
         )
 
         current_app.logger.info(
             f'Enrichment Regulon KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
         return {
             result['node_id']: {
                 'result': result['node'],
-                'link': "http://regulondb.ccg.unam.mx/gene?" + urlencode(compact(dict(
-                    term=result['regulondb_id'],
-                    organism='ECK12',
-                    format='jsp',
-                    type='gene'
-                )))
-            } for result in results}
+                'link': "http://regulondb.ccg.unam.mx/gene?"
+                + urlencode(
+                    compact(
+                        dict(
+                            term=result['regulondb_id'],
+                            organism='ECK12',
+                            format='jsp',
+                            type='gene',
+                        )
+                    )
+                ),
+            }
+            for result in results
+        }
 
     def get_genes(self, domain: KGDomain, gene_ids: List[int], tax_id: str):
         if domain == KGDomain.REGULON:
@@ -273,21 +301,20 @@ class KgService(HybridDBDao):
 
     def get_kegg_genes(self, ncbi_gene_ids: List[int]):
         start = time.time()
-        results = self.graph.read_transaction(
-            self.get_kegg_genes_query,
-            ncbi_gene_ids
-        )
+        results = self.graph.read_transaction(self.get_kegg_genes_query, ncbi_gene_ids)
 
         current_app.logger.info(
             f'Enrichment KEGG KG query time {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict()
+            extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
         )
 
         return {
             result['node_id']: {
                 'result': result['pathway'],
-                'link': f"https://www.genome.jp/entry/{result['kegg_id']}"
-            } for result in results}
+                'link': f"https://www.genome.jp/entry/{result['kegg_id']}",
+            }
+            for result in results
+        }
 
     def get_nodes_and_edges_from_paths(self, paths):
         nodes = []
@@ -306,18 +333,21 @@ class KgService(HybridDBDao):
 
                         try:
                             node_label = get_first_known_label_from_list(node['labels'])
-                            node_color = ANNOTATION_STYLES_DICT[node_label.lower()]['color']
+                            node_color = ANNOTATION_STYLES_DICT[node_label.lower()][
+                                'color'
+                            ]
                         except ValueError as e:
                             # If label is unknown, then use fallbacks
                             node_label = 'Unknown'
                             node_color = '#000000'
+                            message = f"Node had an unexpected list of labels: {node['labels']}"
                             current_app.logger.warning(
-                                f"Node had an unexpected list of labels: {node['labels']}",
+                                message,
                                 extra=EventLog(
                                     event_type=LogEventType.KNOWLEDGE_GRAPH.value
-                                ).to_dict()
+                                ).to_dict(),
                             )
-                            # TODO warning
+                            warn(ServerWarning(message=message), cause=e)
                         except KeyError:
                             # If label does not exist in styles dict, then use fallbacks
                             node_label = 'Unknown'
@@ -341,7 +371,7 @@ class KgService(HybridDBDao):
                                     'background': '#FFFFFF',
                                     'border': node_color,
                                 },
-                            }
+                            },
                         }
 
                         nodes.append(node_data)
@@ -424,7 +454,10 @@ class KgService(HybridDBDao):
             'Zink iModulon Test2'
             # 'nagA (ALE Mutation Data)',
         ]
-        return {num: name for num, name in enumerate(query_pathway_names + file_pathway_names)}
+        return {
+            num: name
+            for num, name in enumerate(query_pathway_names + file_pathway_names)
+        }
 
     def get_query_id_to_func_map(self):
         query_pathways = [
@@ -508,10 +541,14 @@ class KgService(HybridDBDao):
 
     def get_data_from_file(self, filename):
         directory = os.path.realpath(os.path.dirname(__file__))
-        with open(os.path.join(directory, f'./shortest_path_data/{filename}'), 'r') as data_file:
+        with open(
+            os.path.join(directory, f'./shortest_path_data/{filename}'), 'r'
+        ) as data_file:
             return json.load(data_file)
 
-    def get_uniprot_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+    def get_uniprot_genes_query(
+        self, tx: Neo4jTx, ncbi_gene_ids: List[int]
+    ) -> List[dict]:
         return tx.run(
             """
             UNWIND $ncbi_gene_ids AS node_id
@@ -519,10 +556,12 @@ class KgService(HybridDBDao):
             WHERE id(g)=node_id
             RETURN node_id, x.function AS function, x.eid AS uniprot_id
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
-    def get_string_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+    def get_string_genes_query(
+        self, tx: Neo4jTx, ncbi_gene_ids: List[int]
+    ) -> List[dict]:
         return tx.run(
             """
             UNWIND $ncbi_gene_ids AS node_id
@@ -530,7 +569,7 @@ class KgService(HybridDBDao):
             WHERE id(g)=node_id
             RETURN node_id, x.eid AS string_id, x.annotation AS annotation
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
     def get_go_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
@@ -544,10 +583,12 @@ class KgService(HybridDBDao):
                 id(g) as node_id,
                 apoc.convert.toSet(collect(go1.name) + collect(go2.name)) AS go_terms
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
-    def get_biocyc_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+    def get_biocyc_genes_query(
+        self, tx: Neo4jTx, ncbi_gene_ids: List[int]
+    ) -> List[dict]:
         return tx.run(
             """
             UNWIND $ncbi_gene_ids AS node_id
@@ -555,10 +596,12 @@ class KgService(HybridDBDao):
             WHERE id(g)=node_id
             RETURN node_id, x.pathways AS pathways, x.biocyc_id AS biocyc_id
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
-    def get_regulon_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
+    def get_regulon_genes_query(
+        self, tx: Neo4jTx, ncbi_gene_ids: List[int]
+    ) -> List[dict]:
         return tx.run(
             """
             UNWIND $ncbi_gene_ids AS node_id
@@ -566,7 +609,7 @@ class KgService(HybridDBDao):
             WHERE id(g)=node_id
             RETURN node_id, x AS node, x.regulondb_id AS regulondb_id
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
     def get_kegg_genes_query(self, tx: Neo4jTx, ncbi_gene_ids: List[int]) -> List[dict]:
@@ -580,11 +623,13 @@ class KgService(HybridDBDao):
             WHERE gen.eid = x.genome
             RETURN node_id, x.eid AS kegg_id, collect(p.name) AS pathway
             """,
-            ncbi_gene_ids=ncbi_gene_ids
+            ncbi_gene_ids=ncbi_gene_ids,
         ).data()
 
     def get_three_hydroxisobuteric_acid_to_pykf_chebi_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH (chem:db_CHEBI:Chemical) WHERE chem.eid IN ['18064']
             WITH chem
             MATCH p=allShortestPaths((gene:db_EcoCyc:Gene {name:'pykF'})-[*..9]-(chem))
@@ -614,10 +659,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-            """))
+            """
+            )
+        )
 
     def get_three_hydroxisobuteric_acid_to_pykf_biocyc_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH (c:Compound {biocyc_id: 'CPD-12176'}), (g:Gene:db_BioCyc {name:'pykF'})
             MATCH p=allShortestPaths((c)-[*]-(g))
             WHERE none(r IN relationships(p)
@@ -646,10 +695,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )
 
     def get_icd_to_rhse_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH p=allShortestPaths(
                 (gene:db_EcoCyc:Gene {name:'icd'})-[*..13]-(gene2:db_EcoCyc:Gene {name:'rhsE'})
             )
@@ -671,10 +724,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )
 
     def get_sirt5_to_nfe2l2_literature_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH (g:db_Literature:Gene {name:'SIRT5'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'}),
             (t)<-[:HAS_TAXONOMY]-(g2:db_Literature:Gene {name:'NFE2L2'})
             MATCH p=allShortestPaths((g)-[*]-(g2))
@@ -696,10 +753,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )
 
     def get_ctnnb1_to_diarrhea_literature_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH (g:db_Literature:Gene {name:'CTNNB1'})-[:HAS_TAXONOMY]->(t:Taxonomy {eid:'9606'})
             MATCH (d:Disease {name:'Diarrhea'})
             MATCH p=allShortestPaths((g)-[*]-(d))
@@ -720,10 +781,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )
 
     def get_two_pathways_biocyc_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH (p1:Pathway {biocyc_id:'PWY-6151'}), (p2:Pathway {biocyc_id: 'PWY-6123'})
             WITH p1, p2
             MATCH p=allShortestPaths((p1)-[*]-(p2))
@@ -746,10 +811,14 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )
 
     def get_glycolisis_regulon_query(self, tx: Neo4jTx):
-        return list(tx.run("""
+        return list(
+            tx.run(
+                """
             MATCH path=
                 (:Pathway {biocyc_id: 'GLYCOLYSIS'})--(r:Reaction)--
                 (e:EnzReaction:db_EcoCyc)-[:CATALYZES]-
@@ -778,4 +847,6 @@ class KgService(HybridDBDao):
                     end_node: id(endNode(rel))
                 }
             ] AS edges
-        """))
+        """
+            )
+        )

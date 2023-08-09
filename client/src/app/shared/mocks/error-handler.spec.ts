@@ -13,7 +13,7 @@ export class MockErrorHandler extends ErrorHandlerService {
   }
 
   logError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
-    return Promise.resolve(this.createUserError(error)).then(userError => {
+    return Promise.resolve(this.createUserError(error)).then((userError) => {
       console.warn(userError, logInfo);
       return userError;
     });
@@ -22,7 +22,7 @@ export class MockErrorHandler extends ErrorHandlerService {
   showError(error: Error | HttpErrorResponse, logInfo?: ErrorLogMeta) {
     return Promise.allSettled([
       this.logError(error, logInfo),
-      Promise.resolve(this.createUserError(error)).then(userError => {
+      Promise.resolve(this.createUserError(error)).then((userError) => {
         throw userError;
       }),
     ]);

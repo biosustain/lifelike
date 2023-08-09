@@ -6,14 +6,13 @@ import { map, mergeMap } from 'rxjs/operators';
 
 import { LifelikeJWTTokenResponse } from 'app/interfaces';
 
-
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class AuthenticationService implements OnDestroy {
   readonly baseUrl = '/api/auth';
 
   private refreshSubscription: Subscription;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   ngOnDestroy() {
     this.refreshSubscription.unsubscribe();
@@ -37,11 +36,12 @@ export class AuthenticationService implements OnDestroy {
       return;
     }
     const expirationTime = new Date(localStorage.getItem('expires_at')).getTime();
-    const source = of(expirationTime).pipe(mergeMap((expiresAt) => {
-      const now = new Date().getTime();
-      return timer(Math.max(1, expiresAt - now)).pipe(
-        mergeMap(() => this.refresh()));
-    }));
+    const source = of(expirationTime).pipe(
+      mergeMap((expiresAt) => {
+        const now = new Date().getTime();
+        return timer(Math.max(1, expiresAt - now)).pipe(mergeMap(() => this.refresh()));
+      })
+    );
 
     this.refreshSubscription = source.subscribe(() => {});
   }
@@ -50,19 +50,18 @@ export class AuthenticationService implements OnDestroy {
    * Authenticate users to get a JWT
    */
   public login(email: string, password: string): Observable<LifelikeJWTTokenResponse> {
-    return this.http.post<LifelikeJWTTokenResponse>(
-      this.baseUrl + '/login',
-      {email, password},
-    ).pipe(
-      map((resp: LifelikeJWTTokenResponse) => {
-        localStorage.setItem('access_jwt', resp.accessToken.token);
-        localStorage.setItem('expires_at', resp.accessToken.exp);
-        // TODO: Move this out of localStorage
-        localStorage.setItem('refresh_jwt', resp.refreshToken.token);
-        this.scheduleRenewal();
-        return resp;
-      })
-    );
+    return this.http
+      .post<LifelikeJWTTokenResponse>(this.baseUrl + '/login', { email, password })
+      .pipe(
+        map((resp: LifelikeJWTTokenResponse) => {
+          localStorage.setItem('access_jwt', resp.accessToken.token);
+          localStorage.setItem('expires_at', resp.accessToken.exp);
+          // TODO: Move this out of localStorage
+          localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+          this.scheduleRenewal();
+          return resp;
+        })
+      );
   }
 
   /**
@@ -80,19 +79,16 @@ export class AuthenticationService implements OnDestroy {
    */
   public refresh() {
     const jwt = localStorage.getItem('refresh_jwt');
-    return this.http.post<LifelikeJWTTokenResponse>(
-      this.baseUrl + '/refresh',
-      { jwt },
-    ).pipe(
-        map((resp) => {
-          localStorage.setItem('access_jwt', resp.accessToken.token);
-          localStorage.setItem('expires_at', resp.accessToken.exp);
-          // TODO: Remove refresh token from localStorage
-          localStorage.setItem('refresh_jwt', resp.refreshToken.token);
-          this.scheduleRenewal();
-          return resp;
-        }),
-      );
+    return this.http.post<LifelikeJWTTokenResponse>(this.baseUrl + '/refresh', { jwt }).pipe(
+      map((resp) => {
+        localStorage.setItem('access_jwt', resp.accessToken.token);
+        localStorage.setItem('expires_at', resp.accessToken.exp);
+        // TODO: Remove refresh token from localStorage
+        localStorage.setItem('refresh_jwt', resp.refreshToken.token);
+        this.scheduleRenewal();
+        return resp;
+      })
+    );
   }
 
   public getAccessToken() {
@@ -105,21 +101,25 @@ export class AuthenticationService implements OnDestroy {
    * @param value - value for cookie to store
    * @param days - how long should cookie exist
    */
-  setCookie(name, value, days= 30) {
+  setCookie(name, value, days = 30) {
     let expires = '';
     if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = '; expires=' + date.toUTCString();
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      expires = '; expires=' + date.toUTCString();
     }
-    document.cookie = name + '=' + (value || '')  + expires + '; path=/';
+    document.cookie = name + '=' + (value || '') + expires + '; path=/';
   }
   getCookie(name) {
     const nameEQ = name + '=';
     const ca = document.cookie.split(';');
     for (let c of ca) {
-        while (c.charAt(0) === ' ') { c = c.substring(1, c.length); }
-        if (c.indexOf(nameEQ) === 0) { return c.substring(nameEQ.length, c.length); }
+      while (c.charAt(0) === ' ') {
+        c = c.substring(1, c.length);
+      }
+      if (c.indexOf(nameEQ) === 0) {
+        return c.substring(nameEQ.length, c.length);
+      }
     }
     return null;
   }

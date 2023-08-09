@@ -12,7 +12,7 @@ export class ResultsSummaryComponent {
   @Input() resultLimit?: number;
 
   get startResultCount(): number {
-    return (this.pageSize * (this.page - 1)) + 1;
+    return this.pageSize * (this.page - 1) + 1;
   }
 
   get endResultCount(): number {

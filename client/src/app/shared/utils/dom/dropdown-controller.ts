@@ -6,10 +6,12 @@ export class DropdownController {
   focusAfterOpen = false;
   parentNode: Node | undefined;
 
-  constructor(protected readonly renderer: Renderer2,
-              protected readonly containerElement: HTMLElement,
-              protected readonly dropdownElement: HTMLElement,
-              options: DropdownOptions = {}) {
+  constructor(
+    protected readonly renderer: Renderer2,
+    protected readonly containerElement: HTMLElement,
+    protected readonly dropdownElement: HTMLElement,
+    options: DropdownOptions = {}
+  ) {
     Object.assign(this, options);
     this.parentNode = dropdownElement.parentNode;
   }
@@ -63,7 +65,7 @@ export class DropdownController {
     const viewportWidth = document.documentElement.clientWidth - this.viewportSpacing;
     const viewportHeight = document.documentElement.clientHeight - this.viewportSpacing;
 
-    let {left, top} = dropdownElement.getBoundingClientRect();
+    let { left, top } = dropdownElement.getBoundingClientRect();
     let width = dropdownElement.offsetWidth;
     let height = dropdownElement.offsetHeight;
 
@@ -86,11 +88,11 @@ export class DropdownController {
       }
 
       if (left + width > viewportWidth) {
-        left += (viewportWidth - (left + width));
+        left += viewportWidth - (left + width);
       }
 
       if (top + height > viewportHeight) {
-        top += (viewportHeight - (top + height));
+        top += viewportHeight - (top + height);
       }
     } else {
       let maxWidth = viewportWidth - left;

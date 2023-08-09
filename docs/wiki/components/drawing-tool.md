@@ -6,10 +6,10 @@ The drawing tool consists of the graph renderer and the editor UI.
 
 Goals of the data model include:
 
-* Semantic
-* Generic
-* Portable to other graph tools
-* Well defined
+-   Semantic
+-   Generic
+-   Portable to other graph tools
+-   Well defined
 
 Graphs in the drawing tool can exist in 3 stages:
 
@@ -25,9 +25,9 @@ The drawing tool was originally strongly based off of Neo4j's data model and you
 
 Within nodes and edges, you will find:
 
-* Semantic properties (type of node, title, etc.)
-* Style properties (line width, color, etc.)
-* Combination semantic and style properties (font icons)
+-   Semantic properties (type of node, title, etc.)
+-   Style properties (line width, color, etc.)
+-   Combination semantic and style properties (font icons)
 
 The only combination semantic and style property is the "icon" property but it is deprecated because it is not portable and the property should be removed in the future.
 
@@ -37,11 +37,11 @@ There are some incorrect field names (i.e. "domain" for links doesn't mean the d
 
 Goals of the renderer include:
 
-* Scaling well to very large graphs (WIP)
-* Asynchronous rendering that can be split over several ticks
-* High extensibility
-* Support for interactive video, image, and charting nodes (WIP)
-* Support clustering and grouping (WIP)
+-   Scaling well to very large graphs (WIP)
+-   Asynchronous rendering that can be split over several ticks
+-   High extensibility
+-   Support for interactive video, image, and charting nodes (WIP)
+-   Support clustering and grouping (WIP)
 
 Originally the renderer was built using Vis.js, but eventually it was converted to use D3.js to give greater control over the editor.
 
@@ -59,10 +59,10 @@ Initialization of the graph component involves:
 
 3. Activate the resize listener and start the animation loop:
 
-   ```typescript
-   graphCanvas.startParentFillResizeListener();
-   graphCanvas.startAnimationLoop();
-   ```
+    ```typescript
+    graphCanvas.startParentFillResizeListener();
+    graphCanvas.startAnimationLoop();
+    ```
 
 ### The Rendering Process
 
@@ -86,5 +86,5 @@ Behaviors are merely classes that have entry points for different events (click,
 
 Behaviors could be improved in a few ways:
 
-* Implementing additional types of events is not entirely straight forward
-* Some high-frequency events go through a secondary code path (there should ideally only be one code path)
+-   Implementing additional types of events is not entirely straight forward
+-   Some high-frequency events go through a secondary code path (there should ideally only be one code path)

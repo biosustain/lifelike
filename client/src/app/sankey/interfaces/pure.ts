@@ -34,7 +34,7 @@ export interface SankeyNodeInterface {
 }
 
 export enum DisplayPropertyType {
-  URL = 'URL'
+  URL = 'URL',
 }
 
 export interface BaseDisplayProperty {
@@ -76,4 +76,3 @@ export interface SankeyNodePosition {
   height: number;
   reversedDepth: number;
 }
-

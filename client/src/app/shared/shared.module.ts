@@ -22,6 +22,7 @@ import { LegendComponent } from './components/legend.component';
 import { MessageDialogComponent } from './components/dialog/message-dialog.component';
 import { NodeRelationshipComponent } from './components/node-relationship-display.component';
 import { ProgressDialogComponent } from './components/dialog/progress-dialog.component';
+import { PromptComponent } from './components/prompt/prompt.component';
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
@@ -66,9 +67,12 @@ import { AccountsService } from './services/accounts.service';
 import { OrganismComponent } from './components/organism.component';
 import { ResultControlComponent } from './components/result-control.component';
 import { PaginationComponent } from './components/pagination.component';
-import { DATA_TRANSFER_DATA_PROVIDER, DataTransferDataService, } from './services/data-transfer-data.service';
+import {
+  DATA_TRANSFER_DATA_PROVIDER,
+  DataTransferDataService,
+} from './services/data-transfer-data.service';
 import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
-import { HighlightTextService, HIGHLIGHT_TEXT_TAG_HANDLER, } from './services/highlight-text.service';
+import { HIGHLIGHT_TEXT_TAG_HANDLER } from './services/highlight-text.service';
 import { SessionStorageService } from './services/session-storage.service';
 import { TreeViewComponent } from './components/tree-view/tree-view.component';
 import { ObjectExplorerComponent } from './components/object-explorer/object-explorer.component';
@@ -90,8 +94,11 @@ import { XMLHighlightComponent } from './providers/highlight-text/xml-highlight.
 import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotation/xml-annotation.component';
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
+import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
+import { PlaygroundComponent } from './components/prompt/playground.component';
 
 const components = [
+  WithPlaceholderComponent,
   ResponseAlertComponent,
   VisJsNetworkComponent,
   SearchableDropdownMenuComponent,
@@ -149,7 +156,7 @@ const components = [
   ProjectIconComponent,
   ProjectMenuComponent,
   WarningListComponent,
-  WarningPillComponent
+  WarningPillComponent,
 ];
 
 @NgModule({
@@ -184,6 +191,8 @@ const components = [
     ModuleHeaderComponent,
     PasswordInputComponent,
     XMLAnnotationComponent,
+    PromptComponent,
+    PlaygroundComponent,
   ],
   providers: [
     TruncatePipe,
@@ -204,16 +213,16 @@ const components = [
       useValue: {
         tag: 'annotation',
         component: XMLAnnotationComponent,
-        attributes: [ 'type', 'meta' ]
+        attributes: ['type', 'meta'],
       },
       multi: true,
     },
     {
       provide: HIGHLIGHT_TEXT_TAG_HANDLER,
       useValue: {
-        tag: 'highlight' ,
+        tag: 'highlight',
         component: XMLHighlightComponent,
-        attributes: []
+        attributes: [],
       },
       multi: true,
     },
@@ -222,7 +231,7 @@ const components = [
       useValue: {
         tag: 'snippet',
         component: XMLSnippetComponent,
-        attributes: []
+        attributes: [],
       },
       multi: true,
     },
@@ -250,7 +259,8 @@ const components = [
     NgbModule,
     AddStatusPipe,
     ModuleHeaderComponent,
+    PromptComponent,
+    PlaygroundComponent,
   ],
 })
-export class SharedModule {
-}
+export class SharedModule {}

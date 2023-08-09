@@ -1,12 +1,7 @@
 import { escapeRegExp, isNil } from 'lodash-es';
+import { ReplaySubject } from 'rxjs';
 
-
-import {
-  NodeTextRange,
-  nonStaticPositionPredicate,
-  scrollRectIntoView,
-  walkParentElements,
-} from '../dom';
+import { NodeTextRange, nonStaticPositionPredicate, walkParentElements } from '../dom';
 import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
 import { AsyncFindController } from './find-controller';
 
@@ -14,7 +9,6 @@ import { AsyncFindController } from './find-controller';
  * A find controller for finding items within an element.
  */
 export class AsyncElementFind implements AsyncFindController {
-
   private pendingJump = false;
 
   target: Element;
@@ -22,15 +16,22 @@ export class AsyncElementFind implements AsyncFindController {
   resizeObserver = new ResizeObserver(this.redraw.bind(this));
   scrollToOffset = 100;
   query = '';
-  protected readonly textFinder = new AsyncElementTextFinder(this.matchFind.bind(this), this.findGenerator);
+  protected readonly textFinder = new AsyncElementTextFinder(
+    this.matchFind.bind(this),
+    this.findGenerator
+  );
   protected results: NodeTextRange[] = [];
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
-  protected index = -1;
+  protected index = 0;
+  public current$ = new ReplaySubject<NodeTextRange>(1);
 
   constructor(
     target: Element = null,
-    private findGenerator: (root: Node, query: string) => IterableIterator<NodeTextRange | undefined> = null,
+    private findGenerator: (
+      root: Node,
+      query: string
+    ) => IterableIterator<NodeTextRange | undefined> = null
   ) {
     this.target = target;
   }
@@ -163,8 +164,9 @@ export class AsyncElementFind implements AsyncFindController {
    * Highlight the current findindex.
    */
   private visitResult() {
-    scrollRectIntoView(this.results[this.index].startNode.parentElement, undefined);
-    this.highlighter.focus(this.results[this.index]);
+    const result = this.results[this.index];
+    this.current$.next(result);
+    this.highlighter.focus(result);
   }
 
   getResultIndex(): number {
@@ -174,14 +176,12 @@ export class AsyncElementFind implements AsyncFindController {
   getResultCount(): number {
     return this.results.length;
   }
-
 }
 
 /**
  * Asynchronously finds text in a document.
  */
 class AsyncElementTextFinder {
-
   // TODO: Handle DOM changes mid-find
 
   private findQueue: IterableIterator<NodeTextRange> | undefined;
@@ -235,10 +235,11 @@ class AsyncElementTextFinder {
     }
   }
 
-  private* defaultGenerator(root: Node, query: string): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [
-      root,
-    ];
+  private *defaultGenerator(
+    root: Node,
+    query: string
+  ): IterableIterator<NodeTextRange | undefined> {
+    const queue: Node[] = [root];
 
     while (queue.length !== 0) {
       const node = queue.shift();

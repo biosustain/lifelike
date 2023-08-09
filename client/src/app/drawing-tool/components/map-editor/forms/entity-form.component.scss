@@ -48,6 +48,6 @@
 }
 
 // When we recalculate the height (resize) we unset max height
-.textarea-grow-wrap[style*="height"] {
+.textarea-grow-wrap[style*='height'] {
   max-height: unset;
 }

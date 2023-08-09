@@ -21,9 +21,7 @@ class SankeyViewSchema(Schema):
 
 class ViewBaseView(MethodView):
     def get(self, view_id):
-        params = db.session.query(View.params) \
-            .filter(View.id == view_id) \
-            .one()[0]
+        params = db.session.query(View.params).filter(View.id == view_id).one()[0]
         return json.dumps(params)
 
     @use_args(SankeyViewSchema, locations=['json'])

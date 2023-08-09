@@ -1,8 +1,7 @@
-const filterObjects = arr =>
-  arr.filter(n => typeof n !== 'object' && n != null);
+const filterObjects = (arr) => arr.filter((n) => typeof n !== 'object' && n != null);
 
 const nodesIdToMatchTerms = (nodeIds, nodes) =>
-  nodes.filter(gn => nodeIds.includes(gn.id)).map(nodeToMatchTerms);
+  nodes.filter((gn) => nodeIds.includes(gn.id)).map(nodeToMatchTerms);
 
 const linkToMatchTerms = (link, graph) =>
   Object.entries(link).reduce((o, [k, n]) => {
@@ -12,7 +11,11 @@ const linkToMatchTerms = (link, graph) =>
       } else {
         o = o.concat(filterObjects(n));
       }
-    } else if (typeof n === 'object' && n !== null && (n as { nodes: Array<number> }).nodes !== undefined) {
+    } else if (
+      typeof n === 'object' &&
+      n !== null &&
+      (n as { nodes: Array<number> }).nodes !== undefined
+    ) {
       o = o.concat(nodesIdToMatchTerms((n as { nodes: Array<number> }).nodes, graph.nodes));
     } else if (typeof n !== 'object' && n !== null) {
       o.push(n);
@@ -25,7 +28,7 @@ export function isLinkMatching(matcher, link, graph?) {
   return matcher(text);
 }
 
-const nodeToMatchTerms = node =>
+const nodeToMatchTerms = (node) =>
   Object.values(node).reduce((o: Array<any>, n) => {
     if (Array.isArray(n)) {
       o = o.concat(filterObjects(n));

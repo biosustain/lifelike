@@ -3,8 +3,8 @@
 @use 'sankey';
 
 app-sankey-multi-lane {
-  --active-opacity: #{ this.$active-opacity };
-  --inactive-opacity: #{ this.$inactive-opacity };
+  --active-opacity: #{this.$active-opacity};
+  --inactive-opacity: #{this.$inactive-opacity};
 
   @include sankey.sankey;
 
