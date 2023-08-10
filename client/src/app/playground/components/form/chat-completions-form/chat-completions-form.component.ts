@@ -31,7 +31,7 @@ export class ChatCompletionsFormComponent
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  readonly ROLES = ['system', 'user', 'assitant', 'function'];
+  readonly ROLES = ['system', 'user', 'assistant', 'function'];
 
   readonly form = new FormGroup({
     timeout: new FormControl(60),

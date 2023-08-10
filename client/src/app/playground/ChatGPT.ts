@@ -41,13 +41,7 @@ export class ChatGPT {
   ]);
 
   static readonly completions = class Completions {
-    static estimateRequestTokens({
-      prompt = '',
-      echo,
-      bestOf,
-      n,
-      maxTokens,
-    }: CompletionOptions) {
+    static estimateRequestTokens({ prompt = '', echo, bestOf, n, maxTokens }: CompletionOptions) {
       const promptTokens = ChatGPT.textTokenEstimate(prompt);
       return [
         promptTokens + promptTokens * bestOf + Number(echo) * promptTokens,
