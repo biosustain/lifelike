@@ -1,4 +1,12 @@
+import { Injectable } from '@angular/core';
+
 import { find as _find, map as _map } from 'lodash/fp';
+import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
+
+import { ChatGPTModel, ExplainService } from 'app/shared/services/explain.service';
+
+import { PlaygroundService } from './services/playground.service';
 
 export interface CompletionOptions {
   prompt: string;
@@ -28,7 +36,10 @@ export interface ChatCompletionOptions {
 }
 export type AlternativeCompletionOptions = CompletionOptions | ChatCompletionOptions;
 
+@Injectable()
 export class ChatGPT {
+  constructor(private readonly playgroundService: PlaygroundService) {}
+
   // https://openai.com/pricing
   static lastUpdate = new Date('2023-08-10');
   static modelGroupTokenCostMap = new Map<string, (model: string) => number>([
@@ -59,6 +70,13 @@ export class ChatGPT {
       return [messageTokens + messageTokens * n, messageTokens + maxTokens * n];
     }
   };
+
+  models$: Observable<string[]> = this.playgroundService
+    .models()
+    .pipe(
+      map(_map((model: ChatGPTModel) => model.id)),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
   // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
   static textTokenEstimate = (text: string) => Math.ceil((text.split(' ').length * 4) / 3);

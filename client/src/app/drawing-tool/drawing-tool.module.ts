@@ -5,7 +5,7 @@ import { SharedModule } from 'app/shared/shared.module';
 import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
-import { PromptModule } from 'app/prompt/prompt.module';
+import { PlaygroundModule } from 'app/playground/playground.module';
 
 import { MapEditorComponent } from './components/map-editor/map-editor.component';
 import { PaletteComponent } from './components/map-editor/palette.component';
@@ -25,9 +25,11 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
+import { DrawingToolPromptComponent } from './components/prompt/prompt.component';
 
 @NgModule({
   declarations: [
+    DrawingToolPromptComponent,
     MapEditorComponent,
     PaletteComponent,
     InfoPanelComponent,
@@ -49,7 +51,7 @@ import { GraphViewDirective } from './directives/graph-view.directive';
     InfoViewPanelComponent,
     LinkEditDialogComponent,
   ],
-  imports: [SharedModule, FileBrowserModule, PromptModule],
+  imports: [SharedModule, FileBrowserModule, PlaygroundModule],
   providers: [
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
