@@ -29,7 +29,7 @@ export interface ChatCompletionOptions {
 export type AlternativeCompletionOptions = CompletionOptions | ChatCompletionOptions;
 
 export class ChatGPT {
-  static lastUpdate = new Date(2023, 7, 17);
+  static lastUpdate = new Date("2023-07-17");
 
   static modelGroupTokenCostMap = new Map<string, (model: string) => number>([
     ['ada', (model) => (model.includes('v2') ? 0.0001 / 1e3 : 0.0016 / 1e3)],
