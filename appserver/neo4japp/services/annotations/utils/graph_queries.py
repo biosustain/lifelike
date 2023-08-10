@@ -51,7 +51,7 @@ collection_labels = {
     EntityType.ENTITY.value: '***ARANGO_DB_NAME***',
     EntityType.COMPANY.value: '***ARANGO_DB_NAME***',
     EntityType.LAB_SAMPLE.value: '***ARANGO_DB_NAME***',
-    EntityType.LAB_STRAIN.value: '***ARANGO_DB_NAME***'
+    EntityType.LAB_STRAIN.value: '***ARANGO_DB_NAME***',
 }
 
 

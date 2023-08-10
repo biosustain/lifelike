@@ -23,16 +23,18 @@ def match_ncbi_nodes():
     if organism is not None and gene_names is not None:
         arango_client = get_or_create_arango_client()
         # list(dict...) is to drop duplicates, but want to keep order
-        nodes = match_ncbi_genes(arango_client, list(dict.fromkeys(gene_names)), organism)
+        nodes = match_ncbi_genes(
+            arango_client, list(dict.fromkeys(gene_names)), organism
+        )
 
     return jsonify({'result': nodes}), 200
 
 
 @bp.route('/get-ncbi-nodes/enrichment-domains', methods=['POST'])
 def get_ncbi_enrichment_domains():
-    """ Find all domains matched to given node id, then return dictionary with all domains as
-        result. All domains should have matching indices e.g. regulon[1] should be data from
-        matching same node as uniprot[1].
+    """Find all domains matched to given node id, then return dictionary with all domains as
+    result. All domains should have matching indices e.g. regulon[1] should be data from
+    matching same node as uniprot[1].
     """
     # TODO: Validate incoming data using webargs + Marshmallow
     data = request.get_json()

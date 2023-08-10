@@ -83,7 +83,9 @@ class Pipeline:
 
         start = time.time()
         self.global_exclusions = db_service.get_entity_exclusions(excluded_annotations)
-        self.global_inclusions = get_entity_inclusions(arango_client, custom_annotations)
+        self.global_inclusions = get_entity_inclusions(
+            arango_client, custom_annotations
+        )
         current_app.logger.info(
             f'Time to process entity exclusions/inclusions {time.time() - start}',
             extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),

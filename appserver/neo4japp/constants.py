@@ -105,7 +105,7 @@ DATA_SOURCES = {
     'ChEBI': 'CHEBI',
     'GO': 'GO',
     'MeSH': 'MESH',
-    'UniProt': 'UniProt'
+    'UniProt': 'UniProt',
 }
 
 BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}

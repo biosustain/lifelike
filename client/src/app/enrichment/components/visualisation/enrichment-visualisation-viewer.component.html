@@ -17,7 +17,7 @@
         <div class="module-body flex-fill overflow-auto h-100">
           <div class="space-cards">
             <app-group
-              *ngFor="let d of data$ | async | keyvalue : originalOrder; let i = index"
+              *ngFor="let d of data$ | async | keyvalue: originalOrder; let i = index"
               [title]="d.key"
               [data]="d.value"
             >

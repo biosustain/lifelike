@@ -51,7 +51,7 @@ class AnnotationService:
         # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
         # now, but I think we should slowly try to migrate away from the "service-as-an-object"
         # pattern
-        arango_client: ArangoClient
+        arango_client: ArangoClient,
     ) -> None:
         self.db = db
         self.arango_client = arango_client
@@ -610,12 +610,11 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             gene_match_time = time.time()
-            fallback_graph_results = \
-                get_genes_to_organisms(
-                    arango_client=self.arango_client,
-                    genes=gene_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = get_genes_to_organisms(
+                arango_client=self.arango_client,
+                genes=gene_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             current_app.logger.info(
                 f'Gene fallback organism KG query time {time.time() - gene_match_time}',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
@@ -755,12 +754,11 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             protein_match_time = time.time()
-            fallback_graph_results = \
-                get_proteins_to_organisms(
-                    arango_client=self.arango_client,
-                    proteins=protein_names_list,
-                    organisms=[self.specified_organism.organism_id],
-                )
+            fallback_graph_results = get_proteins_to_organisms(
+                arango_client=self.arango_client,
+                proteins=protein_names_list,
+                organisms=[self.specified_organism.organism_id],
+            )
             current_app.logger.info(
                 f'Protein fallback organism KG query time {time.time() - protein_match_time}',
                 extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),

@@ -58,7 +58,9 @@ import { VisualizationService } from 'app/visualization/services/visualization.s
   styleUrls: ['./visualization-canvas.component.scss'],
   providers: [ContextMenuControlService],
 })
-export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> implements OnInit, AfterViewInit {
+export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
+  implements OnInit, AfterViewInit
+{
   @Output() finishedClustering = new EventEmitter<boolean>();
   @Output() getSnippetsForEdge = new EventEmitter<NewEdgeSnippetsPageRequest>();
   @Output() getSnippetsForCluster = new EventEmitter<NewClusterSnippetsPageRequest>();
@@ -351,7 +353,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
         // Set the origin node's expand state to true
         let nodeRef = this.nodes.get(nodeId) as VisNode;
-        nodeRef = {...nodeRef, expanded: true};
+        nodeRef = { ...nodeRef, expanded: true };
         this.nodes.update(nodeRef);
 
         bulkResult.referenceTables
@@ -359,13 +361,19 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
           .sort((a, b) => a.referenceTableRows.length - b.referenceTableRows.length)
           .forEach((table: GetReferenceTableDataResult) => {
             const { referenceTableRows, direction, description } = table;
-            const duplicateNodeEdgePairs = table.duplicateNodeEdgePairs.map(pair => {
+            const duplicateNodeEdgePairs = table.duplicateNodeEdgePairs.map((pair) => {
               return {
                 node: this.visService.convertNodeToVisJSFormat(pair.node, this.legend),
-                edge: this.visService.convertEdgeToVisJSFormat(pair.edge)
+                edge: this.visService.convertEdgeToVisJSFormat(pair.edge),
               } as DuplicateNodeEdgePair;
             });
-            this.processGetReferenceTableResults(nodeId, duplicateNodeEdgePairs, referenceTableRows, description, direction);
+            this.processGetReferenceTableResults(
+              nodeId,
+              duplicateNodeEdgePairs,
+              referenceTableRows,
+              description,
+              direction
+            );
           });
         // Done loading clusters so close the dialog automatically
         this.loadingClustersDialogRef.close();
@@ -868,17 +876,21 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
     this.edges.remove(edgesInCluster);
   }
 
-  resetClustersOnRelationshipAndDirection(originNode: IdType, relationship: string, direction: string) {
-      // Remove any existing clusters connected to the origin node on this relationship/direction first. Any
-      // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
-      this.networkGraph.getConnectedNodes(originNode).forEach((nodeId) => {
-        if (this.networkGraph.isCluster(nodeId)) {
-          const cluster = this.clusters.get(nodeId);
-          if (cluster.relationship === relationship && cluster.direction === direction) {
-            this.destroyCluster(nodeId);
-          }
+  resetClustersOnRelationshipAndDirection(
+    originNode: IdType,
+    relationship: string,
+    direction: string
+  ) {
+    // Remove any existing clusters connected to the origin node on this relationship/direction first. Any
+    // nodes within should have been included in the duplicateNodeEdgePairs array sent to the appserver.
+    this.networkGraph.getConnectedNodes(originNode).forEach((nodeId) => {
+      if (this.networkGraph.isCluster(nodeId)) {
+        const cluster = this.clusters.get(nodeId);
+        if (cluster.relationship === relationship && cluster.direction === direction) {
+          this.destroyCluster(nodeId);
         }
-      });
+      }
+    });
   }
 
   addClusterToGraph(
@@ -927,7 +939,13 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
     this.updateGraphWithDuplicates(duplicateNodeEdgePairs);
     // TODO: Would be nice to have some indication that the cluster has been selected.
     // A bit tricky, since clusters are SVGs, but maybe this can be done.
-    this.addClusterToGraph(url, duplicateNodeEdgePairs, referenceTableRows, relationship, direction);
+    this.addClusterToGraph(
+      url,
+      duplicateNodeEdgePairs,
+      referenceTableRows,
+      relationship,
+      direction
+    );
     this.updateSelectedNodeEdgeLabelData(originNode);
   }
 
@@ -957,11 +975,18 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
   ) {
     this.openClusteringRequests += 1;
 
-    const referenceTableDataRequest = this.getReferenceTableDataRequestObject(duplicateNodeEdgePairs);
+    const referenceTableDataRequest =
+      this.getReferenceTableDataRequestObject(duplicateNodeEdgePairs);
 
     this.visService.getReferenceTableData(referenceTableDataRequest).subscribe((result) => {
       const { referenceTableRows, direction } = result;
-      this.processGetReferenceTableResults(originNode, duplicateNodeEdgePairs, referenceTableRows, relationship, direction);
+      this.processGetReferenceTableResults(
+        originNode,
+        duplicateNodeEdgePairs,
+        referenceTableRows,
+        relationship,
+        direction
+      );
       this.openClusteringRequests -= 1;
       this.clusterCreatedSource.next(true);
     });
@@ -969,7 +994,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
 
   getBulkReferenceTableDataRequestObj(associations: Map<string, DuplicateNodeEdgePair[]>) {
     return {
-      associations: Array.from(associations.keys()).map(key => {
+      associations: Array.from(associations.keys()).map((key) => {
         const [description, direction] = key.split('$');
         return {
           description,
@@ -989,7 +1014,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object> 
             } as ReferenceTablePair;
           }),
         } as ReferenceTableDataRequest;
-      })
+      }),
     } as BulkReferenceTableDataRequest;
   }
 

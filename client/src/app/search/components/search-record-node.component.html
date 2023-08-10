@@ -5,7 +5,8 @@
         href="/kg-visualizer/graph"
         [appLink]="['/kg-visualizer/graph']"
         [queryParams]="getVisualizerQueryParams({ data: node.node.id })"
-      >{{ node.node.displayName }}</a>
+        >{{ node.node.displayName }}</a
+      >
       <span
         [ngStyle]="{
           border: 'thin solid',
@@ -15,18 +16,23 @@
           'margin-left': '10px',
           padding: '0 5px'
         }"
-      >{{ node.node.label }}</span>
-      <span *ngFor="let domain of node.node.domainLabels"
-            [ngStyle]="{
-              'border': 'thin solid',
-              'border-radius': '10px',
-              'border-color': '#0c8caa',
-              'color': '#0c8caa',
-              'margin-left': '10px',
-              'padding': '0 5px'
-            }">
-            <ng-container *ngIf="domain === 'Literature'; else nonLiteratureDomain">{{ domain }}</ng-container>
-            <ng-template #nonLiteratureDomain>{{ domain }}</ng-template>
+        >{{ node.node.label }}</span
+      >
+      <span
+        *ngFor="let domain of node.node.domainLabels"
+        [ngStyle]="{
+          border: 'thin solid',
+          'border-radius': '10px',
+          'border-color': '#0c8caa',
+          color: '#0c8caa',
+          'margin-left': '10px',
+          padding: '0 5px'
+        }"
+      >
+        <ng-container *ngIf="domain === 'Literature'; else nonLiteratureDomain">{{
+          domain
+        }}</ng-container>
+        <ng-template #nonLiteratureDomain>{{ domain }}</ng-template>
       </span>
     </h5>
   </div>

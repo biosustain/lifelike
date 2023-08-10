@@ -26,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let entry of genes | keyvalue : rowOrder">
+      <tr *ngFor="let entry of genes | keyvalue: rowOrder">
         <th scope="row" [appSELink]="entry.key">{{ entry.key }}</th>
         <td
           *ngFor="let value of entry.value.values"

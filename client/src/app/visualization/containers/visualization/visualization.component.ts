@@ -217,10 +217,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       category: TRACKING_CATEGORIES.visualiser,
       action: TRACKING_ACTIONS.search,
       label: query,
-      url: this.tracking.toString()
+      url: this.tracking.toString(),
     });
 
-    this.workspaceManager.navigateByUrl({url: `/search?q=${query}`});
+    this.workspaceManager.navigateByUrl({ url: `/search?q=${query}` });
   }
 
   /**
@@ -235,7 +235,10 @@ export class VisualizationComponent implements OnInit, OnDestroy {
     const setExpandProperty = result.nodes.map((n) => {
       return { ...n, expanded: false };
     });
-    return this.visService.convertGraphToVisJSFormat({ nodes: setExpandProperty, edges: result.edges }, this.legend);
+    return this.visService.convertGraphToVisJSFormat(
+      { nodes: setExpandProperty, edges: result.edges },
+      this.legend
+    );
   }
 
   getSnippetsForEdge(request: NewEdgeSnippetsPageRequest) {

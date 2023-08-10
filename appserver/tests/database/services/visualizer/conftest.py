@@ -17,21 +17,11 @@ from neo4japp.utils.labels import get_first_known_label_from_list
 
 
 def _create_document(arango_db: StandardDatabase, colxn_name: str, **kwargs) -> dict:
-    return add_document_to_collection(
-            db=arango_db,
-            colxn_name=colxn_name,
-            doc=kwargs
-        )
+    return add_document_to_collection(db=arango_db, colxn_name=colxn_name, doc=kwargs)
 
 
-def _create_relationship_document(
-    edge_collection: EdgeCollection,
-    **kwargs
-):
-    return edge_collection.insert(
-        kwargs,
-        return_new=True
-    )['new']
+def _create_relationship_document(edge_collection: EdgeCollection, **kwargs):
+    return edge_collection.insert(kwargs, return_new=True)['new']
 
 
 @pytest.fixture(scope='function')
@@ -41,7 +31,7 @@ def gas_gangrene(test_arango_db):
         'mesh',
         name='gas gangrene',
         eid='MESH:D005738',
-        labels=['Disease']
+        labels=['Disease'],
     )
     return gas_gangrene
 
@@ -53,7 +43,7 @@ def penicillins(test_arango_db):
         'mesh',
         name='Penicillins',
         eid='MESH:D010406',
-        labels=['Chemical']
+        labels=['Chemical'],
     )
     return penicillins
 
@@ -61,18 +51,16 @@ def penicillins(test_arango_db):
 @pytest.fixture(scope='function')
 def oxygen(test_arango_db):
     oxygen = _create_document(
-        test_arango_db,
-        'mesh',
-        name='Oxygen',
-        eid='MESH:D010100',
-        labels=['Chemical']
+        test_arango_db, 'mesh', name='Oxygen', eid='MESH:D010100', labels=['Chemical']
     )
     return oxygen
 
 
 @pytest.fixture(scope='function')
 def pomc(test_arango_db):
-    pomc = _create_document(test_arango_db, 'ncbi', name='POMC', eid='5443', labels=['Gene'])
+    pomc = _create_document(
+        test_arango_db, 'ncbi', name='POMC', eid='5443', labels=['Gene']
+    )
     return pomc
 
 
@@ -125,7 +113,7 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
     associated_edge_collection: EdgeCollection,
     gas_gangrene: dict,
     pomc: dict,
-    pomc_to_gas_gangrene_association: dict
+    pomc_to_gas_gangrene_association: dict,
 ):
     return _create_relationship_document(
         associated_edge_collection,
@@ -133,7 +121,7 @@ def pomc_to_gas_gangrene_pathogenesis_edge(
         _to=gas_gangrene['_id'],
         assoc_type='J',
         description='role in disease pathogenesis',
-        association_id=pomc_to_gas_gangrene_association['_id']
+        association_id=pomc_to_gas_gangrene_association['_id'],
     )
 
 
@@ -150,7 +138,7 @@ def penicillins_to_gas_gangrene_alleviates_edge(
         _to=gas_gangrene['_id'],
         assoc_type='Pa',
         description='alleviates, reduces',
-        association_id=penicillins_to_gas_gangrene_association_1['_id']
+        association_id=penicillins_to_gas_gangrene_association_1['_id'],
     )
 
 
@@ -159,7 +147,7 @@ def oxygen_to_gas_gangrene_treatment_edge(
     associated_edge_collection: EdgeCollection,
     gas_gangrene: dict,
     oxygen: dict,
-    oxygen_to_gas_gangrene_association: dict
+    oxygen_to_gas_gangrene_association: dict,
 ):
     return _create_relationship_document(
         associated_edge_collection,
@@ -167,7 +155,7 @@ def oxygen_to_gas_gangrene_treatment_edge(
         _to=gas_gangrene['_id'],
         assoc_type='Pa',
         description='treatment/therapy (including investigatory)',
-        association_id=oxygen_to_gas_gangrene_association['_id']
+        association_id=oxygen_to_gas_gangrene_association['_id'],
     )
 
 
@@ -176,7 +164,7 @@ def penicillins_to_gas_gangrene_treatment_edge(
     associated_edge_collection: EdgeCollection,
     gas_gangrene: dict,
     penicillins: dict,
-    penicillins_to_gas_gangrene_association_2: dict
+    penicillins_to_gas_gangrene_association_2: dict,
 ):
     return _create_relationship_document(
         associated_edge_collection,
@@ -184,7 +172,7 @@ def penicillins_to_gas_gangrene_treatment_edge(
         _to=gas_gangrene['_id'],
         assoc_type='Pa',
         description='treatment/therapy (including investigatory)',
-        association_id=penicillins_to_gas_gangrene_association_2['_id']
+        association_id=penicillins_to_gas_gangrene_association_2['_id'],
     )
 
 
@@ -205,9 +193,8 @@ def gas_gangrene_with_associations_and_references(
     oxygen_to_gas_gangrene_treatment_edge,
     pomc_to_gas_gangrene_pathogenesis_edge,
     penicillins_to_gas_gangrene_alleviates_edge,
-    penicillins_to_gas_gangrene_treatment_edge
+    penicillins_to_gas_gangrene_treatment_edge,
 ):
-
     # Snippet Nodes
     oxygen_to_gas_gangrene_snippet_node1 = _create_document(
         test_arango_db,
@@ -254,10 +241,7 @@ def gas_gangrene_with_associations_and_references(
         pub_year=2019,
     )
     penicillins_to_gas_gangrene_publication_node1 = _create_document(
-        test_arango_db,
-        'literature',
-        pub_id=1,
-        pub_year=2014
+        test_arango_db, 'literature', pub_id=1, pub_year=2014
     )
     penicillins_to_gas_gangrene_publication_node2 = _create_document(
         test_arango_db,
@@ -270,13 +254,11 @@ def gas_gangrene_with_associations_and_references(
         [oxygen, oxygen_to_gas_gangrene_association],
         [pomc, pomc_to_gas_gangrene_association],
         [penicillins, penicillins_to_gas_gangrene_association_1],
-        [penicillins, penicillins_to_gas_gangrene_association_2]
+        [penicillins, penicillins_to_gas_gangrene_association_2],
     ]
     for rel in entity_to_association_rels:
         _create_relationship_document(
-            has_association_edge_collection,
-            _from=rel[0]['_id'],
-            _to=rel[1]['_id']
+            has_association_edge_collection, _from=rel[0]['_id'], _to=rel[1]['_id']
         )
 
     # Association -> Entity Relationships
@@ -284,7 +266,7 @@ def gas_gangrene_with_associations_and_references(
         [oxygen_to_gas_gangrene_association, gas_gangrene],
         [pomc_to_gas_gangrene_association, gas_gangrene],
         [penicillins_to_gas_gangrene_association_1, gas_gangrene],
-        [penicillins_to_gas_gangrene_association_2, gas_gangrene]
+        [penicillins_to_gas_gangrene_association_2, gas_gangrene],
     ]
     for rel in association_to_entity_rels:
         _create_relationship_document(
@@ -295,12 +277,54 @@ def gas_gangrene_with_associations_and_references(
 
     # Snippet -> Association Relationships
     snippet_to_association_rels = [
-        [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_association, None, None, 'oxygen', 'gas gangrene'],  # noqa
-        [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_association, None, None, 'oxygen', 'gas gangrene'],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_association_1, 2, 0.385, 'penicillin', 'gas gangrene'],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_association_1, 5, 0.693, 'penicillin', 'gas gangrene'],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_association_2, 1, 0.222, 'penicillin', 'gas gangrene'],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_association_2, 3, 0.456, 'penicillin', 'gas gangrene'],  # noqa
+        [
+            oxygen_to_gas_gangrene_snippet_node1,
+            oxygen_to_gas_gangrene_association,
+            None,
+            None,
+            'oxygen',
+            'gas gangrene',
+        ],  # noqa
+        [
+            oxygen_to_gas_gangrene_snippet_node2,
+            oxygen_to_gas_gangrene_association,
+            None,
+            None,
+            'oxygen',
+            'gas gangrene',
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node1,
+            penicillins_to_gas_gangrene_association_1,
+            2,
+            0.385,
+            'penicillin',
+            'gas gangrene',
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node3,
+            penicillins_to_gas_gangrene_association_1,
+            5,
+            0.693,
+            'penicillin',
+            'gas gangrene',
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node2,
+            penicillins_to_gas_gangrene_association_2,
+            1,
+            0.222,
+            'penicillin',
+            'gas gangrene',
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node4,
+            penicillins_to_gas_gangrene_association_2,
+            3,
+            0.456,
+            'penicillin',
+            'gas gangrene',
+        ],  # noqa
     ]
     for rel in snippet_to_association_rels:
         _create_relationship_document(
@@ -317,16 +341,26 @@ def gas_gangrene_with_associations_and_references(
     snippet_to_pub_rels = [
         [oxygen_to_gas_gangrene_snippet_node1, oxygen_to_gas_gangrene_publication_node],
         [oxygen_to_gas_gangrene_snippet_node2, oxygen_to_gas_gangrene_publication_node],
-        [penicillins_to_gas_gangrene_snippet_node1, penicillins_to_gas_gangrene_publication_node1],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node3, penicillins_to_gas_gangrene_publication_node2],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node2, penicillins_to_gas_gangrene_publication_node2],  # noqa
-        [penicillins_to_gas_gangrene_snippet_node4, penicillins_to_gas_gangrene_publication_node2]  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node1,
+            penicillins_to_gas_gangrene_publication_node1,
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node3,
+            penicillins_to_gas_gangrene_publication_node2,
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node2,
+            penicillins_to_gas_gangrene_publication_node2,
+        ],  # noqa
+        [
+            penicillins_to_gas_gangrene_snippet_node4,
+            penicillins_to_gas_gangrene_publication_node2,
+        ],  # noqa
     ]
     for rel in snippet_to_pub_rels:
         _create_relationship_document(
-            in_pub_edge_collection,
-            _from=rel[0]['_id'],
-            _to=rel[1]['_id']
+            in_pub_edge_collection, _from=rel[0]['_id'], _to=rel[1]['_id']
         )
     return gas_gangrene
 
@@ -340,7 +374,9 @@ def oxygen_duplicate_vis_node(oxygen):
         label=labels[0],
         sub_labels=labels,
         domain_labels=[],
-        display_name=oxygen.get(DISPLAY_NAME_MAP[get_first_known_label_from_list(oxygen['labels'])]),  # noqa
+        display_name=oxygen.get(
+            DISPLAY_NAME_MAP[get_first_known_label_from_list(oxygen['labels'])]
+        ),  # noqa
         data=snake_to_camel_dict(dict(oxygen), {}),
         url=None,
     )
@@ -354,7 +390,7 @@ def oxygen_duplicate_vis_node(oxygen):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return oxygen_duplicate_vis_node
@@ -369,7 +405,9 @@ def penicillins_duplicate_vis_node(penicillins):
         label=labels[0],
         sub_labels=labels,
         domain_labels=[],
-        display_name=penicillins.get(DISPLAY_NAME_MAP[get_first_known_label_from_list(penicillins['labels'])]),  # noqa
+        display_name=penicillins.get(
+            DISPLAY_NAME_MAP[get_first_known_label_from_list(penicillins['labels'])]
+        ),  # noqa
         data=snake_to_camel_dict(dict(penicillins), {}),
         url=None,
     )
@@ -383,7 +421,7 @@ def penicillins_duplicate_vis_node(penicillins):
         primary_label=node_as_graph_node.sub_labels[0],
         color={},
         expanded=False,
-        duplicate_of=node_as_graph_node.id
+        duplicate_of=node_as_graph_node.id,
     )
 
     return penicillins_duplicate_vis_node
@@ -408,7 +446,7 @@ def oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         to=oxygen_to_gas_gangrene_treatment_edge['_to'],
         _from=oxygen_to_gas_gangrene_treatment_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=oxygen['labels'][0]
+        from_label=oxygen['labels'][0],
     )
 
     oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -441,12 +479,12 @@ def penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge(
         label='associated',
         data=dict(
             assoc_type=penicillins_to_gas_gangrene_treatment_edge['assoc_type'],
-            description=penicillins_to_gas_gangrene_treatment_edge['description']
+            description=penicillins_to_gas_gangrene_treatment_edge['description'],
         ),
         to=penicillins_to_gas_gangrene_treatment_edge['_to'],
         _from=penicillins_to_gas_gangrene_treatment_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=penicillins['labels'][0]
+        from_label=penicillins['labels'][0],
     )
 
     penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge = DuplicateVisEdge(
@@ -471,7 +509,7 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
     oxygen_duplicate_vis_node,
     oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge,
     penicillins_duplicate_vis_node,
-    penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge
+    penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge,
 ):
     """Creates a list of DuplicateNodeEdgePairs. Used for testing the
     reference table endpoints and services."""
@@ -480,7 +518,7 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
             node=ReferenceTablePair.NodeData(
                 id=oxygen_duplicate_vis_node.id,
                 display_name=oxygen_duplicate_vis_node.display_name,
-                label=oxygen_duplicate_vis_node.primary_label
+                label=oxygen_duplicate_vis_node.primary_label,
             ),
             edge=ReferenceTablePair.EdgeData(
                 original_from=oxygen_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,  # noqa
@@ -492,14 +530,14 @@ def gas_gangrene_treatment_cluster_node_edge_pairs(
             node=ReferenceTablePair.NodeData(
                 id=penicillins_duplicate_vis_node.id,
                 display_name=penicillins_duplicate_vis_node.display_name,
-                label=penicillins_duplicate_vis_node.primary_label
+                label=penicillins_duplicate_vis_node.primary_label,
             ),
             edge=ReferenceTablePair.EdgeData(
                 original_from=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_from,  # noqa
                 original_to=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.original_to,
                 label=penicillins_to_gas_gangrene_treatment_as_duplicate_vis_edge.label,
             ),
-        )
+        ),
     ]
 
 
@@ -514,12 +552,12 @@ def gas_gangrene_treatement_edge_data(
         label='associated',
         data=dict(
             assoc_type=penicillins_to_gas_gangrene_treatment_edge['assoc_type'],
-            description=penicillins_to_gas_gangrene_treatment_edge['description']
+            description=penicillins_to_gas_gangrene_treatment_edge['description'],
         ),
         to=penicillins_to_gas_gangrene_treatment_edge['_to'],
         _from=penicillins_to_gas_gangrene_treatment_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=penicillins['labels'][0]
+        from_label=penicillins['labels'][0],
     )
 
     return EdgeConnectionData(
@@ -542,12 +580,12 @@ def gas_gangrene_alleviates_edge_data(
         label='associated',
         data=dict(
             assoc_type=penicillins_to_gas_gangrene_alleviates_edge['assoc_type'],
-            description=penicillins_to_gas_gangrene_alleviates_edge['description']
+            description=penicillins_to_gas_gangrene_alleviates_edge['description'],
         ),
         to=penicillins_to_gas_gangrene_alleviates_edge['_to'],
         _from=penicillins_to_gas_gangrene_alleviates_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=penicillins['labels'][0]
+        from_label=penicillins['labels'][0],
     )
 
     return EdgeConnectionData(
@@ -570,24 +608,24 @@ def gas_gangrene_treatement_duplicate_edge_data(
         label='associated',
         data=dict(
             assoc_type=penicillins_to_gas_gangrene_treatment_edge['assoc_type'],
-            description=penicillins_to_gas_gangrene_treatment_edge['description']
+            description=penicillins_to_gas_gangrene_treatment_edge['description'],
         ),
         to=penicillins_to_gas_gangrene_treatment_edge['_to'],
         _from=penicillins_to_gas_gangrene_treatment_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=penicillins['labels'][0]
+        from_label=penicillins['labels'][0],
     )
 
     return [
-            DuplicateEdgeConnectionData(
-                label=edge_as_graph_relationship.data['description'],
-                to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-                from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-                to_label='Disease',
-                from_label='Chemical',
-                original_from=edge_as_graph_relationship._from,
-                original_to=edge_as_graph_relationship.to,
-            )
+        DuplicateEdgeConnectionData(
+            label=edge_as_graph_relationship.data['description'],
+            to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
+            from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
+            to_label='Disease',
+            from_label='Chemical',
+            original_from=edge_as_graph_relationship._from,
+            original_to=edge_as_graph_relationship.to,
+        )
     ]
 
 
@@ -602,22 +640,22 @@ def gas_gangrene_alleviates_duplicate_edge_data(
         label='associated',
         data=dict(
             assoc_type=penicillins_to_gas_gangrene_alleviates_edge['assoc_type'],
-            description=penicillins_to_gas_gangrene_alleviates_edge['description']
+            description=penicillins_to_gas_gangrene_alleviates_edge['description'],
         ),
         to=penicillins_to_gas_gangrene_alleviates_edge['_to'],
         _from=penicillins_to_gas_gangrene_alleviates_edge['_from'],
         to_label=gas_gangrene['labels'][0],
-        from_label=penicillins['labels'][0]
+        from_label=penicillins['labels'][0],
     )
 
     return [
-            DuplicateEdgeConnectionData(
-                label=edge_as_graph_relationship.data['description'],
-                to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
-                from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
-                to_label='Disease',
-                from_label='Chemical',
-                original_from=edge_as_graph_relationship._from,
-                original_to=edge_as_graph_relationship.to,
-            )
+        DuplicateEdgeConnectionData(
+            label=edge_as_graph_relationship.data['description'],
+            to=f'duplicateNode:{edge_as_graph_relationship.to}',  # type:ignore
+            from_=f'duplicateNode:{edge_as_graph_relationship._from}',  # type:ignore
+            to_label='Disease',
+            from_label='Chemical',
+            original_from=edge_as_graph_relationship._from,
+            original_to=edge_as_graph_relationship.to,
+        )
     ]

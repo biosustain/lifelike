@@ -2,7 +2,7 @@ from neo4japp.data_transfer_objects.visualization import Direction
 from neo4japp.services.visualizer import (
     get_reference_table_data,
     get_snippets_for_cluster,
-    get_snippets_for_edge
+    get_snippets_for_edge,
 )
 from neo4japp.util import camel_to_snake_dict
 
@@ -14,9 +14,12 @@ def test_get_reference_table_data(
 ):
     get_reference_table_data_result = get_reference_table_data(
         arango_client=arango_client,
-        node_edge_pairs=[camel_to_snake_dict(pair.to_dict()) for pair in gas_gangrene_treatment_cluster_node_edge_pairs],
+        node_edge_pairs=[
+            camel_to_snake_dict(pair.to_dict())
+            for pair in gas_gangrene_treatment_cluster_node_edge_pairs
+        ],
         description='treatment/therapy (including investigatory)',
-        direction=Direction.TO.value
+        direction=Direction.TO.value,
     )
 
     assert get_reference_table_data_result.reference_table_rows is not None

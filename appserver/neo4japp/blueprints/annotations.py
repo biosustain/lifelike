@@ -1073,7 +1073,7 @@ class GlobalAnnotationListView(MethodView):
                 db=get_db(arango_client),
                 query=get_global_inclusions_paginated_query(),
                 skip=0 if page == 1 else (page - 1) * limit,
-                limit=limit
+                limit=limit,
             )
 
             file_uuids = {
@@ -1085,35 +1085,37 @@ class GlobalAnnotationListView(MethodView):
             ).filter(Files.hash_id.in_([fid for fid in file_uuids]))
 
             file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
-            data = [{
-                'global_id': i['node_internal_id'],
-                'synonym_id': i['syn_node_internal_id'],
-                'creator': i['creator'],
-                'file_uuid': i['file_reference'],
-                # if not in this something must've happened to the file
-                # since a global inclusion referenced it
-                # so mark it as deleted
-                # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
-                'file_deleted': True if file_uuids_map.get(i['file_reference'], True) else False,
-                'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': convert_datetime(i['creation_date']),
-                'text': i['synonym'],
-                'case_insensitive': True,
-                'entity_type': i['entity_type'],
-                'entity_id': i['entity_id'],
-                'reason': '',
-                'comment': ''
-            } for i in global_inclusions]
+            data = [
+                {
+                    'global_id': i['node_internal_id'],
+                    'synonym_id': i['syn_node_internal_id'],
+                    'creator': i['creator'],
+                    'file_uuid': i['file_reference'],
+                    # if not in this something must've happened to the file
+                    # since a global inclusion referenced it
+                    # so mark it as deleted
+                    # mapping is {file_uuid: user_id} where user_id is null if file is not deleted
+                    'file_deleted': True
+                    if file_uuids_map.get(i['file_reference'], True)
+                    else False,
+                    'type': ManualAnnotationType.INCLUSION.value,
+                    'creation_date': convert_datetime(i['creation_date']),
+                    'text': i['synonym'],
+                    'case_insensitive': True,
+                    'entity_type': i['entity_type'],
+                    'entity_id': i['entity_id'],
+                    'reason': '',
+                    'comment': '',
+                }
+                for i in global_inclusions
+            ]
 
             query_total = execute_arango_query(
                 db=get_db(arango_client),
                 query=get_global_inclusions_count_query(),
             )[0]['total']
 
-        results = {
-            'total': query_total,
-            'results': data
-        }
+        results = {'total': query_total, 'results': data}
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())

@@ -56,7 +56,7 @@ def get_annotation_db_service():
 def get_manual_annotation_service():
     return ManualAnnotationService(
         tokenizer=get_annotation_tokenizer(),
-        arango_client=get_or_create_arango_client()
+        arango_client=get_or_create_arango_client(),
     )
 
 

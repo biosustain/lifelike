@@ -35,13 +35,17 @@ export class EnrichmentTableService {
    * @param docIds list of document ids to match to enrichment domains
    * @param taxID tax id of organism
    */
-  getNCBIEnrichmentDomains(docIds: string[], taxID: string, domains: string[]): Observable<EnrichmentWrapper> {
-    return this.http.post<{ result: EnrichmentWrapper }>(
-      `/api/enrichment-table/get-ncbi-nodes/enrichment-domains`,
-      {docIds, taxID, domains},
-    ).pipe(
-      map(resp => resp.result),
-    );
+  getNCBIEnrichmentDomains(
+    docIds: string[],
+    taxID: string,
+    domains: string[]
+  ): Observable<EnrichmentWrapper> {
+    return this.http
+      .post<{ result: EnrichmentWrapper }>(
+        `/api/enrichment-table/get-ncbi-nodes/enrichment-domains`,
+        { docIds, taxID, domains }
+      )
+      .pipe(map((resp) => resp.result));
   }
 
   annotateEnrichment(

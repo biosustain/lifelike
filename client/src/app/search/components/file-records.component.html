@@ -22,7 +22,7 @@
       <h6 class="font-italic font-bold description-title">- Author and Uploaded Date</h6>
       <a class="uploaded-and-date" href="mailto:{{ snippet.email }}">{{ snippet.email }}</a
       ><br />
-      <p class="uploaded-and-date">({{ snippet.uploaded_date | date : 'fullDate' }})</p>
+      <p class="uploaded-and-date">({{ snippet.uploaded_date | date: 'fullDate' }})</p>
       <h6 class="font-italic font-bold description-title">- Description</h6>
       <span class="description d-inline-block">{{ snippet.description }}</span>
     </ng-template>

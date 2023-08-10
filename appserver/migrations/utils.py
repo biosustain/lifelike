@@ -3,6 +3,7 @@ import multiprocessing as mp
 from typing import Dict, List
 
 from neo4japp.database import get_or_create_arango_client
+
 # flake8: noqa: OIG001 # It is legacy file with imports from appserver which we decided to not fix
 from neo4japp.models import Files
 from neo4japp.services.annotations.constants import EntityType
@@ -34,26 +35,23 @@ def _get_mesh_by_ids_query():
     """
 
 
-def _get_mesh_from_mesh_ids(arango_client: ArangoClient, mesh_ids: List[str]) -> Dict[str, str]:
+def _get_mesh_from_mesh_ids(
+    arango_client: ArangoClient, mesh_ids: List[str]
+) -> Dict[str, str]:
     result = execute_arango_query(
-        db=get_db(arango_client),
-        query=_get_mesh_by_ids_query(),
-        ids=mesh_ids
+        db=get_db(arango_client), query=_get_mesh_by_ids_query(), ids=mesh_ids
     )
     return {row['mesh_id']: row['mesh_name'] for row in result}
 
 
 def _get_nodes_from_node_ids(
-    arango_client: ArangoClient,
-    entity_type: str,
-    node_ids: List[str]
+    arango_client: ArangoClient, entity_type: str, node_ids: List[str]
 ) -> Dict[str, str]:
     result = execute_arango_query(
-        db=get_db(arango_client),
-        query=get_docs_by_ids_query(entity_type),
-        ids=node_ids
+        db=get_db(arango_client), query=get_docs_by_ids_query(entity_type), ids=node_ids
     )
     return {row['entity_id']: row['entity_name'] for row in result}
+
 
 def get_primary_names(annotations):
     """Copied from AnnotationService.add_primary_name"""
@@ -113,34 +111,22 @@ def get_primary_names(annotations):
 
     try:
         chemical_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.CHEMICAL.value,
-            list(chemical_ids)
+            arango_client, EntityType.CHEMICAL.value, list(chemical_ids)
         )
         compound_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.COMPOUND.value,
-            list(compound_ids)
+            arango_client, EntityType.COMPOUND.value, list(compound_ids)
         )
         disease_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.DISEASE.value,
-            list(disease_ids)
+            arango_client, EntityType.DISEASE.value, list(disease_ids)
         )
         gene_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.GENE.value,
-            list(gene_ids)
+            arango_client, EntityType.GENE.value, list(gene_ids)
         )
         protein_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.PROTEIN.value,
-            list(protein_ids)
+            arango_client, EntityType.PROTEIN.value, list(protein_ids)
         )
         organism_names = _get_nodes_from_node_ids(
-            arango_client,
-            EntityType.SPECIES.value,
-            list(organism_ids)
+            arango_client, EntityType.SPECIES.value, list(organism_ids)
         )
         mesh_names = _get_mesh_from_mesh_ids(arango_client, list(mesh_ids))
     except Exception:
