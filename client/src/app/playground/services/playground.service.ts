@@ -3,11 +3,7 @@ import { Injectable } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import {
-  AlternativeCompletionOptions,
-  ChatCompletionOptions,
-  CompletionOptions,
-} from '../ChatGPT';
+import { AlternativeCompletionOptions, ChatCompletionOptions, CompletionOptions } from '../ChatGPT';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
