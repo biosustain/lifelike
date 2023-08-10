@@ -1,16 +1,7 @@
 import { Component, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
-import {
-  flow as _flow,
-  groupBy as _groupBy,
-  identity as _identity,
-  isEmpty as _isEmpty,
-  map as _map,
-  mapValues as _mapValues,
-  omit as _omit,
-  sortBy as _sortBy,
-} from 'lodash/fp';
+import { isEmpty as _isEmpty, map as _map, omit as _omit } from 'lodash/fp';
 import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 

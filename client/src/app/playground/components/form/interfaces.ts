@@ -1,13 +1,7 @@
-import { ChangeDetectorRef } from '@angular/core';
-
 import { Observable } from 'rxjs';
 
 import { AlternativeCompletionOptions } from '../../ChatGPT';
-import {
-  CompletionRequest,
-  CompletionRequestStream,
-  CompletionRequestWrapping,
-} from '../../interfaces';
+import { CompletionRequestStream, CompletionRequestWrapping } from '../../interfaces';
 
 export interface CompletionFormProjectedParams {
   prompt: string;

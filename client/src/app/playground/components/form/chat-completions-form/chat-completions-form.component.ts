@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
-import { isEmpty as _isEmpty, map as _map, omitBy as _omitBy } from 'lodash/fp';
+import { isEmpty as _isEmpty, map as _map } from 'lodash/fp';
 import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
@@ -132,8 +132,6 @@ export class ChatCompletionsFormComponent
     }),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-
-  private parveFormValueMessagesToParamsMessages = _map(_omitBy(_isEmpty));
 
   private parseFormValueToParams = omitByDeep(_isEmpty);
 

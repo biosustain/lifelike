@@ -1,5 +1,5 @@
 import { ComponentType } from '@angular/cdk/overlay';
-import { HttpDownloadProgressEvent, HttpEvent } from '@angular/common/http';
+import { HttpDownloadProgressEvent } from '@angular/common/http';
 import {
   ChangeDetectorRef,
   Component,
@@ -49,11 +49,9 @@ import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provi
 import { DynamicViewService } from 'app/shared/services/dynamic-view.service';
 import { ExplainService } from 'app/shared/services/explain.service';
 
-import { ChatGPT } from '../ChatGPT';
 import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
 import { CompletionsFormComponent } from './form/completions-form/completions-form.component';
 import { CompletionForm } from './form/interfaces';
-import { ChatCompletionsResponse } from '../services/playground.service';
 
 interface Result {
   choices: any[];
