@@ -30,6 +30,8 @@ import {
 } from 'app/shared/utils/dropdown.controller.factory';
 import { openModal } from 'app/shared/utils/modals';
 import { PlaygroundComponent } from 'app/playground/components/playground.component';
+import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
+import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 
 @Component({
   selector: 'app-drawing-tool-prompt',
@@ -84,7 +86,7 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
    */
   explain$ = new ReplaySubject<boolean>(1);
 
-  explanation$: Observable<string> = this.explain$.pipe(
+  explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
     withLatestFrom(this.params$),
     map(([_, params]) => params),
     takeUntil(this.destroy$),
@@ -139,5 +141,11 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     return playground.result.finally(() => {
       paramsSubscription.unsubscribe();
     });
+  }
+
+  openInfo(queryParams: object) {
+    const info = this.modalService.open(ChatgptResponseInfoModalComponent);
+    info.componentInstance.queryParams = queryParams;
+    return info.result;
   }
 }

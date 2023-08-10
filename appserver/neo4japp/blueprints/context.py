@@ -14,7 +14,7 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context_')
     options = params.get('options', {})
-    response = ChatGPT.ChatCompletion.create(
+    create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
             dict(
@@ -33,5 +33,9 @@ def relationship(params):
         user=str(hash(current_username)),
         timeout=60,
     )
+    response = ChatGPT.ChatCompletion.create(**create_params)
     for choice in response.get('choices'):
-        return {"result": choice.get('message').get('content').strip()}
+        return {
+            "result": choice.get('message').get('content').strip(),
+            "query_params": create_params,
+        }

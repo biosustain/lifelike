@@ -111,7 +111,7 @@ def enrich_context():
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
     print(request.get_json())
-    response = ChatGPT.ChatCompletion.create(
+    create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
             dict(
@@ -122,5 +122,9 @@ def enrich_context():
         temperature=0,
         max_tokens=500,
     )
+    response = ChatGPT.ChatCompletion.create(**create_params)
     for choice in response.get('choices'):
-        return {"result": choice.get('message').get('content').strip()}
+        return {
+            "result": choice.get('message').get('content').strip(),
+            "query_params": create_params,
+        }
