@@ -5,7 +5,9 @@
         <th></th>
         <th scope="col" *ngFor="let goTerm of goTerms">
           <div>
-            <ng-template #tooltip> {{ goTerm.goTerm }} ({{ goTerm.goId }}) </ng-template>
+            <ng-template #tooltip>
+              {{ goTerm.goTerm }} ({{ goTerm.goId }})
+            </ng-template>
             <span
               [ngbTooltip]="tooltip"
               container="body"
@@ -33,7 +35,9 @@
           [ngClass]="{ match: value }"
           [style.backgroundColor]="value && geneColor"
         ></td>
-        <td *ngIf="others" class="match others">{{ entry.value.others || '' }}</td>
+        <td *ngIf="others" class="match others">
+          {{ entry.value.others || "" }}
+        </td>
       </tr>
       <tr *ngIf="others">
         <th scope="row">others</th>
