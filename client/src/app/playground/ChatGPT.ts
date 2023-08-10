@@ -29,10 +29,10 @@ export interface ChatCompletionOptions {
 export type AlternativeCompletionOptions = CompletionOptions | ChatCompletionOptions;
 
 export class ChatGPT {
-  static lastUpdate = new Date('2023-07-17');
-
+  // https://openai.com/pricing
+  static lastUpdate = new Date('2023-08-10');
   static modelGroupTokenCostMap = new Map<string, (model: string) => number>([
-    ['ada', (model) => (model.includes('v2') ? 0.0001 / 1e3 : 0.0016 / 1e3)],
+    ['ada', (model) => (model.includes('embedding') ? 0.0001 / 1e3 : 0.0016 / 1e3)],
     ['babbage', () => 0.0024 / 1e3],
     ['curie', () => 0.012 / 1e3],
     ['davinci', () => 0.12 / 1e3],
