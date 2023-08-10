@@ -4,8 +4,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
-import { every } from 'lodash-es';
 import { Store } from '@ngrx/store';
+import { every } from 'lodash-es';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from 'rxjs';
 import { catchError, filter, map } from 'rxjs/operators';
 
@@ -115,13 +115,13 @@ export class LifelikeOAuthService {
                   );
                 }),
                 catchError((err: HttpErrorResponse) => {
-                  // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the home
-                  // page. Also, see the below Github issue:
+                  // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the
+                  // home page. Also, see the below Github issue:
                   //    https://github.com/manfredsteyer/angular-oauth2-oidc/issues/9
-                  // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server). The
-                  // likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so ideally
-                  // we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to wait a few moments
-                  // and refresh their browser to log in successfully.
+                  // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server).
+                  // The likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so
+                  // ideally we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to
+                  // wait a few moments and refresh their browser to log in successfully.
                   const error = (err.error as ErrorResponse).message;
                   this.logout(true);
                   this.router.navigateByUrl('/dashboard');
@@ -184,8 +184,8 @@ export class LifelikeOAuthService {
         .then(() => {
           this.isDoneLoadingSubject$.next(true);
 
-          // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case someone
-          // ever calls initImplicitFlow(undefined | null) this could happen.
+          // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case
+          // someone ever calls initImplicitFlow(undefined | null) this could happen.
           if (
             this.oauthService.state &&
             this.oauthService.state !== 'undefined' &&
