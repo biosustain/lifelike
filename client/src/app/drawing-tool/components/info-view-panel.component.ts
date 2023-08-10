@@ -34,8 +34,7 @@ import { getTermsFromGraphEntityArray } from '../utils/terms';
   templateUrl: './info-view-panel.component.html',
 })
 export class InfoViewPanelComponent implements OnChanges, OnDestroy {
-  constructor(protected readonly internalSearch: InternalSearchService) {
-  }
+  constructor(protected readonly internalSearch: InternalSearchService) {}
 
   change$ = new ReplaySubject<SimpleChanges>(1);
   entities$: Observable<Set<string>> = this.change$.pipe(

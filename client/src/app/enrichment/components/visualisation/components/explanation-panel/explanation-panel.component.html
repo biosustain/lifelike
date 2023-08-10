@@ -82,10 +82,12 @@
     </button>
   </div>
 </div>
-<ng-container *ngIf="{
-  explain: explain$ | async,
-  explanation: explanation$ | async
-  } as state">
+<ng-container
+  *ngIf="{
+    explain: explain$ | async,
+    explanation: explanation$ | async
+  } as state"
+>
   <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
     <ng-container *ngIf="state.explain && !state.explanation; else settled">
       <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation

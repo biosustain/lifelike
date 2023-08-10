@@ -97,27 +97,25 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     withLatestFrom(
       combineLatest([
         this.contextsController$.pipe(
-          switchMap(({current$}) => current$),
-          startWith(undefined),
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
         ),
         this.goTermController$.pipe(
-          switchMap(({current$}) => current$),
-          startWith(undefined),
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
         ),
         this.geneNameController$.pipe(
-          switchMap(({current$}) => current$),
-          startWith(undefined),
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
         ),
-      ]),
+      ])
     ),
     map(([, [context, goTerm, geneName]]) => [context, goTerm, geneName]),
-    throttle(() => idle(), {leading: true, trailing: true}),
+    throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService
-        .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(startWith(null)),
-    ),
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(startWith(null))
+    )
   );
 
   generateExplanation() {
