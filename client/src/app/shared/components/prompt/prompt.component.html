@@ -68,17 +68,27 @@
   </button>
 </div>
 <ng-content></ng-content>
-<div
-  class="mt-4 card"
-  style="white-space: pre-line"
-  *ngIf="possibleExplanation$ | async as possibleExplanation; else loading"
->
-  <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
-    {{ possibleExplanation }}
+<ng-container *ngIf="{
+  explain: explain$ | async,
+  explanation: explanation$ | async
+  } as state">
+  <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
+    <ng-container *ngIf="state.explain && !state.explanation; else settled">
+      <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation
+    </ng-container>
+    <ng-template #settled>
+      {{ state.explain ? 'Regenerate' : 'Generate' }} explanation
+    </ng-template>
+  </button>
+  <br/>
+  <div
+    class="mt-2 card"
+    style="white-space: pre-line"
+    *ngIf="state.explanation"
+  >
+    <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+      {{ state.explanation }}
+    </div>
   </div>
-</div>
-<ng-template #loading>
-  <div class="mt-4">
-    <i class="fa fa-spinner fa-spin"></i>
-  </div>
-</ng-template>
+</ng-container>
+

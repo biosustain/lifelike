@@ -8,7 +8,6 @@ import { filter, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ExplainService } from 'app/shared/services/explain.service';
 import { SingleResult } from 'app/shared/schemas/common';
 import { debug } from 'app/shared/rxjs/debug';
 import { addStatus, mergeStatuses, MultiPipeStatus } from 'app/shared/pipes/add-status.pipe';
@@ -39,8 +38,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
     protected readonly errorHandler: ErrorHandler,
     protected readonly route: ActivatedRoute,
     protected readonly snackBar: MatSnackBar,
-    protected readonly enrichmentService: EnrichmentService,
-    protected readonly explainService: ExplainService
+    protected readonly enrichmentService: EnrichmentService
   ) {}
 
   private destroy$ = new Subject<void>();

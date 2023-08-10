@@ -1,15 +1,15 @@
 import { Component, Injector, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, combineLatest, defer, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subject } from 'rxjs';
 import {
   distinctUntilChanged,
   filter,
-  map,
+  map, observeOn,
   shareReplay,
   startWith,
   switchMap,
-  takeUntil,
+  takeUntil, withLatestFrom,
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -68,7 +68,14 @@ export class PromptComponent implements OnDestroy, OnChanges {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  possibleExplanation$: Observable<string> = this.params$.pipe(
+  /**
+   * This subject is used to trigger the explanation generation and its value changes output visibility.
+   */
+  explain$ = new ReplaySubject<boolean>(1);
+
+  explanation$: Observable<string> = this.explain$.pipe(
+    withLatestFrom(this.params$),
+    map(([_, params]) => params),
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
       this.explainService
@@ -78,6 +85,10 @@ export class PromptComponent implements OnDestroy, OnChanges {
   );
 
   showPlayground = environment.chatGPTPlaygroundEnabled;
+
+  generateExplanation() {
+    this.explain$.next(true);
+  }
 
   public ngOnChanges(change: SimpleChanges) {
     this.change$.next(change);
