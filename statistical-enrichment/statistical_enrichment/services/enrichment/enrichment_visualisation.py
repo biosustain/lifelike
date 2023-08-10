@@ -13,7 +13,7 @@ class EnrichmentVisualisationService:
         self.graph = graph
 
     def enrich_go(self, gene_names: List[str], analysis, organism):
-        if analysis == 'fisher':
+        if analysis == "fisher":
             GO_terms = redis_server.get(f"GO_for_{organism.id}")
             if GO_terms is not None:
                 df = pd.read_json(GO_terms)
@@ -68,7 +68,7 @@ class EnrichmentVisualisationService:
         )
         if not r:
             current_app.logger.warning(
-                f'Could not find related GO terms for organism id: {organism_id}'
+                f"Could not find related GO terms for organism id: {organism_id}"
             )
         return r
 
@@ -104,9 +104,9 @@ class EnrichmentVisualisationService:
         )
         if not r:
             current_app.logger.warning(
-                f'Could not find related GO terms for organism id: {organism_id}'
+                f"Could not find related GO terms for organism id: {organism_id}"
             )
-        return r[0]['go_count']
+        return r[0]["go_count"]
 
     def get_go_term_count(self, organism):
         cache_id = f"go_term_count_{organism}"
