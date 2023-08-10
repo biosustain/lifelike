@@ -17,12 +17,12 @@ import { EnrichmentPromptFormComponent } from './components/form/enrichment-prom
   entryComponents: [DrawingToolPromptFormComponent, EnrichmentPromptFormComponent],
   imports: [SharedModule],
   declarations,
-  exports: [PlaygroundComponent, OpenPlaygroundComponent, DrawingToolPromptFormComponent, EnrichmentPromptFormComponent],
+  exports: [
+    PlaygroundComponent,
+    OpenPlaygroundComponent,
+    DrawingToolPromptFormComponent,
+    EnrichmentPromptFormComponent,
+  ],
   providers: [PlaygroundService, DynamicViewService, ChatGPT],
 })
 export class PlaygroundModule {}
-
-
-
-
-

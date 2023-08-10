@@ -37,16 +37,17 @@
       <div class="d-block m-2">
         <h6 class="mb-4"><strong>Output</strong></h6>
         <ng-container *ngIf="request$ | async as request; else noRequest">
-          <ng-container *ngIf="{
-            loading: request.loading$ | async,
-            error: request.error$ | async,
-            result: result$ | async,
-            resultChoices: resultChoices$ | async,
-            cost: requestCost$ | async,
-            cached: cached$ | async
-          } as state">
-            <app-loading-indicator
-              *ngIf="state.loading; else ready"></app-loading-indicator>
+          <ng-container
+            *ngIf="{
+              loading: request.loading$ | async,
+              error: request.error$ | async,
+              result: result$ | async,
+              resultChoices: resultChoices$ | async,
+              cost: requestCost$ | async,
+              cached: cached$ | async
+            } as state"
+          >
+            <app-loading-indicator *ngIf="state.loading; else ready"></app-loading-indicator>
             <ng-template #ready>
               <app-module-error
                 class=""
@@ -75,7 +76,7 @@
                   Estimated cost
                   <span [ngbTooltip]="costEstimateTooltip" *ngIf="state.cost as cost">{{
                     cost | currency : 'USD' : 'symbol' : '1.2-7'
-                    }}</span>
+                  }}</span>
                   <ng-container *ngIf="state.cached"> (cached)</ng-container>
                 </div>
                 <details>
@@ -104,10 +105,3 @@
     This feature should be only exposed in testing enviroment.
   </div>
 </app-modal-footer>
-
-
-
-
-
-
-
