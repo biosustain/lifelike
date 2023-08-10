@@ -13,15 +13,16 @@ import {
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
-import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
-import { ExplainService } from '../../services/explain.service';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { ExplainService } from 'app/shared/services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
-} from '../../utils/dropdown.controller.factory';
-import { PlaygroundComponent } from './playground.component';
-import { environment } from '../../../../environments/environment';
+} from 'app/shared/utils/dropdown.controller.factory';
+import { openModal } from 'app/shared/utils/modals';
+import { PlaygroundComponent } from 'app/playground/components/playground.component';
+
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-prompt',
@@ -89,12 +90,13 @@ export class PromptComponent implements OnDestroy, OnChanges {
   }
 
   openPlayground() {
-    const playground = this.modalService.open(PlaygroundComponent, {
+    const playground = openModal(this.modalService, PlaygroundComponent, {
       injector: this.injector,
       size: 'xl',
     });
     const paramsSubscription = this.params$.subscribe((params) => {
-      playground.componentInstance.programaticChange(params);
+      Object.assign(playground.componentInstance, params);
+      playground.componentInstance.cdr.detectChanges();
     });
     return playground.result.finally(() => {
       paramsSubscription.unsubscribe();
