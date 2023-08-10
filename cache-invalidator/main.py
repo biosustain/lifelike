@@ -10,10 +10,10 @@ import time
 from typing import Any, List, Optional
 
 
-SUCCESSFUL_SLEEP_TIME = 3600 * 24       # refresh cached data this often
-ERROR_INITIAL_SLEEP_TIME = 60           # if error occurs, try again sooner
-ERROR_SLEEP_TIME_MULTIPLIER = 2         # on subsequent errors, sleep longer
-ERROR_MAX_SLEEP_TIME = 3600 * 6         # but not longer than this
+SUCCESSFUL_SLEEP_TIME = 3600 * 24  # refresh cached data this often
+ERROR_INITIAL_SLEEP_TIME = 60  # if error occurs, try again sooner
+ERROR_SLEEP_TIME_MULTIPLIER = 2  # on subsequent errors, sleep longer
+ERROR_MAX_SLEEP_TIME = 3600 * 6  # but not longer than this
 CACHE_EXPIRATION_TIME = 3600 * 24 * 14  # expire cached data
 
 DEFAULT_LOG_LEVEL = logging.DEBUG
@@ -40,7 +40,9 @@ def _get_redis_connection_url():
 def _cache_data(key, value):
     # Establish Redis Connection
     redis_server = redis.Redis(
-        connection_pool=redis.BlockingConnectionPool.from_url(_get_redis_connection_url())
+        connection_pool=redis.BlockingConnectionPool.from_url(
+            _get_redis_connection_url()
+        )
     )
     try:
         redis_server.set(key, json.dumps(value))
@@ -62,7 +64,7 @@ def _create_arango_client(hosts=None) -> ArangoClient:
         hosts=hosts,
         # Without this setting any requests to Arango will fail because we don't have a valid cert
         verify_override=False,
-        http_client=CustomHTTPClient()
+        http_client=CustomHTTPClient(),
     )
 
 
@@ -70,7 +72,7 @@ def _get_db(
     arango_client: ArangoClient,
     name: Optional[str] = None,
     username: Optional[str] = None,
-    password: Optional[str] = None
+    password: Optional[str] = None,
 ):
     return arango_client.db(
         name=name or os.getenv('ARANGO_DB_NAME'),
@@ -79,13 +81,11 @@ def _get_db(
     )
 
 
-def _execute_arango_query(db: StandardDatabase, query: str, batch_size=None, **bind_vars) -> List[Any]:
+def _execute_arango_query(
+    db: StandardDatabase, query: str, batch_size=None, **bind_vars
+) -> List[Any]:
     cursor = db.aql.execute(
-        query,
-        ttl=600,
-        max_runtime=600,
-        batch_size=batch_size,
-        bind_vars=bind_vars
+        query, ttl=600, max_runtime=600, batch_size=batch_size, bind_vars=bind_vars
     )
     return cursor
 
@@ -100,6 +100,7 @@ def _entity_count_in_domain_query(domain: str) -> str:
             'count' : length
         }}
     '''
+
 
 def _entity_count_in_ncbi_query() -> str:
     return '''
@@ -175,7 +176,7 @@ def _cache_kg_statistics():
             'regulondb': 'RegulonDB',
             'string': 'String',
             'kegg': 'KEGG',
-            '***ARANGO_DB_NAME***': 'Lifelike'
+            '***ARANGO_DB_NAME***': 'Lifelike',
         }
 
         biocyc_sub_domains = [
@@ -183,12 +184,14 @@ def _cache_kg_statistics():
             'db_PseudomonasCyc',
             'db_YeastCyc',
             'db_BsubCyc',
-            'db_EcoCyc'
+            'db_EcoCyc',
         ]
 
         logger.info('Getting stats for all domains aside from BioCyc and NCBI...')
         for collection_name, display_name in other_domains.items():
-            stats = _execute_arango_query(arango_db, _entity_count_in_domain_query(collection_name))
+            stats = _execute_arango_query(
+                arango_db, _entity_count_in_domain_query(collection_name)
+            )
             statistics[display_name] = defaultdict(lambda: defaultdict())
             for result in stats:
                 statistics[display_name][result.get('entity')] = result.get('count')
@@ -210,7 +213,7 @@ def _cache_kg_statistics():
         biocyc_stats = _execute_arango_query(
             arango_db,
             _entity_count_in_biocyc_query(),
-            biocyc_sub_domains=biocyc_sub_domains
+            biocyc_sub_domains=biocyc_sub_domains,
         )
         for entity_row in biocyc_stats:
             statistics['BioCyc'][entity_row.get('entity')] = entity_row.get('count')
@@ -219,7 +222,7 @@ def _cache_kg_statistics():
         entities_count_in_biocyc_subdomains = _execute_arango_query(
             arango_db,
             _entity_count_in_biocyc_subdomain_query(),
-            biocyc_sub_domains=biocyc_sub_domains
+            biocyc_sub_domains=biocyc_sub_domains,
         )
         for domain_row in entities_count_in_biocyc_subdomains:
             domain = domain_row.get('domain').split('_')[1]
@@ -285,22 +288,18 @@ def _precalculate_go():
             query=_get_organism_genes_go_terms_query(),
             # Normally would make a global for this but it's very unlikely we'll ever re-use this
             # value.
-            batch_size=5
+            batch_size=5,
         )
 
         for row in results:
             organism = row['organism']
             go_terms = row['go_terms']
             logger.info(f'Caching GO for {organism["name"]} ({organism["id"]})')
-            _cache_data(
-                f'GO_for_{organism["id"]}',
-                go_terms
-            )
+            _cache_data(f'GO_for_{organism["id"]}', go_terms)
     except:
         arango_client.close()
         raise
     arango_client.close()
-
 
 
 def main():
@@ -330,14 +329,21 @@ def main():
             else:
                 if kg_statistics_successful and precalculate_go_successful:
                     next_error_sleep_time = ERROR_INITIAL_SLEEP_TIME
-                    logger.info(f'Going to sleep for {SUCCESSFUL_SLEEP_TIME} seconds...')
+                    logger.info(
+                        f'Going to sleep for {SUCCESSFUL_SLEEP_TIME} seconds...'
+                    )
                     time.sleep(SUCCESSFUL_SLEEP_TIME)
                     time_slept_since_reset += SUCCESSFUL_SLEEP_TIME
                 else:
-                    logger.info(f'Error occured, will try again in {next_error_sleep_time} seconds')
+                    logger.info(
+                        f'Error occured, will try again in {next_error_sleep_time} seconds'
+                    )
                     time.sleep(next_error_sleep_time)
                     time_slept_since_reset += next_error_sleep_time
-                    next_error_sleep_time = min(ERROR_MAX_SLEEP_TIME, next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER)
+                    next_error_sleep_time = min(
+                        ERROR_MAX_SLEEP_TIME,
+                        next_error_sleep_time * ERROR_SLEEP_TIME_MULTIPLIER,
+                    )
 
 
 if __name__ == "__main__":

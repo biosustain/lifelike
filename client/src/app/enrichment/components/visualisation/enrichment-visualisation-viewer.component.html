@@ -1,5 +1,8 @@
 <div class="module" *ngIf="enrichmentService.status$ | async as status">
-  <app-module-error *ngFor="let error of status.errors" [error]="error"></app-module-error>
+  <app-module-error
+    *ngFor="let error of status.errors"
+    [error]="error"
+  ></app-module-error>
   <app-module-progress *ngIf="status.loading">
     Loading Statistical Enrichment...
   </app-module-progress>
@@ -10,14 +13,19 @@
       [titleTemplate]="tabTitle"
       [showObjectMenu]="false"
     >
-      <ng-template #tabTitle> {{ object.filename }} - Statistical Enrichment</ng-template>
+      <ng-template #tabTitle>
+        {{ object.filename }} - Statistical Enrichment</ng-template
+      >
     </app-module-header>
     <as-split unit="pixel" direction="horizontal" [gutterSize]="2">
       <as-split-area [order]="0">
         <div class="module-body flex-fill overflow-auto h-100">
           <div class="space-cards">
             <app-group
-              *ngFor="let d of data$ | async | keyvalue: originalOrder; let i = index"
+              *ngFor="
+                let d of data$ | async | keyvalue : originalOrder;
+                let i = index
+              "
               [title]="d.key"
               [data]="d.value"
             >
@@ -41,7 +49,9 @@
         </div>
       </as-split-area>
       <as-split-area size="256" [order]="1">
-        <app-enrichment-explanation-panel class="d-block module-body flex-fill overflow-auto h-100">
+        <app-enrichment-explanation-panel
+          class="d-block module-body flex-fill overflow-auto h-100"
+        >
         </app-enrichment-explanation-panel>
       </as-split-area>
     </as-split>
