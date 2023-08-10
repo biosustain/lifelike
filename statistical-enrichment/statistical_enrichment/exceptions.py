@@ -18,10 +18,10 @@ class ServerException(Exception):
         :param args: extra args
         """
         if not title:
-            title = 'We\'re sorry!'
+            title = "We're sorry!"
 
         if not message:
-            message = 'Looks like something went wrong!'
+            message = "Looks like something went wrong!"
 
         self.title = title
         self.message = message
@@ -55,17 +55,17 @@ class ServerException(Exception):
         self._transaction_id = transaction_id
 
     def __str__(self):
-        lines = [f'<Exception> {self.title}: {self.message}']
+        lines = [f"<Exception> {self.title}: {self.message}"]
         try:
-            lines = lines + [f'\t{key}:\t{value}' for key, value in self.fields.items()]
+            lines = lines + [f"\t{key}:\t{value}" for key, value in self.fields.items()]
         except Exception:
             pass
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def to_dict(self):
         retval = {}
-        retval['title'] = self.title
-        retval['message'] = self.message
+        retval["title"] = self.title
+        retval["message"] = self.message
         return retval
 
 
