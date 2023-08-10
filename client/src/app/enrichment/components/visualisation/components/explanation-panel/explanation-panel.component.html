@@ -82,6 +82,7 @@
     </button>
   </div>
 </div>
+<app-open-playground [params]="playgroundParams$ | async" style="float: right"></app-open-playground>
 <ng-container
   *ngIf="{
     explain: explain$ | async,
