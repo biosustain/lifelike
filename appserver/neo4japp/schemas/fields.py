@@ -1,6 +1,6 @@
 import os.path
 import re
-from typing import Optional, Dict
+from typing import Optional, Dict, Iterable
 
 from marshmallow import fields, ValidationError
 
@@ -134,3 +134,17 @@ class SearchQuery(fields.Field):
             return str(value).strip()
         except ValueError as error:
             raise ValidationError('Search query must be a string!') from error
+
+
+class UnionType(fields.Field):
+    def __init__(self, *args, types: Iterable[fields.Field], **kwargs):
+        super().__init__(*args, **kwargs)
+        self.types = types
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        for field_type in self.types:
+            try:
+                return field_type.deserialize(value)
+            except ValidationError:
+                pass
+        raise ValidationError('Value does not match any of the types!')

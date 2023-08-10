@@ -1,10 +1,11 @@
+import json
 import attr
 import hashlib
 import itertools
+import flask
 
 from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
-from flask import json
 from json import JSONDecodeError
 from string import punctuation, whitespace
 from typing import Any, Iterator, Dict
@@ -134,14 +135,14 @@ def camel_to_snake_dict(d, new_dict: dict) -> dict:
             try:
                 v = Decimal(v)
                 # convert back because this is just to avoid
-                # json.loads() from converting to a float
+                # flask.json.loads() from converting to a float
                 v = str(v)
                 new_dict.update({camel_to_snake(k): v})
                 continue
             except InvalidOperation:
                 pass
             try:
-                v = json.loads(v)
+                v = flask.json.loads(v)
                 if type(v) is not list:
                     new_dict.update({camel_to_snake(k): camel_to_snake_dict(v, {})})
                 else:
@@ -303,7 +304,7 @@ class FileTransfer:
 def compute_hash(data: dict, **kwargs) -> str:
     """Returns the hash value of args"""
     h = hashlib.new(kwargs.get('alg') or 'sha256')
-    to_json = json.dumps(data, sort_keys=True)
+    to_json = flask.json.dumps(data, sort_keys=True)
     h.update(bytearray(to_json, 'utf-8'))
     hexdigest = h.hexdigest()
 
@@ -357,3 +358,8 @@ class Enumd(Enum):
             return cls(key)
         except ValueError:
             return default
+
+
+def stream_to_json_lines(stream):
+    for chunk in stream:
+        yield json.dumps(chunk) + '\n'
