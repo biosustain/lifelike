@@ -297,10 +297,7 @@ def update_password(params: dict, hash_id):
         'admin'
     ) or g.current_user.has_role('private-data-access')
     if g.current_user.hash_id != hash_id and admin_or_private_access is False:
-        raise FailedToUpdateUser(
-            message='You do not have sufficient privileges.',
-            code=HTTPStatus.UNAUTHORIZED,
-        )
+        raise NotAuthorized()
     else:
         target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
         if target.check_password(params['password']):
@@ -309,7 +306,7 @@ def update_password(params: dict, hash_id):
             target.set_password(params['new_password'])
             target.forced_password_reset = False
         else:
-            raise FailedToUpdateUser(message='Old password is invalid.')
+            raise ServerException(message='Old password is invalid.')
         try:
             db.session.add(target)
             db.session.commit()

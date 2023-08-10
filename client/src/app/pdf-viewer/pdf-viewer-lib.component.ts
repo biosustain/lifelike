@@ -22,28 +22,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ComponentPortal, DomPortalOutlet } from '@angular/cdk/portal';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { defer, forEach, isEqual, uniqueId, kebabCase, first as _first, isEmpty } from 'lodash-es';
+import { defer, forEach, uniqueId, kebabCase, first as _first } from 'lodash-es';
+import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
+import { BehaviorSubject, Subject } from 'rxjs';
 import {
-  BehaviorSubject,
-  Observable,
-  ReplaySubject,
-  Subject,
-  Subscription,
-  combineLatest,
-} from 'rxjs';
-import {
-  distinctUntilChanged,
-  switchMap,
-  tap,
-  first,
-  map,
-  startWith,
-  pairwise,
   filter,
   takeUntil,
 } from 'rxjs/operators';
 
-import { ENTITY_TYPES, EntityType } from 'app/shared/annotation-types';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
 import { IS_MAC } from 'app/shared/utils/platform';
@@ -51,7 +37,6 @@ import { InternalSearchService } from 'app/shared/services/internal-search.servi
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { isNotEmpty } from 'app/shared/utils';
 
-import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { Annotation, Location, Meta, Rect } from './annotation-type';
 import { AnnotationEditDialogComponent } from './components/annotation-edit-dialog.component';
 import { PdfViewerComponent } from './pdf-viewer/pdf-viewer.component';
