@@ -12,10 +12,10 @@ import { RouterModule } from '@angular/router';
 
 import { EffectsModule } from '@ngrx/effects';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { AngularSplitModule } from 'angular-split';
 
 import { LinksPanelComponent } from 'app/drawing-tool/components/links-panel.component';
 
-import { AngularSplitModule } from 'angular-split';
 import { AngularMaterialModule } from './angular-material.module';
 import { HighlightSnippetComponent } from './components/highlight-snippet.component';
 import { LegendComponent } from './components/legend.component';

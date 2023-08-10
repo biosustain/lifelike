@@ -4,18 +4,17 @@ import {
   ElementRef,
   HostListener,
   OnChanges,
-  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
 
+import { SplitComponent } from 'angular-split';
 import { Observable } from 'rxjs';
 
 import { Pane, PaneIDs, WorkspaceManager } from 'app/shared/workspace-manager';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 
-import { SplitComponent } from 'angular-split';
 
 @Component({
   selector: 'app-workspace',

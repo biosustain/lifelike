@@ -158,7 +158,14 @@ def verify_token(token):
     decoded = token_service.decode_token(token, audience=config['JWT_AUDIENCE'])
 
     try:
-        user = AppUser.query_by_email(decoded['email']).one()
+        # See if the token has the email as a property, otherwise try to get it from the subject.
+        email_from_token = decoded.get('email', False) or decoded.get('sub', None)
+
+        # If there was no email or subject in the token, reject it
+        if email_from_token is None:
+            return False
+
+        user = AppUser.query_by_email(email_from_token).one()
         current_app.logger.info(
             f'Active user: {user.email}',
             extra=UserEventLog(
@@ -187,6 +194,7 @@ def verify_token(token):
             db.session.add(user)
             db.session.commit()
         except SQLAlchemyError as e:
+            db.session.rollback()
             raise ServerException(
                 title='Unexpected Database Transaction Error',
                 message='Something unexpected occurred while adding the user to the database.',

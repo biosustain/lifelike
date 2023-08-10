@@ -11,8 +11,9 @@ import {
 } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { kebabCase } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { kebabCase } from 'lodash-es';
+import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -24,7 +25,6 @@ import { ExtendedWeakMap } from 'app/shared/utils/types';
 import { PDFAnnotationService } from 'app/pdf-viewer/services/pdf-annotation.service';
 
 import { Annotation } from '../../annotation-type';
-import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
 import { PDFPageView } from '../../pdf-viewer/interfaces';
 import { AnnotationDragEvent } from '../../pdf-viewer-lib.component';
 
