@@ -10,7 +10,7 @@ import * as CustomValidators from 'app/shared/utils/forms/validators';
 import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 import { omitByDeep } from 'app/shared/utils';
 
-import { ChatCompletitionsOptions, ChatGPT } from '../../../ChatGPT';
+import { ChatCompletionOptions, ChatGPT } from '../../../ChatGPT';
 import { ChatCompletionsResponse, PlaygroundService } from '../../../services/playground.service';
 import { toRequest } from '../../../utils';
 import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
@@ -20,7 +20,7 @@ import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
   templateUrl: './chat-completions-form.component.html',
 })
 export class ChatCompletionsFormComponent
-  implements OnChanges, CompletionForm<ChatCompletitionsOptions>
+  implements OnChanges, CompletionForm<ChatCompletionOptions>
 {
   constructor(private readonly playgroundService: PlaygroundService) {}
 
@@ -96,12 +96,12 @@ export class ChatCompletionsFormComponent
   readonly estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
-      map((params: ChatCompletitionsOptions) =>
+      map((params: ChatCompletionOptions) =>
         ChatGPT.estimateCost(params.model, ChatGPT.chatCompletions.estimateRequestTokens(params))
       )
     )
   );
-  protected readonly requestParams$ = new ReplaySubject<ChatCompletitionsOptions>(1);
+  protected readonly requestParams$ = new ReplaySubject<ChatCompletionOptions>(1);
 
   @Input() params: CompletionFormProjectedParams;
   @Output() request = this.requestParams$.pipe(

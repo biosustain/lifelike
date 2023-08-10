@@ -5,7 +5,7 @@ import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { isNull } from 'lodash-es';
 
 import { RequestWrapping } from './interfaces';
-import { AlternativeCompletitionsOptions } from './ChatGPT';
+import { AlternativeCompletionOptions } from './ChatGPT';
 
 export function toRequest<Arguments extends Array<any>, Result extends object>(
   request: (...args: Arguments) => Observable<Result>

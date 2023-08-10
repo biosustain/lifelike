@@ -1,6 +1,6 @@
 import { find as _find, map as _map } from 'lodash/fp';
 
-export interface CompletitionsOptions {
+export interface CompletionOptions {
   prompt: string;
   echo: boolean;
   bestOf: number;
@@ -10,14 +10,14 @@ export interface CompletitionsOptions {
   stream: boolean;
 }
 
-export interface ChatCompletitionsMessageOptions {
+export interface ChatCompletionMessageOptions {
   role: string;
   content: string;
   name?: string;
   functionCall?: Record<string, any>;
 }
 
-export interface ChatCompletitionsOptions {
+export interface ChatCompletionOptions {
   messages: any[];
   echo: boolean;
   bestOf: number;
@@ -26,7 +26,7 @@ export interface ChatCompletitionsOptions {
   model: string;
   stream: boolean;
 }
-export type AlternativeCompletitionsOptions = CompletitionsOptions | ChatCompletitionsOptions;
+export type AlternativeCompletionOptions = CompletionOptions | ChatCompletionOptions;
 
 export class ChatGPT {
   static lastUpdate = new Date(2023, 7, 17);
@@ -47,7 +47,7 @@ export class ChatGPT {
       bestOf,
       n,
       maxTokens,
-    }: CompletitionsOptions) {
+    }: CompletionOptions) {
       const promptTokens = ChatGPT.textTokenEstimate(prompt);
       return [
         promptTokens + promptTokens * bestOf + Number(echo) * promptTokens,
@@ -57,7 +57,7 @@ export class ChatGPT {
   };
 
   static readonly chatCompletions = class ChatCompletions {
-    static estimateRequestTokens({ messages, n, maxTokens }: ChatCompletitionsOptions) {
+    static estimateRequestTokens({ messages, n, maxTokens }: ChatCompletionOptions) {
       const messageTokens = messages.reduce(
         (acc, { content }) => acc + ChatGPT.textTokenEstimate(content),
         0
