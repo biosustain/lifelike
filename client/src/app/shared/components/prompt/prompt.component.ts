@@ -5,11 +5,13 @@ import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subje
 import {
   distinctUntilChanged,
   filter,
-  map, observeOn,
+  map,
+  observeOn,
   shareReplay,
   startWith,
   switchMap,
-  takeUntil, withLatestFrom,
+  takeUntil,
+  withLatestFrom,
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
