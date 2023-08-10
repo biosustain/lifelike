@@ -2,7 +2,7 @@ import { ChangeDetectorRef } from '@angular/core';
 
 import { Observable } from 'rxjs';
 
-import { AlternativeCompletitionsOptions } from '../../ChatGPT';
+import { AlternativeCompletionOptions } from '../../ChatGPT';
 import {
   CompletionRequest,
   CompletionRequestStream,
@@ -15,7 +15,7 @@ export interface CompletionFormProjectedParams {
 }
 
 export interface CompletionForm<
-  Params extends AlternativeCompletitionsOptions = AlternativeCompletitionsOptions,
+  Params extends AlternativeCompletionOptions = AlternativeCompletionOptions,
   Result = any
 > {
   request: Observable<

@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import {
-  AlternativeCompletitionsOptions,
-  ChatCompletitionsOptions,
-  CompletitionsOptions,
+  AlternativeCompletionOptions,
+  ChatCompletionOptions,
+  CompletionOptions,
 } from '../ChatGPT';
 
 interface ExplainRelationshipOptions {
@@ -77,11 +77,11 @@ export class PlaygroundService {
   constructor(protected readonly http: HttpClient) {}
 
   /**
-   * Helper to compose completitions create call, taking into account possible stream
+   * Helper to compose Completion create call, taking into account possible stream
    * @param options
    * @private
    */
-  private completionsCreateCall(options: AlternativeCompletitionsOptions) {
+  private completionsCreateCall(options: AlternativeCompletionOptions) {
     return (endpoint) =>
       options.stream
         ? this.http.post(endpoint, options, {
@@ -94,7 +94,7 @@ export class PlaygroundService {
           });
   }
 
-  completionsCreate(options: CompletitionsOptions): Observable<any> {
+  completionsCreate(options: CompletionOptions): Observable<any> {
     return this.completionsCreateCall(options)(this.endpoint + 'completions');
   }
 
@@ -102,7 +102,7 @@ export class PlaygroundService {
     return this.http.get<ChatGPTModel[]>(this.endpoint + 'completions/models');
   }
 
-  chatCompletionsCreate(options: ChatCompletitionsOptions) {
+  chatCompletionsCreate(options: ChatCompletionOptions) {
     return this.completionsCreateCall(options)(this.endpoint + 'chat/completions');
   }
 

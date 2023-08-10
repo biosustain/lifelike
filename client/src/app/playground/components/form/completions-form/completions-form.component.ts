@@ -18,7 +18,7 @@ import { ChatGPTModel } from 'app/shared/services/explain.service';
 import * as CustomValidators from 'app/shared/utils/forms/validators';
 import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 
-import { ChatGPT, CompletitionsOptions } from '../../../ChatGPT';
+import { ChatGPT, CompletionOptions } from '../../../ChatGPT';
 import { PlaygroundService } from '../../../services/playground.service';
 import { CompletionForm, CompletionFormProjectedParams } from '../interfaces';
 import { toRequest } from '../../../utils';
@@ -27,7 +27,7 @@ import { toRequest } from '../../../utils';
   selector: 'app-completions-form',
   templateUrl: './completions-form.component.html',
 })
-export class CompletionsFormComponent implements OnChanges, CompletionForm<CompletitionsOptions> {
+export class CompletionsFormComponent implements OnChanges, CompletionForm<CompletionOptions> {
   constructor(private readonly playgroundService: PlaygroundService) {}
 
   models$: Observable<string[]> = this.playgroundService
@@ -83,12 +83,12 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
   readonly estimatedCost$ = defer(() =>
     this.form.valueChanges.pipe(
       startWith(this.form.value),
-      map((params: CompletitionsOptions) =>
+      map((params: CompletionOptions) =>
         ChatGPT.estimateCost(params.model, ChatGPT.completions.estimateRequestTokens(params))
       )
     )
   );
-  requestParams$ = new ReplaySubject<CompletitionsOptions>(1);
+  requestParams$ = new ReplaySubject<CompletionOptions>(1);
 
   @Input() params: CompletionFormProjectedParams;
   @Output() request = this.requestParams$.pipe(
@@ -126,12 +126,12 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
     }
   }
 
-  private parseFormValueToParams = (formValue): CompletitionsOptions =>
+  private parseFormValueToParams = (formValue): CompletionOptions =>
     _omit([
       _isEmpty(formValue.stop) ? 'stop' : null,
       _isEmpty(formValue.logitBias) ? 'logitBias' : null,
       formValue.n === 1 ? 'n' : null,
-    ])(formValue) as CompletitionsOptions;
+    ])(formValue) as CompletionOptions;
 
   onSubmit() {
     this.requestParams$.next(this.parseFormValueToParams(this.form.value));
