@@ -3,6 +3,7 @@ from marshmallow import fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import UnionType
+from neo4japp.schemas.playground.completions_base import CompletionsBaseRequestSchema
 from neo4japp.schemas.validators import DeferedOneOf, JSONSchema
 from neo4japp.services.chat_gpt import ChatGPT
 
@@ -25,8 +26,7 @@ class FunctionSchema(CamelCaseSchema):
     )
 
 
-class ChatCompletionsRequestSchema(CamelCaseSchema):
-    timeout = fields.Float()
+class ChatCompletionsRequestSchema(CompletionsBaseRequestSchema):
     model = fields.String(
         validate=DeferedOneOf(
             lambda: tuple(
@@ -46,18 +46,3 @@ class ChatCompletionsRequestSchema(CamelCaseSchema):
             ),
         ),
     )
-    temperature = fields.Float(validate=marshmallow.validate.Range(min=0, max=2))
-    top_p = fields.Float()
-    n = fields.Integer()
-    stream = fields.Boolean()
-    stop = fields.List(
-        fields.String(required=True), validate=marshmallow.validate.Length(min=0, max=4)
-    )
-    max_tokens = fields.Integer()
-    presence_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))
-    frequency_penalty = fields.Float(validate=marshmallow.validate.Range(min=-2, max=2))
-    logit_bias = fields.Dict(
-        keys=fields.String(),
-        values=fields.Float(validate=marshmallow.validate.Range(min=-100, max=100)),
-    )
-    user = fields.String()
