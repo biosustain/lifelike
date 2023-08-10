@@ -11,12 +11,60 @@ import {
   ViewRef,
 } from '@angular/core';
 
-import { reduce as _reduce } from 'lodash/fp';
+import { difference as _difference, reduce as _reduce } from 'lodash/fp';
 import { isObservable, Observable } from 'rxjs';
+
+import { inDevMode } from '../utils/debug';
+
+export interface DynamicComponentRef<ComponentInterface> {
+  componentRef?: ComponentRef<ComponentInterface>;
+}
 
 @Injectable()
 export class DynamicViewService {
   constructor(private readonly componentFactoryResolver: ComponentFactoryResolver) {}
+
+  /**
+   * Creates function that updates inputs of componentRef
+   * This implementation:
+   * + takes into account only "inputs" that are defined in componentFactory
+   * + calls ngOnChanges with SimpleChanges
+   * + calls ChangeDetectorRef.detectChanges
+   * @param componentRef - component reference
+   * @param inputsDefinitions - list of inputs definitions
+   * @param changed - set of already changed inputs
+   * @private
+   */
+  static updateInputs<T>(
+    componentInstance: T,
+    inputsDefinitions: { propName: string; templateName: string }[],
+    changed: Set<string>,
+    changeCallback?: (changes: SimpleChanges) => void
+  ): (inputs: Partial<T>) => void {
+    return (inputs) => {
+      // Calculate changes and set input values as side effect
+      const changes = _reduce((result, { propName, templateName }) => {
+        if (templateName in inputs) {
+          const prev = componentInstance[propName];
+          const next = inputs[templateName];
+          if (prev !== next) {
+            result[templateName] = new SimpleChange(prev, next, !changed.has(templateName));
+            componentInstance[propName] = next;
+            changed.add(templateName);
+          }
+        }
+        return result;
+      }, {} as SimpleChanges)(inputsDefinitions);
+      inDevMode(() =>
+        _difference(
+          Object.keys(inputs),
+          /* definedInputs */ inputsDefinitions.map(({ templateName }) => templateName)
+        ).forEach((key) => console.warn(`Input "${key}" is not defined in component`))
+      );
+      (componentInstance as Partial<OnChanges>).ngOnChanges?.(changes);
+      changeCallback?.(changes);
+    };
+  }
 
   public detach(viewRef: ViewContainerRef, componentRef: ComponentRef<any>): ViewRef | null {
     const index = viewRef.indexOf(componentRef.hostView);
@@ -33,41 +81,6 @@ export class DynamicViewService {
     return viewRef.insert(componentRef.hostView, index);
   }
 
-  /**
-   * Creates function that updates inputs of componentRef
-   * This implementation:
-   * + takes into account only "inputs" that are defined in componentFactory
-   * + calls ngOnChanges with SimpleChanges
-   * + calls ChangeDetectorRef.detectChanges
-   * @param componentRef - component reference
-   * @param inputsDefinitions - list of inputs definitions
-   * @param changed - set of already changed inputs
-   * @private
-   */
-  private updateInputs<T>(
-    componentRef: ComponentRef<T>,
-    inputsDefinitions: { propName: string; templateName: string }[],
-    changed: Set<string>
-  ): (inputs: Partial<T>) => void {
-    return (inputs) => {
-      // Calculate changes and set input values as side effect
-      const changes = _reduce((result, { propName, templateName }) => {
-        if (templateName in inputs) {
-          const prev = componentRef.instance[propName];
-          const next = inputs[templateName];
-          if (prev !== next) {
-            result[templateName] = new SimpleChange(prev, next, changed.has(templateName));
-            componentRef.instance[propName] = next;
-            changed.add(templateName);
-          }
-        }
-        return result;
-      }, {} as SimpleChanges)(inputsDefinitions);
-      (componentRef.instance as Partial<OnChanges>).ngOnChanges?.(changes);
-      componentRef.injector.get(ChangeDetectorRef).detectChanges();
-    };
-  }
-
   public createComponent<T>(
     viewRef: ViewContainerRef,
     component: ComponentType<T>,
@@ -75,10 +88,12 @@ export class DynamicViewService {
   ): ComponentRef<T> {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(component);
     const componentRef = viewRef.createComponent(componentFactory);
-    const updateInputs = this.updateInputs(
-      componentRef,
+    const componentCdr = componentRef.injector.get(ChangeDetectorRef);
+    const updateInputs = DynamicViewService.updateInputs(
+      componentRef.instance,
       componentFactory.inputs,
-      new Set<string>()
+      new Set<string>(),
+      () => componentCdr.detectChanges()
     );
     if (isObservable(inputs)) {
       // Subscribe to inputs changes
