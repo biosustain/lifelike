@@ -94,6 +94,7 @@ import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotatio
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
+import { ChatgptResponseInfoModalComponent } from './components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -189,6 +190,7 @@ const components = [
     ModuleHeaderComponent,
     PasswordInputComponent,
     XMLAnnotationComponent,
+    ChatgptResponseInfoModalComponent,
   ],
   providers: [
     TruncatePipe,
@@ -255,6 +257,7 @@ const components = [
     NgbModule,
     AddStatusPipe,
     ModuleHeaderComponent,
+    ChatgptResponseInfoModalComponent,
   ],
 })
 export class SharedModule {}

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
+import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 
 interface ExplainRelationshipOptions {
   temperature?: number;
@@ -45,13 +46,11 @@ export class ExplainService {
     entities: Iterable<string>,
     context?: string,
     options: ExplainRelationshipOptions = {}
-  ): Observable<string> {
-    return this.http
-      .post<SingleResult<string>>(this.endpoint + 'relationship', {
-        entities: Array.from(entities),
-        context,
-        options,
-      })
-      .pipe(map(({ result }) => result));
+  ): Observable<ChatGPTResponse> {
+    return this.http.post<ChatGPTResponse>(this.endpoint + 'relationship', {
+      entities: Array.from(entities),
+      context,
+      options,
+    });
   }
 }
