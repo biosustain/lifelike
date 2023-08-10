@@ -5,10 +5,12 @@ import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subje
 import {
   distinctUntilChanged,
   map,
+  observeOn,
   shareReplay,
   startWith,
   switchMap,
   takeUntil,
+  withLatestFrom,
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
@@ -77,7 +79,14 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  possibleExplanation$ = this.params$.pipe(
+  /**
+   * This subject is used to trigger the explanation generation and its value changes output visibility.
+   */
+  explain$ = new ReplaySubject<boolean>(1);
+
+  explanation$: Observable<string> = this.explain$.pipe(
+    withLatestFrom(this.params$),
+    map(([_, params]) => params),
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
       this.explainService
@@ -102,6 +111,10 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
       temperature,
     }))
   );
+
+  generateExplanation() {
+    this.explain$.next(true);
+  }
 
   public ngOnChanges({ entities }: SimpleChanges) {
     if (entities) {

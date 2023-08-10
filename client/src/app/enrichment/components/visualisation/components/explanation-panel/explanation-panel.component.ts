@@ -7,6 +7,7 @@ import {
   startWith,
   switchMap,
   throttle,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {
   filter as _filter,
@@ -15,7 +16,7 @@ import {
   map as _map,
   uniq as _uniq,
 } from 'lodash/fp';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, Observable, ReplaySubject } from 'rxjs';
 import { isEqual } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -146,13 +147,37 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     }))
   );
 
-  explanation$: Observable<string> = this.params$.pipe(
+  /**
+   * This subject is used to trigger the explanation generation and its value changes output visibility.
+   */
+  explain$ = new ReplaySubject<boolean>(1);
+
+  explanation$: Observable<string> = this.explain$.pipe(
+    withLatestFrom(
+      combineLatest([
+        this.contextsController$.pipe(
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
+        ),
+        this.goTermController$.pipe(
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
+        ),
+        this.geneNameController$.pipe(
+          switchMap(({ current$ }) => current$),
+          startWith(undefined)
+        ),
+      ])
+    ),
+    map(([, [context, goTerm, geneName]]) => [context, goTerm, geneName]),
     throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
-    switchMap(({ context, goTerm, geneName }) =>
-      this.enrichmentService
-        .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(startWith('Loading...'))
+    switchMap(([context, goTerm, geneName]) =>
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(startWith(null))
     )
   );
+
+  generateExplanation() {
+    this.explain$.next(true);
+  }
 }
