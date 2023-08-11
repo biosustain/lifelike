@@ -26,7 +26,7 @@ import { PDFAnnotationService } from 'app/pdf-viewer/services/pdf-annotation.ser
 
 import { Annotation } from '../../annotation-type';
 import { PDFPageView } from '../../pdf-viewer/interfaces';
-import { AnnotationDragEvent } from '../../pdf-viewer-lib.component';
+import { AnnotationLayerDragEvent } from '../../pdf-viewer-lib.component';
 
 @Component({
   selector: 'app-annotation-layer',
@@ -55,7 +55,7 @@ export class AnnotationLayerComponent {
   currentHighlightAnnotationId$: Observable<string> = this.annotationService.highlightAnnotationId$;
 
   @Input() pdfPageView: PDFPageView;
-  @Output() dragStart = new EventEmitter<AnnotationDragEvent>();
+  @Output() dragStart = new EventEmitter<AnnotationLayerDragEvent>();
   annotationRectsMap = new ExtendedWeakMap<
     Annotation,
     { top: number; left: number; width: number; height: number; rect: any }
@@ -101,10 +101,7 @@ export class AnnotationLayerComponent {
     this.dragStart.emit({
       event,
       meta,
-      location: {
-        pageNumber: this.pdfPageView.pageNumber,
-        rect,
-      },
+      rect,
     });
     event.stopPropagation();
   }

@@ -23,22 +23,27 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context_')
     options = params.get('options', {})
-    response = ChatGPT.Completion.create(
-        model="text-davinci-003",
-        prompt=(
-            'What is the relationship between '
-            + ', '.join(entities)
-            + (f', {context}' if context else '')
-            + '?'
-            # + '\nPlease provide URL sources for your answer.'
-        ),
+    response = ChatGPT.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            dict(
+                role="user",
+                content=(
+                    'What is the relationship between '
+                    + ', '.join(entities)
+                    + (f', {context}' if context else '')
+                    + '?'
+                    # + '\nPlease provide URL sources for your answer.'
+                ),
+            )
+        ],
         temperature=options.get('temperature', 0),
         max_tokens=200,
         user=str(hash(current_username)),
         timeout=60,
     )
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {"result": choice.get('message').get('content').strip()}
 
 
 def stream_to_json_lines(stream):
