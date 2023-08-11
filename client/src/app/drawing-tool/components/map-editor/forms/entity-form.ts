@@ -4,7 +4,9 @@ import {
   EventEmitter,
   HostListener,
   Input,
+  OnChanges,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 
@@ -14,7 +16,7 @@ import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { openPotentialExternalLink } from 'app/shared/utils/browser';
 import { InfoPanel } from 'app/drawing-tool/models/info-panel';
 
-export abstract class EntityForm implements AfterViewInit {
+export abstract class EntityForm implements AfterViewInit, OnChanges {
   @ViewChild('displayName', { static: false }) displayNameRef: ElementRef;
   @ViewChild('scrollWrapper', { static: false }) scrollWrapper: ElementRef;
 
@@ -37,6 +39,7 @@ export abstract class EntityForm implements AfterViewInit {
   @Output() sourceOpen = new EventEmitter<string>();
 
   overflow = false;
+  protected abstract readonly TABS: string[];
 
   protected constructor(protected readonly workspaceManager: WorkspaceManager) {}
 
@@ -44,6 +47,12 @@ export abstract class EntityForm implements AfterViewInit {
    * Emit save event on user changes
    */
   abstract doSave();
+
+  ngOnChanges({ infoPanel }: SimpleChanges) {
+    if (infoPanel?.currentValue) {
+      infoPanel.currentValue.tabs = this.TABS;
+    }
+  }
 
   changeOverflow(newValue) {
     if (this.overflow !== newValue) {
