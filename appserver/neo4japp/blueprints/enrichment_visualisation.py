@@ -111,11 +111,16 @@ def enrich_context():
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
     print(request.get_json())
-    response = ChatGPT.Completion.create(
-        model="text-davinci-003",
-        prompt=composePrompt(organism, term, context, gene_name),
+    response = ChatGPT.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            dict(
+                role="user",
+                content=composePrompt(organism, term, context, gene_name),
+            )
+        ],
         temperature=0,
         max_tokens=500,
     )
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {"result": choice.get('message').get('content').strip()}
