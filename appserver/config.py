@@ -18,10 +18,11 @@ class Base:
     APP_VERSION = os.environ.get('APP_VERSION', 'undefined')
     LOGGING_LEVEL = os.environ.get('LOGGING_LEVEL', logging.INFO)
 
-    JWKS_URL = os.environ.get('JWKS_URL', None)
     JWT_SECRET = os.environ.get('JWT_SECRET', 'secrets')
-    JWT_AUDIENCE = os.environ.get('JWT_AUDIENCE', None)
     JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+    # We need to make sure that if these are falsy (empty string, None, etc.), we use None
+    JWKS_URL = os.environ.get('JWKS_URL', None) or None
+    JWT_AUDIENCE = os.environ.get('JWT_AUDIENCE', None) or None
 
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
     POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
