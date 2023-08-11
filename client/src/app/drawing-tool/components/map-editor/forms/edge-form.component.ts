@@ -37,6 +37,7 @@ import { EntityForm } from './entity-form';
 })
 export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestroy {
   @Input() graphView: CanvasGraphView;
+  protected readonly TABS = ['properties', 'explanation', 'style'];
   lineHeadTypeChoices = [
     [
       null,
@@ -83,6 +84,7 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
 
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+    super.ngOnChanges(changes);
   }
 
   ngOnDestroy() {

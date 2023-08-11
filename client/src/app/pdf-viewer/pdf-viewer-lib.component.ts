@@ -27,6 +27,7 @@ import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { BehaviorSubject, Subject } from 'rxjs';
 import {
   filter,
+  map,
   takeUntil,
 } from 'rxjs/operators';
 
@@ -709,7 +710,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
       new ComponentPortal(AnnotationLayerComponent)
     );
     annotationLayerComponentRef.instance.dragStart
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        map(({ rect, ...rest }) => ({
+          ...rest,
+          location: {
+            rect,
+            pageNumber,
+          },
+        }))
+      )
       .subscribe(this.annotationDragStart);
     annotationLayerComponentRef.instance.pdfPageView = source;
     this.annotationLayerComponentRef.set(pageNumber, annotationLayerComponentRef);
@@ -772,6 +782,12 @@ export interface AnnotationHighlightResult {
   firstPageNumber: number;
   found: number;
   index$: BehaviorSubject<number>;
+}
+
+export interface AnnotationLayerDragEvent {
+  event: DragEvent;
+  meta: Meta;
+  rect: Rect;
 }
 
 export interface AnnotationDragEvent {
