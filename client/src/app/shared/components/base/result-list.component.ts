@@ -16,7 +16,7 @@ export abstract class ResultListComponent<O, R, RL extends ResultList<R> = Resul
 
   public params: O = this.getDefaultParams();
 
-  public collectionSize = 0;
+  public collectionSize: number;
   public resultQuery: ResultQuery;
   public results = new CollectionModel<R>([], {
     multipleSelection: true,
