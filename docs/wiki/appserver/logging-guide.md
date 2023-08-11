@@ -48,7 +48,7 @@ When you don't have the username information, another class `EventLog` can be us
 ```python
 from neo4japp.constants import LogEventType
 
-@bp.route('/viz-search-temp', methods=['POST'])
+@bp.route('/visualizer-temp', methods=['POST'])
 @jsonify_with_class(SimpleSearchRequest)
 def visualizer_search_temp(req: SimpleSearchRequest):
     ...

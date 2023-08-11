@@ -1,22 +1,35 @@
+import time
+
+from arango.client import ArangoClient
 from flask import current_app
-from neo4j import Session as Neo4jSession, Transaction as Neo4jTx
 from sqlalchemy.orm import Session as SQLAlchemySession
 from typing import List
+from urllib.parse import urlencode
 
-from neo4japp.constants import EnrichmentDomain, LogEventType
-from neo4japp.exceptions import AnnotationError, ServerException, wrap_exceptions
-from neo4japp.models import DomainURLsMap
-from neo4japp.services import KgService
+from neo4japp.constants import (
+    BIOCYC_ORG_ID_DICT,
+    EnrichmentDomain,
+    KGDomain,
+    LogEventType,
+)
+from neo4japp.exceptions import (
+    AnnotationError,
+    ServerException,
+    ServerWarning,
+    wrap_exceptions,
+)
+from neo4japp.services.arangodb import execute_arango_query, get_db
+from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
+from neo4japp.util import compact
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
-from neo4japp.exceptions import ServerWarning
 
 
-class EnrichmentTableService(KgService):
-    def __init__(self, graph: Neo4jSession, session: SQLAlchemySession):
-        super().__init__(graph=graph, session=session)
+class EnrichmentTableService(RDBMSBaseDao):
+    def __init__(self, session: SQLAlchemySession):
+        super().__init__(session=session)
 
     @wrap_exceptions(AnnotationError, title='Could not annotate enrichment table')
     def create_annotation_mappings(self, enrichment: dict) -> EnrichmentCellTextMapping:
@@ -133,55 +146,319 @@ class EnrichmentTableService(KgService):
             text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts
         )
 
-    def match_ncbi_genes(self, gene_names: List[str], organism: str):
-        """Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
-        ID of given organism. Input order is maintained in result.
-        """
-        results = self.graph.read_transaction(
-            self.match_ncbi_genes_query, gene_names, organism
-        )
 
-        domain = (
-            self.session.query(DomainURLsMap)
-            .filter(DomainURLsMap.domain == 'NCBI_Gene')
-            .one_or_none()
-        )
+def match_ncbi_genes(arango_client: ArangoClient, gene_names: List[str], organism: str):
+    """Match list of gene names to list of NCBI gene nodes with same name and has taxonomy
+    ID of given organism. Input order is maintained in result.
+    """
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=match_ncbi_genes_query(),
+        gene_names=gene_names,
+        organism=organism,
+    )
 
-        if domain is None:
-            raise ServerException(
-                message='There was a problem finding NCBI domain URLs.'
-            )
-
-        return [
+    retval = []
+    for result in results:
+        gene_id = result['gene_id'] if result['gene_id'] else ''
+        retval.append(
             {
                 'gene': {
                     'name': result['gene_name'],
                     'full_name': result['gene_full_name'],
                 },
                 'synonym': result['synonym'],
-                'geneNeo4jId': result['gene_neo4j_id'],
-                'synonymNeo4jId': result['syn_neo4j_id'],
-                'link': domain.base_URL.format(result['gene_id'])
-                if result['gene_id']
-                else '',
+                'geneArangoId': result['gene_arango_id'],
+                'synonymArangoId': result['syn_arango_id'],
+                'link': f"https://www.ncbi.nlm.nih.gov/gene/{gene_id}",
             }
-            for result in results
-        ]
+        )
+    return retval
 
-    def match_ncbi_genes_query(
-        self, tx: Neo4jTx, gene_names: List[str], organism: str
-    ) -> List[dict]:
-        """Need to collect synonyms because a gene node can have multiple
-        synonyms. So it is possible to send duplicate internal node ids to
-        a later query."""
-        return tx.run(
-            """
-            UNWIND $gene_names AS gene
-            MATCH(s:Synonym {name:gene})-[:HAS_SYNONYM]-(g:Gene)-\
-                [:HAS_TAXONOMY]-(t:Taxonomy {eid:$organism})
-            RETURN s.name AS synonym, id(s) AS syn_neo4j_id, id(g) AS gene_neo4j_id,
-                g.eid AS gene_id, g.name AS gene_name, g.full_name AS gene_full_name
-            """,
-            gene_names=gene_names,
-            organism=organism,
-        ).data()
+
+def get_uniprot_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_uniprot_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment UniProt KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': {'id': result['uniprot_id'], 'function': result['function']},
+            'link': f'http://identifiers.org/uniprot/{result["uniprot_id"]}',
+        }
+        for result in results
+    }
+
+
+def get_string_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_string_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment String KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': {'id': result['string_id'], 'annotation': result['annotation']},
+            'link': f"https://string-db.org/cgi/network?identifiers={result['string_id']}",
+        }
+        for result in results
+    }
+
+
+def get_biocyc_genes(
+    arango_client: ArangoClient, ncbi_gene_ids: List[int], tax_id: str
+):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_biocyc_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment Biocyc KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': result['pathways'],
+            'link': "https://biocyc.org/gene?"
+            + urlencode(
+                compact(
+                    dict(
+                        orgid=BIOCYC_ORG_ID_DICT.get(tax_id, None),
+                        id=result['biocyc_id'],
+                    )
+                )
+            ),
+        }
+        for result in results
+    }
+
+
+def get_go_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_go_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment GO KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': result['go_terms'],
+            'link': 'https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=',
+        }
+        for result in results
+    }
+
+
+def get_regulon_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_regulon_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment Regulon KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': result['node'],
+            'link': "http://regulondb.ccg.unam.mx/gene?"
+            + urlencode(
+                compact(
+                    dict(
+                        term=result['regulondb_id'],
+                        organism='ECK12',
+                        format='jsp',
+                        type='gene',
+                    )
+                )
+            ),
+        }
+        for result in results
+    }
+
+
+def get_kegg_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
+    start = time.time()
+    results = execute_arango_query(
+        db=get_db(arango_client),
+        query=get_kegg_genes_query(),
+        ncbi_gene_ids=ncbi_gene_ids,
+    )
+
+    current_app.logger.info(
+        f'Enrichment KEGG KG query time {time.time() - start}',
+        extra=EventLog(event_type=LogEventType.ENRICHMENT.value).to_dict(),
+    )
+
+    return {
+        result['doc_id']: {
+            'result': result['pathway'],
+            'link': f"https://www.genome.jp/entry/{result['kegg_id']}",
+        }
+        for result in results
+    }
+
+
+def get_genes(
+    arango_client: ArangoClient, domain: KGDomain, gene_ids: List[int], tax_id: str
+):
+    if domain == KGDomain.REGULON:
+        return get_regulon_genes(arango_client, gene_ids)
+    if domain == KGDomain.BIOCYC:
+        return get_biocyc_genes(arango_client, gene_ids, tax_id)
+    if domain == KGDomain.GO:
+        return get_go_genes(arango_client, gene_ids)
+    if domain == KGDomain.STRING:
+        return get_string_genes(arango_client, gene_ids)
+    if domain == KGDomain.UNIPROT:
+        return get_uniprot_genes(arango_client, gene_ids)
+    if domain == KGDomain.KEGG:
+        return get_kegg_genes(arango_client, gene_ids)
+
+
+def match_ncbi_genes_query() -> str:
+    """Need to collect synonyms because a gene node can have multiple
+    synonyms. So it is possible to send duplicate internal node ids to
+    a later query."""
+    return """
+        FOR name IN @gene_names
+            FOR s IN synonym
+                FILTER s.name == name
+                FOR g IN INBOUND s has_synonym
+                    FILTER 'Gene' IN g.labels
+                    FOR t IN OUTBOUND g has_taxonomy
+                        FILTER t.eid == @organism
+                        RETURN {
+                            synonym: s.name,
+                            syn_arango_id: s._id,
+                            gene_arango_id: g._id,
+                            gene_id: g.eid,
+                            gene_name: g.name,
+                            gene_full_name: g.full_name
+                        }
+    """
+
+
+def get_uniprot_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FOR x IN INBOUND n has_gene OPTIONS { vertexCollections:'uniprot' }
+                    RETURN {
+                        doc_id: n._id,
+                        function: x.function,
+                        uniprot_id: x.eid
+                    }
+    """
+
+
+def get_string_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x  IN INBOUND n has_gene  OPTIONS { vertexCollections: ["string"] }
+                    RETURN {
+                        doc_id: n._id,
+                        string_id: x.eid,
+                        annotation: x.annotation,
+                    }
+    """
+
+
+def get_go_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                LET go_terms = (
+                    FOR g IN OUTBOUND n go_link OPTIONS { vertexCollections:'go' }
+                    RETURN g.name
+                )
+                FILTER length(go_terms) > 0
+                RETURN {
+                    doc_id: n._id,
+                    go_terms: go_terms
+                }
+    """
+
+
+def get_biocyc_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FOR b IN INBOUND n is OPTIONS { vertexCollections:'biocyc' }
+                    RETURN {
+                        doc_id: n._id,
+                        pathways: b.pathways,
+                        biocyc_id: b.biocyc_id
+                    }
+    """
+
+
+def get_regulon_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x IN INBOUND n is OPTIONS { vertexCollections: ["regulondb"] }
+                    RETURN {
+                        doc_id: n._id,
+                        node: x,
+                        regulondb_id: x.regulondb_id
+                    }
+    """
+
+
+def get_kegg_genes_query() -> str:
+    return """
+        FOR gene_id IN @ncbi_gene_ids
+            FOR n IN ncbi
+                FILTER n._id == gene_id
+                FILTER 'Gene' IN n.labels
+                FOR x IN INBOUND n is OPTIONS { vertexCollections: ["kegg"] }
+                    FOR gnm IN OUTBOUND x has_ko
+                        LET pathway = (
+                            FOR pth IN OUTBOUND gnm in_pathway
+                            RETURN pth.name
+                        )
+                        FILTER length(pathway)  > 0
+                        RETURN {
+                            doc_id: n._id,
+                            kegg_id: x.eid,
+                            pathway: pathway
+                        }
+    """

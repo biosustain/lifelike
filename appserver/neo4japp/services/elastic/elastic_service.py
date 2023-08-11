@@ -1,10 +1,9 @@
 import base64
+import json
 
 from elasticsearch.exceptions import RequestError as ElasticRequestError
 from elasticsearch.helpers import parallel_bulk, streaming_bulk
 from flask import current_app
-import json
-
 from pyparsing import (
     CaselessKeyword,
     Optional,
@@ -25,7 +24,7 @@ from typing import (
 )
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import get_file_type_service, ElasticConnection, GraphConnection
+from neo4japp.database import get_file_type_service, ElasticConnection
 from neo4japp.exceptions import ServerException, wrap_exceptions
 from neo4japp.models import (
     Files,
@@ -50,7 +49,7 @@ from neo4japp.utils.globals import config
 ParserElement.enablePackrat()
 
 
-class ElasticService(ElasticConnection, GraphConnection):
+class ElasticService(ElasticConnection):
     # Begin indexing methods
     def update_or_create_index(self, index_id, index_mapping_file):
         """Creates an index with the given index id and mapping file. If the index already exists,

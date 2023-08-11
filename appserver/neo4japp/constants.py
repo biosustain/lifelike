@@ -99,17 +99,70 @@ class LogEventType(Enum):
     UNHANDLED = 'unhandled_exception'
 
 
-DOMAIN_LABELS = [
-    'db_CHEBI',
-    'db_GO',
-    'db_Literature',
-    'db_MESH',
-    'db_NCBI',
-    'db_UniProt',
-]
+DATA_SOURCES = {
+    'NCBI Gene': 'NCBI',
+    'NCBI Taxonomy': 'NCBI',
+    'ChEBI': 'CHEBI',
+    'GO': 'GO',
+    'MeSH': 'MESH',
+    'UniProt': 'UniProt',
+}
 
 BIOCYC_ORG_ID_DICT = {'9606': 'HUMAN', '511145': 'ECOLI', '559292': 'YEAST'}
 
+# Note that this data used to be stored in Postgres
+DOMAIN_URLS_MAP = {
+    'CHEBI': 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId={}',
+    'MESH': 'https://www.ncbi.nlm.nih.gov/mesh/?term={}',
+    'Literature': 'https://pubmed.ncbi.nlm.nih.gov/{}',
+    'NCBI_Gene': 'https://www.ncbi.nlm.nih.gov/gene/{}',
+    'NCBI_Taxonomy': 'https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id={}',
+    'asap': 'http://identifiers.org/asap/{}',
+    'bigg.compartment': 'http://identifiers.org/bigg.compartment/{}',
+    'bigg.metabolite': 'http://identifiers.org/bigg.metabolite/{}',
+    'bigg.reaction': 'http://identifiers.org/bigg.reaction/{}',
+    'ccds': 'http://identifiers.org/ccds/{}',
+    'cco': 'http://identifiers.org/cco/{}',
+    'chebi': 'http://identifiers.org/chebi/CHEBI:{}',
+    'ecogene': 'http://identifiers.org/ecogene/{}',
+    'envipath': 'http://envipath.org/package/32de3cf4-e3e6-4168-956e-32fa5ddb0ce1/compound/{}',
+    'go': 'http://identifiers.org/go/{}',
+    'goa': 'http://identifiers.org/goa/{}',
+    'hgnc': 'http://identifiers.org/hgnc/{}',
+    'hmdb': 'http://identifiers.org/hmdb/{}',
+    'hprd': 'http://identifiers.org/hprd/{}',
+    'hssp': 'http://identifiers.org/hssp/{}',
+    'interpro': 'http://identifiers.org/interpro/{}',
+    'kegg.compound': 'http://identifiers.org/kegg.compound/{}',
+    'kegg.drug': 'http://identifiers.org/kegg.drug/{}',
+    'kegg.reaction': 'http://identifiers.org/kegg.reaction/{}',
+    'lipidmaps': 'http://identifiers.org/lipidmaps/{}',
+    'mgd': 'http://identifiers.org/mgd/{}',
+    'mnx.chemical': 'http://identifiers.org/metanetx.chemical/{}',
+    'mnx.equation': 'http://identifiers.org/metanetx.reaction/{}',
+    'myco.tuber': 'http://identifiers.org/myco.tuber/{}',
+    'metacyc.compound': 'http://identifiers.org/metacyc.compound/{}',
+    'metacyc.reaction': 'http://identifiers.org/metacyc.reaction/{}',
+    'ncbigene': 'http://identifiers.org/ncbigene/{}',
+    'ncbigi': 'http://identifiers.org/ncbigi/gi:{}',
+    'omim': 'http://identifiers.org/omim/{}',
+    'pdb': 'http://identifiers.org/pdb/{}',
+    'pubchem.compound': 'http://identifiers.org/pubchem.compound/{}',
+    'reactome': 'http://www.reactome.org/content/detail/R-ALL-{}',
+    'rhea': 'http://identifiers.org/rhea/{}',
+    'sabiork': 'http://identifiers.org/sabiork.compound/{}',
+    'sabiork.reaction': 'http://identifiers.org/sabiork.reaction/{}',
+    'seed': 'http://identifiers.org/seed.reaction/{}',
+    'seed.compound': 'http://identifiers.org/seed.compound/{}',
+    'sgd': 'http://identifiers.org/sgd/{}',
+    'slm': 'http://www.swisslipids.org/#/entity/SLM:{}',
+    'subtilist': 'http://identifiers.org/subtilist/{}',
+    'umbbd.compound': 'http://identifiers.org/umbbd.compound/{}',
+    'unipathway.compound': 'http://identifiers.org/unipathway.compound/{}',
+    'unipathway.reaction': 'http://identifiers.org/unipathway.reaction/{}',
+    'uniprot': 'http://identifiers.org/uniprot/{}',
+    'ec': 'http://identifiers.org/ec-code/{}: ',
+}
 
 # End BioCyc, Regulon, Ecocyc Dataset
 

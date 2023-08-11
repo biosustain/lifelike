@@ -20,7 +20,7 @@ export class GraphSearchService {
     entities: string[]
   ) {
     return this.http
-      .post<{ result: FTSResult<any> }>(`${this.searchApi}/viz-search`, {
+      .post<{ result: FTSResult<any> }>(`${this.searchApi}/visualizer`, {
         query,
         organism,
         page,

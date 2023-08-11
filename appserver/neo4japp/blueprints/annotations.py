@@ -73,7 +73,6 @@ from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
     get_annotation_service,
     get_annotation_db_service,
-    get_annotation_graph_service,
     get_annotation_tokenizer,
     get_bioc_document_service,
     get_enrichment_annotation_service,
@@ -90,6 +89,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_query,
     get_global_inclusions_count_query,
 )
+from ..services.arangodb import convert_datetime, execute_arango_query, get_db
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
@@ -638,7 +638,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         pipeline = Pipeline(
             {
                 'adbs': get_annotation_db_service,
-                'ags': get_annotation_graph_service,
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_annotation_service,
@@ -699,7 +698,6 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         pipeline = Pipeline(
             {
                 'adbs': get_annotation_db_service,
-                'ags': get_annotation_graph_service,
                 'aers': get_recognition_service,
                 'tkner': get_annotation_tokenizer,
                 'as': get_enrichment_annotation_service,
@@ -893,8 +891,11 @@ class GlobalAnnotationExportInclusions(MethodView):
     def get(self):
         yield g.current_user
 
-        graph = get_annotation_graph_service()
-        inclusions = graph.exec_read_query(get_global_inclusions_query())
+        arango_client = get_or_create_arango_client()
+        inclusions = execute_arango_query(
+            db=get_db(arango_client),
+            query=get_global_inclusions_query(),
+        )
 
         file_uuids = {inclusion['file_reference'] for inclusion in inclusions}
         file_data_query = db.session.query(
@@ -903,7 +904,7 @@ class GlobalAnnotationExportInclusions(MethodView):
 
         file_uuids_map = {d.file_uuid: d.file_deleted_by for d in file_data_query}
 
-        def get_inclusion_for_review(inclusion, file_uuids_map, graph):
+        def get_inclusion_for_review(inclusion, file_uuids_map):
             user = AppUser.query.filter_by(
                 id=file_uuids_map[inclusion['file_reference']]
             ).one_or_none()
@@ -917,9 +918,7 @@ class GlobalAnnotationExportInclusions(MethodView):
                 'file_uuid': inclusion['file_reference'],
                 'file_deleted': deleter,
                 'type': ManualAnnotationType.INCLUSION.value,
-                'creation_date': str(
-                    graph.convert_datetime(inclusion['creation_date'])
-                ),
+                'creation_date': convert_datetime(inclusion['creation_date']),
                 'text': inclusion['synonym'],
                 'case_insensitive': True,
                 'entity_type': inclusion['entity_type'],
@@ -929,7 +928,7 @@ class GlobalAnnotationExportInclusions(MethodView):
             }
 
         data = [
-            get_inclusion_for_review(inclusion, file_uuids_map, graph)
+            get_inclusion_for_review(inclusion, file_uuids_map)
             for inclusion in inclusions
             if inclusion['file_reference'] in file_uuids_map
         ]
@@ -1069,10 +1068,12 @@ class GlobalAnnotationListView(MethodView):
             ]
             query_total = exclusions.total
         else:
-            graph = get_annotation_graph_service()
-            global_inclusions = graph.exec_read_query_with_params(
-                get_global_inclusions_paginated_query(),
-                {'skip': 0 if page == 1 else (page - 1) * limit, 'limit': limit},
+            arango_client = get_or_create_arango_client()
+            global_inclusions = execute_arango_query(
+                db=get_db(arango_client),
+                query=get_global_inclusions_paginated_query(),
+                skip=0 if page == 1 else (page - 1) * limit,
+                limit=limit,
             )
 
             file_uuids = {
@@ -1098,7 +1099,7 @@ class GlobalAnnotationListView(MethodView):
                     if file_uuids_map.get(i['file_reference'], True)
                     else False,
                     'type': ManualAnnotationType.INCLUSION.value,
-                    'creation_date': graph.convert_datetime(i['creation_date']),
+                    'creation_date': convert_datetime(i['creation_date']),
                     'text': i['synonym'],
                     'case_insensitive': True,
                     'entity_type': i['entity_type'],
@@ -1108,9 +1109,11 @@ class GlobalAnnotationListView(MethodView):
                 }
                 for i in global_inclusions
             ]
-            query_total = graph.exec_read_query(get_global_inclusions_count_query())[0][
-                'total'
-            ]
+
+            query_total = execute_arango_query(
+                db=get_db(arango_client),
+                query=get_global_inclusions_count_query(),
+            )[0]['total']
 
         results = {'total': query_total, 'results': data}
         yield jsonify(GlobalAnnotationListSchema().dump(results))

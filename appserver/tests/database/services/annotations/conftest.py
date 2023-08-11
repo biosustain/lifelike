@@ -7,7 +7,6 @@ from os import path, remove, walk
 from neo4japp.services.annotations import (
     AnnotationService,
     AnnotationDBService,
-    AnnotationGraphService,
     LMDBService,
     ManualAnnotationService,
     Tokenizer,
@@ -72,25 +71,20 @@ def create_entity_lmdb(path_to_folder: str, db_name: str, entity_objs=[]):
 
 
 @pytest.fixture(scope='function')
-def get_graph_service(graph_driver):
-    return AnnotationGraphService(graph_driver)
-
-
-@pytest.fixture(scope='function')
 def get_db_service(session):
     return AnnotationDBService()
 
 
 @pytest.fixture(scope='function')
-def get_annotation_service(get_db_service, get_graph_service, request):
+def get_annotation_service(get_db_service, arango_client, request):
     request.addfinalizer(teardown)
 
-    return AnnotationService(db=get_db_service, graph=get_graph_service)
+    return AnnotationService(db=get_db_service, arango_client=arango_client)
 
 
 @pytest.fixture(scope='function')
-def get_manual_annotation_service(get_graph_service):
-    return ManualAnnotationService(graph=get_graph_service, tokenizer=Tokenizer())
+def get_manual_annotation_service(arango_client):
+    return ManualAnnotationService(arango_client=arango_client, tokenizer=Tokenizer())
 
 
 @pytest.fixture(scope='function')
@@ -845,8 +839,7 @@ def mock_graph_test_local_inclusion_affect_gene_organism_matching(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -864,8 +857,7 @@ def mock_graph_test_genes_vs_proteins(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -882,8 +874,7 @@ def mock_graph_test_gene_id_changes_to_result_from_kg_if_matched_with_organism(
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -901,8 +892,7 @@ def mock_graph_test_assume_human_gene_after_finding_virus(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -917,8 +907,7 @@ def mock_graph_test_global_gene_inclusion_annotation(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -936,8 +925,7 @@ def mock_graph_global_inclusion_normalized_already_in_lmdb(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -954,8 +942,7 @@ def mock_graph_test_human_is_prioritized_if_equal_distance_in_gene_organism_matc
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -988,8 +975,7 @@ def mock_graph_test_gene_organism_escherichia_coli_pdf(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -1007,8 +993,7 @@ def mock_graph_test_no_annotation_for_abbreviation(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 
@@ -1026,8 +1011,7 @@ def mock_graph_test_protein_organism_escherichia_coli_pdf(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_proteins_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_proteins_to_organisms',
         get_match_result,
     )
 
@@ -1060,8 +1044,7 @@ def mock_graph_test_new_gene_organism_matching_algorithm(monkeypatch):
         )
 
     monkeypatch.setattr(
-        AnnotationGraphService,
-        'get_genes_to_organisms',
+        'neo4japp.services.annotations.annotation_service.get_genes_to_organisms',
         get_match_result,
     )
 

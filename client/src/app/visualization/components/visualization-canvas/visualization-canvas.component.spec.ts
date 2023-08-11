@@ -575,7 +575,7 @@ describe('VisualizationCanvasComponent', () => {
     await expect(instance.clusters.size).toEqual(2);
   });
 
-  it('isNotAClusterEdge should detect whether an edge is a cluster edge or not', () => {
+  it('isNotAClusteredEdge should detect whether an edge is a cluster edge or not', () => {
     spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
       of(mockGetReferenceTableDataResultOutgoing)
     );
@@ -590,7 +590,7 @@ describe('VisualizationCanvasComponent', () => {
       relationship: 'Mock Edge',
       direction: Direction.FROM,
     } as ClusterData);
-    expect(instance.isNotAClusterEdge(clusterEdge)).toBeFalse();
+    expect(instance.isNotAClusteredEdge(clusterEdge)).toBeFalse();
   });
 
   it('collapseNeighbors should remove all edges connected to the given node', () => {
@@ -628,13 +628,13 @@ describe('VisualizationCanvasComponent', () => {
     expect(instance.edges.get(103)).toBeTruthy();
   });
 
-  it('expandOrCollapseNode should collapse the node if it is expanded', () => {
+  it('toggleNodeExpandState should collapse the node if it is expanded', () => {
     const updatedNodeState = { ...instance.nodes.get(1), expanded: true };
     instance.nodes.update(updatedNodeState);
 
     expect(instance.nodes.get(1).expanded).toBeTrue();
 
-    instance.expandOrCollapseNode(1);
+    instance.toggleNodeExpandState(1);
 
     expect(instance.nodes.get(1)).toBeTruthy();
     expect(instance.nodes.get(2)).toBeNull();
@@ -644,7 +644,7 @@ describe('VisualizationCanvasComponent', () => {
     expect(instance.edges.get(102)).toBeNull();
   });
 
-  it('expandOrCollapseNode should destroy any connected clusters of the given node', () => {
+  it('toggleNodeExpandState should destroy any connected clusters of the given node', () => {
     spyOn(visualizationService, 'getReferenceTableData').and.returnValue(
       of(mockGetReferenceTableDataResultOutgoing)
     );
@@ -654,7 +654,7 @@ describe('VisualizationCanvasComponent', () => {
     instance.nodes.update(updatedNodeState);
 
     instance.groupNeighborsWithRelationship(mockGroupRequestOutgoing);
-    instance.expandOrCollapseNode(1);
+    instance.toggleNodeExpandState(1);
 
     expect(instance.clusters.size).toEqual(0);
 
@@ -664,16 +664,6 @@ describe('VisualizationCanvasComponent', () => {
 
     expect(instance.edges.get(101)).toBeNull();
     expect(instance.edges.get(102)).toBeNull();
-  });
-
-  it('expandOrCollapseNode should request a node expansion from the parent if the node is collapsed', () => {
-    const expandNodeSpy = spyOn(instance.expandNode, 'emit');
-
-    // Technically, node 1 is "expanded" in the sense that it has connections, but for the purpose
-    // of this test we only care if the "expanded" property is set to false on the node
-    instance.expandOrCollapseNode(1);
-
-    expect(expandNodeSpy).toHaveBeenCalled();
   });
 
   it('getEdgesBetweenNodes should get all the edges between the two given nodes', () => {
@@ -906,12 +896,12 @@ describe('VisualizationCanvasComponent', () => {
   });
 
   it('should expand/collapse a node if it is double clicked', () => {
-    const expandOrCollapseNodeSpy = spyOn(instance, 'expandOrCollapseNode');
+    const toggleNodeExpandStateSpy = spyOn(instance, 'toggleNodeExpandState');
     spyOn(instance.networkGraph, 'getNodeAt').and.returnValue(1);
 
     instance.onDoubleClickCallback(mockCallbackParams);
 
-    expect(expandOrCollapseNodeSpy).toHaveBeenCalledWith(1);
+    expect(toggleNodeExpandStateSpy).toHaveBeenCalledWith(1);
   });
 
   it('should show tooltip and update selected cluster nodes if an unselected cluster is right-clicked', () => {

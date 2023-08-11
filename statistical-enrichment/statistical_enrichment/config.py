@@ -9,8 +9,7 @@ class Base:
     JWT_ALGORITHM = environ.get("JWT_ALGORITHM", "HS256")
     JWT_AUDIENCE = environ.get("JWT_AUDIENCE", None)
 
-    NEO4J_HOST = environ.get("NEO4J_HOST")
-    NEO4J_SCHEME = environ.get("NEO4J_SCHEME")
-    NEO4J_AUTH = environ.get("NEO4J_AUTH")
-    NEO4J_PORT = environ.get("NEO4J_PORT")
-    NEO4J_DATABASE = environ.get("NEO4J_DATABASE")
+    ARANGO_HOST = environ.get('ARANGO_HOST', 'http://localhost:8529')
+    ARANGO_USERNAME = environ.get('ARANGO_USERNAME', '***ARANGO_USERNAME***')
+    ARANGO_PASSWORD = environ.get('ARANGO_PASSWORD', 'password')
+    ARANGO_DB_NAME = environ.get('ARANGO_DB_NAME', '***ARANGO_DB_NAME***')

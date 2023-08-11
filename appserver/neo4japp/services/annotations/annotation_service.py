@@ -1,6 +1,7 @@
 import json
 import time
 
+from arango.client import ArangoClient
 from bisect import bisect_left
 from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
@@ -11,7 +12,7 @@ from flask import current_app
 
 from neo4japp.exceptions import wrap_exceptions, AnnotationError, ServerException
 from .annotation_db_service import AnnotationDBService
-from .annotation_graph_service import AnnotationGraphService
+from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
 from .constants import (
     DatabaseType,
@@ -46,10 +47,14 @@ class AnnotationService:
     def __init__(
         self,
         db: AnnotationDBService,
-        graph: AnnotationGraphService,
+        # TODO: I don't think this is the best way to handle the arango client connection, but the
+        # pattern is pretty deeply ingrained into the annotations pipeline. Keeping it this way for
+        # now, but I think we should slowly try to migrate away from the "service-as-an-object"
+        # pattern
+        arango_client: ArangoClient,
     ) -> None:
         self.db = db
-        self.graph = graph
+        self.arango_client = arango_client
 
         self.organism_frequency: Dict[str, int] = {}
         self.organism_locations: Dict[str, List[Tuple[int, int]]] = {}
@@ -586,7 +591,8 @@ class AnnotationService:
         organism_ids = list(self.organism_frequency)
 
         gene_match_time = time.time()
-        graph_results = self.graph.get_genes_to_organisms(
+        graph_results = get_genes_to_organisms(
+            arango_client=self.arango_client,
             genes=gene_names_list,
             organisms=organism_ids,
         )
@@ -604,7 +610,8 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             gene_match_time = time.time()
-            fallback_graph_results = self.graph.get_genes_to_organisms(
+            fallback_graph_results = get_genes_to_organisms(
+                arango_client=self.arango_client,
                 genes=gene_names_list,
                 organisms=[self.specified_organism.organism_id],
             )
@@ -730,7 +737,8 @@ class AnnotationService:
         protein_names_list = list(protein_names)
 
         protein_match_time = time.time()
-        graph_results = self.graph.get_proteins_to_organisms(
+        graph_results = get_proteins_to_organisms(
+            arango_client=self.arango_client,
             proteins=protein_names_list,
             organisms=list(self.organism_frequency),
         )
@@ -746,7 +754,8 @@ class AnnotationService:
 
         if self.specified_organism.synonym:
             protein_match_time = time.time()
-            fallback_graph_results = self.graph.get_proteins_to_organisms(
+            fallback_graph_results = get_proteins_to_organisms(
+                arango_client=self.arango_client,
                 proteins=protein_names_list,
                 organisms=[self.specified_organism.organism_id],
             )
