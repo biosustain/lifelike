@@ -1,12 +1,6 @@
-import { Observable, of, Subject } from 'rxjs';
-import { map, mergeMap, tap } from 'rxjs/operators';
-import {
-  compact as _compact,
-  has as _has,
-  isEmpty as _isEmpty,
-  omitBy as _omitBy,
-  pick as _pick,
-} from 'lodash/fp';
+import { Observable, of } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
+import { compact, omitBy, isEmpty } from 'lodash/fp';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
 import { TextAnnotationGenerationRequest } from 'app/file-browser/schema';
@@ -25,7 +19,7 @@ export class BaseEnrichmentDocument {
   organism = '';
   values = new Map<string, string>();
   importGenes: string[] = [];
-  domains: string[] = _compact([
+  domains: string[] = compact([
     'Regulon',
     'UniProt',
     'String',
@@ -36,52 +30,38 @@ export class BaseEnrichmentDocument {
   result: EnrichmentResult = null;
   duplicateGenes: string[] = [];
   fileId = '';
-  markForRegeneration = false;
-  changed$ = new Subject<void>();
 
-  private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {
+  parseParameters({ importGenes, taxID, organism, domains, ...rest }: EnrichmentParsedData) {
     // parse the file content to get gene list and organism tax id and name
-    const parsedParams = {} as EnrichmentParsedData;
-    if (_has('importGenes', params)) {
-      const { importGenes } = params;
-      const rawImportGenes = importGenes.map((gene) => gene.trim()).filter((gene) => gene !== '');
-      const duplicateGenes = this.getDuplicates(rawImportGenes);
-      parsedParams.importGenes = rawImportGenes;
-      parsedParams.duplicateGenes = duplicateGenes;
+    const rawImportGenes = importGenes.map((gene) => gene.trim()).filter((gene) => gene !== '');
+    if (taxID === '562' || taxID === '83333') {
+      taxID = '511145';
+    } else if (taxID === '4932') {
+      taxID = '559292';
     }
-    if (_has('taxID', params)) {
-      const { taxID } = params;
-      if (taxID === '562' || taxID === '83333') {
-        parsedParams.taxID = '511145';
-      } else if (taxID === '4932') {
-        parsedParams.taxID = '559292';
-      }
+
+    // parse for column order/domain input
+    if (domains == null) {
+      domains = this.domains;
     }
-    if (_has('domains', params)) {
-      const { domains } = params;
-      // parse for column order/domain input
-      if (domains == null) {
-        parsedParams.domains = this.domains;
-      }
-    }
+
+    const duplicateGenes = this.getDuplicates(rawImportGenes);
 
     // We set these all at the end to be thread/async-safe
-    return _omitBy((value, key) => this[key] === value)({
-      ...params,
-      ...parsedParams,
-    });
+    return {
+      importGenes: rawImportGenes,
+      taxID,
+      organism,
+      domains,
+      duplicateGenes,
+      ...rest,
+    };
   }
 
   setParameters(params) {
     // We set these all at the end to be thread/async-safe
     const parsedParams = this.parseParameters(params);
-    if (!_isEmpty(_pick(['importGenes', 'taxID', 'domains'], parsedParams))) {
-      this.markForRegeneration = true;
-    }
     Object.assign(this, parsedParams);
-    if (!_isEmpty(parsedParams)) {
-      this.changed$.next();
-    }
     return parsedParams;
   }
 
@@ -125,9 +105,8 @@ export class BaseEnrichmentDocument {
           };
         }
       }),
-      map((data) => this.decode(data)),
-      tap((params) => this.setParameters(params)),
-      tap(() => (this.markForRegeneration = false))
+      map(this.decode.bind(this)),
+      map(this.setParameters.bind(this))
     );
   }
 
@@ -190,23 +169,16 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   refreshData(): Observable<this> {
-    if (!this.fileId) {
-      this.result = null;
-      this.changed$.next();
+    this.result = null;
+    if (this.fileId === '') {
       // file was just created
       return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
         map((result: EnrichmentResult) => {
           this.result = result;
-          this.changed$.next();
           return this;
         })
       );
     } else {
-      if (!this.markForRegeneration) {
-        return of(null);
-      }
-      this.result = null;
-      this.changed$.next();
       return this.worksheetViewerService
         .refreshEnrichmentAnnotations([this.fileId])
         .pipe(mergeMap((_) => this.annotate()));
@@ -214,9 +186,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
   }
 
   updateParameters(): Observable<Blob> {
-    if (!this.markForRegeneration) {
-      return of(new Blob([JSON.stringify(this.encode(this))]));
-    }
     return this.generateEnrichmentResults(this.domains, this.importGenes, this.taxID).pipe(
       mergeMap((result: EnrichmentResult) => {
         const importGenes = this.importGenes;
@@ -235,7 +204,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       mergeMap((enriched: EnrichmentParsedData) => {
         if (Object.keys(enriched).length > 0) {
           this.result = enriched.result;
-          this.changed$.next();
           return of(this);
         } else {
           const params = {
@@ -250,7 +218,6 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
               this.worksheetViewerService.getAnnotatedEnrichment(this.fileId).pipe(
                 map((annotated: EnrichmentParsedData) => {
                   this.result = annotated.result;
-                  this.changed$.next();
                   return this;
                 })
               )
@@ -355,7 +322,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
             }
 
             return {
-              domainInfo: _omitBy(_isEmpty)({
+              domainInfo: omitBy(isEmpty)({
                 Regulon: {
                   labels: ['Regulator Family', 'Activated By', 'Repressed By'],
                 },

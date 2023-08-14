@@ -1,4 +1,11 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
@@ -6,21 +13,15 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   BehaviorSubject,
   combineLatest,
-  defer,
-  merge,
   Observable,
-  ReplaySubject,
+  defer,
   Subject,
 } from 'rxjs';
 import {
-  filter,
   finalize,
   map,
   mergeMap,
-  mergeScan,
   shareReplay,
-  startWith,
-  switchMap,
   take,
   tap,
 } from 'rxjs/operators';
@@ -29,7 +30,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { ObjectUpdateRequest } from 'app/file-browser/schema';
-import { ModuleAwareComponent } from 'app/shared/modules';
+import { ModuleProperties } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
@@ -61,7 +62,7 @@ interface AnnotationData {
   styleUrls: ['./enrichment-table-viewer.component.scss'],
   providers: [EnrichmentService, ModuleContext, FindControllerService],
 })
-export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareComponent {
+export class EnrichmentTableViewerComponent implements OnInit, OnDestroy {
   encodeURIComponent = encodeURIComponent;
 
   constructor(
@@ -75,6 +76,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     protected readonly filesystemObjectActions: FilesystemObjectActions,
     private readonly findControllerService: FindControllerService
   ) {
+    this.fileId = this.route.snapshot.params.file_id || '';
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
     this.findControllerService.type$.next(this.annotation.id.length ? 'annotation' : 'text');
@@ -83,56 +85,16 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     );
   }
 
+  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
   @ViewChild(EnrichmentTableComponent) enrichmentTable: EnrichmentTableComponent;
 
   annotation: AnnotationData;
   private destroy$ = new Subject<any>();
 
-  fileIdChange$ = new ReplaySubject<string>(1);
-
-  set fileId(id: string) {
-    this.fileIdChange$.next(id);
-  }
-
-  fileId$: Observable<string> = merge(
-    this.fileIdChange$,
-    this.route.params.pipe(
-      map(({ file_id }) => file_id),
-      filter((fileId) => !!fileId)
-    )
-  );
-  object$: Observable<FilesystemObject> = this.fileId$.pipe(
-    switchMap((fileId) => this.enrichmentService.get(fileId)),
-    shareReplay()
-  );
-  document$: Observable<EnrichmentDocument> = this.fileId$.pipe(
-    switchMap((fileId) =>
-      this.enrichmentService.getContent(fileId).pipe(
-        mergeScan(
-          (document, blob) => document.loadResult(blob, fileId),
-          new EnrichmentDocument(this.worksheetViewerService)
-        ),
-        switchMap((document) =>
-          document.changed$.pipe(
-            map(() => document),
-            startWith(document)
-          )
-        )
-      )
-    ),
-    shareReplay()
-  );
-  table$: Observable<EnrichmentTable> = this.document$.pipe(
-    mergeScan((table, document) => table.load(document), new EnrichmentTable()),
-    this.errorHandler.create({ label: 'Load enrichment table' }),
-    shareReplay()
-  );
-  modulePropertiesChange = this.object$.pipe(
-    map((object) => ({
-      title: object ? object.filename : 'Enrichment Table',
-      fontAwesomeIcon: 'table',
-    }))
-  );
+  fileId: string;
+  object$: Observable<FilesystemObject>;
+  document$: Observable<EnrichmentDocument>;
+  table$: Observable<EnrichmentTable>;
   findController$: Observable<AsyncElementFind> = this.findControllerService.elementFind$;
 
   /**
@@ -145,6 +107,32 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
 
   scrollTop() {
     this.enrichmentTable.scrollTop();
+  }
+
+  ngOnInit() {
+    this.load();
+  }
+
+  load() {
+    this.object$ = this.enrichmentService.get(this.fileId).pipe(
+      tap(() => {
+        this.emitModuleProperties();
+      }),
+      shareReplay()
+    );
+    this.document$ = this.enrichmentService.getContent(this.fileId).pipe(
+      mergeMap((blob: Blob) =>
+        new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, this.fileId)
+      ),
+      shareReplay()
+    );
+    this.table$ = this.document$.pipe(
+      mergeMap((document) => {
+        return new EnrichmentTable().load(document);
+      }),
+      this.errorHandler.create({ label: 'Load enrichment table' }),
+      shareReplay()
+    );
   }
 
   ngOnDestroy() {
@@ -161,14 +149,12 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = this.fileId$.pipe(
-      mergeScan(
-        (document, fileId) => document.loadResult(version.contentValue, fileId),
-        new EnrichmentDocument(this.worksheetViewerService)
-      ),
-      tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
-      shareReplay()
-    );
+    this.document$ = new EnrichmentDocument(this.worksheetViewerService)
+      .loadResult(version.contentValue, this.fileId)
+      .pipe(
+        tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
+        shareReplay()
+      );
     this.table$ = this.document$.pipe(
       mergeMap((document) => {
         return new EnrichmentTable().load(document);
@@ -280,19 +266,29 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     dialogRef.componentInstance.object = object;
     dialogRef.componentInstance.document = document;
     dialogRef.componentInstance.fileId = this.fileId;
-    dialogRef.componentInstance.accept = (result: EnrichmentTableEditDialogValue) => {
-      this.queueChange(result.objectChanges);
-      document.setParameters(result.documentChanges);
-      this.save();
-    };
-    return dialogRef.result;
+    return dialogRef.result.then(
+      (result: EnrichmentTableEditDialogValue) => {
+        this.queuedChanges$.next({
+          ...(this.queuedChanges$.value || {}),
+        });
+        this.save();
+      },
+      () => {}
+    );
   }
 
-  queueChange(change: Partial<ObjectUpdateRequest>) {
-    this.queuedChanges$.next({
-      ...(this.queuedChanges$.value || {}),
-      ...change,
+  emitModuleProperties() {
+    this.object$.pipe(take(1)).subscribe((object) => {
+      this.modulePropertiesChange.emit({
+        title: object ? object.filename : 'Enrichment Table',
+        fontAwesomeIcon: 'table',
+      });
     });
+  }
+
+  objectUpdate() {
+    this.emitModuleProperties();
+    this.load();
   }
 
   switchToTextFind() {

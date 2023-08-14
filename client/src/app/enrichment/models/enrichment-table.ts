@@ -24,7 +24,7 @@ export class EnrichmentTable {
 
   load(document: EnrichmentDocument): Observable<this> {
     const tableCells: TableCell[][] = [];
-    const tableHeader: TableHeader[][] = [[...this.DEFAULT_HEADERS]];
+    const tableHeader: TableHeader[][] = [this.DEFAULT_HEADERS];
 
     const result: EnrichmentResult | undefined = document.result;
 

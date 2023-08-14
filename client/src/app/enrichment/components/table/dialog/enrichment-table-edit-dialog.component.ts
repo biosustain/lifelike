@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { AbstractControl, FormArray, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compact as _compact, isNil as _isNil, has as _has, omit as _omit } from 'lodash/fp';
+import { compact, isNil } from 'lodash/fp';
 
 import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
 import {
@@ -31,7 +31,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
   organismTaxId: string;
   domains: string[] = [];
 
-  checks: Array<string> = _compact([
+  checks: Array<string> = compact([
     'Regulon',
     'UniProt',
     'String',
@@ -78,7 +78,7 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         .map((gene) => {
           const geneValue = value.values.get(gene);
           let row = gene;
-          if (!_isNil(geneValue) && geneValue.length) {
+          if (!isNil(geneValue) && geneValue.length) {
             row += `\t${geneValue}`;
           }
           return row;
@@ -88,8 +88,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
     this.setDomains();
   }
 
-  applyValue(value: ObjectEditDialogValue) {}
-
   private setDomains() {
     const formArray: FormArray = this.form.get('domainsList') as FormArray;
     this.domains.forEach((domain) => formArray.push(new FormControl(domain)));
@@ -97,48 +95,31 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
   getValue(): EnrichmentTableEditDialogValue {
     const parentValue: ObjectEditDialogValue = super.getValue();
-    const objectChanges = parentValue.objectChanges as {
-      entitiesList: string;
-      domainsList: any;
-      fileId: any;
-      fallbackOrganism: any;
-    };
-    const documentChanges = {} as Partial<EnrichmentDocument>;
-    if (_has('entitiesList')(objectChanges)) {
-      const geneRows = (objectChanges.entitiesList as string).split(/[\/\n\r]/g);
-      documentChanges.values = new Map<string, string>();
-      const expectedRowLen = 2;
+    const value = this.form.value;
+    const geneRows = (value.entitiesList as string).split(/[\/\n\r]/g);
+    const values = new Map<string, string>();
+    const expectedRowLen = 2;
 
-      documentChanges.importGenes = geneRows.map((row) => {
-        const cols = row.split('\t');
-        if (cols.length < expectedRowLen) {
-          cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
-        }
-        documentChanges.values.set(cols[0], cols[1]);
-        return cols[0];
-      });
-    }
-    if (_has('fallbackOrganism')(objectChanges)) {
-      const { fallbackOrganism } = objectChanges;
-      documentChanges.organism = fallbackOrganism.organism_name;
-      documentChanges.taxID = fallbackOrganism.tax_id;
-    }
-    if (_has('domainsList')(objectChanges)) {
-      documentChanges.domains = objectChanges.domainsList;
-    }
-    if (_has('fileId')(objectChanges) || _has('fileId')(this)) {
-      documentChanges.fileId = objectChanges.fileId || this.fileId;
-    }
+    const importGenes = geneRows.map((row) => {
+      const cols = row.split('\t');
+      if (cols.length < expectedRowLen) {
+        cols.concat(Array<string>(expectedRowLen - cols.length).fill(''));
+      }
+      values.set(cols[0], cols[1]);
+      return cols[0];
+    });
 
-    // Finally, update the document with new params
-    this.document.setParameters(documentChanges);
+    this.document.setParameters({
+      fileId: value.fileId || this.fileId || '',
+      importGenes,
+      values,
+      taxID: value.fallbackOrganism.tax_id,
+      organism: value.fallbackOrganism.organism_name,
+      domains: value.domainsList,
+    });
 
     return {
       ...parentValue,
-      objectChanges: _omit(['fileId', 'fallbackOrganism', 'domainsList', 'entitiesList'])(
-        objectChanges
-      ),
-      documentChanges,
       document: this.document,
     };
   }
@@ -164,7 +145,6 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
         i++;
       });
     }
-    formArray.markAsDirty();
   }
 
   contextFormControlFactory = (context = '') =>
@@ -183,5 +163,4 @@ export class EnrichmentTableEditDialogComponent extends ObjectEditDialogComponen
 
 export interface EnrichmentTableEditDialogValue extends ObjectEditDialogValue {
   document: EnrichmentDocument;
-  documentChanges: Partial<EnrichmentDocument>;
 }
