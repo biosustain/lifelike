@@ -4,6 +4,7 @@ import html
 import io
 import json
 import time
+import unicodedata
 
 import sqlalchemy as sa
 
@@ -15,6 +16,7 @@ from flask import (
     make_response,
     request,
     jsonify,
+    send_file
 )
 from flask.views import MethodView
 from http import HTTPStatus
@@ -23,6 +25,7 @@ from marshmallow import validate, fields
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
+from urllib.parse import quote
 from webargs.flaskparser import use_args
 
 from neo4japp.exceptions import wrap_exceptions
@@ -91,6 +94,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
+from .. utils import FileContentBuffer
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 from ..utils.string import sub_whitespace
@@ -1188,10 +1192,12 @@ def get_pdf_to_annotate(file_id):
     if not doc:
         raise FileNotFoundError(message=f'File with file id {file_id} not found.')
 
-    res = make_response(doc.content.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
-    return res
+    return send_file(
+        filename_or_fp=io.BytesIO(doc.content.raw_file),
+        mimetype='application/pdf',
+        as_attachment=True,
+        attachment_filename=doc.filename
+    )
 
 
 bp.add_url_rule(
