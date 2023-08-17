@@ -9,15 +9,7 @@ import unicodedata
 import sqlalchemy as sa
 
 from datetime import datetime
-from flask import (
-    Blueprint,
-    current_app,
-    g,
-    make_response,
-    request,
-    jsonify,
-    send_file
-)
+from flask import Blueprint, current_app, g, make_response, request, jsonify, send_file
 from flask.views import MethodView
 from http import HTTPStatus
 from json import JSONDecodeError
@@ -94,7 +86,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
-from .. utils import FileContentBuffer
+from ..utils import FileContentBuffer
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 from ..utils.string import sub_whitespace
@@ -1196,7 +1188,7 @@ def get_pdf_to_annotate(file_id):
         filename_or_fp=io.BytesIO(doc.content.raw_file),
         mimetype='application/pdf',
         as_attachment=True,
-        attachment_filename=doc.filename
+        attachment_filename=doc.filename,
     )
 
 
