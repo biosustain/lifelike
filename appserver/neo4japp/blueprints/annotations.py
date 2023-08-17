@@ -1134,12 +1134,12 @@ class GlobalAnnotationListView(MethodView):
                         username=g.current_user.username,
                         event_type=LogEventType.ANNOTATION.value).to_dict()
                 )
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 db.session.rollback()
                 raise ServerException(
                     title='Could not delete exclusion',
                     message='A database error occurred when deleting the global exclusion(s).'
-                )
+                ) from e
 
         if inclusion_pids:
             manual_as = get_manual_annotation_service()
@@ -1163,7 +1163,7 @@ class GlobalAnnotationListView(MethodView):
                 raise ServerException(
                     title='Could not delete inclusion',
                     message='A database error occurred when deleting the global inclusion(s).'
-                )
+                ) from e
 
         yield jsonify(dict(result='success'))
 
