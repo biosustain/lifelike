@@ -120,7 +120,7 @@ def enrich_context():
             )
         ],
         temperature=0,
-        max_tokens=500,
+        max_tokens=2000,
     )
     response = ChatGPT.ChatCompletion.create(**create_params)
     for choice in response.get('choices'):
