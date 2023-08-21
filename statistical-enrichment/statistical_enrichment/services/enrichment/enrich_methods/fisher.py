@@ -23,23 +23,23 @@ def fisher(geneNames, GOterms, related_go_terms_count):
     df = pd.DataFrame(GOterms)
 
     if df.empty:
-        return df.to_dict(orient="records")
+        return df.to_dict(orient='records')
 
     query = pd.unique(geneNames)
 
-    M = df["geneNames"].explode().nunique()
+    M = df['geneNames'].explode().nunique()
     N = len(query)
 
     def f(go):
-        matching_gene_names = list(set(go["geneNames"]).intersection(query))
-        go["p-value"] = fisher_p(len(matching_gene_names), M, len(go["geneNames"]), N)
-        if pd.isnull(go["p-value"]):
-            go["p-value"] = None
-        go["gene"] = f"{go['goTerm']} ({go['goId']})"
-        go["geneNames"] = matching_gene_names
+        matching_gene_names = list(set(go['geneNames']).intersection(query))
+        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go['geneNames']), N)
+        if pd.isnull(go['p-value']):
+            go['p-value'] = None
+        go['gene'] = f"{go['goTerm']} ({go['goId']})"
+        go['geneNames'] = matching_gene_names
         return go
 
-    df = df.apply(f, axis=1).sort_values(by="p-value")
+    df = df.apply(f, axis=1).sort_values(by='p-value')
 
     add_q_value(df, related_go_terms_count)
-    return df.to_dict(orient="records")
+    return df.to_dict(orient='records')

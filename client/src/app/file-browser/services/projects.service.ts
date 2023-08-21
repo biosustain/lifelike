@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { encode } from 'punycode';
 import { map, startWith, switchMap } from 'rxjs/operators';
 import { Observable, Subject } from 'rxjs';
 
@@ -25,6 +24,7 @@ import {
   ProjectSearchRequest,
   FilesystemObjectData,
 } from '../schema';
+import { encode } from 'punycode';
 import { Collaborator } from '../models/collaborator';
 
 @Injectable()

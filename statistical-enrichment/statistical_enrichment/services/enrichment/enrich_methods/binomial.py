@@ -30,19 +30,19 @@ def fisher(geneNames, GOterms):
     N = len(query)
 
     df = df.groupby("goId").agg(
-        p_value=("query", lambda q: fisher_p(q.sum(), M, len(q), N)),
-        geneNames=("geneName", lambda gn: list(gn[np.in1d(gn, query)])),
-        goTerm=("goTerm", "first"),
-        goLabel=("goLabel", "first"),
+        p_value=('query', lambda q: fisher_p(q.sum(), M, len(q), N)),
+        geneNames=('geneName', lambda gn: list(gn[np.in1d(gn, query)])),
+        goTerm=('goTerm', 'first'),
+        goLabel=('goLabel', 'first'),
     )
 
-    df = df[df["p_value"] < 1].sort_values(by="p_value")
+    df = df[df['p_value'] < 1].sort_values(by='p_value')
 
-    df = df.reset_index().rename(columns={"p_value": "p-value"})
+    df = df.reset_index().rename(columns={'p_value': 'p-value'})
 
-    df["gene"] = df.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
+    df['gene'] = df.apply(lambda m: f"{m['goTerm']} ({m['goId']})", axis=1)
 
-    return df.to_json(orient="records")
+    return df.to_json(orient='records')
 
 
 def binom_p(x, n, N, M):
@@ -94,7 +94,7 @@ def binom_main(query, counts, ids, annotations):
 def binomial(geneNames, GOterms):
     go = pd.DataFrame(GOterms)
     goGenes = go["geneName"]
-    goId = go["goId"]
+    goId = go['goId']
     gene, p = binom_main(geneNames, list(map(lambda g: 1, geneNames)), goGenes, goId)
     r = list(map(lambda gp: {"gene": gp[0], "p-value": -np.log10(gp[1])}, zip(gene, p)))
     return r
