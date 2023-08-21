@@ -15,7 +15,6 @@ import { Observable } from 'rxjs';
 import { Pane, PaneIDs, WorkspaceManager } from 'app/shared/workspace-manager';
 import { ShouldConfirmUnload } from 'app/shared/modules';
 
-
 @Component({
   selector: 'app-workspace',
   templateUrl: './workspace.component.html',

@@ -50,12 +50,12 @@
           },
           {
             "name": "Group source root based imports",
-            "match": "^(app\/|environments\/)",
+            "match": "^(app/|environments/)",
             "order": 30
           },
           {
             "name": "Group source relative based imports",
-            "match": "^(\\.+\/)",
+            "match": "^(\\.+/)",
             "order": 40
           }
         ],

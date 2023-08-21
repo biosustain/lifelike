@@ -1,9 +1,5 @@
 <ng-container *ngIf="loadTask.status$ | async as status">
-  <div
-    class="module"
-    appContainerBreakpoints
-    [appShowPlaceholders]="status.placeholdersShown"
-  >
+  <div class="module" appContainerBreakpoints [appShowPlaceholders]="status.placeholdersShown">
     <div class="module-header">
       <div class="module-toolbar mt-2">
         <ng-container *ngIf="searchTypes">
@@ -16,12 +12,8 @@
         </ng-container>
       </div>
       <div class="d-flex w-100 justify-content-start">
-        <div class="btn btn-link p-0 mr-3" (click)="openAdvancedSearch()">
-          Advanced Search
-        </div>
-        <div class="btn btn-link p-0" (click)="openSynonymSearch()">
-          Find Synonyms
-        </div>
+        <div class="btn btn-link p-0 mr-3" (click)="openAdvancedSearch()">Advanced Search</div>
+        <div class="btn btn-link p-0" (click)="openSynonymSearch()">Find Synonyms</div>
       </div>
     </div>
 
@@ -29,19 +21,14 @@
       <div class="module-body-split-main overflow-auto" #body>
         <ng-container *ngIf="!valid; else searchEntered">
           <div class="module-body">
-            <div class="text-center my-4 px-4">
-              Please enter a query in the search box above.
-            </div>
+            <div class="text-center my-4 px-4">Please enter a query in the search box above.</div>
           </div>
         </ng-container>
 
         <ng-template #searchEntered>
           <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
             <ng-container *ngIf="results.length; else noResults">
-              <div
-                class="module-body text-muted"
-                [appShowPlaceholders]="status.placeholdersShown"
-              >
+              <div class="module-body text-muted" [appShowPlaceholders]="status.placeholdersShown">
                 <div class="mb-3">
                   <app-results-summary
                     [page]="params.page"
@@ -95,7 +82,7 @@
                         >Created by
                         <app-user [user]="result.item.user"></app-user>
                         on
-                        {{ result.item.creationDate | date : "fullDate" }}</i
+                        {{ result.item.creationDate | date : 'fullDate' }}</i
                       >
                     </div>
                     <div class="mt-2 paragraph-truncate-3">
@@ -112,13 +99,8 @@
                           [appInnerXML]="result.item.highlight[0]"
                         ></app-highlight-text>
                       </div>
-                      <div
-                        class="d-flex align-items-center justify-content-end"
-                      >
-                        <a
-                          *ngIf="result.item.doi"
-                          [href]="result.item.doi"
-                          target="_blank"
+                      <div class="d-flex align-items-center justify-content-end">
+                        <a *ngIf="result.item.doi" [href]="result.item.doi" target="_blank"
                           >DOI Link</a
                         >
                       </div>
@@ -143,9 +125,7 @@
                 </div>
               </div>
               <div *ngIf="!emptyParams" class="module-body">
-                <div class="text-center my-4 px-4">
-                  No records match your current filters.
-                </div>
+                <div class="text-center my-4 px-4">No records match your current filters.</div>
               </div>
             </ng-template>
           </ng-container>

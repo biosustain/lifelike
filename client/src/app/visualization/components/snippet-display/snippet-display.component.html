@@ -1,28 +1,22 @@
 <div *ngIf="dataLoaded && snippetData && legend; else loadingSpinner">
   <div id="num-snippets-container" class="row align-items-center mb-2">
     <div class="col">
-      <span *ngIf="totalResults === 0; else nonZeroResults"
-        >Showing 0 - 0 of 0 snippets</span
-      >
+      <span *ngIf="totalResults === 0; else nonZeroResults">Showing 0 - 0 of 0 snippets</span>
       <ng-template #nonZeroResults>
         <span *ngIf="pageLimit * page > totalResults; else multiPageResults"
-          >Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of
-          {{ totalResults }}</span
+          >Showing {{ pageLimit * (page - 1) + 1 }} - {{ totalResults }} of {{ totalResults }}</span
         >
         <ng-template #multiPageResults>
           <span
-            >Showing {{ pageLimit * (page - 1) + 1 }} -
-            {{ pageLimit * page }} of {{ totalResults }}</span
+            >Showing {{ pageLimit * (page - 1) + 1 }} - {{ pageLimit * page }} of
+            {{ totalResults }}</span
           >
         </ng-template>
       </ng-template>
     </div>
 
     <div class="col">
-      <div
-        class="d-flex justify-content-end align-items-center"
-        *ngIf="totalResults !== 0"
-      >
+      <div class="d-flex justify-content-end align-items-center" *ngIf="totalResults !== 0">
         <label class="mr-1 mb-0">Page Limit</label>
         <select
           id="page-limit-select"
@@ -30,11 +24,7 @@
           [ngModel]="pageLimit"
           (change)="onLimitChange($event)"
         >
-          <option
-            type="number"
-            *ngFor="let limit of pageLimitList"
-            [value]="limit"
-          >
+          <option type="number" *ngFor="let limit of pageLimitList" [value]="limit">
             {{ limit }}
           </option>
         </select>
@@ -68,27 +58,19 @@
           draggable="true"
           (dragstart)="snippetDragStart($event, snippet)"
         >
-          <mat-panel-title
-            class="snippet-panel-title d-flex align-items-center text-primary"
-            >{{
-              snippet.publication.data.title || "Unknown" | truncate : 240
-            }}</mat-panel-title
-          >
-          <mat-panel-description
-            class="snippet-panel-pub-data d-flex justify-content-end"
-          >
+          <mat-panel-title class="snippet-panel-title d-flex align-items-center text-primary">{{
+            snippet.publication.data.title || 'Unknown' | truncate : 240
+          }}</mat-panel-title>
+          <mat-panel-description class="snippet-panel-pub-data d-flex justify-content-end">
             <i class="text-right"
-              >{{
-                snippet.publication.data.journal || "Unknown" | truncate : 100
-              }}
-              ({{ snippet.publication.data.pubYear || "Unknown" }})</i
+              >{{ snippet.publication.data.journal || 'Unknown' | truncate : 100 }} ({{
+                snippet.publication.data.pubYear || 'Unknown'
+              }})</i
             >
           </mat-panel-description>
         </mat-expansion-panel-header>
 
-        <div
-          class="d-flex flex-column justify-content-between align-items-start px-4 py-3"
-        >
+        <div class="d-flex flex-column justify-content-between align-items-start px-4 py-3">
           <app-highlight-snippet
             [snippet]="snippet.reference.data.sentence"
             [entry1Text]="snippet.reference.data.entry1Text"
@@ -106,10 +88,7 @@
           <div class="mt-2 w-100">
             <div class="d-flex justify-content-start w-100">
               <label class="m-0 mr-1 font-weight-bold">Pubtator PMID:</label>
-              <p
-                *ngIf="snippet.publication.data.pmid; else unknownPmid"
-                class="m-0"
-              >
+              <p *ngIf="snippet.publication.data.pmid; else unknownPmid" class="m-0">
                 <a
                   class="pubtator-link"
                   [href]="getSnippetPubtatorLink(snippet.publication.data.pmid)"
@@ -127,16 +106,9 @@
     <ng-template #noSnippets>No Association Snippets Found!</ng-template>
   </div>
 
-  <div
-    *ngIf="maxPages > 1"
-    class="py-2 d-flex justify-content-center align-items-center"
-  >
+  <div *ngIf="maxPages > 1" class="py-2 d-flex justify-content-center align-items-center">
     <div *ngIf="page !== 1">
-      <button
-        type="button"
-        class="btn btn-outline-secondary mx-1"
-        (click)="previousPage()"
-      >
+      <button type="button" class="btn btn-outline-secondary mx-1" (click)="previousPage()">
         <i class="fa fa-fw fa-caret-left"></i> Previous
       </button>
     </div>
@@ -144,11 +116,7 @@
     <div class="d-flex justify-content-center align-items-center">
       <button
         type="button"
-        [class]="
-          (page === 1
-            ? 'btn btn-outline-primary'
-            : 'btn btn-outline-secondary') + ' mx-1'
-        "
+        [class]="(page === 1 ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'"
         (click)="goToPage(1)"
       >
         1
@@ -160,26 +128,19 @@
       *ngFor="let button of pageButtons"
       type="button"
       [class]="
-        (page === button
-          ? 'btn btn-outline-primary'
-          : 'btn btn-outline-secondary') + ' mx-1'
+        (page === button ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'
       "
       (click)="goToPage(button)"
     >
       {{ button }}
     </button>
 
-    <div
-      *ngIf="maxPages !== 1"
-      class="d-flex justify-content-center align-items-center"
-    >
+    <div *ngIf="maxPages !== 1" class="d-flex justify-content-center align-items-center">
       <div *ngIf="page + 2 < maxPages">...</div>
       <button
         type="button"
         [class]="
-          (page === maxPages
-            ? 'btn btn-outline-primary'
-            : 'btn btn-outline-secondary') + ' mx-1'
+          (page === maxPages ? 'btn btn-outline-primary' : 'btn btn-outline-secondary') + ' mx-1'
         "
         (click)="goToPage(maxPages)"
       >
@@ -188,21 +149,14 @@
     </div>
 
     <div *ngIf="page !== maxPages">
-      <button
-        type="button"
-        class="btn btn-outline-secondary mx-1"
-        (click)="nextPage()"
-      >
+      <button type="button" class="btn btn-outline-secondary mx-1" (click)="nextPage()">
         Next <i class="fa fa-fw fa-caret-right"></i>
       </button>
     </div>
   </div>
 </div>
 <ng-template #loadingSpinner>
-  <div
-    id="loading-spinner-container"
-    class="d-flex justify-content-center align-items-center"
-  >
+  <div id="loading-spinner-container" class="d-flex justify-content-center align-items-center">
     <div class="spinner-border text-primary" role="status">
       <span class="sr-only">Loading...</span>
     </div>
