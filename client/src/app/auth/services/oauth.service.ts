@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 
 import { State } from 'app/auth/store/state';
 
 import { AuthActions } from '../store';
-import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class LifelikeOAuthService {
