@@ -25,11 +25,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { defer, forEach, uniqueId, kebabCase, first as _first } from 'lodash-es';
 import { PDFDocumentProxy } from 'pdfjs-dist/types/display/api';
 import { BehaviorSubject, Subject } from 'rxjs';
-import {
-  filter,
-  map,
-  takeUntil,
-} from 'rxjs/operators';
+import { filter, map, takeUntil } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openModal } from 'app/shared/utils/modals';
