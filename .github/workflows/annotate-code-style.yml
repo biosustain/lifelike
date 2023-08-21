@@ -59,4 +59,4 @@ jobs:
           prettier_auto_fix: ${{ github.event.inputs.prettierAutoFix || true }}
           prettier_command_prefix: |
             docker run --rm -v $(pwd):/work tmknom/prettier:2.8.7
-          prettier_args: --ignore-unknown --loglevel error
+          prettier_args: --ignore-unknown
