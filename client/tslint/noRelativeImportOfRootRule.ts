@@ -2,6 +2,7 @@ import * as Lint from 'tslint';
 import * as ts from 'typescript';
 import { isExternalModuleNameRelative } from 'typescript';
 import { findImports, ImportKind } from 'tsutils';
+
 import * as path from 'path';
 
 export class Rule extends Lint.Rules.AbstractRule {

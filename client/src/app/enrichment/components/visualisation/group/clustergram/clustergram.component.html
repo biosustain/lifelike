@@ -33,9 +33,7 @@
           [ngClass]="{ match: value }"
           [style.backgroundColor]="value && geneColor"
         ></td>
-        <td *ngIf="others" class="match others">
-          {{ entry.value.others || '' }}
-        </td>
+        <td *ngIf="others" class="match others">{{ entry.value.others || '' }}</td>
       </tr>
       <tr *ngIf="others">
         <th scope="row">others</th>

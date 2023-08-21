@@ -2,7 +2,6 @@ import { APP_INITIALIZER, ModuleWithProviders, NgModule, Optional, SkipSelf } fr
 
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
-import { AuthConfig, OAuthModule, OAuthModuleConfig, OAuthStorage } from 'angular-oauth2-oidc';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -15,6 +14,7 @@ import { LifelikeAuthGuard } from './guards/auth-guard.service';
 import { LoginGuard } from './guards/login-guard.service';
 import { LifelikeOAuthService } from './services/oauth.service';
 import { authAppInitializerFactory } from './auth-app-initializer.factory';
+import { AuthConfig, OAuthModule, OAuthModuleConfig, OAuthStorage } from 'angular-oauth2-oidc';
 import { authConfig } from './auth-config';
 import { authModuleConfig } from './auth-module-config';
 import { environment } from '../../environments/environment';

@@ -16,12 +16,12 @@ login_required_dummy_view = auth.login_required(lambda: None)
 def default_login_required():
     # exclude 404 errors and static routes
     # uses split to handle blueprint static routes as well
-    if not request.endpoint or request.endpoint.rsplit(".", 1)[-1] == "static":
+    if not request.endpoint or request.endpoint.rsplit('.', 1)[-1] == 'static':
         return
 
     view = app.view_functions[request.endpoint]
 
-    if getattr(view, "login_exempt", False):
+    if getattr(view, 'login_exempt', False):
         return
 
     return login_required_dummy_view()

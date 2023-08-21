@@ -45,18 +45,13 @@
           },
           {
             "name": "Group 3-rd party imports",
-            "match": "^(?!app|environments|\\.).+",
+            "match": "^[^(app)(\\.)]",
             "order": 20
           },
           {
             "name": "Group source ***ARANGO_USERNAME*** based imports",
-            "match": "^(app/|environments/)",
+            "match": "^app/",
             "order": 30
-          },
-          {
-            "name": "Group source relative based imports",
-            "match": "^(\\.+/)",
-            "order": 40
           }
         ],
         "named-imports-order": "any",

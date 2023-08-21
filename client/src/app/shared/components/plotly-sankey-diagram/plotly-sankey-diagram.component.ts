@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 
 import { selectAll, select } from 'd3-selection';
-import * as PlotlyType from 'plotly.js';
-import { Layout, Data } from 'plotly.js';
 
 import { uuidv4 } from 'app/shared/utils';
+
+import * as PlotlyType from 'plotly.js';
+import { Layout, Data } from 'plotly.js';
 
 declare const Plotly: typeof PlotlyType;
 
