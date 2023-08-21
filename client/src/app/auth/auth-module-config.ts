@@ -1,7 +1,7 @@
-import { OAuthModuleConfig } from 'angular-oauth2-oidc';
 import { compact } from 'lodash-es';
-
 import { environment } from 'environments/environment';
+
+import { OAuthModuleConfig } from 'angular-oauth2-oidc';
 
 export const authModuleConfig: OAuthModuleConfig = {
   resourceServer: {

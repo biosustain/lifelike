@@ -3,7 +3,6 @@ import { Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
-import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { Store } from '@ngrx/store';
 import { every } from 'lodash-es';
 import { BehaviorSubject, combineLatest, EMPTY, Observable } from 'rxjs';
@@ -14,6 +13,7 @@ import { ErrorResponse } from 'app/shared/schemas/common';
 import { SnackbarActions } from 'app/shared/store';
 import { AccountService } from 'app/users/services/account.service';
 
+import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
 import { AuthActions } from '../store';
 
 @Injectable({ providedIn: 'root' })
