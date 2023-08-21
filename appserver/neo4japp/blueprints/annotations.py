@@ -4,18 +4,12 @@ import html
 import io
 import json
 import time
+import unicodedata
 
 import sqlalchemy as sa
 
 from datetime import datetime
-from flask import (
-    Blueprint,
-    current_app,
-    g,
-    make_response,
-    request,
-    jsonify,
-)
+from flask import Blueprint, current_app, g, make_response, request, jsonify, send_file
 from flask.views import MethodView
 from http import HTTPStatus
 from json import JSONDecodeError
@@ -23,6 +17,7 @@ from marshmallow import validate, fields
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
 from typing import Optional, List, Dict, Any
+from urllib.parse import quote
 from webargs.flaskparser import use_args
 
 from neo4japp.exceptions import wrap_exceptions
@@ -91,6 +86,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
+from ..utils import FileContentBuffer
 from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
 from ..utils.string import sub_whitespace
@@ -1116,7 +1112,6 @@ class GlobalAnnotationListView(MethodView):
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())
-    @wrap_exceptions(ServerException, title='Could not delete exclusion')
     def delete(self, params):
         yield g.current_user
 
@@ -1125,49 +1120,51 @@ class GlobalAnnotationListView(MethodView):
         exclusion_pids = [gid for gid, sid in params['pids'] if sid == -1]
         inclusion_pids = [(gid, sid) for gid, sid in params['pids'] if sid != -1]
 
-        with db.session.begin_nested():
-            if exclusion_pids:
-                query = GlobalList.__table__.delete().where(
-                    GlobalList.id.in_(exclusion_pids)
-                )
-                try:
-                    db.session.execute(query)
-                except SQLAlchemyError as e:
-                    raise ServerException(
-                        title='Could not delete exclusion',
-                        message='A database error occurred when deleting the global exclusion(s).',
-                    ) from e
-                else:
-                    current_app.logger.info(
-                        f'Deleted {len(exclusion_pids)} global exclusions',
-                        extra=UserEventLog(
-                            username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value,
-                        ).to_dict(),
-                    )
+        if exclusion_pids:
+            query = GlobalList.__table__.delete().where(
+                GlobalList.id.in_(exclusion_pids)
+            )
+            try:
+                db.session.execute(query)
+                db.session.commit()
 
-            if inclusion_pids:
-                manual_as = get_manual_annotation_service()
-                try:
-                    manual_as.remove_global_inclusions(inclusion_pids)
-                    current_app.logger.info(
-                        f'Deleted {len(inclusion_pids)} global inclusions',
-                        extra=UserEventLog(
-                            username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value,
-                        ).to_dict(),
-                    )
-                except Exception as e:
-                    current_app.logger.error(
-                        f'{str(e)}',
-                        extra=UserEventLog(
-                            username=g.current_user.username,
-                            event_type=LogEventType.ANNOTATION.value,
-                        ).to_dict(),
-                    )
-                    raise ServerException(
-                        message='A database error occurred when deleting the global inclusion(s).'
-                    ) from e
+                current_app.logger.info(
+                    f'Deleted {len(exclusion_pids)} global exclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value,
+                    ).to_dict(),
+                )
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                raise ServerException(
+                    title='Could not delete exclusion',
+                    message='A database error occurred when deleting the global exclusion(s).',
+                ) from e
+
+        if inclusion_pids:
+            manual_as = get_manual_annotation_service()
+            try:
+                manual_as.remove_global_inclusions(inclusion_pids)
+                current_app.logger.info(
+                    f'Deleted {len(inclusion_pids)} global inclusions',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value,
+                    ).to_dict(),
+                )
+            except Exception as e:
+                current_app.logger.error(
+                    f'{str(e)}',
+                    extra=UserEventLog(
+                        username=g.current_user.username,
+                        event_type=LogEventType.ANNOTATION.value,
+                    ).to_dict(),
+                )
+                raise ServerException(
+                    title='Could not delete inclusion',
+                    message='A database error occurred when deleting the global inclusion(s).',
+                ) from e
 
         yield jsonify(dict(result='success'))
 
@@ -1188,10 +1185,12 @@ def get_pdf_to_annotate(file_id):
     if not doc:
         raise FileNotFoundError(message=f'File with file id {file_id} not found.')
 
-    res = make_response(doc.content.raw_file)
-    res.headers['Content-Type'] = 'application/pdf'
-    res.headers['Content-Disposition'] = f'attachment;filename={doc.filename}.pdf'
-    return res
+    return send_file(
+        filename_or_fp=io.BytesIO(doc.content.raw_file),
+        mimetype='application/pdf',
+        as_attachment=True,
+        attachment_filename=doc.filename,
+    )
 
 
 bp.add_url_rule(
