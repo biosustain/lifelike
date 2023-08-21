@@ -12,13 +12,9 @@ import {
   Output,
   SimpleChanges,
   ViewChild,
-  ViewEncapsulation,
 } from '@angular/core';
 
-import { distinctUntilChanged, map, pairwise, startWith, takeUntil } from 'rxjs/operators';
-import { isEqual, omit } from 'lodash-es';
-import { ReplaySubject, Subject } from 'rxjs';
-
+import { omit } from 'lodash-es';
 /**
  * current pdf.js build contains optional chaining
  * which is not supported by typescript
@@ -32,9 +28,12 @@ import {
   PDFPageProxy,
 } from 'pdfjs-dist/types/display/api';
 import { PageViewport } from 'pdfjs-dist/types/display/display_utils';
+import { distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { ReplaySubject, Subject } from 'rxjs';
+
 import { PDFProgressData, PDFSource, PDFViewerParams } from './interfaces';
 import { createEventBus } from '../utils/event-bus-utils';
-import { FindState, RenderTextMode } from '../utils/constants';
+import { RenderTextMode } from '../utils/constants';
 
 const PDFJS = pdfjsLib;
 let pdfjsViewer;

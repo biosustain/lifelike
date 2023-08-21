@@ -14,7 +14,7 @@ import { prioritisedCompileFind, MatchPriority } from 'app/shared/utils/find/pri
 import { GraphTrace } from 'app/shared/providers/graph-type/interfaces';
 import { isNotEmpty } from 'app/shared/utils';
 
-import { indexByProperty } from '..';
+import { indexByProperty } from '../';
 import { Match, EntityType, SearchNode, SearchLink, MatchGenerator } from '../../interfaces/search';
 
 /* NOTE:
