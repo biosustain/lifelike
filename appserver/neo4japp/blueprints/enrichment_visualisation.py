@@ -110,7 +110,6 @@ def enrich_context():
     term = data.get('term', '')
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
-    print(request.get_json())
     create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
