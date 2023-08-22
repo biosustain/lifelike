@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { isNil, uniqueId, merge } from 'lodash-es';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, defer } from 'rxjs';
 import { finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -51,6 +51,62 @@ export class ObjectListComponent {
     protected readonly elementRef: ElementRef,
     protected readonly progressDialog: ProgressDialog
   ) {}
+
+  caluculateColumnsWidths(containerWidth: {width:number}) {
+    const CHECKBOX = 19.2 + 16 + 7.2;
+    const STAR = this.showStars ? 7.2 + 16 + 7.2 : 0;
+    const NAME = 140;
+    const ANNOTATION = 150;
+    const SIZE = 80;
+    const MODIFIED = 80;
+    const AUTHOR = 80;
+    const CONTROLS = this.objectControls ? 80 : 0;
+    const columns = {
+      checkbox: 0,
+      star: 0,
+      name: NAME,
+      annotation: 0,
+      size: 0,
+      modified: 0,
+      author: 0,
+      controls: 0,
+    };
+    let remainingWidth = (containerWidth?.width ?? 0) - NAME;
+    if (remainingWidth < 0) {
+      columns.name += remainingWidth;
+      return columns;
+    }
+    if (remainingWidth > CHECKBOX) {
+      columns.checkbox = CHECKBOX;
+      remainingWidth -= CHECKBOX;
+    }
+    if (remainingWidth > CONTROLS) {
+      columns.controls = CONTROLS;
+      remainingWidth -= CONTROLS;
+    }
+    if (remainingWidth > STAR) {
+      columns.star = STAR;
+      remainingWidth -= STAR;
+    }
+    if (remainingWidth > ANNOTATION) {
+      columns.annotation = ANNOTATION;
+      remainingWidth -= ANNOTATION;
+    }
+    if (remainingWidth > SIZE) {
+      columns.size = SIZE;
+      remainingWidth -= SIZE;
+    }
+    if (remainingWidth > MODIFIED) {
+      columns.modified = MODIFIED;
+      remainingWidth -= MODIFIED;
+    }
+    if (remainingWidth > AUTHOR) {
+      columns.author = AUTHOR;
+      remainingWidth -= AUTHOR;
+    }
+    columns.name += remainingWidth;
+    return columns;
+  }
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
     const dataTransfer: DataTransfer = event.dataTransfer;
