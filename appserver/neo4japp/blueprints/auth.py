@@ -90,7 +90,7 @@ class TokenService:
         }
 
     def _get_key(self, token: str):
-        if config['JWKS_URL'] is not None:
+        if config['JWKS_URL']:
             return get_jwt_client().get_signing_key_from_jwt(token).key
         elif config['JWT_SECRET']:
             return config['JWT_SECRET']
