@@ -1,30 +1,10 @@
-import {
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  defer,
-  Subject,
-} from 'rxjs';
-import {
-  finalize,
-  map,
-  mergeMap,
-  shareReplay,
-  take,
-  tap,
-} from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, defer, Subject } from 'rxjs';
+import { finalize, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
