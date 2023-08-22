@@ -260,7 +260,7 @@ class ManualAnnotationType(Enum):
 # then entity hyperlinks
 SEARCH_LINKS = {
     'ncbi': 'https://www.ncbi.nlm.nih.gov/gene/?term=',
-    'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=',
+    'uniprot': 'https://www.uniprot.org/uniprotkb?query=',
     'mesh': 'https://www.ncbi.nlm.nih.gov/mesh/?term=',
     'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=',
     'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=',
@@ -270,7 +270,7 @@ SEARCH_LINKS = {
 ENTITY_HYPERLINKS: Dict[str, Union[str, Dict[str, str]]] = {
     DatabaseType.CHEBI.value: 'https://www.ebi.ac.uk/chebi/searchId.do?chebiId=',
     DatabaseType.MESH.value: 'https://www.ncbi.nlm.nih.gov/mesh/',
-    DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprot/?sort=score&query=',
+    DatabaseType.UNIPROT.value: 'https://www.uniprot.org/uniprotkb?query=',
     DatabaseType.NCBI_GENE.value: 'https://www.ncbi.nlm.nih.gov/gene/',
     DatabaseType.NCBI_TAXONOMY.value: 'https://www.ncbi.nlm.nih.gov/'
     + 'Taxonomy/Browser/wwwtax.cgi?id=',
