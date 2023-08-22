@@ -32,56 +32,58 @@
 
     <div class="w-100" appElementObserver #container="appElementObserver">
       <table class="table module-body-table table-selectable" style="table-layout: fixed">
-        <colgroup *ngIf="caluculateColumnsWidths(container.size$ | async) as columnsWidhts">
+        <colgroup *ngIf="columnsWidth$ | async as columnsWidhts">
           <!-- Checkbox -->
           <col
-            [style.width.px]="columnsWidhts.checkbox"
-            [style.visibility]="columnsWidhts.checkbox ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.checkbox]"
+            [style.visibility]="columnsWidhts[columns.checkbox] ? 'visible' : 'collapse'"
           />
 
           <!-- "Starred" -->
           <col
-            [style.width.px]="columnsWidhts.star"
-            [style.visibility]="columnsWidhts.star && showStars ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.star]"
+            [style.visibility]="columnsWidhts[columns.star] && showStars ? 'visible' : 'collapse'"
           />
 
           <!-- Name -->
-          <col [style.width.px]="columnsWidhts.name"/>
+          <col [style.width.px]="columnsWidhts[columns.name]" />
 
           <!-- Annotated -->
           <col
-            [style.width.px]="columnsWidhts.annotation"
-            [style.visibility]="columnsWidhts.annotation ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.annotation]"
+            [style.visibility]="columnsWidhts[columns.annotation] ? 'visible' : 'collapse'"
           />
 
           <!-- Size -->
           <col
-            [style.width.px]="columnsWidhts.size"
-            [style.visibility]="columnsWidhts.size ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.size]"
+            [style.visibility]="columnsWidhts[columns.size] ? 'visible' : 'collapse'"
           />
 
           <!-- Created -->
           <col
-            [style.width.px]="columnsWidhts.modified"
-            [style.visibility]="columnsWidhts.modified ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.modified]"
+            [style.visibility]="columnsWidhts[columns.modified] ? 'visible' : 'collapse'"
           />
 
           <!-- Author -->
           <col
-            [style.width.px]="columnsWidhts.author"
-            [style.visibility]="columnsWidhts.author ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.author]"
+            [style.visibility]="columnsWidhts[columns.author] ? 'visible' : 'collapse'"
           />
 
           <!-- Dropdown -->
           <col
-            [style.width.px]="columnsWidhts.controls"
-            [style.visibility]="columnsWidhts.controls && objectControls ? 'visible' : 'collapse'"
+            [style.width.px]="columnsWidhts[columns.controls]"
+            [style.visibility]="
+              columnsWidhts[columns.controls] && objectControls ? 'visible' : 'collapse'
+            "
           />
         </colgroup>
         <thead>
         <tr>
           <!-- Checkbox -->
-          <th class="text-truncate" style="width: 2.5rem">
+            <th class="text-truncate">
             <ng-container *ngIf="objects != null && objects.multipleSelection">
               <div class="custom-control custom-checkbox">
                 <input
@@ -97,22 +99,22 @@
           </th>
 
           <!-- "Starred" -->
-          <th style="width: 30px"></th>
+            <th></th>
 
           <!-- Name -->
-          <th class="text-truncate" style="width: 200px">Name</th>
+            <th class="text-truncate">Name</th>
 
           <!-- Annotated -->
-          <th class="text-truncate" style="width: 150px">Annotated</th>
+            <th class="text-truncate">Annotated</th>
 
           <!-- Size -->
-          <th class="text-truncate" style="width: 80px">Size</th>
+            <th class="text-truncate">Size</th>
 
           <!-- Created -->
-          <th class="text-truncate" style="width: 80px">Modified</th>
+            <th class="text-truncate">Modified</th>
 
           <!-- Author -->
-          <th class="text-truncate" style="width: 80px">User</th>
+            <th class="text-truncate">User</th>
 
           <!-- Dropdown -->
           <th style="width: 80px"></th>
@@ -167,7 +169,7 @@
           </td>
 
           <!-- Name -->
-          <td class="align-middle text-nowrap overflow-hidden">
+            <td class="align-middle text-nowrap overflow-hidden">
             <div
               class="d-flex align-items-center"
               popoverTitle="Description"
@@ -238,7 +240,7 @@
           </td>
 
           <!-- Annotated -->
-          <td class="align-middle text-nowrap overflow-hidden text-truncate">
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <div
               *ngIf="object.isAnnotatable"
               class="text-truncate"
@@ -263,19 +265,19 @@
           </td>
 
           <!-- Size -->
-          <td class="align-middle text-nowrap overflow-hidden text-truncate">
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
               <span *ngIf="object.size" class="text-truncate" appHasPlaceholder>
                 {{ object.size }}
               </span>
           </td>
 
           <!-- Created -->
-          <td class="align-middle text-nowrap overflow-hidden text-truncate">
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <span appHasPlaceholder>{{ object.updatedTimestamp | date : 'shortDate' }}</span>
           </td>
 
           <!-- Author -->
-          <td class="align-middle text-nowrap overflow-hidden text-truncate">
+            <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <app-user [user]="object.user" class="text-nowrap"></app-user>
           </td>
 

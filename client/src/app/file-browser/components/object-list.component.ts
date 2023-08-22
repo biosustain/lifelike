@@ -1,11 +1,20 @@
-import { Component, ElementRef, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { isNil, uniqueId, merge } from 'lodash-es';
+import { isNil, merge, uniqueId } from 'lodash-es';
+import { isEqual as _isEqual, defer as _defer } from 'lodash/fp';
 import { BehaviorSubject, defer } from 'rxjs';
-import { finalize, map, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
@@ -14,11 +23,24 @@ import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
+import { ElementObserverDirective } from 'app/shared/directives/element-observer.directive';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { getObjectLabel } from '../utils/objects';
 import { FilesystemService } from '../services/filesystem.service';
+
+enum Columns {
+  checkbox,
+  star,
+  name,
+  annotation,
+  size,
+  modified,
+  author,
+  controls,
+}
 
 @Component({
   selector: 'app-object-list',
@@ -38,6 +60,9 @@ export class ObjectListComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   MAX_TOOLTIP_LENGTH = 800;
+  private readonly columns = Columns;
+  @ViewChild(ElementObserverDirective, { static: true })
+  tableContainerObserver: ElementObserverDirective;
 
   constructor(
     protected readonly router: Router,
@@ -49,63 +74,61 @@ export class ObjectListComponent {
     protected readonly actions: FilesystemObjectActions,
     protected readonly filesystemService: FilesystemService,
     protected readonly elementRef: ElementRef,
-    protected readonly progressDialog: ProgressDialog
+    protected readonly progressDialog: ProgressDialog,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
-  caluculateColumnsWidths(containerWidth: { width: number }) {
-    const CHECKBOX = 19.2 + 16 + 7.2;
-    const STAR = this.showStars ? 7.2 + 16 + 7.2 : 0;
-    const NAME = 140;
-    const ANNOTATION = 150;
-    const SIZE = 80;
-    const MODIFIED = 80;
-    const AUTHOR = 80;
-    const CONTROLS = this.objectControls ? 80 : 0;
-    const columns = {
-      checkbox: 0,
-      star: 0,
-      name: NAME,
-      annotation: 0,
-      size: 0,
-      modified: 0,
-      author: 0,
-      controls: 0,
-    };
-    let remainingWidth = (containerWidth?.width ?? 0) - NAME;
-    if (remainingWidth < 0) {
-      columns.name += remainingWidth;
-      return columns;
+  private readonly COLUMNS_WIDTHS_IN_IMPORTANCE_ORDER: Map<Columns, number> = new Map([
+    [Columns.name, 260],
+    [Columns.checkbox, 19.2 + 16 + 7.2],
+    [Columns.controls, 80],
+    [Columns.star, 7.2 + 16 + 7.2],
+    [Columns.annotation, 150],
+    [Columns.author, 80],
+    [Columns.modified, 80],
+    [Columns.size, 90],
+  ]);
+
+  get activeColumnsWidths(): Map<Columns, number> {
+    // Zeroed disabled columns while preserving order
+    const activeColumnsWidth = new Map(this.COLUMNS_WIDTHS_IN_IMPORTANCE_ORDER);
+    if (!this.showStars) {
+      activeColumnsWidth.set(Columns.star, 0);
     }
-    if (remainingWidth > CHECKBOX) {
-      columns.checkbox = CHECKBOX;
-      remainingWidth -= CHECKBOX;
+    if (!this.objectControls) {
+      activeColumnsWidth.set(Columns.controls, 0);
     }
-    if (remainingWidth > CONTROLS) {
-      columns.controls = CONTROLS;
-      remainingWidth -= CONTROLS;
+    return activeColumnsWidth;
+  }
+
+  columnsWidth$ = defer(() =>
+    // This is subscribed within tableContainer thereferore if we defer it,
+    // we can be sure that it will be subscribed after tableContainerObserver is initialized
+    this.tableContainerObserver.size$.pipe(
+      map((containerSize) => this.caluculateColumnsWidths(containerSize)),
+      distinctUntilChanged(_isEqual),
+      // Simply couldn't get it to work without this
+      tap(() => _defer(() => this.cdr.detectChanges())),
+      debug('columnsWidth$')
+    )
+  );
+
+  caluculateColumnsWidths(containerWidth: { width: number }): Record<Columns, number> {
+    let remainingWidth = containerWidth?.width ?? 0;
+    const columnsWidths = {
+      [Columns.name]: 0,
+    } as Record<Columns, number>;
+
+    for (const [column, defaultWidth] of this.activeColumnsWidths.entries()) {
+      if (remainingWidth > defaultWidth) {
+        columnsWidths[column] = defaultWidth;
+        remainingWidth -= defaultWidth;
+      } else {
+        break;
+      }
     }
-    if (remainingWidth > STAR) {
-      columns.star = STAR;
-      remainingWidth -= STAR;
-    }
-    if (remainingWidth > ANNOTATION) {
-      columns.annotation = ANNOTATION;
-      remainingWidth -= ANNOTATION;
-    }
-    if (remainingWidth > SIZE) {
-      columns.size = SIZE;
-      remainingWidth -= SIZE;
-    }
-    if (remainingWidth > MODIFIED) {
-      columns.modified = MODIFIED;
-      remainingWidth -= MODIFIED;
-    }
-    if (remainingWidth > AUTHOR) {
-      columns.author = AUTHOR;
-      remainingWidth -= AUTHOR;
-    }
-    columns.name += remainingWidth;
-    return columns;
+    columnsWidths[Columns.name] += remainingWidth;
+    return columnsWidths;
   }
 
   objectDragStart(event: DragEvent, object: FilesystemObject) {
