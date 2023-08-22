@@ -77,42 +77,47 @@ def data_upgrades():
             old_zip_file = zipfile.ZipFile(io.BytesIO(raw))
             map_obj = json.loads(old_zip_file.read('graph.json'))
 
-            for i, node in enumerate(map_obj['nodes']):
-                if node['label'] == 'protein':
-                    data = node['data']
+            if 'nodes' in map_obj:
+                for i, node in enumerate(map_obj['nodes']):
+                    if node.get('label', None) == 'protein':
+                        if 'data' in node:
+                            data = node['data']
 
-                    for property in ['search', 'references', 'hyperlinks']:
-                        if property in data:
-                            updated_links = []
+                            for property in ['search', 'references', 'hyperlinks']:
+                                if property in data:
+                                    updated_links = []
 
-                            for link in data[property]:
-                                if 'url' in link:
-                                    link['url'] = link['url'].replace(
-                                        'https://www.uniprot.org/uniprot/?sort=score&query=',
-                                        'https://www.uniprot.org/uniprotkb?query=',
-                                    )
-                                updated_links.append(link)
-                            data[property] = updated_links
-                    map_obj['nodes'][i]['data'] = data
+                                    for link in data[property]:
+                                        if 'url' in link:
+                                            link['url'] = link['url'].replace(
+                                                'https://www.uniprot.org/uniprot/?sort=score&query=',
+                                                'https://www.uniprot.org/uniprotkb?query=',
+                                            )
+                                        updated_links.append(link)
+                                    data[property] = updated_links
+                            map_obj['nodes'][i]['data'] = data
 
-            for i, group in enumerate(map_obj['groups']):
-                for j, node in enumerate(group['members']):
-                    if node['label'] == 'protein':
-                        data = node['data']
+            if 'groups' in map_obj:
+                for i, group in enumerate(map_obj['groups']):
+                    if 'members' in group:
+                        for j, node in enumerate(group['members']):
+                            if node.get('label', None) == 'protein':
+                                if 'data' in node:
+                                    data = node['data']
 
-                        for property in ['search', 'references', 'hyperlinks']:
-                            if property in data:
-                                updated_links = []
+                                    for property in ['search', 'references', 'hyperlinks']:
+                                        if property in data:
+                                            updated_links = []
 
-                                for link in data[property]:
-                                    if 'url' in link:
-                                        link['url'] = link['url'].replace(
-                                            'https://www.uniprot.org/uniprot/?sort=score&query=',
-                                            'https://www.uniprot.org/uniprotkb?query=',
-                                        )
-                                    updated_links.append(link)
-                                data[property] = updated_links
-                        map_obj['groups'][i]['members'][j]['data'] = data
+                                            for link in data[property]:
+                                                if 'url' in link:
+                                                    link['url'] = link['url'].replace(
+                                                        'https://www.uniprot.org/uniprot/?sort=score&query=',
+                                                        'https://www.uniprot.org/uniprotkb?query=',
+                                                    )
+                                                updated_links.append(link)
+                                            data[property] = updated_links
+                                    map_obj['groups'][i]['members'][j]['data'] = data
 
             # At this point all uniprot links are fixed, we just need to zip the map and save
             byte_graph = json.dumps(map_obj, separators=(',', ':')).encode('utf-8')
@@ -123,24 +128,10 @@ def data_upgrades():
                 new_zip_file.writestr('graph.json', byte_graph)
 
                 # Get all top level image nodes
-                for node in map_obj['nodes']:
-                    if node.get('image_id', None) is not None:
-                        image_name = "".join(['images/', node.get('image_id'), '.png'])
-                        try:
-                            image_bytes = old_zip_file.read(image_name)
-                        except KeyError:
-                            # For some reason there was a node with an image id, but no
-                            # corresponding image file
-                            continue
-                        new_zip_file.writestr(image_name, image_bytes)
-
-                # Get any image nodes nested in a group
-                for group in map_obj['groups']:
-                    for node in group['members']:
-                        if node.get('image_id', None) is not None:
-                            image_name = "".join(
-                                ['images/', node.get('image_id'), '.png']
-                            )
+                if 'nodes' in map_obj:
+                    for node in map_obj['nodes']:
+                        if 'image_id' in node:
+                            image_name = "".join(['images/', node.get('image_id'), '.png'])
                             try:
                                 image_bytes = old_zip_file.read(image_name)
                             except KeyError:
@@ -148,6 +139,23 @@ def data_upgrades():
                                 # corresponding image file
                                 continue
                             new_zip_file.writestr(image_name, image_bytes)
+
+                # Get any image nodes nested in a group
+                if 'groups' in map_obj:
+                    for group in map_obj['groups']:
+                        if 'members' in group:
+                            for node in group['members']:
+                                if 'image_id' in node:
+                                    image_name = "".join(
+                                        ['images/', node.get('image_id'), '.png']
+                                    )
+                                    try:
+                                        image_bytes = old_zip_file.read(image_name)
+                                    except KeyError:
+                                        # For some reason there was a node with an image id, but no
+                                        # corresponding image file
+                                        continue
+                                    new_zip_file.writestr(image_name, image_bytes)
 
             # Create the update mapping object
             new_bytes = zip_bytes.getvalue()
