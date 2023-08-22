@@ -47,7 +47,7 @@ jobs:
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          github_token: ${{ secrets.INFRA_PAT }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           auto_fix: ${{ github.event.inputs.autoFix }}
           neutral_check_on_warning: true
           continue_on_error: false
