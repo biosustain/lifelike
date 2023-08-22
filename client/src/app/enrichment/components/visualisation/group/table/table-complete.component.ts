@@ -3,6 +3,7 @@ import { Component, QueryList, ViewChildren, Input, OnChanges, SimpleChanges } f
 
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { DataService } from 'app/shared/services/table.service';
 import {
@@ -11,10 +12,12 @@ import {
   SortDirection,
 } from 'app/shared/directives/table-sortable-header.directive';
 import {
+  ChatGPTResponse,
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { ExtendedMap } from 'app/shared/utils/types';
+import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 
 import { EnrichmentVisualisationSelectService } from '../../../../services/enrichment-visualisation-select.service';
 
@@ -37,13 +40,14 @@ export class TableCompleteComponent implements OnChanges {
   constructor(
     readonly enrichmentService: EnrichmentVisualisationService,
     public service: DataService,
-    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService
+    readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
+    private readonly modalService: NgbModal
   ) {
     this.data$ = service.data$;
     this.total$ = service.total$;
   }
 
-  termContextExplanations = new ExtendedMap<string, Observable<string>>();
+  termContextExplanations = new ExtendedMap<string, Observable<ChatGPTResponse>>();
 
   selectGoTerm(goTerm: string) {
     this.enrichmentVisualisationSelectService.goTerm$.next(goTerm);
@@ -58,6 +62,12 @@ export class TableCompleteComponent implements OnChanges {
     return this.termContextExplanations.getSetLazily(term, (key) =>
       this.enrichmentService.enrichTermWithContext(key).pipe(shareReplay(1))
     );
+  }
+
+  openInfo(queryParams: object) {
+    const info = this.modalService.open(ChatgptResponseInfoModalComponent);
+    info.componentInstance.queryParams = queryParams;
+    return info.result;
   }
 
   ngOnChanges({ show, showMore, data }: SimpleChanges) {

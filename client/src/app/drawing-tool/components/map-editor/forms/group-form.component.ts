@@ -83,8 +83,11 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
 
   @Input() graphView: CanvasGraphView;
 
+  protected readonly TABS: string[] = ['properties', 'explanation', 'style'];
+
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+    super.ngOnChanges(changes);
   }
 
   ngOnDestroy() {

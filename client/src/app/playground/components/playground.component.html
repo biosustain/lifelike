@@ -5,16 +5,10 @@
     <app-cost-estimate-tooltip></app-cost-estimate-tooltip>
   </ng-template>
   <as-split class="align-items-stretch">
-    <as-split-area>
-      <div class="d-block m-2">
-        <app-compose-prompt-form
-          [entities]="entities"
-          [context]="context"
-          (prompt)="prompt$.next($event)"
-        ></app-compose-prompt-form>
-      </div>
+    <as-split-area class="d-flex h-auto flex-column">
+      <ng-container #promptForm></ng-container>
     </as-split-area>
-    <as-split-area>
+    <as-split-area class="d-flex h-auto flex-column">
       <div class="d-block m-2">
         <h6 class="mb-4"><strong>Request parameters</strong></h6>
         <div class="form-group">
@@ -39,52 +33,65 @@
         <ng-container #modeForm></ng-container>
       </div>
     </as-split-area>
-    <as-split-area class="d-flex h-100 flex-column">
+    <as-split-area class="d-flex h-auto flex-column">
       <div class="d-block m-2">
         <h6 class="mb-4"><strong>Output</strong></h6>
         <ng-container *ngIf="request$ | async as request; else noRequest">
-          <app-loading-indicator *ngIf="request.loading$ | async"></app-loading-indicator>
-          <app-module-error
-            class=""
-            *ngIf="request.error$ | async as error"
-            [error]="error"
-          ></app-module-error>
-          <ng-container *ngIf="result$ | async as result">
-            <ng-container *ngIf="resultChoices$ | async as choices">
-              <label>Text response{{ choices?.length > 1 ? 's' : '' }}</label>
-              <samp
-                *ngFor="let choice of choices; trackBy: trackByIndex"
-                class="card bg-light overflow-auto flex-grow-1 mb-2"
-                [style.whiteSpace]="'pre-wrap'"
-              >
-                <ng-container *ngIf="choice.message as message; else text">
-                  <p>
-                    <strong>{{ message.role }}:</strong> {{ message.content }}
-                  </p>
+          <ng-container
+            *ngIf="{
+              loading: request.loading$ | async,
+              error: request.error$ | async,
+              result: result$ | async,
+              resultChoices: resultChoices$ | async,
+              cost: requestCost$ | async,
+              cached: cached$ | async
+            } as state"
+          >
+            <app-loading-indicator *ngIf="state.loading; else ready"></app-loading-indicator>
+            <ng-template #ready>
+              <app-module-error
+                class=""
+                *ngIf="state.error as error"
+                [error]="error"
+              ></app-module-error>
+              <ng-container *ngIf="state.result as result">
+                <ng-container *ngIf="state.resultChoices as choices">
+                  <label>Text response {{ choices?.length > 1 ? 's' : '' }}</label>
+                  <samp
+                    *ngFor="let choice of choices; trackBy: trackByIndex"
+                    class="card bg-light overflow-auto flex-grow-1 mb-2"
+                    [style.whiteSpace]="'pre-wrap'"
+                  >
+                    <ng-container *ngIf="choice.message as message; else text">
+                      <p>
+                        <strong>{{ message.role }}:</strong> {{ message.content }}
+                      </p>
+                    </ng-container>
+                    <ng-template #text>
+                      {{ choice.text }}
+                    </ng-template>
+                  </samp>
                 </ng-container>
-                <ng-template #text>
-                  {{ choice.text }}
-                </ng-template>
-              </samp>
-            </ng-container>
-            <div class="mb-2">
-              Estimated cost
-              <span [ngbTooltip]="costEstimateTooltip" *ngIf="requestCost$ | async as cost">{{
-                cost | currency : 'USD' : 'symbol' : '1.2-7'
-              }}</span>
-              <ng-container *ngIf="cached$ | async"> (cached)</ng-container>
-            </div>
-            <details>
-              <summary><label [for]="raw.uid">Raw response</label></summary>
-              <samp
-                appUid
-                #raw="uid"
-                class="card bg-light overflow-auto flex-grow-1 mb-2"
-                [style.whiteSpace]="'pre-wrap'"
-              >
-                {{ resultJSON$ | async }}
-              </samp>
-            </details>
+                <div class="mb-2">
+                  Estimated cost
+                  <span [ngbTooltip]="costEstimateTooltip" *ngIf="state.cost as cost">{{
+                    cost | currency : 'USD' : 'symbol' : '1.2-7'
+                  }}</span>
+                  <ng-container *ngIf="state.cached"> (cached)</ng-container>
+                </div>
+                <details>
+                  <summary><label [for]="raw.uid">Raw response</label></summary>
+                  <samp
+                    appUid
+                    #raw="uid"
+                    class="card bg-light overflow-auto flex-grow-1 mb-2"
+                    [style.whiteSpace]="'pre-wrap'"
+                  >
+                    {{ resultJSON$ | async }}
+                  </samp>
+                </details>
+              </ng-container>
+            </ng-template>
           </ng-container>
         </ng-container>
         <ng-template #noRequest>No request has been submitted</ng-template>

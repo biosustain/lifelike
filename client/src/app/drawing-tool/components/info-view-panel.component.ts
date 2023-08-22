@@ -17,7 +17,6 @@ import { filter, map, startWith } from 'rxjs/operators';
 
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
 import { SearchType } from 'app/search/shared';
-import { ExplainService } from 'app/shared/services/explain.service';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 
 import {
@@ -35,10 +34,7 @@ import { getTermsFromGraphEntityArray } from '../utils/terms';
   templateUrl: './info-view-panel.component.html',
 })
 export class InfoViewPanelComponent implements OnChanges, OnDestroy {
-  constructor(
-    protected readonly internalSearch: InternalSearchService,
-    protected readonly explainService: ExplainService
-  ) {}
+  constructor(protected readonly internalSearch: InternalSearchService) {}
 
   change$ = new ReplaySubject<SimpleChanges>(1);
   entities$: Observable<Set<string>> = this.change$.pipe(
