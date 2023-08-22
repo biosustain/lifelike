@@ -14,7 +14,7 @@
     container="body"
     ngbDropdownToggle
     [(ngModel)]="inputText"
-    (ngModelChange)="inputText$.next($event)"
+    (ngModelChange)="inputTextChange.next($event)"
   />
 
   <div *ngIf="isOrganismSelected" class="input-group-append">

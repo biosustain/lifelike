@@ -1,15 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { Store } from '@ngrx/store';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { every } from 'lodash-es';
+import { BehaviorSubject, combineLatest, EMPTY, Observable } from 'rxjs';
+import { catchError, filter, map } from 'rxjs/operators';
 
 import { State } from 'app/auth/store/state';
+import { ErrorResponse } from 'app/shared/schemas/common';
+import { SnackbarActions } from 'app/shared/store';
+import { AccountService } from 'app/users/services/account.service';
 
-import { AuthActions } from '../store';
 import { OAuthErrorEvent, OAuthService } from 'angular-oauth2-oidc';
+import { AuthActions } from '../store';
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class LifelikeOAuthService {
@@ -32,7 +37,7 @@ export class LifelikeOAuthService {
   public canActivateProtectedRoutes$: Observable<boolean> = combineLatest([
     this.isAuthenticated$,
     this.isDoneLoading$,
-  ]).pipe(map((values) => values.every((b) => b)));
+  ]).pipe(map(every));
 
   private navigateToLoginPage() {
     this.router.navigateByUrl('/login');
@@ -40,6 +45,7 @@ export class LifelikeOAuthService {
 
   constructor(
     private oauthService: OAuthService,
+    private accountService: AccountService,
     private router: Router,
     private location: Location,
     private readonly store$: Store<State>
@@ -69,11 +75,11 @@ export class LifelikeOAuthService {
 
     this.oauthService.events
       .pipe(filter((e) => ['token_received'].includes(e.type)))
-      .subscribe((e) => this.oauthService.loadUserProfile());
+      .subscribe(() => this.oauthService.loadUserProfile());
 
     this.oauthService.events
       .pipe(filter((e) => ['session_terminated', 'session_error'].includes(e.type)))
-      .subscribe((e) => this.navigateToLoginPage());
+      .subscribe(() => this.navigateToLoginPage());
 
     this.oauthService.setupAutomaticSilentRefresh();
   }
@@ -92,17 +98,48 @@ export class LifelikeOAuthService {
         .then(() => {
           if (this.oauthService.hasValidAccessToken()) {
             const payload = this.oauthService.getIdentityClaims() as any;
-            this.store$.dispatch(
-              AuthActions.oauthLogin({
-                oauthLoginData: {
-                  subject: payload.sub,
-                  firstName: payload.first_name,
-                  lastName: payload.last_name,
-                  username: payload.username,
-                },
-              })
-            );
-            return Promise.resolve();
+            const oauthLoginData = {
+              subject: payload.sub,
+              firstName: payload.first_name || payload.given_name || payload.name,
+              lastName: payload.last_name || payload.family_name,
+              username: payload.username || payload.preferred_username,
+            };
+
+            this.store$.dispatch(AuthActions.oauthLogin({ oauthLoginData }));
+            return this.accountService
+              .getUserBySubject(payload.sub)
+              .pipe(
+                map((user) => {
+                  this.store$.dispatch(
+                    AuthActions.oauthLoginSuccess({ ***ARANGO_DB_NAME***User: user, oauthUser: oauthLoginData })
+                  );
+                }),
+                catchError((err: HttpErrorResponse) => {
+                  // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the
+                  // home page. Also, see the below Github issue:
+                  //    https://github.com/manfredsteyer/angular-oauth2-oidc/issues/9
+                  // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server).
+                  // The likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so
+                  // ideally we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to
+                  // wait a few moments and refresh their browser to log in successfully.
+                  const error = (err.error as ErrorResponse).message;
+                  this.logout(true);
+                  this.router.navigateByUrl('/dashboard');
+
+                  this.store$.dispatch(
+                    SnackbarActions.displaySnackbar({
+                      payload: {
+                        message: error,
+                        action: 'Dismiss',
+                        config: { duration: 10000 },
+                      },
+                    })
+                  );
+                  return EMPTY;
+                })
+              )
+              .toPromise()
+              .then(() => Promise.resolve());
           }
 
           // 2. SILENT LOGIN:
@@ -147,9 +184,8 @@ export class LifelikeOAuthService {
         .then(() => {
           this.isDoneLoadingSubject$.next(true);
 
-          // Check for the strings 'undefined' and 'null' just to be sure.
-          // Our current login(...) should never have this, but in case someone
-          // ever calls initImplicitFlow(undefined | null) this could happen.
+          // Check for the strings 'undefined' and 'null' just to be sure. Our current login(...) should never have this, but in case
+          // someone ever calls initImplicitFlow(undefined | null) this could happen.
           if (
             this.oauthService.state &&
             this.oauthService.state !== 'undefined' &&

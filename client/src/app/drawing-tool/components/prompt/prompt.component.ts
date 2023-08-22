@@ -4,7 +4,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subject } from 'rxjs';
 import {
   distinctUntilChanged,
-  filter,
   map,
   observeOn,
   shareReplay,
@@ -15,47 +14,58 @@ import {
 } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-
-import { OpenFileProvider } from '../../providers/open-file/open-file.provider';
-import { ExplainService } from '../../services/explain.service';
+import {
+  DrawingToolPromptFormComponent,
+  DrawingToolPromptFormParams,
+} from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
+import {
+  OpenPlaygroundComponent,
+  OpenPlaygroundParams,
+} from 'app/playground/components/open-playground/open-playground.component';
+import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { ExplainService } from 'app/shared/services/explain.service';
 import {
   DropdownController,
   dropdownControllerFactory,
-} from '../../utils/dropdown.controller.factory';
-import { PlaygroundComponent } from './playground.component';
-import { environment } from '../../../../environments/environment';
+} from 'app/shared/utils/dropdown.controller.factory';
+import { openModal } from 'app/shared/utils/modals';
+import { PlaygroundComponent } from 'app/playground/components/playground.component';
+import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
+import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 
 @Component({
-  selector: 'app-prompt',
+  selector: 'app-drawing-tool-prompt',
   templateUrl: './prompt.component.html',
 })
-export class PromptComponent implements OnDestroy, OnChanges {
+export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   constructor(
     private readonly explainService: ExplainService,
     private readonly openFileProvider: OpenFileProvider,
-    private readonly modalService: NgbModal,
-    private readonly injector: Injector
+    private readonly injector: Injector,
+    private readonly modalService: NgbModal
   ) {}
 
-  @Input() entities!: Iterable<string>;
   private destroy$: Subject<void> = new Subject();
-  private change$: Subject<SimpleChanges> = new Subject();
-  tempertaure$: Subject<number> = new BehaviorSubject(0);
-  private entities$: Observable<PromptComponent['entities']> = defer(() =>
-    this.change$.pipe(
-      filter(({ entities }) => Boolean(entities)),
-      map(({ entities }) => entities.currentValue),
+
+  @Input() entities!: Iterable<string>;
+  private entitiesChange$ = new ReplaySubject<DrawingToolPromptComponent['entities']>(1);
+  private entities$: Observable<DrawingToolPromptComponent['entities']> = defer(() =>
+    this.entitiesChange$.pipe(
       startWith(this.entities),
       distinctUntilChanged(),
       shareReplay({ bufferSize: 1, refCount: true })
     )
   );
+
+  tempertaure$: Subject<number> = new BehaviorSubject(0);
+
   private contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
     map(({ contexts }) => contexts),
     startWith([]),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
   );
+
   contextsController$: Observable<DropdownController<string>> = this.contexts$.pipe(
     map(dropdownControllerFactory),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -66,6 +76,7 @@ export class PromptComponent implements OnDestroy, OnChanges {
     this.tempertaure$.pipe(distinctUntilChanged()),
     this.contextsController$.pipe(switchMap((controller) => controller.current$)),
   ]).pipe(
+    takeUntil(this.destroy$),
     map(([entities, temperature, context]) => ({ entities, temperature, context })),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -75,7 +86,7 @@ export class PromptComponent implements OnDestroy, OnChanges {
    */
   explain$ = new ReplaySubject<boolean>(1);
 
-  explanation$: Observable<string> = this.explain$.pipe(
+  explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
     withLatestFrom(this.params$),
     map(([_, params]) => params),
     takeUntil(this.destroy$),
@@ -86,14 +97,31 @@ export class PromptComponent implements OnDestroy, OnChanges {
     )
   );
 
-  showPlayground = environment.chatGPTPlaygroundEnabled;
+  playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> = combineLatest([
+    this.params$,
+    this.contexts$,
+  ]).pipe(
+    map(([{ temperature, entities, context }, contexts]) => ({
+      promptFormParams: {
+        formInput: {
+          entities: Array.from(entities),
+          context,
+        },
+        contexts,
+      },
+      promptForm: DrawingToolPromptFormComponent,
+      temperature,
+    }))
+  );
 
   generateExplanation() {
     this.explain$.next(true);
   }
 
-  public ngOnChanges(change: SimpleChanges) {
-    this.change$.next(change);
+  public ngOnChanges({ entities }: SimpleChanges) {
+    if (entities) {
+      this.entitiesChange$.next(entities.currentValue);
+    }
   }
 
   ngOnDestroy(): void {
@@ -102,15 +130,22 @@ export class PromptComponent implements OnDestroy, OnChanges {
   }
 
   openPlayground() {
-    const playground = this.modalService.open(PlaygroundComponent, {
+    const playground = openModal(this.modalService, PlaygroundComponent, {
       injector: this.injector,
       size: 'xl',
     });
     const paramsSubscription = this.params$.subscribe((params) => {
-      playground.componentInstance.programaticChange(params);
+      Object.assign(playground.componentInstance, params);
+      playground.componentInstance.cdr.detectChanges();
     });
     return playground.result.finally(() => {
       paramsSubscription.unsubscribe();
     });
+  }
+
+  openInfo(queryParams: object) {
+    const info = this.modalService.open(ChatgptResponseInfoModalComponent);
+    info.componentInstance.queryParams = queryParams;
+    return info.result;
   }
 }

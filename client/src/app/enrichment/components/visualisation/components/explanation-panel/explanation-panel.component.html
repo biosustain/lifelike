@@ -82,6 +82,10 @@
     </button>
   </div>
 </div>
+<app-open-playground
+  [params]="playgroundParams$ | async"
+  style="float: right"
+></app-open-playground>
 <ng-container
   *ngIf="{
     explain: explain$ | async,
@@ -96,7 +100,16 @@
       {{ state.explain ? 'Regenerate' : 'Generate' }} explanation
     </ng-template>
   </button>
-  <div class="mt-2" *ngIf="state.explanation">
-    {{ state.explanation }}
+  <div class="mt-2 card" style="white-space: pre-line" *ngIf="state.explanation">
+    <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+      <span
+        style="float: right"
+        class="ml-2 mb-2"
+        (click)="openInfo(state.explanation.query_params)"
+      >
+        <i class="fas fa-info-circle"></i>
+      </span>
+      {{ state.explanation.result }}
+    </div>
   </div>
 </ng-container>
