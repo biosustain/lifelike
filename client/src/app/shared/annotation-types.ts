@@ -116,7 +116,7 @@ export const ENTITY_TYPES = [
     [
       {
         name: DatabaseType.UNIPROT,
-        url: 'https://www.uniprot.org/uniprot/?sort=score&query=',
+        url: 'https://www.uniprot.org/uniprotkb?query=',
       } as DatabaseLink,
     ]
   ),
