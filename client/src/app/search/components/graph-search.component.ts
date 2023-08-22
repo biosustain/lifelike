@@ -51,7 +51,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
   );
 
   params: GraphSearchParameters | undefined;
-  collectionSize = 0;
+  collectionSize : number;
   results: FTSQueryRecord[] = mockArrayOf(fTSQueryRecordLoadingMock);
 
   legend: Map<string, string> = new Map();
