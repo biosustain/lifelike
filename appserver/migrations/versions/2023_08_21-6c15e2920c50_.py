@@ -92,7 +92,8 @@ def data_upgrades():
 
     for chunk in window_chunk(files, 25):
         for file_id, annotations_obj in chunk:
-            if annotations_obj != []:
+            # For some reason the annotations obj can be a string representing an empty array...
+            if annotations_obj not in [[], '[]']:
                 # Unfortunately some of our annotations are single element list objects. For the
                 # migration not to fail we need to catch these and convert to the correct format.
                 if type(annotations_obj) == list:
