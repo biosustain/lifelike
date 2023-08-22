@@ -82,12 +82,34 @@
     </button>
   </div>
 </div>
-<br />
-<ng-template #loading>
-  <i class="fa fa-spinner fa-spin"></i>
-</ng-template>
-<ng-container *ngIf="explanation$ | async as explanation; else loading">
-  <ng-container *ngIf="explanation !== 'Loading...'; else loading">
-    {{ explanation }}
-  </ng-container>
+<app-open-playground
+  [params]="playgroundParams$ | async"
+  style="float: right"
+></app-open-playground>
+<ng-container
+  *ngIf="{
+    explain: explain$ | async,
+    explanation: explanation$ | async
+  } as state"
+>
+  <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
+    <ng-container *ngIf="state.explain && !state.explanation; else settled">
+      <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation
+    </ng-container>
+    <ng-template #settled>
+      {{ state.explain ? 'Regenerate' : 'Generate' }} explanation
+    </ng-template>
+  </button>
+  <div class="mt-2 card" style="white-space: pre-line" *ngIf="state.explanation">
+    <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+      <span
+        style="float: right"
+        class="ml-2 mb-2"
+        (click)="openInfo(state.explanation.query_params)"
+      >
+        <i class="fas fa-info-circle"></i>
+      </span>
+      {{ state.explanation.result }}
+    </div>
+  </div>
 </ng-container>
