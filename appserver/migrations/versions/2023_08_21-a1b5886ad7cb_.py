@@ -87,7 +87,10 @@ def data_upgrades():
 
                             for link in data[property]:
                                 if 'url' in link:
-                                    link['url'] = link['url'].replace('https://www.uniprot.org/uniprot/?sort=score&query=', 'https://www.uniprot.org/uniprotkb?query=')
+                                    link['url'] = link['url'].replace(
+                                        'https://www.uniprot.org/uniprot/?sort=score&query=',
+                                        'https://www.uniprot.org/uniprotkb?query=',
+                                    )
                                 updated_links.append(link)
                             data[property] = updated_links
                     map_obj['nodes'][i]['data'] = data
@@ -103,7 +106,10 @@ def data_upgrades():
 
                                 for link in data[property]:
                                     if 'url' in link:
-                                        link['url'] = link['url'].replace('https://www.uniprot.org/uniprot/?sort=score&query=', 'https://www.uniprot.org/uniprotkb?query=')
+                                        link['url'] = link['url'].replace(
+                                            'https://www.uniprot.org/uniprot/?sort=score&query=',
+                                            'https://www.uniprot.org/uniprotkb?query=',
+                                        )
                                     updated_links.append(link)
                                 data[property] = updated_links
                         map_obj['groups'][i]['members'][j]['data'] = data
@@ -113,17 +119,13 @@ def data_upgrades():
 
             # Zip the file back up before saving to the DB
             zip_bytes = io.BytesIO()
-            with zipfile.ZipFile(
-                zip_bytes, 'x', zipfile.ZIP_DEFLATED
-            ) as new_zip_file:
+            with zipfile.ZipFile(zip_bytes, 'x', zipfile.ZIP_DEFLATED) as new_zip_file:
                 new_zip_file.writestr('graph.json', byte_graph)
 
                 # Get all top level image nodes
                 for node in map_obj['nodes']:
                     if node.get('image_id', None) is not None:
-                        image_name = "".join(
-                            ['images/', node.get('image_id'), '.png']
-                        )
+                        image_name = "".join(['images/', node.get('image_id'), '.png'])
                         try:
                             image_bytes = old_zip_file.read(image_name)
                         except KeyError:
@@ -152,13 +154,9 @@ def data_upgrades():
             new_hash = hashlib.sha256(new_bytes).digest()
 
             session.execute(
-                t_files_content.update().where(
-                    t_files_content.c.id == id
-                ).values(
-                    id=id,
-                    raw_file=new_bytes,
-                    checksum_sha256=new_hash
-                )
+                t_files_content.update()
+                .where(t_files_content.c.id == id)
+                .values(id=id, raw_file=new_bytes, checksum_sha256=new_hash)
             )
             session.flush()
 
