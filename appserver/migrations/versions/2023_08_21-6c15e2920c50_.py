@@ -45,11 +45,16 @@ def downgrade():
 
 def fix_annotation_protein_links(annotation):
     meta = annotation['meta']
-    if (meta['type'] == 'Protein'):
-        meta['links']['uniprot'] = f'https://www.uniprot.org/uniprotkb?query={meta["allText"]}'
+    if meta['type'] == 'Protein':
+        meta['links'][
+            'uniprot'
+        ] = f'https://www.uniprot.org/uniprotkb?query={meta["allText"]}'
 
         for i, link in enumerate(meta['idHyperlinks']):
-            meta['idHyperlinks'][i] = link.replace('https://www.uniprot.org/uniprot/?sort=score&query=', 'https://www.uniprot.org/uniprotkb?query=')
+            meta['idHyperlinks'][i] = link.replace(
+                'https://www.uniprot.org/uniprot/?sort=score&query=',
+                'https://www.uniprot.org/uniprotkb?query=',
+            )
 
         return {**annotation, "meta": {**meta}}
 
@@ -86,13 +91,19 @@ def data_upgrades():
     for chunk in window_chunk(files, 25):
         for file_id, annotations_obj in chunk:
             if annotations_obj != []:
-                annotations_list = annotations_obj['documents'][0]['passages'][0]['annotations']
+                annotations_list = annotations_obj['documents'][0]['passages'][0][
+                    'annotations'
+                ]
 
                 updated_annotations_list = update_annotations(annotations_list)
                 if updated_annotations_list is not None:
-                    annotations_obj['documents'][0]['passages'][0]['annotations'] = updated_annotations_list
+                    annotations_obj['documents'][0]['passages'][0][
+                        'annotations'
+                    ] = updated_annotations_list
                     session.execute(
-                        t_files.update().where(t_files.c.id == file_id).values(annotations=annotations_obj)
+                        t_files.update()
+                        .where(t_files.c.id == file_id)
+                        .values(annotations=annotations_obj)
                     )
                     session.flush()
     session.commit()
