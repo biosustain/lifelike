@@ -46,15 +46,17 @@ def downgrade():
 def fix_annotation_protein_links(annotation):
     meta = annotation['meta']
     if meta['type'] == 'Protein':
-        meta['links'][
-            'uniprot'
-        ] = f'https://www.uniprot.org/uniprotkb?query={meta["allText"]}'
+        if 'links' in meta:
+            meta['links'][
+                'uniprot'
+            ] = f'https://www.uniprot.org/uniprotkb?query={meta["allText"]}'
 
-        for i, link in enumerate(meta['idHyperlinks']):
-            meta['idHyperlinks'][i] = link.replace(
-                'https://www.uniprot.org/uniprot/?sort=score&query=',
-                'https://www.uniprot.org/uniprotkb?query=',
-            )
+        if 'idHyperlinks' in meta:
+            for i, link in enumerate(meta['idHyperlinks']):
+                meta['idHyperlinks'][i] = link.replace(
+                    'https://www.uniprot.org/uniprot/?sort=score&query=',
+                    'https://www.uniprot.org/uniprotkb?query=',
+                )
 
         return {**annotation, "meta": {**meta}}
 
