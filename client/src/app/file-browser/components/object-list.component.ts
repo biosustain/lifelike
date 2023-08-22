@@ -52,7 +52,7 @@ export class ObjectListComponent {
     protected readonly progressDialog: ProgressDialog
   ) {}
 
-  caluculateColumnsWidths(containerWidth: {width:number}) {
+  caluculateColumnsWidths(containerWidth: { width: number }) {
     const CHECKBOX = 19.2 + 16 + 7.2;
     const STAR = this.showStars ? 7.2 + 16 + 7.2 : 0;
     const NAME = 140;

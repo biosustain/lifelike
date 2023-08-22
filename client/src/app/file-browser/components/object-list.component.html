@@ -30,16 +30,9 @@
       </div>
     </ng-container>
 
-    <div class="w-100"
-         appElementObserver
-         #container="appElementObserver">
-      <table
-        class="table module-body-table table-selectable"
-        style="table-layout: fixed"
-      >
-        <colgroup
-          *ngIf="caluculateColumnsWidths(container.size$ | async) as columnsWidhts"
-        >
+    <div class="w-100" appElementObserver #container="appElementObserver">
+      <table class="table module-body-table table-selectable" style="table-layout: fixed">
+        <colgroup *ngIf="caluculateColumnsWidths(container.size$ | async) as columnsWidhts">
           <!-- Checkbox -->
           <col
             [style.width.px]="columnsWidhts.checkbox"
@@ -88,8 +81,7 @@
         <thead>
         <tr>
           <!-- Checkbox -->
-          <th class="text-truncate"
-              style="width: 2.5rem;">
+          <th class="text-truncate" style="width: 2.5rem">
             <ng-container *ngIf="objects != null && objects.multipleSelection">
               <div class="custom-control custom-checkbox">
                 <input
@@ -105,34 +97,25 @@
           </th>
 
           <!-- "Starred" -->
-          <th style="width: 30px;"></th>
+          <th style="width: 30px"></th>
 
           <!-- Name -->
-          <th class="text-truncate" style="width: 200px;">Name</th>
+          <th class="text-truncate" style="width: 200px">Name</th>
 
           <!-- Annotated -->
-          <th class="text-truncate"
-              style="width: 150px;">Annotated
-          </th>
+          <th class="text-truncate" style="width: 150px">Annotated</th>
 
           <!-- Size -->
-          <th class="text-truncate"
-              style="width: 80px;">Size
-          </th>
+          <th class="text-truncate" style="width: 80px">Size</th>
 
           <!-- Created -->
-          <th class="text-truncate"
-              style="width: 80px;">Modified
-          </th>
+          <th class="text-truncate" style="width: 80px">Modified</th>
 
           <!-- Author -->
-          <th class="text-truncate"
-              style="width: 80px;">User
-          </th>
+          <th class="text-truncate" style="width: 80px">User</th>
 
           <!-- Dropdown -->
-          <th
-            style="width: 80px;"></th>
+          <th style="width: 80px"></th>
         </tr>
         </thead>
 
@@ -255,8 +238,7 @@
           </td>
 
           <!-- Annotated -->
-          <td
-            class="align-middle text-nowrap overflow-hidden text-truncate">
+          <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <div
               *ngIf="object.isAnnotatable"
               class="text-truncate"
@@ -267,36 +249,33 @@
               [ngbPopover]="object.annotationsTooltipContent"
               [disablePopover]="!object.annotationsTooltipContent"
             >
-              <span appHasPlaceholder>
-                <ng-container
-                  *ngIf="
-                    object.annotationsTooltipContent && object.annotationsTooltipContent.length
-                  "
-                >
-                  <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
-                </ng-container>
-                {{ (object.annotationsDate | date : 'short') || 'No annotations' }}
-              </span>
+                <span appHasPlaceholder>
+                  <ng-container
+                    *ngIf="
+                      object.annotationsTooltipContent && object.annotationsTooltipContent.length
+                    "
+                  >
+                    <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+                  </ng-container>
+                  {{ (object.annotationsDate | date : 'short') || 'No annotations' }}
+                </span>
             </div>
           </td>
 
           <!-- Size -->
-          <td
-            class="align-middle text-nowrap overflow-hidden text-truncate">
-            <span *ngIf="object.size" class="text-truncate" appHasPlaceholder>
-              {{ object.size }}
-            </span>
+          <td class="align-middle text-nowrap overflow-hidden text-truncate">
+              <span *ngIf="object.size" class="text-truncate" appHasPlaceholder>
+                {{ object.size }}
+              </span>
           </td>
 
           <!-- Created -->
-          <td
-            class="align-middle text-nowrap overflow-hidden text-truncate">
+          <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <span appHasPlaceholder>{{ object.updatedTimestamp | date : 'shortDate' }}</span>
           </td>
 
           <!-- Author -->
-          <td
-            class="align-middle text-nowrap overflow-hidden text-truncate">
+          <td class="align-middle text-nowrap overflow-hidden text-truncate">
             <app-user [user]="object.user" class="text-nowrap"></app-user>
           </td>
 
@@ -321,7 +300,6 @@
                 (refreshRequest)="refreshRequest.emit($event)"
               >
               </app-object-menu>
-            </mat-menu>
             </mat-menu>
           </td>
         </tr>
