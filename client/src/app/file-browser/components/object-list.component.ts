@@ -80,9 +80,9 @@ export class ObjectListComponent {
 
   private readonly COLUMNS_WIDTHS_IN_IMPORTANCE_ORDER: Map<Columns, number> = new Map([
     [Columns.name, 260],
-    [Columns.checkbox, 19.2 + 16 + 7.2],
+    [Columns.checkbox, 19.2 + 16 + 7.2], // left padding + checkbox + right padding
     [Columns.controls, 80],
-    [Columns.star, 7.2 + 16 + 7.2],
+    [Columns.star, 7.2 + 16 + 7.2], // left padding + star + right padding
     [Columns.annotation, 150],
     [Columns.author, 80],
     [Columns.modified, 80],
