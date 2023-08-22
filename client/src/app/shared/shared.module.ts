@@ -22,7 +22,6 @@ import { LegendComponent } from './components/legend.component';
 import { MessageDialogComponent } from './components/dialog/message-dialog.component';
 import { NodeRelationshipComponent } from './components/node-relationship-display.component';
 import { ProgressDialogComponent } from './components/dialog/progress-dialog.component';
-import { PromptComponent } from './components/prompt/prompt.component';
 import { TooltipComponent } from './components/tooltip.component';
 import { SharedDirectivesModule } from './directives/shareddirectives.module';
 import { SharedNgrxEffects } from './store/effects';
@@ -95,7 +94,7 @@ import { XMLAnnotationComponent } from './providers/highlight-text/xml-annotatio
 import { ResponseAlertComponent } from './components/response-alert/response-alert.component';
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import { WithPlaceholderComponent } from './components/with-placeholder/with-placeholder.component';
-import { PlaygroundComponent } from './components/prompt/playground.component';
+import { ChatgptResponseInfoModalComponent } from './components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 
 const components = [
   WithPlaceholderComponent,
@@ -191,8 +190,7 @@ const components = [
     ModuleHeaderComponent,
     PasswordInputComponent,
     XMLAnnotationComponent,
-    PromptComponent,
-    PlaygroundComponent,
+    ChatgptResponseInfoModalComponent,
   ],
   providers: [
     TruncatePipe,
@@ -259,8 +257,7 @@ const components = [
     NgbModule,
     AddStatusPipe,
     ModuleHeaderComponent,
-    PromptComponent,
-    PlaygroundComponent,
+    ChatgptResponseInfoModalComponent,
   ],
 })
 export class SharedModule {}
