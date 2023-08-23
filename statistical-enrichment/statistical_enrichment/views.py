@@ -33,5 +33,5 @@ def enrich_with_go_terms(args):
     return redis_cached(
         cache_id,
         partial(enrich_go, arango_client, gene_names, analysis, organism),
-        dump=dumps
+        dump=dumps,
     ), dict(mimetype='application/json')

@@ -8,7 +8,7 @@ def get_db(
     arango_client: ArangoClient,
     name: Optional[str] = None,
     username: Optional[str] = None,
-    password: Optional[str] = None
+    password: Optional[str] = None,
 ):
     return arango_client.db(
         name=name or current_app.config.get('ARANGO_DB_NAME'),
