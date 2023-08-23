@@ -14,6 +14,8 @@ import zipfile
 from alembic import context, op
 from os import path
 
+from migrations.utils import window_chunk
+
 # revision identifiers, used by Alembic.
 revision = '2e6a2f6a4965'
 down_revision = 'e1b35c398626'
@@ -107,9 +109,7 @@ def data_upgrades():
         sa.Column('checksum_sha256'),
     )
 
-    raw_maps_to_fix = conn.execution_options(
-        stream_results=True, max_buffer_rows=1
-    ).execute(
+    raw_maps_to_fix = conn.execution_options(stream_results=True, max_row_buffer=1).execute(
         sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
             t_files_content.c.id.in_(
                 sa.union(
@@ -139,53 +139,54 @@ def data_upgrades():
     )
 
     checksum_map = {}
-    for fcid, raw_file in raw_maps_to_fix:
-        zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
-        map_json = json.loads(zip_file.read('graph.json'))
-        byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
+    for chunk in window_chunk(raw_maps_to_fix, 1):
+        for fcid, raw_file in chunk:
+            zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
+            map_json = json.loads(zip_file.read('graph.json'))
+            byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
 
-        new_zip_bytes = io.BytesIO()
-        with zipfile.ZipFile(
-            new_zip_bytes, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
-        ) as new_zip:
-            new_zip.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
+            new_zip_bytes = io.BytesIO()
+            with zipfile.ZipFile(
+                new_zip_bytes, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
+            ) as new_zip:
+                new_zip.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
 
-            # Get all top level image nodes
-            if 'nodes' in map_json:
-                for node in map_json['nodes']:
-                    if 'image_id' in node:
-                        image_name = "".join(['images/', node.get('image_id'), '.png'])
-                        try:
-                            image_bytes = zip_file.read(image_name)
-                        except KeyError:
-                            # For some reason there was a node with an image id, but no
-                            # corresponding image file
-                            continue
-                        new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                # Get all top level image nodes
+                if 'nodes' in map_json:
+                    for node in map_json['nodes']:
+                        if 'image_id' in node:
+                            image_name = "".join(['images/', node.get('image_id'), '.png'])
+                            try:
+                                image_bytes = zip_file.read(image_name)
+                            except KeyError:
+                                # For some reason there was a node with an image id, but no
+                                # corresponding image file
+                                continue
+                            new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
 
-            # Get any image nodes nested in a group
-            if 'groups' in map_json:
-                for group in map_json['groups']:
-                    if 'members' in group:
-                        for node in group['members']:
-                            if 'image_id' in node:
-                                image_name = "".join(
-                                    ['images/', node.get('image_id'), '.png']
-                                )
-                                try:
-                                    image_bytes = zip_file.read(image_name)
-                                except KeyError:
-                                    # For some reason there was a node with an image id, but no
-                                    # corresponding image file
-                                    continue
-                                new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                # Get any image nodes nested in a group
+                if 'groups' in map_json:
+                    for group in map_json['groups']:
+                        if 'members' in group:
+                            for node in group['members']:
+                                if 'image_id' in node:
+                                    image_name = "".join(
+                                        ['images/', node.get('image_id'), '.png']
+                                    )
+                                    try:
+                                        image_bytes = zip_file.read(image_name)
+                                    except KeyError:
+                                        # For some reason there was a node with an image id, but no
+                                        # corresponding image file
+                                        continue
+                                    new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
 
-        checksum = hashlib.sha256(new_zip_bytes.getvalue()).hexdigest()
+            checksum = hashlib.sha256(new_zip_bytes.getvalue()).hexdigest()
 
-        if checksum in checksum_map:
-            checksum_map[checksum].add(fcid)
-        else:
-            checksum_map[checksum] = {fcid}
+            if checksum in checksum_map:
+                checksum_map[checksum].add(fcid)
+            else:
+                checksum_map[checksum] = {fcid}
 
     files_content_to_delete = []
     for ids in checksum_map.values():
