@@ -1616,11 +1616,15 @@ class FileBackupView(FilesystemBaseView):
                 # resetting the image manager memory - we are only appending new stuff to it.
                 # This is why we do not need to store all images within the backup -
                 # - just the unsaved ones.
-                zip_content.writestr('graph.json', params['content_value'].read())
+                zip_content.writestr(
+                    zipfile.ZipInfo('graph.json'),
+                    params['content_value'].read()
+                )
                 new_images = params.get('new_images') or []
                 for image in new_images:
                     zip_content.writestr(
-                        'images/' + image.filename + '.png', image.read()
+                        zipfile.ZipInfo('images/' + image.filename + '.png'),
+                        image.read()
                     )
                 zip_content.close()
             with new_content as bufferView:
