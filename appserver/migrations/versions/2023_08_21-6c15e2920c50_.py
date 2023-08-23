@@ -85,7 +85,7 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    files = conn.execution_options(stream_results=True).execute(
+    files = conn.execution_options(stream_results=True, max_row_buffer=1).execute(
         sa.select([t_files.c.id, t_files.c.annotations])
     )
 
