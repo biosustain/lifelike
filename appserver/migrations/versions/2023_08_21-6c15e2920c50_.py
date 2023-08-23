@@ -90,7 +90,7 @@ def data_upgrades():
         sa.select([t_files.c.id, t_files.c.annotations])
     )
 
-    for chunk in window_chunk(files, 15):
+    for chunk in window_chunk(files, 1):
         for file_id, annotations_obj in chunk:
             # For some reason the annotations obj can be a string representing an empty array...
             if annotations_obj not in [[], '[]']:

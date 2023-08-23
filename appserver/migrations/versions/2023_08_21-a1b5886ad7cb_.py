@@ -72,7 +72,7 @@ def data_upgrades():
         )
     )
 
-    for chunk in window_chunk(files_content, 10):
+    for chunk in window_chunk(files_content, 1):
         for id, raw in chunk:
             old_zip_file = zipfile.ZipFile(io.BytesIO(raw))
             map_obj = json.loads(old_zip_file.read('graph.json'))
