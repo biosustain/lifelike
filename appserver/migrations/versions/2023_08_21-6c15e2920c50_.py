@@ -1,11 +1,10 @@
 """Update protein annotations with correct Uniprot links
 
 Revision ID: 6c15e2920c50
-Revises: e1b35c398626
+Revises: 2e6a2f6a4965
 Create Date: 2023-08-21 22:44:05.596218
 
 """
-import json
 import sqlalchemy as sa
 
 from alembic import context
@@ -21,7 +20,7 @@ from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = '6c15e2920c50'
-down_revision = 'e1b35c398626'
+down_revision = '2e6a2f6a4965'
 branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))

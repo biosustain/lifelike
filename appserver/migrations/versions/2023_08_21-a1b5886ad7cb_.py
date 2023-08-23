@@ -125,7 +125,7 @@ def data_upgrades():
             # Zip the file back up before saving to the DB
             zip_bytes = io.BytesIO()
             with zipfile.ZipFile(zip_bytes, 'x', zipfile.ZIP_DEFLATED) as new_zip_file:
-                new_zip_file.writestr('graph.json', byte_graph)
+                new_zip_file.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
 
                 # Get all top level image nodes
                 if 'nodes' in map_obj:
@@ -138,7 +138,7 @@ def data_upgrades():
                                 # For some reason there was a node with an image id, but no
                                 # corresponding image file
                                 continue
-                            new_zip_file.writestr(image_name, image_bytes)
+                            new_zip_file.writestr(zipfile.ZipInfo(image_name), image_bytes)
 
                 # Get any image nodes nested in a group
                 if 'groups' in map_obj:
@@ -155,7 +155,7 @@ def data_upgrades():
                                         # For some reason there was a node with an image id, but no
                                         # corresponding image file
                                         continue
-                                    new_zip_file.writestr(image_name, image_bytes)
+                                    new_zip_file.writestr(zipfile.ZipInfo(image_name), image_bytes)
 
             # Create the update mapping object
             new_bytes = zip_bytes.getvalue()
