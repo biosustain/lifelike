@@ -25,6 +25,7 @@ branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))
 
+BATCH_SIZE = 1
 
 t_files = table(
     'files',
@@ -85,11 +86,11 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    files = conn.execution_options(stream_results=True, max_row_buffer=1).execute(
+    files = conn.execution_options(stream_results=True, max_row_buffer=BATCH_SIZE).execute(
         sa.select([t_files.c.id, t_files.c.annotations])
     )
 
-    for chunk in window_chunk(files, 1):
+    for chunk in window_chunk(files, BATCH_SIZE):
         for file_id, annotations_obj in chunk:
             # For some reason the annotations obj can be a string representing an empty array...
             if annotations_obj not in [[], '[]']:

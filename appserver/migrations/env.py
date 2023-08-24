@@ -2,10 +2,10 @@ from __future__ import with_statement
 
 import logging
 from functools import cached_property, cache
-from io import BufferedIOBase, BytesIO
+from io import BytesIO
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, event, select
+from sqlalchemy import engine_from_config, event
 from sqlalchemy import pool
 import sqlalchemy_utils
 
@@ -41,6 +41,7 @@ config.set_main_option(
 )
 target_metadata = current_app.extensions['migrate'].db.metadata
 
+BATCH_SIZE = 1
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -144,9 +145,9 @@ class MigrationValidator:
                         Files.mime_type.label('mime_type'),
                         FileContent.raw_file.label('raw_file'),
                         FileContent.id.label('id'),
-                    )
+                    ).yield_per(BATCH_SIZE)
                 ),
-                25,
+                BATCH_SIZE,
             ):
                 for entity in chunk:
                     exceptions = []

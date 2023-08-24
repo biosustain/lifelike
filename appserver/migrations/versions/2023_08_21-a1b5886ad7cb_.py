@@ -18,14 +18,15 @@ from sqlalchemy.orm import Session
 
 from migrations.utils import window_chunk
 
-FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
-
 # revision identifiers, used by Alembic.
 revision = 'a1b5886ad7cb'
 down_revision = '6c15e2920c50'
 branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))
+
+BATCH_SIZE = 1
+FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
 
 t_files = sa.table(
     'files',
@@ -55,7 +56,10 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    files_content = conn.execution_options(stream_results=True, max_row_buffer=1).execute(
+    files_content = conn.execution_options(
+        stream_results=True,
+        max_row_buffer=BATCH_SIZE
+    ).execute(
         sa.select(
             [
                 t_files_content.c.id,
@@ -72,7 +76,7 @@ def data_upgrades():
         )
     )
 
-    for chunk in window_chunk(files_content, 1):
+    for chunk in window_chunk(files_content, BATCH_SIZE):
         for id, raw in chunk:
             old_zip_file = zipfile.ZipFile(io.BytesIO(raw))
             map_obj = json.loads(old_zip_file.read('graph.json'))
