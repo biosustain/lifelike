@@ -639,7 +639,7 @@ def add_file(
         )
 
     # Get the provider based on what we know now
-    provider = file_type_service.get(file)
+    provider = file_type_service.get(file.mime_type)
 
     # Check if the user can even upload this type of file
     if not provider.can_create():

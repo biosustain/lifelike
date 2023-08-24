@@ -568,7 +568,7 @@ class FilesystemBaseView(MethodView):
                         )
 
                     # Get the provider
-                    provider = file_type_service.get(file)
+                    provider = file_type_service.get(file.mime_type)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
                         provider.validate_content(buffer, log_status_messages=True)
@@ -918,7 +918,7 @@ class FileListView(FilesystemBaseView):
                 file.mime_type = mime_type
 
             # Get the provider based on what we know now
-            provider = file_type_service.get(file)
+            provider = file_type_service.get(file.mime_type)
             # if no provider matched try to convert
 
             # if it is a bioc-xml file
@@ -934,7 +934,7 @@ class FileListView(FilesystemBaseView):
                 file_name, extension = os.path.splitext(file.filename)
                 if extension.isupper():
                     file.mime_type = 'application/pdf'
-                provider = file_type_service.get(file)
+                provider = file_type_service.get(file.mime_type)
                 provider.convert(buffer)
 
             # Check if the user can even upload this type of file
@@ -1459,7 +1459,7 @@ class FileExportView(FilesystemBaseView):
         )
 
         file_type_service = get_file_type_service()
-        file_type = file_type_service.get(file)
+        file_type = file_type_service.get(file.mime_type)
 
         if (
             params['export_linked']
@@ -1574,7 +1574,7 @@ class FileValidateView(FilesystemBaseView):
         )
 
         file_type_service: FileTypeService = get_file_type_service()
-        file_type = file_type_service.get(file)
+        file_type = file_type_service.get(file.mime_type)
 
         file_type.validate_content(FileContentBuffer(file.content.raw_file))
 

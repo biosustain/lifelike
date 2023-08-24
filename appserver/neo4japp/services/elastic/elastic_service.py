@@ -224,7 +224,7 @@ class ElasticService(ElasticConnection, GraphConnection):
         if file.content:
             content = file.content.raw_file
             file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(
+            return file_type_service.get(file.mime_type).to_indexable_content(
                 FileContentBuffer(content)
             )
         else:
