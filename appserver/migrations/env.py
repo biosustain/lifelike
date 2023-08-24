@@ -5,7 +5,17 @@ from functools import cached_property, cache
 from io import BytesIO
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config, event
+from sqlalchemy import (
+    Column,
+    MetaData,
+    Table,
+    Integer,
+    VARCHAR,
+    and_,
+    engine_from_config,
+    event,
+    select,
+)
 from sqlalchemy import pool
 import sqlalchemy_utils
 
@@ -128,10 +138,38 @@ class MigrationValidator:
             len(self.updated_file_content_ids) > 0
             or self.unidentified_update_to_file_contents
         ):
-            session = Session(self.conn)
-            query = Query(Files).join(Files.content)
+            t_files = Table(
+                'files',
+                MetaData(),
+                Column('id', Integer(), primary_key=True),
+                Column('mime_type'),
+                Column('content_id', VARCHAR()),
+            )
+
+            t_files_content = Table(
+                'files_content',
+                MetaData(),
+                Column('id', Integer(), primary_key=True),
+                Column('raw_file', VARCHAR()),
+            )
+
+            query = select(
+                [
+                    t_files_content.c.id,
+                    t_files_content.c.raw_file,
+                    t_files.c.mime_type
+                ]
+            ).select_from(
+                t_files_content.join(
+                    t_files,
+                    and_(
+                        t_files.c.content_id == t_files_content.c.id,
+                    ),
+                )
+            )
+
             if not self.unidentified_update_to_file_contents:
-                query = query.filter(FileContent.id.in_(self.updated_file_content_ids))
+                query = query.where(t_files_content.c.id.in_(self.updated_file_content_ids))
                 self._per_revision_notify(
                     'Validating file contents of: ', self.updated_file_content_ids
                 )
@@ -139,28 +177,25 @@ class MigrationValidator:
                 self._per_revision_notify('Validating all files contents')
 
             file_type_service = get_file_type_service()
-            for chunk in window_chunk(
-                session.execute(
-                    query.with_entities(
-                        Files.mime_type.label('mime_type'),
-                        FileContent.raw_file.label('raw_file'),
-                        FileContent.id.label('id'),
-                    ).yield_per(BATCH_SIZE)
-                ),
-                BATCH_SIZE,
-            ):
-                for entity in chunk:
+
+            data = self.conn.execution_options(
+                stream_results=True,
+                max_row_buffer=BATCH_SIZE
+            ).execute(query)
+
+            for chunk in window_chunk(data, BATCH_SIZE):
+                for content_id, raw_file, mime_type in chunk:
                     exceptions = []
                     try:
-                        provider = file_type_service.get(entity)
+                        provider = file_type_service.get(mime_type)
                         provider.validate_content(
-                            BytesIO(entity.raw_file), log_status_messages=False
+                            BytesIO(raw_file), log_status_messages=False
                         )
                     except Exception as validation_exception:
                         # TODO after migrating to python 3.11: use .add_note
                         try:
                             raise self.ValidationException(
-                                f'FileContent(id={entity.id}) {validation_exception}'
+                                f'FileContent(id={content_id}) {validation_exception}'
                             ) from validation_exception
                         except Exception as validation_exception:
                             self.logger.exception(validation_exception)
