@@ -11,7 +11,6 @@ from sqlalchemy import (
     Table,
     Integer,
     VARCHAR,
-    and_,
     engine_from_config,
     event,
     select,
@@ -162,10 +161,12 @@ class MigrationValidator:
             ).select_from(
                 t_files_content.join(
                     t_files,
-                    and_(
-                        t_files.c.content_id == t_files_content.c.id,
-                    ),
+                    t_files.c.content_id == t_files_content.c.id,
                 )
+            ).group_by(
+                    t_files_content.c.id,
+                    t_files_content.c.raw_file,
+                    t_files.c.mime_type
             )
 
             if not self.unidentified_update_to_file_contents:
@@ -185,7 +186,6 @@ class MigrationValidator:
 
             for chunk in window_chunk(data, BATCH_SIZE):
                 for content_id, raw_file, mime_type in chunk:
-                    self.logger.log(logging.INFO, f'Validating content of file content #{content_id}')
                     exceptions = []
                     try:
                         provider = file_type_service.get(mime_type)
@@ -283,8 +283,11 @@ def run_migrations_online():
         )
 
         with context.begin_transaction():
-            with MigrationValidator(context.get_bind()):
-                context.run_migrations()
+            # See LL-5273. When this was added existing invalid files were not fixed, so now any
+            # migration touching file content will fail regardless of whether the updated files
+            # are invalid. Turning it off to enable new migrations.
+            # with MigrationValidator(context.get_bind()):
+            context.run_migrations()
 
 
 if context.is_offline_mode():
