@@ -23,6 +23,7 @@ branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))
 
+BATCH_SIZE = 1
 FILE_MIME_TYPE_MAP = 'vnd.***ARANGO_DB_NAME***.document/map'
 
 
@@ -109,7 +110,10 @@ def data_upgrades():
         sa.Column('checksum_sha256'),
     )
 
-    raw_maps_to_fix = conn.execution_options(stream_results=True, max_row_buffer=1).execute(
+    raw_maps_to_fix = conn.execution_options(
+        stream_results=True,
+        max_row_buffer=BATCH_SIZE
+    ).execute(
         sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
             t_files_content.c.id.in_(
                 sa.union(
@@ -139,7 +143,7 @@ def data_upgrades():
     )
 
     checksum_map = {}
-    for chunk in window_chunk(raw_maps_to_fix, 1):
+    for chunk in window_chunk(raw_maps_to_fix, BATCH_SIZE):
         for fcid, raw_file in chunk:
             zip_file = zipfile.ZipFile(io.BytesIO(raw_file))
             map_json = json.loads(zip_file.read('graph.json'))
