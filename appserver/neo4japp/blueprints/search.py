@@ -269,7 +269,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             file: Optional[Files] = file_map.get(file_id)
 
             if file and file.calculated_privileges[current_user.id].readable:
-                file_type = file_type_service.get(file)
+                file_type = file_type_service.get(file.mime_type)
                 if (
                     file_type.should_highlight_content_text_matches()
                     and document.get('highlight') is not None
