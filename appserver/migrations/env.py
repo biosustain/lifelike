@@ -185,6 +185,7 @@ class MigrationValidator:
 
             for chunk in window_chunk(data, BATCH_SIZE):
                 for content_id, raw_file, mime_type in chunk:
+                    self.logger.log(logging.INFO, f'Validating content of file content #{content_id}')
                     exceptions = []
                     try:
                         provider = file_type_service.get(mime_type)
