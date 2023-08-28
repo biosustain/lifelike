@@ -86,9 +86,9 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    files = conn.execution_options(stream_results=True, max_row_buffer=BATCH_SIZE).execute(
-        sa.select([t_files.c.id, t_files.c.annotations])
-    )
+    files = conn.execution_options(
+        stream_results=True, max_row_buffer=BATCH_SIZE
+    ).execute(sa.select([t_files.c.id, t_files.c.annotations]))
 
     for chunk in window_chunk(files, BATCH_SIZE):
         for file_id, annotations_obj in chunk:
