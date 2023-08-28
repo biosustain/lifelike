@@ -12,7 +12,7 @@ bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 @use_args(ContextRelationshipRequestSchema)
 def relationship(params):
     entities = params.get('entities', [])
-    context = params.get('context_')
+    context = params.get('context')
     options = params.get('options', {})
     create_params = dict(
         model="gpt-3.5-turbo",
