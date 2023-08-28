@@ -1,8 +1,15 @@
-<div class="module-body-split module-body-browser-split">
-  <div
+<as-split
+  class="module-body-split module-body-browser-split"
+  [gutterSize]="3"
+  [useTransition]="true"
+  unit="pixel"
+>
+  <as-split-area
     class="module-body-split-main"
     [appFSObjectTarget]="parent"
     (refreshRequest)="refreshRequest.emit()"
+    size="*"
+    [minSize]="500"
   >
     <ng-container
       *ngIf="showDescription && parent && parent.description && parent.description.trim().length"
@@ -262,17 +269,23 @@
         {{ emptyDirectoryMessage }}
       </div>
     </div>
-  </div>
-
-  <div class="d-none d-cbp-lg-block module-body-split-sidebar">
-    <app-object-info
-      *ngIf="objects != null && objects.selectionLength$ | async"
-      [object]="objects.lastSelection$ | async"
-      [forEditing]="forEditing"
-      [showDelete]="true"
-      (objectOpen)="openObject($event)"
-      (refreshRequest)="refreshRequest.emit($event)"
+  </as-split-area>
+  <ng-container *ngIf="objects">
+    <as-split-area
+      class="d-none d-cbp-lg-block module-body-split-sidebar"
+      *ngIf="objects.selection$ | async as selection"
+      [visible]="selection.length > 0"
+      [size]="400"
     >
-    </app-object-info>
-  </div>
-</div>
+      <app-object-info
+        *ngIf="selection.length"
+        [object]="selection[selection.length - 1]"
+        [forEditing]="forEditing"
+        [showDelete]="true"
+        (objectOpen)="openObject($event)"
+        (refreshRequest)="refreshRequest.emit($event)"
+      >
+      </app-object-info>
+    </as-split-area>
+  </ng-container>
+</as-split>
