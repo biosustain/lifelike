@@ -1,21 +1,134 @@
-from dataclasses import asdict
+from dataclasses import MISSING, fields
 from string import Template
-from typing import Optional
+from typing import Generic, Callable, overload, Any, TypeVar, Union, Mapping
+
+Obj = TypeVar('Obj')
+T = TypeVar('T')
 
 
-class TemplateDescriptor:
-    _default: str
-    _default_template: Template
+class Descriptor(Generic[Obj, T]):
     _property_prefix: str
-    _nested_call: bool = False
+    _name: str
 
-    def __init__(self, *, default: str, property_prefix: str = '_'):
-        self._default = default
-        self._default_template = Template(default)
+    def __init__(self, property_prefix: str = '_descriptor_'):
         self._property_prefix = property_prefix
 
     def __set_name__(self, owner, name):
         self._name = name
+
+    @property
+    def _prefixed_name(self):
+        return self._property_prefix + self._name
+
+    @overload
+    def __get__(self, instance: None, owner: type(Obj)) -> T:
+        """This is happening when dataclass is being created"""
+        ...
+
+    @overload
+    def __get__(self, instance: Obj, owner: type(Obj)) -> T:
+        ...
+
+    def __get__(self, instance: Union[Obj, None], owner: type(Obj)) -> T:
+        return getattr(instance, self._prefixed_name, MISSING)
+
+    def _update_value(self, instance: Obj, value: T):
+        setattr(instance, self._prefixed_name, value)
+
+    def __set__(self, instance: Obj, value):
+        if value is not self:
+            # Dealing with frozen instances (once we read|write the value should be consider frozen)
+            if hasattr(instance, self._prefixed_name):
+                setattr(instance, self._prefixed_name, value)
+            else:
+                object.__setattr__(instance, self._prefixed_name, value)
+
+    def __repr__(self):
+        return f'<{type(self).__name__} {self._name}>'
+
+
+class LazyDefaulDescriptor(Descriptor[Obj, T]):
+    """Decriptor which calls default_factory only when the value is not set yet upon first read
+    Note: It can be used within frozen dataclassses
+    WARNING: Be very carefull while debugging this descriptor.
+     Revealing the property in the debugger will cause the descriptor to be called,
+     moreover during such call all debugging points will be suppressed.
+    """
+
+    _default_factory: Callable[[Obj, str], T]
+
+    def __init__(
+        self, default_factory: Callable[[Obj, str], T], property_prefix: str = '_lazy_'
+    ):
+        super().__init__(property_prefix=property_prefix)
+        self._default_factory = default_factory
+
+    def __get__(self, instance: Union[Obj, None], owner: Any) -> T:
+        # If we are accessing the descriptor from the dataclass wrapper, return the descriptor
+        if instance is None:
+            return self
+
+        # If the value is already set, return it
+        set_value = getattr(instance, self._prefixed_name, MISSING)
+        if set_value is not MISSING:
+            return set_value
+
+        # If the value is not set, create it and set it
+        default = self._default_factory(instance, self._name)
+        object.__setattr__(instance, self._prefixed_name, default)
+        return default
+
+
+class MappingProxy(Mapping[str, Any]):
+    """Proxy which allows to access instance mapping as dictionary
+    This is used to render templates based on object attributes or dataclass fields
+    """
+
+    _instance: Obj
+
+    def __init__(self, instance: Obj):
+        self._instance = instance
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    def __iter__(self):
+        raise NotImplementedError
+
+    def __getitem__(self, key: str):
+        return getattr(self._instance, key)
+
+
+class TemplateDescriptor(LazyDefaulDescriptor[Obj, str]):
+    _nested_call: bool = False
+
+    def __init__(
+        self, template: Union[Template, str], property_prefix: str = '_template_'
+    ):
+        template = template if isinstance(template, Template) else Template(template)
+
+        def _default_factory(instance: Obj, prop: str) -> str:
+            # Since was try to access properties of object to render object property
+            # we would be facing recursion issues
+            if self._nested_call:
+                raise RecursionError(
+                    f'Unable to render template {template.template}, '
+                    f'this is most likely due to a circular dependency in the template.'
+                )
+
+            # Generate default value using template
+            with self:
+                try:
+                    return template.substitute(MappingProxy(instance))
+                except KeyError as e:
+                    raise Exception(
+                        f'Unable to render template {template.template}, '
+                        f'{instance} is missing required property {e.args[0]}'
+                    ) from e
+
+        super().__init__(
+            default_factory=_default_factory, property_prefix=property_prefix
+        )
 
     def __enter__(self):
         self._nested_call = True
@@ -23,31 +136,29 @@ class TemplateDescriptor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._nested_call = False
 
-    def __get__(self, obj, type) -> Optional[str]:
-        # Init descriptor - return to indicate that it has default of type of returned value
-        if obj is None:
-            return self._default
 
-        # Since was try to access properties of object to render object property
-        # we would be facing recursion issues, instead we default requirsive calls to return None
-        if self._nested_call:
-            return None
+class CauseDefaultingDescriptor(LazyDefaulDescriptor[Obj, T]):
+    """Descriptor which returns default value from the exception __cause__ if it exists
+    If running on a dataclass, it will try to match the type of the field
+    """
 
-        # Usser set manually value for the field
-        if hasattr(obj, self._prefixed_name):
-            return getattr(obj, self._prefixed_name)
+    def __init__(
+        self, default: T = MISSING, prefix: str = '_cause_', replace_self: bool = False
+    ):
+        def _default_factory(instance: Obj, prop: str) -> T:
+            cause = getattr(instance, '__cause__', MISSING)
+            if cause is not MISSING:
+                cause_value = getattr(cause, prop, MISSING)
+                if cause_value is not MISSING:
+                    try:
+                        for f in fields(instance):
+                            if f.name == prop:
+                                if isinstance(cause_value, f.type):
+                                    return cause_value
+                                break
+                    except TypeError:
+                        # Running on a non dataclass
+                        return cause_value
+            return default
 
-        # Generate default value using template
-        with self:
-            return self._default_template.substitute(asdict(obj))
-
-    @property
-    def _prefixed_name(self):
-        return self._property_prefix + self._name
-
-    def __set__(self, obj, value: Optional[str]):
-        if value != self._default:
-            if hasattr(obj, self._prefixed_name):
-                getattr(obj, self._prefixed_name).__set__(value)
-            else:
-                obj.__dict__[self._prefixed_name] = value
+        super().__init__(default_factory=_default_factory, property_prefix=prefix)
