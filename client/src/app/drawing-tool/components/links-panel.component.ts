@@ -1,7 +1,8 @@
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { cloneDeep, first, sortBy } from 'lodash-es';
+import { cloneDeep, sortBy } from 'lodash-es';
+import { isMatch as _isMatch, first as _first, last as _last } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
@@ -105,8 +106,19 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
         }
       }
 
+      let uri = _first(uriData)?.uri;
+      // KGsearch returns a list of URIs, where last one tends to be a publication link
+      if (_isMatch(uri, { pathSegments: ['kg-visualizer'] })) {
+        for (const uriRecord of uriData) {
+          if (_isMatch(uriRecord.uri, { pathSegments: ['kg-visualizer'] })) {
+            continue;
+          }
+          uri = uriRecord.uri;
+        }
+      }
+
       return this.openCreateDialog({
-        url: first(uriData)?.uri?.href ?? '',
+        url: uri?.href ?? '',
         domain: text.trim(),
       });
     }
