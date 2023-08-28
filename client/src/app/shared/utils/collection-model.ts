@@ -85,7 +85,12 @@ export class CollectionModel<T extends ObservableObject | any> {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  view$ = combineLatest([this.items$, this.filter$, this.sort$, this._updateView$]).pipe(
+  view$: Observable<T[]> = combineLatest([
+    this.items$,
+    this.filter$,
+    this.sort$,
+    this._updateView$,
+  ]).pipe(
     map(([items, filter, sort]) => {
       let filteredItems: T[] = [...items];
       if (filter != null) {
