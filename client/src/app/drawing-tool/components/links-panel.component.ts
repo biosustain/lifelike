@@ -108,12 +108,12 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
 
       let uri = _first(uriData)?.uri;
       // KGsearch returns a list of URIs, where last one tends to be a publication link
-      if (_isMatch(uri, { pathSegments: ['kg-visualizer']})) {
+      if (_isMatch(uri, { pathSegments: ['kg-visualizer'] })) {
         for (const uriRecord of uriData) {
-          if (_isMatch(uriRecord.uri, { pathSegments: ['kg-visualizer']})) {
+          if (_isMatch(uriRecord.uri, { pathSegments: ['kg-visualizer'] })) {
             continue;
           }
-          uri = uriRecord.uri
+          uri = uriRecord.uri;
         }
       }
 
