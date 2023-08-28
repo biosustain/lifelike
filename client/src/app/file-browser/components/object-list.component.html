@@ -24,7 +24,7 @@
             #tooltipRef="ngbTooltip"
             [appAutoCloseTooltipOutOfView]="tooltipRef"
             (click)="openParentEditDialog(); $event.preventDefault()"
-          >(edit)</a
+            >(edit)</a
           >
         </div>
       </div>
@@ -81,176 +81,176 @@
           />
         </colgroup>
         <thead>
-        <tr>
-          <!-- Checkbox -->
+          <tr>
+            <!-- Checkbox -->
             <th class="text-truncate">
-            <ng-container *ngIf="objects != null && objects.multipleSelection">
-              <div class="custom-control custom-checkbox">
-                <input
-                  type="checkbox"
-                  id="{{ id }}-select-all"
-                  class="custom-control-input"
-                  [checked]="objects.isAllSelected()"
-                  (change)="objects.toggleAll()"
-                />
-                <label class="custom-control-label" for="{{ id }}-select-all"></label>
-              </div>
-            </ng-container>
-          </th>
+              <ng-container *ngIf="objects != null && objects.multipleSelection">
+                <div class="custom-control custom-checkbox">
+                  <input
+                    type="checkbox"
+                    id="{{ id }}-select-all"
+                    class="custom-control-input"
+                    [checked]="objects.isAllSelected()"
+                    (change)="objects.toggleAll()"
+                  />
+                  <label class="custom-control-label" for="{{ id }}-select-all"></label>
+                </div>
+              </ng-container>
+            </th>
 
-          <!-- "Starred" -->
+            <!-- "Starred" -->
             <th></th>
 
-          <!-- Name -->
+            <!-- Name -->
             <th class="text-truncate">Name</th>
 
-          <!-- Annotated -->
+            <!-- Annotated -->
             <th class="text-truncate">Annotated</th>
 
-          <!-- Size -->
+            <!-- Size -->
             <th class="text-truncate">Size</th>
 
-          <!-- Created -->
+            <!-- Created -->
             <th class="text-truncate">Modified</th>
 
-          <!-- Author -->
+            <!-- Author -->
             <th class="text-truncate">User</th>
 
-          <!-- Dropdown -->
-          <th style="width: 80px"></th>
-        </tr>
+            <!-- Dropdown -->
+            <th style="width: 80px"></th>
+          </tr>
         </thead>
 
         <!-- Results -->
         <tbody>
-        <tr
-          *ngFor="let object of objects.view$ | async; index as objectIndex"
-          tabindex="0"
-          [class.active]="objects.isSelected(object)"
-          [appFSObjectTarget]="object?.isDirectory ? object : null"
-          (refreshRequest)="refreshRequest.emit()"
-          draggable="true"
-          (dragstart)="objectDragStart($event, object)"
-          (click)="objects.toggle(object)"
-        >
-          <!-- Checkbox -->
-          <td class="align-middle text-nowrap overflow-hidden">
-            <div
-              class="custom-control custom-checkbox overflow-hidden"
-              (click)="$event.preventDefault(); $event.stopPropagation()"
-            >
-              <input
-                type="checkbox"
-                id="{{ id }}-object-{{ objectIndex }}"
-                class="custom-control-input"
-                (change)="objects.toggle(object); $event.preventDefault()"
-                [checked]="objects.isSelected(object)"
-              />
-              <label
-                class="custom-control-label d-block"
-                for="{{ id }}-object-{{ objectIndex }}"
-              ></label>
-            </div>
-          </td>
-
-          <!-- "Starred" -->
-          <td>
-            <div
-              class="d-flex align-items-center"
-              container="body"
-              (click)="toggleStarred(object); $event.stopPropagation()"
-            >
-              <div class="d-inline-block mr-1">
-                <i
-                  [class]="'fas fa-star ' + (object.starred ? 'text-warning' : 'text-secondary')"
-                ></i>
-              </div>
-            </div>
-          </td>
-
-          <!-- Name -->
+          <tr
+            *ngFor="let object of objects.view$ | async; index as objectIndex"
+            tabindex="0"
+            [class.active]="objects.isSelected(object)"
+            [appFSObjectTarget]="object?.isDirectory ? object : null"
+            (refreshRequest)="refreshRequest.emit()"
+            draggable="true"
+            (dragstart)="objectDragStart($event, object)"
+            (click)="objects.toggle(object)"
+          >
+            <!-- Checkbox -->
             <td class="align-middle text-nowrap overflow-hidden">
-            <div
-              class="d-flex align-items-center"
-              popoverTitle="Description"
-              container="body"
-              triggers="mouseenter:mouseleave"
-              placement="right"
-              [popoverClass]="'tooltip-newlines'"
-              [ngbPopover]="object.description | truncate : MAX_TOOLTIP_LENGTH"
-              [disablePopover]="object.description == null || object.description.length === 0"
-            >
-              <div class="d-inline-block mr-1">
-                <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
+              <div
+                class="custom-control custom-checkbox overflow-hidden"
+                (click)="$event.preventDefault(); $event.stopPropagation()"
+              >
+                <input
+                  type="checkbox"
+                  id="{{ id }}-object-{{ objectIndex }}"
+                  class="custom-control-input"
+                  (change)="objects.toggle(object); $event.preventDefault()"
+                  [checked]="objects.isSelected(object)"
+                />
+                <label
+                  class="custom-control-label d-block"
+                  for="{{ id }}-object-{{ objectIndex }}"
+                ></label>
               </div>
+            </td>
 
-              <div class="d-inline-block text-truncate">
-                <a
-                  [appLink]="object.getCommands(forEditing)"
-                  [handleClick]="false"
-                  (click)="openObject(object); $event.preventDefault()"
-                  appHasPlaceholder
-                >
-                  <ng-container *ngIf="!object.isDirectory; else dirLabel">{{
-                    object.effectiveName
+            <!-- "Starred" -->
+            <td>
+              <div
+                class="d-flex align-items-center"
+                container="body"
+                (click)="toggleStarred(object); $event.stopPropagation()"
+              >
+                <div class="d-inline-block mr-1">
+                  <i
+                    [class]="'fas fa-star ' + (object.starred ? 'text-warning' : 'text-secondary')"
+                  ></i>
+                </div>
+              </div>
+            </td>
+
+            <!-- Name -->
+            <td class="align-middle text-nowrap overflow-hidden">
+              <div
+                class="d-flex align-items-center"
+                popoverTitle="Description"
+                container="body"
+                triggers="mouseenter:mouseleave"
+                placement="right"
+                [popoverClass]="'tooltip-newlines'"
+                [ngbPopover]="object.description | truncate : MAX_TOOLTIP_LENGTH"
+                [disablePopover]="object.description == null || object.description.length === 0"
+              >
+                <div class="d-inline-block mr-1">
+                  <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
+                </div>
+
+                <div class="d-inline-block text-truncate">
+                  <a
+                    [appLink]="object.getCommands(forEditing)"
+                    [handleClick]="false"
+                    (click)="openObject(object); $event.preventDefault()"
+                    appHasPlaceholder
+                  >
+                    <ng-container *ngIf="!object.isDirectory; else dirLabel">{{
+                      object.effectiveName
                     }}</ng-container>
-                  <ng-template #dirLabel>
-                    <strong>{{ object.effectiveName }}</strong>
-                  </ng-template>
-                </a>
-              </div>
+                    <ng-template #dirLabel>
+                      <strong>{{ object.effectiveName }}</strong>
+                    </ng-template>
+                  </a>
+                </div>
 
-              <div
-                *ngIf="object.public"
-                class="d-inline-block ml-1"
-                ngbTooltip="This item is public and can be viewed by any logged-in user."
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-                container="body"
-              >
-                <i class="fa fa-fw text-icon fa-globe"></i>
-              </div>
+                <div
+                  *ngIf="object.public"
+                  class="d-inline-block ml-1"
+                  ngbTooltip="This item is public and can be viewed by any logged-in user."
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                  container="body"
+                >
+                  <i class="fa fa-fw text-icon fa-globe"></i>
+                </div>
 
-              <div *ngIf="object.pinned" class="d-inline-block ml-1">
-                <i class="fa fa-fw text-icon fa-thumbtack"></i>
-              </div>
+                <div *ngIf="object.pinned" class="d-inline-block ml-1">
+                  <i class="fa fa-fw text-icon fa-thumbtack"></i>
+                </div>
 
-              <div
-                *ngIf="!object.privileges.writable && !object.privileges.commentable"
-                class="d-inline-block ml-1"
-                ngbTooltip="You do not have permission to edit this item."
-                container="body"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-              >
-                <i class="fa fa-fw text-icon fa-lock"></i>
-              </div>
+                <div
+                  *ngIf="!object.privileges.writable && !object.privileges.commentable"
+                  class="d-inline-block ml-1"
+                  ngbTooltip="You do not have permission to edit this item."
+                  container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
+                  <i class="fa fa-fw text-icon fa-lock"></i>
+                </div>
 
-              <div
-                *ngIf="!object.privileges.writable && object.privileges.commentable"
-                class="d-inline-block ml-1"
-                ngbTooltip="You can make comments on this item, but you cannot edit it."
-                container="body"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-              >
-                <i class="fa fa-fw text-icon fa-comment"></i>
+                <div
+                  *ngIf="!object.privileges.writable && object.privileges.commentable"
+                  class="d-inline-block ml-1"
+                  ngbTooltip="You can make comments on this item, but you cannot edit it."
+                  container="body"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                >
+                  <i class="fa fa-fw text-icon fa-comment"></i>
+                </div>
               </div>
-            </div>
-          </td>
+            </td>
 
-          <!-- Annotated -->
+            <!-- Annotated -->
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
-            <div
-              *ngIf="object.isAnnotatable"
-              class="text-truncate"
-              container="body"
-              triggers="mouseenter:mouseleave"
-              placement="right"
-              popoverTitle="Annotation Status"
-              [ngbPopover]="object.annotationsTooltipContent"
-              [disablePopover]="!object.annotationsTooltipContent"
-            >
+              <div
+                *ngIf="object.isAnnotatable"
+                class="text-truncate"
+                container="body"
+                triggers="mouseenter:mouseleave"
+                placement="right"
+                popoverTitle="Annotation Status"
+                [ngbPopover]="object.annotationsTooltipContent"
+                [disablePopover]="!object.annotationsTooltipContent"
+              >
                 <span appHasPlaceholder>
                   <ng-container
                     *ngIf="
@@ -261,50 +261,50 @@
                   </ng-container>
                   {{ (object.annotationsDate | date : 'short') || 'No annotations' }}
                 </span>
-            </div>
-          </td>
+              </div>
+            </td>
 
-          <!-- Size -->
+            <!-- Size -->
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
               <span *ngIf="object.size" class="text-truncate" appHasPlaceholder>
                 {{ object.size }}
               </span>
-          </td>
+            </td>
 
-          <!-- Created -->
+            <!-- Created -->
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
-            <span appHasPlaceholder>{{ object.updatedTimestamp | date : 'shortDate' }}</span>
-          </td>
+              <span appHasPlaceholder>{{ object.updatedTimestamp | date : 'shortDate' }}</span>
+            </td>
 
-          <!-- Author -->
+            <!-- Author -->
             <td class="align-middle text-nowrap overflow-hidden text-truncate">
-            <app-user [user]="object.user" class="text-nowrap"></app-user>
-          </td>
+              <app-user [user]="object.user" class="text-nowrap"></app-user>
+            </td>
 
-          <!-- Dropdown -->
-          <td>
-            <button
-              class="btn btn-sm text-nowrap"
-              [matMenuTriggerFor]="fileObjectMenu"
-              (click)="$event.stopPropagation()"
-              appHasPlaceholder
-            >
-              <i class="fas fa-cog fa-fw"></i>
-              <i class="fas fa-caret-down fa-fw"></i>
-            </button>
-            <mat-menu #fileObjectMenu="matMenu" xPosition="after" yPosition="below">
-              <app-object-menu
-                [object]="object"
-                [forEditing]="forEditing"
-                [showDelete]="true"
-                (objectOpen)="openObject($event)"
-                (objectUpdate)="updateView()"
-                (refreshRequest)="refreshRequest.emit($event)"
+            <!-- Dropdown -->
+            <td>
+              <button
+                class="btn btn-sm text-nowrap"
+                [matMenuTriggerFor]="fileObjectMenu"
+                (click)="$event.stopPropagation()"
+                appHasPlaceholder
               >
-              </app-object-menu>
-            </mat-menu>
-          </td>
-        </tr>
+                <i class="fas fa-cog fa-fw"></i>
+                <i class="fas fa-caret-down fa-fw"></i>
+              </button>
+              <mat-menu #fileObjectMenu="matMenu" xPosition="after" yPosition="below">
+                <app-object-menu
+                  [object]="object"
+                  [forEditing]="forEditing"
+                  [showDelete]="true"
+                  (objectOpen)="openObject($event)"
+                  (objectUpdate)="updateView()"
+                  (refreshRequest)="refreshRequest.emit($event)"
+                >
+                </app-object-menu>
+              </mat-menu>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

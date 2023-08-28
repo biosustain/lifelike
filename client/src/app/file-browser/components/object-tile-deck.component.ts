@@ -46,7 +46,7 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
     filesystemService: FilesystemService,
     elementRef: ElementRef,
     progressDialog: ProgressDialog,
-    cdr: ChangeDetectorRef,
+    cdr: ChangeDetectorRef
   ) {
     super(
       router,
