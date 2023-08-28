@@ -62,7 +62,11 @@ class BaseFileTypeProvider:
         :param mime_type: the mime type
         :return: whether this provide should be used
         """
-        return [(Certanity.match, self)] if mime_type.lower() in self.mime_types else []
+        return (
+            [(Certanity.match, self)]
+            if mime_type.lower() in self.mime_types
+            else []
+        )
 
     def convert(self, buffer):
         raise NotImplementedError

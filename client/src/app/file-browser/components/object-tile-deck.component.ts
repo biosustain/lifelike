@@ -1,12 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  Input,
-  TemplateRef,
-  ContentChild,
-  NgZone,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, ElementRef, Input, TemplateRef, ContentChild } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -45,8 +37,7 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
     actions: FilesystemObjectActions,
     filesystemService: FilesystemService,
     elementRef: ElementRef,
-    progressDialog: ProgressDialog,
-    cdr: ChangeDetectorRef
+    progressDialog: ProgressDialog
   ) {
     super(
       router,
@@ -58,8 +49,7 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
       actions,
       filesystemService,
       elementRef,
-      progressDialog,
-      cdr
+      progressDialog
     );
   }
 
