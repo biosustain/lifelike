@@ -60,7 +60,7 @@ export class ObjectListComponent {
   @Output() refreshRequest = new EventEmitter<string>();
   @Output() objectOpen = new EventEmitter<FilesystemObject>();
   MAX_TOOLTIP_LENGTH = 800;
-  private readonly columns = Columns;
+  readonly columns = Columns;
   @ViewChild(ElementObserverDirective, { static: true })
   tableContainerObserver: ElementObserverDirective;
 
