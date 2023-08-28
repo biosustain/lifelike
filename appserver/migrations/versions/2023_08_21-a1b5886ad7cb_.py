@@ -57,8 +57,7 @@ def data_upgrades():
     session = Session(conn)
 
     files_content = conn.execution_options(
-        stream_results=True,
-        max_row_buffer=BATCH_SIZE
+        stream_results=True, max_row_buffer=BATCH_SIZE
     ).execute(
         sa.select(
             [
@@ -109,7 +108,11 @@ def data_upgrades():
                                 if 'data' in node:
                                     data = node['data']
 
-                                    for property in ['search', 'references', 'hyperlinks']:
+                                    for property in [
+                                        'search',
+                                        'references',
+                                        'hyperlinks',
+                                    ]:
                                         if property in data:
                                             updated_links = []
 
@@ -135,14 +138,18 @@ def data_upgrades():
                 if 'nodes' in map_obj:
                     for node in map_obj['nodes']:
                         if 'image_id' in node:
-                            image_name = "".join(['images/', node.get('image_id'), '.png'])
+                            image_name = "".join(
+                                ['images/', node.get('image_id'), '.png']
+                            )
                             try:
                                 image_bytes = old_zip_file.read(image_name)
                             except KeyError:
                                 # For some reason there was a node with an image id, but no
                                 # corresponding image file
                                 continue
-                            new_zip_file.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                            new_zip_file.writestr(
+                                zipfile.ZipInfo(image_name), image_bytes
+                            )
 
                 # Get any image nodes nested in a group
                 if 'groups' in map_obj:
@@ -159,7 +166,9 @@ def data_upgrades():
                                         # For some reason there was a node with an image id, but no
                                         # corresponding image file
                                         continue
-                                    new_zip_file.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                                    new_zip_file.writestr(
+                                        zipfile.ZipInfo(image_name), image_bytes
+                                    )
 
             # Create the update mapping object
             new_bytes = zip_bytes.getvalue()

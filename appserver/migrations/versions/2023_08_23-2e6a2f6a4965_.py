@@ -111,8 +111,7 @@ def data_upgrades():
     )
 
     raw_maps_to_fix = conn.execution_options(
-        stream_results=True,
-        max_row_buffer=BATCH_SIZE
+        stream_results=True, max_row_buffer=BATCH_SIZE
     ).execute(
         sa.select([t_files_content.c.id, t_files_content.c.raw_file]).where(
             t_files_content.c.id.in_(
@@ -159,7 +158,9 @@ def data_upgrades():
                 if 'nodes' in map_json:
                     for node in map_json['nodes']:
                         if 'image_id' in node:
-                            image_name = "".join(['images/', node.get('image_id'), '.png'])
+                            image_name = "".join(
+                                ['images/', node.get('image_id'), '.png']
+                            )
                             try:
                                 image_bytes = zip_file.read(image_name)
                             except KeyError:
@@ -183,7 +184,9 @@ def data_upgrades():
                                         # For some reason there was a node with an image id, but no
                                         # corresponding image file
                                         continue
-                                    new_zip.writestr(zipfile.ZipInfo(image_name), image_bytes)
+                                    new_zip.writestr(
+                                        zipfile.ZipInfo(image_name), image_bytes
+                                    )
 
             checksum = hashlib.sha256(new_zip_bytes.getvalue()).hexdigest()
 
