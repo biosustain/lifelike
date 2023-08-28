@@ -152,25 +152,31 @@ class MigrationValidator:
                 Column('raw_file', VARCHAR()),
             )
 
-            query = select(
-                [
-                    t_files_content.c.id,
-                    t_files_content.c.raw_file,
-                    t_files.c.mime_type
-                ]
-            ).select_from(
-                t_files_content.join(
-                    t_files,
-                    t_files.c.content_id == t_files_content.c.id,
+            query = (
+                select(
+                    [
+                        t_files_content.c.id,
+                        t_files_content.c.raw_file,
+                        t_files.c.mime_type,
+                    ]
                 )
-            ).group_by(
+                .select_from(
+                    t_files_content.join(
+                        t_files,
+                        t_files.c.content_id == t_files_content.c.id,
+                    )
+                )
+                .group_by(
                     t_files_content.c.id,
                     t_files_content.c.raw_file,
-                    t_files.c.mime_type
+                    t_files.c.mime_type,
+                )
             )
 
             if not self.unidentified_update_to_file_contents:
-                query = query.where(t_files_content.c.id.in_(self.updated_file_content_ids))
+                query = query.where(
+                    t_files_content.c.id.in_(self.updated_file_content_ids)
+                )
                 self._per_revision_notify(
                     'Validating file contents of: ', self.updated_file_content_ids
                 )
@@ -180,8 +186,7 @@ class MigrationValidator:
             file_type_service = get_file_type_service()
 
             data = self.conn.execution_options(
-                stream_results=True,
-                max_row_buffer=BATCH_SIZE
+                stream_results=True, max_row_buffer=BATCH_SIZE
             ).execute(query)
 
             for chunk in window_chunk(data, BATCH_SIZE):
