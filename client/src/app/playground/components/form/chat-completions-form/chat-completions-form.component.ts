@@ -136,14 +136,14 @@ export class ChatCompletionsFormComponent
   private parseFormValueToParams = omitByDeep(_isEmpty);
 
   private setFormValueFromParams({ prompt }: CompletionFormProjectedParams) {
-    this.form.get('messages').setValue(
-      prompt.split('\n').map((message) => ({
+    this.form.get('messages').setValue([
+      {
         role: 'user',
-        content: message,
+        content: prompt,
         name: null,
         functionCall: {},
-      }))
-    );
+      },
+    ]);
   }
 
   ngOnChanges({ params }: SimpleChanges) {
