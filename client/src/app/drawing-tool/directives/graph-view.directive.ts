@@ -26,6 +26,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GRAPH_ENTITY_TOKEN } from '../providers/graph-entity-data.provider';
+import { EventManagerService } from '../services/event-manager.service';
 
 @Directive({
   selector: 'canvas[appGraphView]',
@@ -38,7 +39,8 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
     private readonly graphActionsService: GraphActionsService,
     private readonly renderer: Renderer2,
     private readonly ngZone: NgZone,
-    private readonly errorHandler: ErrorHandler
+    private readonly errorHandler: ErrorHandler,
+    private readonly eventManagerService: EventManagerService
   ) {
     ngZone.runOutsideAngular(() => {
       const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
@@ -47,6 +49,7 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
         edgeRenderStyle: style,
         groupRenderStyle: style,
       });
+      this.eventManagerService.registerGraphView(this.canvasGraphView);
     });
   }
 
