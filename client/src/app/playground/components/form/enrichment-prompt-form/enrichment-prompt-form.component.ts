@@ -9,9 +9,10 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
-import { filter as _filter, flow as _flow, join as _join } from 'lodash/fp';
+import { filter as _filter, flow as _flow, join as _join, map as _map } from 'lodash/fp';
 
 import { PromptComposer } from '../../../interface';
+import { ChatGPT } from '../../../ChatGPT';
 
 export interface EnrichmentPromptFormParams {
   formInput: {
@@ -40,8 +41,11 @@ if organism, term, and context are provided:
 if organism and term are provided:
   return a string that says: "What is the relationship between [organism] and [term]?"
 otherwise:
-  create a list of all the inputs that are not empty join the list with commas and separate by spaces
-  return a string that says: "What is the relationship between [list_str]?"
+  create a list of all the inputs that are not empty
+  if the list contains more than one item:
+    return a string that says: "What is the relationship between [list]?"
+  otherwise:
+    return a string that says: "Return message that not enough parameters were defined."
   `;
   readonly form = new FormGroup({
     organism: new FormControl(''),
@@ -61,21 +65,47 @@ otherwise:
     }
   }
 
-  parseEntitiesToPropmpt(organism, term, context, geneName): string {
+  private escape(str: string): string {
+    return `${ChatGPT.DELIMITER}${ChatGPT.escape(str)}${ChatGPT.DELIMITER}`;
+  }
+
+  parseEntitiesToPropmpt(
+    organism: string,
+    term: string,
+    context: string,
+    geneName: string
+  ): string {
+    const escape = (str: string) =>
+      `${ChatGPT.DELIMITER}${ChatGPT.escape(str)}${ChatGPT.DELIMITER}`;
     if (organism && term && context && geneName) {
-      return `For ${organism}, what function does ${geneName} have in ${term}, in context of ${context}?`;
+      return (
+        `For ${escape(organism)}, ` +
+        `what function does ${escape(geneName)} have in ${escape(term)}, ` +
+        `in context of ${escape(context)}?`
+      );
     }
     if (organism && term && geneName) {
-      return `For ${organism}, what function does ${geneName} have in ${term}?`;
+      return (
+        `For ${escape(organism)}, ` +
+        `what function does ${escape(geneName)} have in ${escape(term)}?`
+      );
     }
     if (organism && term && context) {
-      return `For ${organism}, what is the relationship between ${term} and ${context}?`;
+      return (
+        `For ${escape(organism)}, ` +
+        `what is the relationship between ${escape(term)} and ${escape(context)}?`
+      );
     }
     if (organism && term) {
-      return `What is the ralationship between ${organism} and ${term}?`;
+      return `What is the ralationship between ${escape(organism)} and ${escape(term)}?`;
     }
-    const listStr = _flow(_filter(Boolean), _join(', '))([organism, term, context, geneName]);
-    return `What is the ralationship between ${listStr}?`;
+    const definedParams = _filter(Boolean)([organism, term, context, geneName]) as string[];
+    if (definedParams.length > 1) {
+      const listStr = _map(escape)(definedParams).join(', ');
+      return `What is the ralationship between ${listStr}?`;
+    } else {
+      return 'Return message that not enough parameters were defined.';
+    }
   }
 
   organismPicked(organism: string) {
