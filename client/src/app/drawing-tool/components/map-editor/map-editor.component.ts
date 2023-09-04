@@ -56,12 +56,18 @@ import { MapViewComponent } from '../map-view.component';
 import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { LockService } from './lock.service';
+import { EventManagerService } from '../../services/event-manager.service';
 
 @Component({
   selector: 'app-drawing-tool',
   templateUrl: './map-editor.component.html',
   styleUrls: ['../map.component.scss', './map-editor.component.scss'],
-  providers: [ModuleContext, LockService, OpenFileProvider],
+  providers: [
+    ModuleContext,
+    LockService,
+    OpenFileProvider,
+    EventManagerService, // defining here let's grab MapView elementRef in service
+  ],
 })
 export class MapEditorComponent
   extends MapViewComponent<Blob | undefined>
