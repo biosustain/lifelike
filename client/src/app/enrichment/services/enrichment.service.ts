@@ -34,20 +34,19 @@ export class EnrichmentService implements OnDestroy {
               )
             )
           ),
-          shareReplay(1),
+          shareReplay({ bufferSize: 1, refCount: true }),
           debug('file open')
         ),
         // data is not mutable
         getContent: initialUpdate.pipe(
           switchMap(() => this.filesystemService.getContent(hashId).pipe(map(Object.freeze))),
-          shareReplay(1)
+          debug('file content'),
+          shareReplay({ bufferSize: 1, refCount: true })
         ),
         update,
-        ref: new Set(),
       };
       openEnrichmentFiles.set(hashId, openFile);
     }
-    openFile.ref.add(this);
     return openFile;
   }
 
@@ -78,7 +77,7 @@ export class EnrichmentService implements OnDestroy {
       tap((ret) =>
         // dump keep track of file upon save so it reloaded
         // todo: implement optimistic update
-        hashIds.forEach((hashId) => openEnrichmentFiles.delete(hashId))
+        hashIds.forEach((hashId) => this.update(hashId))
       )
     );
   }
