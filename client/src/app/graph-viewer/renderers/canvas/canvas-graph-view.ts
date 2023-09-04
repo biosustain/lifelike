@@ -835,11 +835,6 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
       while (true) {
         const result = this.renderQueue.next();
 
-        if (devMode) {
-          // tslint:disable-next-line:no-console
-          console.debug('Map render queue:', result.value);
-        }
-
         if (result.done) {
           // Finished rendering!
           this.renderQueue = null;

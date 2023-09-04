@@ -145,13 +145,11 @@
         </div>
       </as-split-area>
       <as-split-area size="256" [order]="1" #infoPanelSidebar>
-        <ng-container
-          *ngIf="graphCanvas?.selection.changeObservable | async as selected; else graphInfo"
-        >
-          <div class="info-panel" *ngIf="selected[0].length; else graphInfo">
+        <ng-container *ngIf="selection$ | async as selected; else graphInfo">
+          <div class="info-panel" *ngIf="selected.length; else graphInfo">
             <app-info-panel
               [infoPanel]="infoPanel"
-              [selected]="selected[0]"
+              [selected]="selected"
               [graphView]="graphCanvas"
               (actionCreated)="graphCanvas.execute($event)"
             >
