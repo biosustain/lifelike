@@ -20,6 +20,7 @@
         [showDelete]="false"
         [showRestore]="true"
         (objectRestore)="restore($event)"
+        (objectUpdate)="refreshData()"
       >
       </app-module-menu>
       <div *ngIf="queuedChanges$.value">
