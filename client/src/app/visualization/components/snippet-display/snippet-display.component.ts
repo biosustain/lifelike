@@ -198,7 +198,7 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
       JSON.stringify({
         title: snippet.reference.data.sentence,
         uri: snippetUrl.toString(),
-      }),
+      })
     );
   }
 }
