@@ -32,6 +32,7 @@ directory = path.realpath(path.dirname(__file__))
 
 BATCH_SIZE = 1
 
+
 class Enumd(Enum):
     @classmethod
     def get(cls, key, default=None):
@@ -41,6 +42,7 @@ class Enumd(Enum):
         except ValueError:
             return default
 
+
 class EnrichmentDomain(Enumd):
     UNIPROT = 'UniProt'
     REGULON = 'Regulon'
@@ -48,11 +50,13 @@ class EnrichmentDomain(Enumd):
     GO = 'GO'
     BIOCYC = 'BioCyc'
 
+
 @attr.s(frozen=True)
 class EnrichmentCellTextMapping:
     text: str = attr.ib()
     text_index_map: List[Tuple[int, dict]] = attr.ib()
     cell_texts: List[dict] = attr.ib()
+
 
 t_files = sa.Table(
     'files',
@@ -79,10 +83,9 @@ def fix_annotation_id_hyperlink(annotation):
         if 'idHyperlinks' not in meta:
             meta['idHyperlinks'] = []
 
-        meta['idHyperlinks'].append(json.dumps({
-            'label': meta['idType'],
-            'url': meta['idHyperlink']
-        }))
+        meta['idHyperlinks'].append(
+            json.dumps({'label': meta['idType'], 'url': meta['idHyperlink']})
+        )
 
         del meta['idHyperlink']
 
@@ -192,7 +195,9 @@ def create_annotation_mappings(enrichment: dict):
                             }
                         )
         except KeyError:
-            print(f'\tMissing key when creating enrichment table text row/column mapping.')
+            print(
+                f'\tMissing key when creating enrichment table text row/column mapping.'
+            )
             continue
 
     for text in cell_texts:
@@ -206,6 +211,7 @@ def create_annotation_mappings(enrichment: dict):
     return EnrichmentCellTextMapping(
         text=combined_text, text_index_map=text_index_map, cell_texts=cell_texts
     )
+
 
 def highlight_annotations(original_text: str, annotations: List[dict]):
     texts = []
@@ -233,9 +239,7 @@ def highlight_annotations(original_text: str, annotations: List[dict]):
                 prev_ending_index = hi_location_offset
                 texts.append(text)
             else:
-                texts.append(
-                    original_text[prev_ending_index + 1 : lo_location_offset]
-                )
+                texts.append(original_text[prev_ending_index + 1 : lo_location_offset])
                 prev_ending_index = hi_location_offset
                 texts.append(text)
 
@@ -250,9 +254,7 @@ def annotate_enrichment_table(
     enrichment: dict,
 ):
     # sort by lo_location_offset to go from beginning to end
-    sorted_annotations_list = sorted(
-        annotations, key=lambda x: x['loLocationOffset']
-    )
+    sorted_annotations_list = sorted(annotations, key=lambda x: x['loLocationOffset'])
 
     prev_index = -1
     enriched_gene = ''
@@ -312,7 +314,9 @@ def annotate_enrichment_table(
     return enrichment
 
 
-def fix_enrichment_table_highlights(raw_file: bytes, annotations: List[dict]) -> Tuple[bytes, dict]:
+def fix_enrichment_table_highlights(
+    raw_file: bytes, annotations: List[dict]
+) -> Tuple[bytes, dict]:
     enrichment = json.load(BytesIO(raw_file))
     enriched = create_annotation_mappings(enrichment)
 
@@ -347,16 +351,16 @@ def data_upgrades():
                 t_files.c.id,
                 t_files.c.annotations,
                 t_files_content.c.id,
-                t_files_content.c.raw_file
+                t_files_content.c.raw_file,
             ]
-        ).select_from(
+        )
+        .select_from(
             t_files_content.join(
                 t_files,
                 t_files.c.content_id == t_files_content.c.id,
             )
-        ).order_by(
-            t_files.c.id
         )
+        .order_by(t_files.c.id)
     )
 
     for chunk in window_chunk(files, BATCH_SIZE):
@@ -375,9 +379,11 @@ def data_upgrades():
 
                 updated_annotations_list = update_annotations(annotations_list)
                 if updated_annotations_list is not None:
-                    updated_raw_file, updated_enrichment_annotations = fix_enrichment_table_highlights(
-                        raw_file,
-                        updated_annotations_list
+                    (
+                        updated_raw_file,
+                        updated_enrichment_annotations,
+                    ) = fix_enrichment_table_highlights(
+                        raw_file, updated_annotations_list
                     )
                     new_hash = hashlib.sha256(updated_raw_file).digest()
                     annotations_obj['documents'][0]['passages'][0][
@@ -390,7 +396,7 @@ def data_upgrades():
                         .where(t_files.c.id == file_id)
                         .values(
                             annotations=annotations_obj,
-                            enrichment_annotations=updated_enrichment_annotations
+                            enrichment_annotations=updated_enrichment_annotations,
                         )
                     )
 
@@ -398,7 +404,11 @@ def data_upgrades():
                     session.execute(
                         t_files_content.update()
                         .where(t_files_content.c.id == content_id)
-                        .values(id=content_id, raw_file=updated_raw_file, checksum_sha256=new_hash)
+                        .values(
+                            id=content_id,
+                            raw_file=updated_raw_file,
+                            checksum_sha256=new_hash,
+                        )
                     )
                     session.flush()
         session.commit()
