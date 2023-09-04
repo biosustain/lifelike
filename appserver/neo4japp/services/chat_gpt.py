@@ -5,6 +5,12 @@ from neo4japp.services.rcache import RedisCache
 
 
 class ChatGPT:
+    DELIMITER = "```"
+
+    @staticmethod
+    def escape(text: str):
+        return text.replace(ChatGPT.DELIMITER, f'[ignored]')
+
     class Completion(openai.Completion):
         cache: Cache = RedisCache(
             'ChatGPT', 'Completion', ex=3600 * 24 * 7  # Cache for a week

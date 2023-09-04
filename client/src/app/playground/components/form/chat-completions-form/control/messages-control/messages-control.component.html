@@ -29,7 +29,12 @@
         <i class="fa fa-fw fa-times"></i>
       </button>
     </div>
-    <textarea class="form-control border-0 w-100" [formControl]="control.get('content')"></textarea>
+    <textarea
+      class="form-control border-0 w-100"
+      [formControl]="control.get('content')"
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="2"
+    ></textarea>
     <!--    <div class="input-group w-100">-->
     <!--      <input type="text" class="form-control border-0" [formControl]="control.get('name')"/>-->
     <!--      &lt;!&ndash;        TODO functionCall &ndash;&gt;-->
