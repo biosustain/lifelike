@@ -35,7 +35,7 @@ KNOWN_DOMAINS = {
     'kegg': 'KEGG',
     'regulon': 'Regulon',
     'string': 'String',
-    'uniprot': 'UniProt'
+    'uniprot': 'UniProt',
 }
 
 t_files = sa.Table(
@@ -54,13 +54,12 @@ t_files_content = sa.Table(
     sa.Column('checksum_sha256', sa.Binary()),
 )
 
+
 def _validate_file(mime_type: str, raw_file: bytes):
     file_type_service = get_file_type_service()
 
     provider = file_type_service.get(mime_type)
-    provider.validate_content(
-        BytesIO(raw_file), log_status_messages=False
-    )
+    provider.validate_content(BytesIO(raw_file), log_status_messages=False)
 
 
 def _fix_invalid_enrichment_table(raw_file: bytes) -> bytes:
@@ -111,9 +110,9 @@ def _fix_invalid_enrichment_table(raw_file: bytes) -> bytes:
                 'genes': genes,
                 'taxId': tax_id,
                 'organism': organism,
-                'sources': sources
+                'sources': sources,
             },
-            'result': json_data['result']
+            'result': json_data['result'],
         }
 
         print('\tWriting updated table data to bytes...')
@@ -137,24 +136,19 @@ def _fix_invalid_enrichment_table(raw_file: bytes) -> bytes:
                 'genes': genes,
                 'taxId': tax_id,
                 'organism': organism,
-                'sources': sources
+                'sources': sources,
             },
-            'result': {
-                'domainInfo': dict(),
-                'genes': []
-            }
+            'result': {'domainInfo': dict(), 'genes': []},
         }
 
         print('\tWriting updated table data to bytes...')
         updated_file_fp.write(json.dumps(new_json_data).encode())
-
 
     print('\tReturning from enrichment table validation...')
     return updated_file_fp.getvalue()
 
 
 def _fix_invalid_pdf(raw_file: bytes) -> bytes:
-
     with open('pdf_file_check', 'wb') as pdf_fp:
         pdf_fp.write(raw_file)
 
@@ -163,7 +157,6 @@ def _fix_invalid_pdf(raw_file: bytes) -> bytes:
         if text[:15] == '<!DOCTYPE html>':
             print('\tFixing file incorrectly labeled as pdf: file is actually html')
             return raw_file, 'text/html'
-
 
     return raw_file, 'application/pdf'
 
@@ -181,27 +174,22 @@ def data_upgrades():
     conn = op.get_bind()
     session = Session(conn)
 
-    query = sa.select(
-        [
-            t_files_content.c.id,
-            t_files_content.c.raw_file,
-            t_files.c.mime_type
-        ]
-    ).select_from(
-        t_files_content.join(
-            t_files,
-            t_files.c.content_id == t_files_content.c.id,
+    query = (
+        sa.select(
+            [t_files_content.c.id, t_files_content.c.raw_file, t_files.c.mime_type]
         )
-    ).group_by(
-        t_files_content.c.id,
-        t_files_content.c.raw_file,
-        t_files.c.mime_type
-    ).order_by(t_files_content.c.id)
-
+        .select_from(
+            t_files_content.join(
+                t_files,
+                t_files.c.content_id == t_files_content.c.id,
+            )
+        )
+        .group_by(t_files_content.c.id, t_files_content.c.raw_file, t_files.c.mime_type)
+        .order_by(t_files_content.c.id)
+    )
 
     data = conn.execution_options(
-        stream_results=True,
-        max_row_buffer=BATCH_SIZE
+        stream_results=True, max_row_buffer=BATCH_SIZE
     ).execute(query)
 
     for chunk in window_chunk(data, BATCH_SIZE):
@@ -243,7 +231,9 @@ def data_upgrades():
                 session.execute(
                     t_files_content.update()
                     .where(t_files_content.c.id == content_id)
-                    .values(id=content_id, raw_file=updated_file, checksum_sha256=new_hash)
+                    .values(
+                        id=content_id, raw_file=updated_file, checksum_sha256=new_hash
+                    )
                 )
                 session.flush()
         session.commit()
