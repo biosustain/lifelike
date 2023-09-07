@@ -23,13 +23,15 @@ class ServerException(Exception, BaseServerException):
     :param fields:
     """
 
-    title: str = field(default=CauseDefaultingDescriptor("We're sorry!"))
-    message: Optional[str] = field(
+    title: str = field(default=CauseDefaultingDescriptor("We're sorry!"))  # type: ignore
+    message: Optional[str] = field(  # type: ignore
         default=CauseDefaultingDescriptor("Looks like something went wrong!")
     )
-    additional_msgs: Tuple[str, ...] = field(default=CauseDefaultingDescriptor(tuple()))
-    fields: Optional[dict] = field(default=CauseDefaultingDescriptor(None))
-    code: HTTPStatus = field(
+    additional_msgs: Tuple[str, ...] = field(
+        default=CauseDefaultingDescriptor(tuple())  # type: ignore
+    )
+    fields: Optional[dict] = field(default=CauseDefaultingDescriptor(None))  # type: ignore
+    code: HTTPStatus = field(  # type: ignore
         default=CauseDefaultingDescriptor(HTTPStatus.INTERNAL_SERVER_ERROR)
     )
 
@@ -70,7 +72,7 @@ class StatisticalEnrichmentError(ServerException):
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message: str = field(
+    message: str = field(  # type: ignore
         default=TemplateDescriptor(
             'There was a problem annotating "$term". '
             'Please make sure the term is correct, '
@@ -233,7 +235,7 @@ class AccessRequestRequiredError(ServerException):
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
-    message: str = field(
+    message: str = field(  # type: ignore
         default=TemplateDescriptor(
             'You have "$curr_access" access.'
             ' Please request "$req_access" access at minimum for this content.'
