@@ -7,7 +7,7 @@ import {
   unary as _unary,
   entries as _entries,
   escapeRegExp as _escapeRegExp,
-  merge as _merge
+  merge as _merge,
 } from 'lodash-es';
 
 import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';

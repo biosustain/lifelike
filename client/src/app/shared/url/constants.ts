@@ -39,7 +39,7 @@ export const UNIPROT = Object.freeze({
   url: new HttpURL('https://www.uniprot.org/uniprotkb').freeze(),
   search: (query: string) =>
     new HttpURL(UNIPROT.url, {
-      search: {query},
+      search: { query },
     }),
 });
 
