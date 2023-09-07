@@ -21,16 +21,16 @@ class Descriptor(Generic[Obj, T]):
         return self._property_prefix + self._name
 
     @overload
-    def __get__(self, instance: None, owner: type(Obj)) -> T:
+    def __get__(self, instance: None, owner: type[Obj]) -> T:
         """This is happening when dataclass is being created"""
         ...
 
     @overload
-    def __get__(self, instance: Obj, owner: type(Obj)) -> T:
+    def __get__(self, instance: Obj, owner: type[Obj]) -> T:
         ...
 
-    def __get__(self, instance: Union[Obj, None], owner: type(Obj)) -> T:
-        return getattr(instance, self._prefixed_name, MISSING)
+    def __get__(self, instance: Union[Obj, None], owner: type[Obj]) -> T:
+        return getattr(instance, self._prefixed_name, MISSING)  # type: ignore
 
     def _update_value(self, instance: Obj, value: T):
         setattr(instance, self._prefixed_name, value)
@@ -66,7 +66,7 @@ class LazyDefaulDescriptor(Descriptor[Obj, T]):
     def __get__(self, instance: Union[Obj, None], owner: Any) -> T:
         # If we are accessing the descriptor from the dataclass wrapper, return the descriptor
         if instance is None:
-            return self
+            return self  # type: ignore
 
         # If the value is already set, return it
         set_value = getattr(instance, self._prefixed_name, MISSING)
@@ -84,9 +84,9 @@ class MappingProxy(Mapping[str, Any]):
     This is used to render templates based on object attributes or dataclass fields
     """
 
-    _instance: Obj
+    _instance: Any
 
-    def __init__(self, instance: Obj):
+    def __init__(self, instance: Any):
         self._instance = instance
 
     def __len__(self) -> int:
@@ -99,30 +99,30 @@ class MappingProxy(Mapping[str, Any]):
         return getattr(self._instance, key)
 
 
-class TemplateDescriptor(LazyDefaulDescriptor[Obj, str]):
+class TemplateDescriptor(LazyDefaulDescriptor[Any, str]):
     _nested_call: bool = False
 
     def __init__(
         self, template: Union[Template, str], property_prefix: str = '_template_'
     ):
-        template = template if isinstance(template, Template) else Template(template)
+        _template = template if isinstance(template, Template) else Template(template)
 
-        def _default_factory(instance: Obj, prop: str) -> str:
+        def _default_factory(instance: Any, prop: str) -> str:
             # Since was try to access properties of object to render object property
             # we would be facing recursion issues
             if self._nested_call:
                 raise RecursionError(
-                    f'Unable to render template {template.template}, '
+                    f'Unable to render template {_template.template}, '
                     f'this is most likely due to a circular dependency in the template.'
                 )
 
             # Generate default value using template
             with self:
                 try:
-                    return template.substitute(MappingProxy(instance))
+                    return _template.substitute(MappingProxy(instance))
                 except KeyError as e:
                     raise Exception(
-                        f'Unable to render template {template.template}, '
+                        f'Unable to render template {_template.template}, '
                         f'{instance} is missing required property {e.args[0]}'
                     ) from e
 
@@ -137,15 +137,18 @@ class TemplateDescriptor(LazyDefaulDescriptor[Obj, str]):
         self._nested_call = False
 
 
-class CauseDefaultingDescriptor(LazyDefaulDescriptor[Obj, T]):
+class CauseDefaultingDescriptor(LazyDefaulDescriptor[Any, T]):
     """Descriptor which returns default value from the exception __cause__ if it exists
     If running on a dataclass, it will try to match the type of the field
     """
 
     def __init__(
-        self, default: T = MISSING, prefix: str = '_cause_', replace_self: bool = False
+        self,
+        default: T = MISSING,  # type: ignore
+        prefix: str = '_cause_',
+        replace_self: bool = False,
     ):
-        def _default_factory(instance: Obj, prop: str) -> T:
+        def _default_factory(instance: Any, prop: str) -> T:
             cause = getattr(instance, '__cause__', MISSING)
             if cause is not MISSING:
                 cause_value = getattr(cause, prop, MISSING)
