@@ -5,17 +5,22 @@ Revises: a1b5886ad7cb
 Create Date: 2023-08-25 18:24:24.062840
 
 """
+import bioc
+import fastjsonschema
 import hashlib
 import json
 import sqlalchemy as sa
+import zipfile
 
 from alembic import context
 from alembic import op
+from bioc.biocjson import fromJSON as biocFromJSON
 from io import BytesIO
+from jsonlines import Reader as BioCJsonIterReader
 from os import path
+from pdfminer import high_level
+from pdfminer.pdfdocument import PDFEncryptionError
 from sqlalchemy.orm import Session
-
-from neo4japp.database import get_file_type_service
 
 from migrations.utils import window_chunk
 
@@ -27,8 +32,12 @@ depends_on = None
 directory = path.realpath(path.dirname(__file__))
 
 BATCH_SIZE = 1
-FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
+FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
+FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
+FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
+FILE_MIME_TYPE_GRAPH = 'vnd.lifelike.document/graph'
+FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
 KNOWN_DOMAINS = {
     'biocyc': 'BioCyc',
     'go': 'GO',
@@ -54,12 +63,96 @@ t_files_content = sa.Table(
     sa.Column('checksum_sha256', sa.Binary()),
 )
 
+def _validate_directory(buffer):
+    # Figure out file size
+    size = buffer.size
+
+    if size > 0:
+        raise ValueError("Directories can't have content")
+
+def _validate_pdf(buffer):
+    with buffer as bufferView:
+        # Check that the pdf is considered openable
+        try:
+            high_level.extract_text(bufferView, page_numbers=[0], caching=False)
+        except PDFEncryptionError as e:
+            raise Exception(
+                title='Failed to Read PDF',
+                message='This pdf is locked and cannot be loaded into Lifelike.',
+            ) from e
+        except Exception as e:
+            raise Exception(
+                title='Failed to Read PDF',
+                message='An error occurred while reading this pdf.'
+                ' Please check if the pdf is unlocked and openable.',
+            ) from e
+
+def _validate_bioc(buffer):
+    with BioCJsonIterReader(buffer) as reader:
+        for obj in reader:
+            passage = biocFromJSON(obj, level=bioc.DOCUMENT)
+
+
+def _validate_map(buffer):
+    # noinspection PyTypeChecker
+    with open(path.join(directory, '../upgrade_data/map_v3.json'), 'r') as f:
+        # Use this method to validate the content of map
+        validate_map = fastjsonschema.compile(json.load(f))
+
+    with buffer as bufferView:
+        try:
+            with zipfile.ZipFile(bufferView) as zip_file:
+                # Test zip returns the name of the first invalid file inside the archive; if any
+                if zip_file.testzip():
+                    raise ValueError
+                json_graph = json.loads(zip_file.read('graph.json'))
+                validate_map(json_graph)
+                for node in json_graph['nodes']:
+                    if node.get('image_id'):
+                        zip_file.read(
+                            "".join(['images/', node.get('image_id'), '.png'])
+                        )
+        except (zipfile.BadZipFile, KeyError):
+            raise ValueError
+
+
+def _validate_sankey(buffer):
+    # noinspection PyTypeChecker
+    with open(path.join(directory, '../upgrade_data/graph_v6.json'), 'r') as f:
+        # Use this method to validate the content of a sankey
+        validate_graph_format = fastjsonschema.compile(json.load(f))
+
+    with buffer as bufferView:
+        data = json.loads(bufferView.read())
+        validate_graph_format(data)
+
+
+def _validate_enrichment_table(buffer):
+    # Use this method to validate the content of an enrichment table
+    # noinspection PyTypeChecker
+    with open(path.join(directory, '../upgrade_data/enrichment_tables_v6.json'), 'r') as f:
+        validate_enrichment_table = fastjsonschema.compile(json.load(f))
+
+    with buffer as bufferView:
+        data = json.loads(bufferView.read())
+        validate_enrichment_table(data)
+
 
 def _validate_file(mime_type: str, raw_file: bytes):
-    file_type_service = get_file_type_service()
-
-    provider = file_type_service.get(mime_type)
-    provider.validate_content(BytesIO(raw_file), log_status_messages=False)
+    if mime_type == FILE_MIME_TYPE_DIRECTORY:
+        _validate_directory(BytesIO(raw_file))
+    elif mime_type == FILE_MIME_TYPE_PDF:
+        _validate_pdf(BytesIO(raw_file))
+    elif mime_type == FILE_MIME_TYPE_BIOC:
+        _validate_bioc(BytesIO(raw_file))
+    elif mime_type == FILE_MIME_TYPE_MAP:
+        _validate_map(BytesIO(raw_file))
+    elif mime_type == FILE_MIME_TYPE_GRAPH:
+        _validate_sankey(BytesIO(raw_file))
+    elif mime_type == FILE_MIME_TYPE_ENRICHMENT_TABLE:
+        _validate_enrichment_table(BytesIO(raw_file))
+    else:
+        return
 
 
 def _fix_invalid_enrichment_table(raw_file: bytes) -> bytes:
