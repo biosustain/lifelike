@@ -17,6 +17,7 @@ import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { VISUALIZER_URI_TOKEN } from 'app/visualization/providers/visualizer-object-data.provider';
 
 import { Hyperlink, Source } from '../services/interfaces';
 import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
@@ -99,7 +100,7 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       const uriData: URIData[] = [];
 
       for (const item of sortBy(items, 'confidence')) {
-        if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
+        if ([URI_TOKEN, LIFELIKE_URI_TOKEN, VISUALIZER_URI_TOKEN].includes(item.token)) {
           uriData.unshift(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
           text = item.data as string;
