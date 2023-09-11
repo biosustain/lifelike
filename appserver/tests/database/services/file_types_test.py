@@ -28,7 +28,7 @@ def test_file_type_can_create(pair):
 
     with app.app_context():
         service = get_file_type_service()
-        assert pair[1] == service.get(file).can_create()
+        assert pair[1] == service.get(file.mime_type).can_create()
 
 
 @pytest.mark.parametrize(
@@ -51,7 +51,7 @@ def test_file_type_should_highlight_content_text_matches(pair):
 
     with app.app_context():
         service = get_file_type_service()
-        assert pair[1] == service.get(file).should_highlight_content_text_matches()
+        assert pair[1] == service.get(file.mime_type).should_highlight_content_text_matches()
 
 
 @pytest.mark.parametrize(
@@ -72,5 +72,5 @@ def test_file_type_to_indexable_content(pair: Tuple[str, BytesIO, BytesIO]):
         service = get_file_type_service()
         assert (
             pair[2].getvalue()
-            == service.get(file).to_indexable_content(pair[1]).getvalue()
+            == service.get(file.mime_type).to_indexable_content(pair[1]).getvalue()
         )
