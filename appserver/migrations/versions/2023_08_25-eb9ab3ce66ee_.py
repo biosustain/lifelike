@@ -1,7 +1,7 @@
 """Validate all files in the database
 
 Revision ID: eb9ab3ce66ee
-Revises: a1b5886ad7cb
+Revises: bd554f4c2b58
 Create Date: 2023-08-25 18:24:24.062840
 
 """
@@ -26,7 +26,7 @@ from migrations.utils import window_chunk
 
 # revision identifiers, used by Alembic.
 revision = 'eb9ab3ce66ee'
-down_revision = 'a1b5886ad7cb'
+down_revision = 'bd554f4c2b58'
 branch_labels = None
 depends_on = None
 directory = path.realpath(path.dirname(__file__))
