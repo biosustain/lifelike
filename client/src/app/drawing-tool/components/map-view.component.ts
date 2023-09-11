@@ -26,12 +26,17 @@ import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provi
 import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
+import { EventManagerService } from '../services/event-manager.service';
 
 @Component({
   selector: 'app-map-view',
   templateUrl: './map-view.component.html',
   styleUrls: ['./map.component.scss'],
-  providers: [ModuleContext, OpenFileProvider],
+  providers: [
+    ModuleContext,
+    OpenFileProvider,
+    EventManagerService, // defining here let's grab MapView elementRef in service
+  ],
 })
 export class MapViewComponent<ExtraResult = void>
   extends MapComponent<ExtraResult>
