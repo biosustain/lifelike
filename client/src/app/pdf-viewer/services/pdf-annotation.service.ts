@@ -105,8 +105,11 @@ export class PDFAnnotationService {
     text: string;
   }>(null);
   highlightAnnotationId$: Observable<string> = this.highlightAnnotation$.pipe(
-    map((value) => value?.id),
-    distinctUntilChanged()
+    map((value) => value?.id)
+    // Allowing for the same annotation to be returned consecutively to allow for
+    // highlighting search to be reset when the user clicks on the same annotation.
+    // https://sbrgsoftware.atlassian.net/browse/LL-5246
+    // distinctUntilChanged()
   );
   foundHighlightAnnotations$ = this.highlightAnnotationId$.pipe(
     switchMap(

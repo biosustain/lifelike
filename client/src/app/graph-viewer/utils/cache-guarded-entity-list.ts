@@ -1,4 +1,5 @@
-import { Subject } from 'rxjs';
+import { defer, Subject } from 'rxjs';
+import { map, shareReplay, startWith } from 'rxjs/operators';
 
 import { GraphEntity, UniversalGraphEntity } from 'app/drawing-tool/services/interfaces';
 
@@ -16,6 +17,13 @@ export class CacheGuardedEntityList {
    * Stream of changes.
    */
   readonly changeObservable: Subject<[GraphEntity[], GraphEntity[]]> = new Subject();
+  public readonly items$ = defer(() =>
+    this.changeObservable.pipe(
+      map(([newItems]) => newItems),
+      startWith(this.items),
+      shareReplay({ bufferSize: 1, refCount: true })
+    )
+  );
 
   constructor(private readonly graphView: GraphView<Behavior>) {}
 
