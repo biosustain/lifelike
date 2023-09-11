@@ -39,10 +39,11 @@ export type AlternativeCompletionOptions = CompletionOptions | ChatCompletionOpt
 @Injectable()
 export class ChatGPT {
   constructor(private readonly playgroundService: PlaygroundService) {}
+  static readonly DELIMITER = '```';
 
   // https://openai.com/pricing
-  static lastUpdate = new Date('2023-08-10');
-  static modelGroupTokenCostMap = new Map<string, (model: string) => number>([
+  static readonly lastUpdate = new Date('2023-08-10');
+  static readonly modelGroupTokenCostMap = new Map<string, (model: string) => number>([
     ['ada', (model) => (model.includes('embedding') ? 0.0001 / 1e3 : 0.0016 / 1e3)],
     ['babbage', () => 0.0024 / 1e3],
     ['curie', () => 0.012 / 1e3],
@@ -71,12 +72,14 @@ export class ChatGPT {
     }
   };
 
-  models$: Observable<string[]> = this.playgroundService
+  public readonly models$: Observable<string[]> = this.playgroundService
     .models()
     .pipe(
       map(_map((model: ChatGPTModel) => model.id)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
+
+  static escape = (text: string) => text.replace(ChatGPT.DELIMITER, '[ignored]');
 
   // https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them
   static textTokenEstimate = (text: string) => Math.ceil((text.split(' ').length * 4) / 3);

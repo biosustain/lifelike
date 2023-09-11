@@ -1,5 +1,6 @@
-import { Component, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 
 import { isEmpty as _isEmpty, map as _map, omit as _omit } from 'lodash/fp';
 import { BehaviorSubject, defer, Observable, ReplaySubject } from 'rxjs';
@@ -20,6 +21,7 @@ import { toRequest } from '../../../utils';
 })
 export class CompletionsFormComponent implements OnChanges, CompletionForm<CompletionOptions> {
   constructor(private readonly playgroundService: PlaygroundService) {}
+  @ViewChild(CdkTextareaAutosize) textarea: CdkTextareaAutosize;
 
   models$: Observable<string[]> = this.playgroundService
     .completionsModels()
@@ -114,6 +116,7 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
   ngOnChanges({ params }: SimpleChanges) {
     if (params?.currentValue) {
       this.form.patchValue(params.currentValue, { emitEvent: false });
+      this.textarea?.resizeToFitContent();
     }
   }
 
