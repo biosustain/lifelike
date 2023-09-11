@@ -1,7 +1,4 @@
-import { Injectable, InjectionToken, Injector, Type } from '@angular/core';
-
-import { escape } from 'lodash-es';
-import { Subscription } from 'rxjs';
+import { Injectable, InjectionToken, Type } from '@angular/core';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
