@@ -63,12 +63,14 @@ t_files_content = sa.Table(
     sa.Column('checksum_sha256', sa.Binary()),
 )
 
+
 def _validate_directory(buffer):
     # Figure out file size
     size = buffer.size
 
     if size > 0:
         raise ValueError("Directories can't have content")
+
 
 def _validate_pdf(buffer):
     with buffer as bufferView:
@@ -86,6 +88,7 @@ def _validate_pdf(buffer):
                 message='An error occurred while reading this pdf.'
                 ' Please check if the pdf is unlocked and openable.',
             ) from e
+
 
 def _validate_bioc(buffer):
     with BioCJsonIterReader(buffer) as reader:
@@ -110,7 +113,7 @@ def _validate_map(buffer):
                 for node in json_graph['nodes']:
                     if node.get('image_id'):
                         zip_file.read(
-                            "".join(['images/', node.get('image_id'), '.png'])
+                            ''.join(['images/', node.get('image_id'), '.png'])
                         )
         except (zipfile.BadZipFile, KeyError):
             raise ValueError
@@ -130,7 +133,9 @@ def _validate_sankey(buffer):
 def _validate_enrichment_table(buffer):
     # Use this method to validate the content of an enrichment table
     # noinspection PyTypeChecker
-    with open(path.join(directory, '../upgrade_data/enrichment_tables_v6.json'), 'r') as f:
+    with open(
+        path.join(directory, '../upgrade_data/enrichment_tables_v6.json'), 'r'
+    ) as f:
         validate_enrichment_table = fastjsonschema.compile(json.load(f))
 
     with buffer as bufferView:
