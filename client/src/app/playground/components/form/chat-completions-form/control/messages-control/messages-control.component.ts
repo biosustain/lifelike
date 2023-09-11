@@ -1,8 +1,7 @@
-import { Component, HostBinding, Input, ViewChild } from '@angular/core';
+import { Component, HostBinding, Input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
 import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
-import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 
 @Component({
   selector: 'app-messages-control',
