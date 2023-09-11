@@ -6,9 +6,16 @@
       [models]="models$ | async"
     ></app-model-control>
   </div>
-  <div class="form-group">
+  <div class="form-group" *ngIf="form.get('prompt') as control">
     <label [for]="input.uid"> Prompt </label>
-    <textarea class="form-control" formControlName="prompt" appUid #input="uid"></textarea>
+    <textarea
+      class="form-control"
+      [formControl]="control"
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="2"
+      appUid
+      #input="uid"
+    ></textarea>
   </div>
   <div class="form-row">
     <div class="form-group col">
