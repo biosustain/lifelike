@@ -31,6 +31,7 @@ from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
 from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import current_username
 from neo4japp.utils.logger import ErrorLog, WarningLog
+from neo4japp.utils.server_timing import ServerTiming
 from neo4japp.utils.transaction_id import transaction_id
 
 apm = ElasticAPM()
@@ -131,6 +132,7 @@ def create_app(name='neo4japp', config_package='config.Development'):
     ma.init_app(app)
     migrate.init_app(app, db)
     ChatGPT.init_app(app)
+    ServerTiming.init_app(app)
 
     register_blueprints(app, BLUEPRINT_PACKAGE)
 
