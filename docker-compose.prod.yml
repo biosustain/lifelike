@@ -3,6 +3,9 @@ name: "***ARANGO_DB_NAME***"
 # This configuration reference to precomputed services images
 
 services:
+  migrate:
+    image: "${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-migrate:${GITHUB_HASH:-latest}"
+
   appserver:
     image: "${REGISTRY:-***ARANGO_DB_NAME***.azurecr.io}/kg-appserver:${GITHUB_HASH:-latest}"
 

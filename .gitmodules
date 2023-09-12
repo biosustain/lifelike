@@ -11,3 +11,6 @@
 	path = deployment
 	url = git@github.com:SBRG/***ARANGO_DB_NAME***-infra.git
 	branch = ansible
+[submodule "migration-legacy-snapshot"]
+	path = migrations/migration-legacy-snapshot
+	url = https://github.com/SBRG/kg-prototypes

@@ -7,7 +7,7 @@ x-appserver: &appserver
     ELASTIC_FILE_INDEX_ID: file_ci
 
 services:
-  dev-setup:
+  dev-reset:
     extends:
       file: docker-compose.local.yml
       service: appserver
@@ -16,6 +16,25 @@ services:
     entrypoint: ./bin/dev-db-setup
     networks:
       - backend
+    depends_on:
+      # This service resets following two databases
+      pgdatabase:
+        condition: service_healthy
+      elastic:
+        condition: service_healthy
+
+  migrate:
+    extends:
+      file: docker-compose.local.yml
+      service: migrate
+    healthcheck:
+      test: exit 0
+    commands: ["upgrade"]
+    networks:
+      - backend
+    depends_on:
+      dev-setup:
+        condition: service_completed_successfully
 
   appserver:
     extends:
@@ -23,7 +42,7 @@ services:
       service: appserver
     <<: *appserver
     depends_on:
-      dev-setup:
+      migrate:
         condition: service_completed_successfully
 
   worker:

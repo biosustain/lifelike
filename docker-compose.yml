@@ -90,6 +90,19 @@ x-appserver: &appserver
       condition: service_healthy
 
 services:
+  migrate:
+    extends:
+      file: docker-compose.prod.yml
+      service: migrate
+    build: ./migrations
+    environment:
+      <<: [*postgres]
+    depends_on:
+      pgdatabase:
+        condition: service_healthy
+    networks:
+      - backend
+
   appserver:
     <<: *appserver
     healthcheck:

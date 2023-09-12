@@ -1205,3 +1205,56 @@ def retry_failed_rq_jobs(queue: str):
     """
     rq_service = RedisQueueService()
     rq_service.retry_failed_jobs(queue)
+
+
+@app.cli.command("validate_files")
+def validate_files():
+    from neo4japp.utils.queries import window_chunk
+    from io import BytesIO
+    from sqlalchemy.orm import Query
+
+    logger.log('Validating all files contents')
+
+    class ValidationException(Exception):
+        pass
+
+    query = Query(Files).join(Files.content)
+
+    file_type_service = get_file_type_service()
+    for chunk in window_chunk(
+            db.session.execute(
+                query.with_entities(
+                    Files.mime_type.label('mime_type'),
+                    FileContent.raw_file.label('raw_file'),
+                    FileContent.id.label('id'),
+                )
+            ),
+            25,
+    ):
+        for entity in chunk:
+            exceptions = []
+            try:
+                provider = file_type_service.get(entity)
+                provider.validate_content(
+                    BytesIO(entity.raw_file), log_status_messages=False
+                )
+            except Exception as validation_exception:
+                # TODO after migrating to python 3.11: use .add_note
+                try:
+                    raise ValidationException(
+                        f'FileContent(id={entity.id}) {validation_exception}'
+                    ) from validation_exception
+                except Exception as validation_exception:
+                    logger.exception(validation_exception)
+                    exceptions.append(validation_exception)
+            if len(exceptions) > 0:
+                raise ValidationException(
+                    '\n'.join(
+                        (
+                            f'{len(exceptions)} file content are not passing current validation rules:',
+                            *map(
+                                lambda exception: f'\t{exception}', exceptions
+                            ),
+                        )
+                    )
+                )

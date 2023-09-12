@@ -11,12 +11,21 @@ x-appserver: &appserver
       condition: service_healthy
 
 services:
-  dev-setup:
+  dev-reset:
     extends:
       file: docker-compose.local.yml
       service: appserver
     <<: *appserver
     entrypoint: ./bin/dev-db-setup
+    networks:
+      - backend
+
+  migrate:
+    extends:
+      file: docker-compose.local.yml
+      service: migrate
+    entrypoint: alembic
+    command: upgrade head
     networks:
       - backend
 
@@ -27,7 +36,7 @@ services:
     <<: *appserver
     entrypoint: flask seed "fixtures/seed.json"
     depends_on:
-      dev-setup:
+      dev-reset:
         condition: service_completed_successfully
     networks:
       - backend
@@ -39,9 +48,9 @@ services:
     <<: *appserver
     ports:
       - "5000:5000"
-  #    depends_on:
-  #      dev-setup:
-  #        condition: service_completed_successfully
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
   worker:
     extends:

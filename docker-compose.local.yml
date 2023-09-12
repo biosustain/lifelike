@@ -8,6 +8,13 @@ x-appserver-mounts: &appserver-mounts
     - lmdb:/home/n4j/neo4japp/services/annotations/lmdb
 
 services:
+  migrate:
+    extends:
+      file: docker-compose.yml
+      service: migrate
+    volumes:
+      - ./migrations:/home/n4j
+
   appserver:
     <<: *appserver-mounts
     extends:

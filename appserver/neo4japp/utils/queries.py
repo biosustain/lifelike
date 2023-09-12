@@ -86,4 +86,18 @@ def _find_first_start_quote(s: str, quote: str, start_idx=0) -> int:
     return idx
 
 
+def window_chunk(q, windowsize=100):
+    """Yields chunks of data as a stream with only that chunk
+    in memory.
+
+    This means `q` is a ProxyResult used with the argument `stream_results`.
+        - e.g conn.execution_options(stream_results=True).execute(...)
+    """
+    while True:
+        chunk = q.fetchmany(windowsize)
+        if not chunk:
+            break
+        yield chunk
+
+
 __all__ = ['parse_query_terms']
