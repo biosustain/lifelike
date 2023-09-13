@@ -11,6 +11,10 @@ import { UserCreateDialogComponent } from './components/user-create-dialog.compo
 import { UserBrowserComponent } from './components/user-browser.component';
 import { UserUpdateDialogComponent } from './components/user-update-dialog.component';
 import { MissingRolesDialogComponent } from './components/missing-roles-dialog.component';
+import { ChatgptUsageComponent } from './components/chatgpt-usage/chatgpt-usage.component';
+import { DateTimePickerComponent } from './components/date-time-picker/date-time-picker.component';
+import { PeriodPickerComponent } from './components/period-picker/period-picker.component';
+import { ChatgptUsageGraphDirective } from './directives/chatgpt-usage-graph.directive';
 
 const components = [
   AdminPanelComponent,
@@ -29,7 +33,13 @@ const components = [
     MissingRolesDialogComponent,
   ],
   imports: [SharedModule],
-  declarations: components,
+  declarations: [
+    ...components,
+    ChatgptUsageGraphDirective,
+    DateTimePickerComponent,
+    PeriodPickerComponent,
+    ChatgptUsageComponent,
+  ],
   providers: [AdminGuard, AccountService],
   exports: components,
 })
