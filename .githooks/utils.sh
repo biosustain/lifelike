@@ -1,6 +1,6 @@
 #!/bin/bash
 # Common utils used in git-hook scripts
-DOCKER_COMPOSE_RUN='docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-pre-commit run -rm'
+DOCKER_COMPOSE_RUN='docker compose -f docker-compose.local.yml -p ***ARANGO_DB_NAME***-pre-commit run -T --rm'
 cache_dir=".cache"
 
 # Formatting

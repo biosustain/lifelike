@@ -24,8 +24,6 @@ services:
     extends:
       file: docker-compose.local.yml
       service: migrate
-    entrypoint: alembic
-    command: upgrade head
     networks:
       - backend
 

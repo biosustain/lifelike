@@ -66,7 +66,7 @@ if [ "${arg1}" = "--fresh" ]; then
     fi
     echo "Running database migration ..."
     if [ "${data_migrate}" = "True" ]; then
-        alembic upgrade --x-arg data_migrate="${data_migrate}"
+        alembic upgrade -x data_migrate="${data_migrate}"
     else
         alembic upgrade
     fi
@@ -75,14 +75,14 @@ elif [ "${arg1}" = "--downgrade" ]; then
     if [ ${#revision[@]} -gt 0 ] && [ ${revision[1]} ]; then
         # downgrade to specific revision
         if [ "${data_migrate}" = "True" ]; then
-            alembic downgrade "${revision[1]}" --x-arg data_migrate="${data_migrate}"
+            alembic downgrade "${revision[1]}" -x data_migrate="${data_migrate}"
         else
             alembic downgrade "${revision[1]}"
         fi
     else
         # downgrade to previous revision
         if [ "${data_migrate}" = "True" ]; then
-            alembic downgrade --x-arg data_migrate="${data_migrate}"
+            alembic downgrade -x data_migrate="${data_migrate}"
         else
             alembic downgrade
         fi
@@ -92,13 +92,13 @@ elif [ "${arg1}" = "--upgrade" ]; then
     if [ ${#revision[@]} -gt 0 ] && [ ${revision[1]} ]; then
         # upgrade to specific revision
         if [ "${data_migrate}" = "True" ]; then
-            alembic upgrade "${revision[1]}" --x-arg data_migrate="${data_migrate}"
+            alembic upgrade "${revision[1]}" -x data_migrate="${data_migrate}"
         else
             alembic upgrade "${revision[1]}"
         fi
     else
         if [ "${data_migrate}" = "True" ]; then
-            alembic upgrade --x-arg data_migrate="${data_migrate}"
+            alembic upgrade -x data_migrate="${data_migrate}"
         else
             alembic upgrade
         fi

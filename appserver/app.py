@@ -1207,13 +1207,13 @@ def retry_failed_rq_jobs(queue: str):
     rq_service.retry_failed_jobs(queue)
 
 
-@app.cli.command("validate_files")
+@app.cli.command("validate-files")
 def validate_files():
     from neo4japp.utils.queries import window_chunk
     from io import BytesIO
     from sqlalchemy.orm import Query
 
-    logger.log('Validating all files contents')
+    logger.info('Validating all files contents')
 
     class ValidationException(Exception):
         pass
@@ -1221,7 +1221,9 @@ def validate_files():
     query = Query(Files).join(Files.content)
 
     file_type_service = get_file_type_service()
-    for chunk in window_chunk(
+    chunk_size = 25
+    for index, chunk in enumerate(
+        window_chunk(
             db.session.execute(
                 query.with_entities(
                     Files.mime_type.label('mime_type'),
@@ -1229,9 +1231,14 @@ def validate_files():
                     FileContent.id.label('id'),
                 )
             ),
-            25,
+            chunk_size,
+        )
     ):
+        logger.info(
+            f'Processing chunk {index} (files {index * chunk_size} to {(index + 1) * len(chunk)})'
+        )
         for entity in chunk:
+            logger.debug(f'Validating file content {entity.id}')
             exceptions = []
             try:
                 provider = file_type_service.get(entity)
@@ -1248,13 +1255,11 @@ def validate_files():
                     logger.exception(validation_exception)
                     exceptions.append(validation_exception)
             if len(exceptions) > 0:
+                from neo4japp.utils.string import compose_lines
+
                 raise ValidationException(
-                    '\n'.join(
-                        (
-                            f'{len(exceptions)} file content are not passing current validation rules:',
-                            *map(
-                                lambda exception: f'\t{exception}', exceptions
-                            ),
-                        )
+                    compose_lines(
+                        f'{len(exceptions)} file content are not passing current validation rules:',
+                        *map(lambda exception: f'\t{exception}', exceptions),
                     )
                 )
