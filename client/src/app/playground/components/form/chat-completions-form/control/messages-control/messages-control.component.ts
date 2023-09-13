@@ -1,5 +1,6 @@
 import { Component, HostBinding, Input } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 
 import { FormArrayWithFactory, FormGroupWithFactory } from 'app/shared/utils/forms/with-factory';
 

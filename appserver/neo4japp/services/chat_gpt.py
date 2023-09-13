@@ -1,6 +1,10 @@
 import openai
 from cachetools import Cache, cached
 
+from neo4japp.models.chatgpt_usage import (
+    save_stream_response_to_usage_tracking_table,
+    save_response_to_usage_tracking_table,
+)
 from neo4japp.services.rcache import RedisCache
 
 
@@ -41,9 +45,11 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
+        @save_response_to_usage_tracking_table
         def create(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
+        @save_stream_response_to_usage_tracking_table
         def create_stream(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
@@ -75,9 +81,11 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
+        @save_response_to_usage_tracking_table
         def create(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
+        @save_stream_response_to_usage_tracking_table
         def create_stream(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
