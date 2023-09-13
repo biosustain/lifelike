@@ -4,6 +4,7 @@ import string
 
 from datetime import timezone
 from enum import Enum
+from os import path
 
 from werkzeug.local import LocalProxy
 
@@ -400,12 +401,22 @@ LIFELIKE_EMAIL_ACCOUNT = '***ARANGO_DB_NAME***.science@gmail.com'
 MESSAGE_SENDER_IDENTITY = '***ARANGO_DB_NAME***-account-service@***ARANGO_DB_NAME***.bio'
 MAILING_API_KEY = LocalProxy(lambda: config.get('SEND_GRID_EMAIL_API_KEY'))
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'
-RESET_PASS_MAIL_CONTENT = codecs.open(r'/home/n4j/assets/reset_email.html', 'r').read()
+RESET_PASS_MAIL_CONTENT = codecs.open(
+    path.join(
+        path.realpath(path.dirname(__file__)),
+        r'../assets/reset_email.html'
+    ),
+    'r'
+).read()
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE = (
     'Lifelike: Copyright Infringement Report Confirmation'
 )
 COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT = codecs.open(
-    r'/home/n4j/assets/copyright_report_confirmation.html', 'r'
+    path.join(
+        path.realpath(path.dirname(__file__)),
+        r'../assets/copyright_report_confirmation.html'
+    ),
+    'r'
 ).read()
 
 # Start shared Elastic constants
