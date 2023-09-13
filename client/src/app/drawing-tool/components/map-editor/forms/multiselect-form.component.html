@@ -32,9 +32,7 @@
     <li ngbNavItem="explanation">
       <a ngbNavLink>Explanation</a>
       <ng-template ngbNavContent>
-        <div class="module-body">
-          <app-drawing-tool-prompt [entities]="entities$ | async"></app-drawing-tool-prompt>
-        </div>
+        <app-drawing-tool-prompt [entities]="entities$ | async"></app-drawing-tool-prompt>
       </ng-template>
     </li>
   </ul>
