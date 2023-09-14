@@ -50,13 +50,13 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly modalService: NgbModal
   ) {}
 
-  contextsController$: Observable<DropdownController<string>> =
+  readonly contextsController$: Observable<DropdownController<string>> =
     this.enrichmentService.contexts$.pipe(
       map(dropdownControllerFactory),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
-  goTerms$: Observable<string[]> = this.enrichmentService.enrichedWithGOTerms$.pipe(
+  readonly goTerms$: Observable<string[]> = this.enrichmentService.enrichedWithGOTerms$.pipe(
     map(
       _flow(
         _map(({ goTerm }) => goTerm),
@@ -66,7 +66,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  goTermController$: Observable<DropdownController<string>> = this.goTerms$.pipe(
+  readonly goTermController$: Observable<DropdownController<string>> = this.goTerms$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
       this.enrichmentVisualisationSelectService.goTerm$
@@ -77,7 +77,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  geneNames$: Observable<string[]> = this.enrichmentService.enrichedWithGOTerms$.pipe(
+  readonly geneNames$: Observable<string[]> = this.enrichmentService.enrichedWithGOTerms$.pipe(
     switchMap((entities) =>
       this.goTermController$.pipe(
         switchMap((goTermController) => goTermController.current$),
@@ -93,7 +93,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  geneNameController$: Observable<DropdownController<string>> = this.geneNames$.pipe(
+  readonly geneNameController$: Observable<DropdownController<string>> = this.geneNames$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
       this.enrichmentVisualisationSelectService.geneName$
@@ -104,7 +104,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  params$ = combineLatest([
+  readonly params$ = combineLatest([
     this.contextsController$.pipe(
       switchMap(({ current$ }) => current$),
       startWith(undefined)
@@ -126,35 +126,36 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  playgroundParams$: Observable<OpenPlaygroundParams<EnrichmentPromptFormParams>> = combineLatest([
-    combineLatest(this.params$, this.enrichmentService.enrichmentDocument$).pipe(
-      map(([params, { organism }]) => ({
-        ...params,
-        organism,
+  readonly playgroundParams$: Observable<OpenPlaygroundParams<EnrichmentPromptFormParams>> =
+    combineLatest([
+      combineLatest(this.params$, this.enrichmentService.enrichmentDocument$).pipe(
+        map(([params, { organism }]) => ({
+          ...params,
+          organism,
+        }))
+      ),
+      this.enrichmentService.contexts$,
+      this.geneNames$,
+      this.goTerms$,
+    ]).pipe(
+      map(([formInput, contexts, geneNames, goTerms]) => ({
+        formInput,
+        contexts,
+        geneNames,
+        goTerms,
+      })),
+      map((promptFormParams: EnrichmentPromptFormParams) => ({
+        promptFormParams,
+        promptForm: EnrichmentPromptFormComponent,
       }))
-    ),
-    this.enrichmentService.contexts$,
-    this.geneNames$,
-    this.goTerms$,
-  ]).pipe(
-    map(([formInput, contexts, geneNames, goTerms]) => ({
-      formInput,
-      contexts,
-      geneNames,
-      goTerms,
-    })),
-    map((promptFormParams: EnrichmentPromptFormParams) => ({
-      promptFormParams,
-      promptForm: EnrichmentPromptFormComponent,
-    }))
-  );
+    );
 
   /**
    * This subject is used to trigger the explanation generation and its value changes output visibility.
    */
-  explain$ = new ReplaySubject<boolean>(1);
+  readonly explain$ = new ReplaySubject<boolean>(1);
 
-  explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
+  readonly explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
     withLatestFrom(
       combineLatest([
         this.contextsController$.pipe(

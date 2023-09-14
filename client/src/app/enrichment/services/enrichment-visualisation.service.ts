@@ -45,7 +45,7 @@ export class EnrichmentVisualisationService implements OnDestroy {
     protected readonly enrichmentService: EnrichmentService
   ) {}
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   private fileId$: Observable<string> = this.route.params.pipe(
     map(({ file_id }) => file_id),

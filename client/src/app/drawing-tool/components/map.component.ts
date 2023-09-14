@@ -100,7 +100,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   unsavedChangesSubscription: Subscription;
   providerSubscription$ = new Subscription();
 
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
+  readonly unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   entitySearchTerm = '';
   entitySearchList: GraphEntity[] = [];

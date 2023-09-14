@@ -11,24 +11,24 @@ import { distinctUntilChanged, map, startWith, switchMap, takeUntil } from 'rxjs
   selector: '[appFormInput]',
 })
 export class FormInputDirective implements OnChanges, OnDestroy {
-  private destroy$ = new Subject();
+  private readonly destroy$ = new Subject();
   @Input() appFormInput: AbstractControl;
   @Input() pristineInvalid: boolean; // If true, invalid state is also shown if the control is pristine
-  private appFormInputChange$ = new ReplaySubject<AbstractControl>(1);
-  private appFormInput$ = this.appFormInputChange$.pipe(
+  private readonly appFormInputChange$ = new ReplaySubject<AbstractControl>(1);
+  private readonly appFormInput$ = this.appFormInputChange$.pipe(
     startWith(this.appFormInput),
     distinctUntilChanged()
     // takeUntil(this.destroy$),
     // shareReplay({bufferSize: 1, refCount: true}),
   );
-  private pristineInvalidChange$ = new ReplaySubject<boolean>(1);
-  private pristineInvalid$ = this.pristineInvalidChange$.pipe(
+  private readonly pristineInvalidChange$ = new ReplaySubject<boolean>(1);
+  private readonly pristineInvalid$ = this.pristineInvalidChange$.pipe(
     startWith(this.pristineInvalid),
     distinctUntilChanged()
     // takeUntil(this.destroy$),
     // shareReplay({bufferSize: 1, refCount: true}),
   );
-  private status$ = this.appFormInput$.pipe(
+  private readonly status$ = this.appFormInput$.pipe(
     switchMap((control: AbstractControl) =>
       iif(
         () => Boolean(control),

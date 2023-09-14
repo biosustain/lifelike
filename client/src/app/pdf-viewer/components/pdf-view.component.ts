@@ -125,7 +125,7 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
 
   paramsSubscription: Subscription;
   returnUrl: string;
-  goToPosition$: Subject<Location> = new Subject<Location>();
+  readonly goToPosition$: Subject<Location> = new Subject<Location>();
   loadTask: BackgroundTask<[string, Location], [FilesystemObject, ArrayBuffer, Annotation[]]>;
   pendingScroll: Location;
   openPdfSub: Subscription;
@@ -141,7 +141,7 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
 
   @ViewChild(PdfViewerLibComponent, { static: false }) pdfViewerLib: PdfViewerLibComponent;
 
-  dragTitleData$ = defer(() => {
+  readonly dragTitleData$ = defer(() => {
     const sources: Source[] = this.object.getGraphEntitySources();
 
     return of({
@@ -169,14 +169,13 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
     });
   });
 
-  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
+  readonly sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
-  private entityTypeVisibilityMapChange$: Subject<EntityTypeVisibilityMap> = new BehaviorSubject(
-    new Map(ENTITY_TYPES.map(({ id }) => [id, true]))
-  );
-  entityTypeVisibilityMap$: Observable<ReadonlyEntityTypeVisibilityMap> =
+  private readonly entityTypeVisibilityMapChange$: Subject<EntityTypeVisibilityMap> =
+    new BehaviorSubject(new Map(ENTITY_TYPES.map(({ id }) => [id, true])));
+  readonly entityTypeVisibilityMap$: Observable<ReadonlyEntityTypeVisibilityMap> =
     this.entityTypeVisibilityMapChange$.pipe(distinctUntilChanged(isEqual));
-  sortedEntityTypeEntriesVisibilityMap$ = combineLatest([
+  readonly sortedEntityTypeEntriesVisibilityMap$ = combineLatest([
     this.pdfAnnService.sortedEntityTypeEntries$,
     this.entityTypeVisibilityMap$,
   ]).pipe(
@@ -190,11 +189,11 @@ export class PdfViewComponent implements OnDestroy, OnInit, ModuleAwareComponent
         )
     )
   );
-  entityTypeVisibilityMapContainsUnchecked$ = this.entityTypeVisibilityMap$.pipe(
+  readonly entityTypeVisibilityMapContainsUnchecked$ = this.entityTypeVisibilityMap$.pipe(
     map((etvm) => findEntriesKey(etvm, (v) => !v)),
     distinctUntilChanged()
   );
-  highlightController$ = this.pdfAnnService.annotationHighlightChange$.pipe(
+  readonly highlightController$ = this.pdfAnnService.annotationHighlightChange$.pipe(
     switchMap((annotationHighlight) =>
       iif(
         () => Boolean(annotationHighlight?.index$),

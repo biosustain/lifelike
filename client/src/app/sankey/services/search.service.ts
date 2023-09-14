@@ -28,9 +28,9 @@ import { Match } from '../interfaces/search';
 export class SankeySearchService {
   constructor(readonly common: ControllerService) {}
 
-  term$ = new ReplaySubject<string>(1);
+  readonly term$ = new ReplaySubject<string>(1);
 
-  searchTokens$ = this.term$.pipe(
+  readonly searchTokens$ = this.term$.pipe(
     map((term) => {
       if (!term) {
         return [];
@@ -39,10 +39,10 @@ export class SankeySearchService {
     })
   );
 
-  private _done$ = new ReplaySubject<boolean>(1);
-  done$ = this._done$.asObservable();
+  private readonly _done$ = new ReplaySubject<boolean>(1);
+  readonly done$ = this._done$.asObservable();
 
-  currentSearch$ = this.common._data$.pipe(
+  readonly currentSearch$ = this.common._data$.pipe(
     // limit size of data we operate on
     map(({ nodes, links, graph: { trace_networks } }) => ({
       nodes,
@@ -111,8 +111,8 @@ export class SankeySearchService {
   );
 
   // index of the currently focused match
-  private _focusIdx$ = new BehaviorSubject<number | null>(null);
-  focusIdx$: Observable<number> = merge(
+  private readonly _focusIdx$ = new BehaviorSubject<number | null>(null);
+  readonly focusIdx$: Observable<number> = merge(
     this._focusIdx$,
     this.currentSearch$.pipe(
       // when search starts
@@ -143,16 +143,16 @@ export class SankeySearchService {
     )
   ).pipe(debug('focus idx'), shareReplay({ bufferSize: 1, refCount: true }));
 
-  matches$ = this.currentSearch$.pipe(switchMap((results$) => results$));
+  readonly matches$ = this.currentSearch$.pipe(switchMap((results$) => results$));
 
-  preprocessedMatches$ = this.matches$.pipe(
+  readonly preprocessedMatches$ = this.matches$.pipe(
     throttleTime(0, undefined, { leading: false, trailing: true }),
     debug('preprocessed matches'),
     // each subscriber gets same results$ (one worker)
     shareReplay<Match[]>(1)
   );
 
-  searchFocus$ = this.preprocessedMatches$.pipe(
+  readonly searchFocus$ = this.preprocessedMatches$.pipe(
     switchMap((preprocessedMatches) =>
       this.focusIdx$.pipe(
         map((focusIdx) => preprocessedMatches[focusIdx]),
@@ -184,7 +184,7 @@ export class SankeySearchService {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  resultsCount$ = this.preprocessedMatches$.pipe(
+  readonly resultsCount$ = this.preprocessedMatches$.pipe(
     map(size),
     distinctUntilChanged(),
     debug('results count'),

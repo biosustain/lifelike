@@ -31,7 +31,7 @@ export class UserSelectComponent implements ControlValueAccessor, OnInit, OnDest
   protected touchCallback: (() => any) | undefined;
   value: any;
   choices: readonly AppUser[] = [];
-  queries$ = new Subject<ChoiceListRequest>();
+  readonly queries$ = new Subject<ChoiceListRequest>();
   requestLoading: ChoiceListRequest;
   protected subscriptions = new Subscription();
 

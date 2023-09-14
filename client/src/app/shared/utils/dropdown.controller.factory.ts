@@ -4,8 +4,8 @@ import { map } from 'rxjs/operators';
 
 export interface DropdownController<T> {
   entities: ReadonlyArray<T>;
-  currentIdx$?: BehaviorSubject<number>;
-  current$: Observable<T>;
+  readonly currentIdx$?: BehaviorSubject<number>;
+  readonly current$: Observable<T>;
 }
 
 export const dropdownControllerFactory = <T>(entities: T[]): DropdownController<T> => {

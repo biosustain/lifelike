@@ -46,9 +46,9 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
 
   initNewEntity: boolean;
 
-  loadingDataSource: Subject<boolean>;
-  completeSubjectsSource: Subject<boolean>;
-  dataLoaded$: Observable<boolean>;
+  readonly loadingDataSource: Subject<boolean>;
+  readonly completeSubjectsSource: Subject<boolean>;
+  readonly dataLoaded$: Observable<boolean>;
   dataLoaded: boolean;
 
   // Pagination properties

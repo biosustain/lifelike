@@ -23,7 +23,7 @@ import { ModuleContext } from '../../services/module-context.service';
   selector: 'app-module-menu',
   templateUrl: '../object-menu/object-menu.component.html',
 })
-export class ModuleMenuComponent extends ObjectMenuComponent implements AfterViewInit, OnChanges {
+export class ModuleMenuComponent extends ObjectMenuComponent implements OnChanges {
   constructor(
     readonly router: Router,
     protected readonly snackBar: MatSnackBar,

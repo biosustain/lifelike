@@ -32,8 +32,10 @@ export class ProjectCollaboratorsDialogComponent extends CommonFormDialogCompone
   id = uniqueId('ProjectCollaboratorsDialogComponent-');
 
   private _project: ProjectImpl;
-  collaborators$: Subject<ModelList<Collaborator>> = new Subject<ModelList<Collaborator>>();
-  collaboratorsWithStatus$ = this.collaborators$.pipe(
+  readonly collaborators$: Subject<ModelList<Collaborator>> = new Subject<
+    ModelList<Collaborator>
+  >();
+  readonly collaboratorsWithStatus$ = this.collaborators$.pipe(
     addStatus(new ModelList(mockArrayOf(collaboratorLoadingMock)))
   );
   readonly addForm: FormGroup = new FormGroup({

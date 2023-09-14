@@ -75,13 +75,13 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     return d3_select(this.svg && this.svg.nativeElement);
   }
 
-  ellipsisAfterXCharacters$ = this.sankey.baseView.common.labelEllipsis$.pipe(
+  readonly ellipsisAfterXCharacters$ = this.sankey.baseView.common.labelEllipsis$.pipe(
     map(({ enabled, value }) => (enabled ? value : null))
   );
 
-  fontSizeScale$ = this.sankey.baseView.common.fontSizeScale$;
+  readonly fontSizeScale$ = this.sankey.baseView.common.fontSizeScale$;
 
-  focusedNode$ = this.sankey.graph$.pipe(
+  readonly focusedNode$ = this.sankey.graph$.pipe(
     switchMap(({ nodes }) =>
       this.search.searchFocus$.pipe(
         map(
@@ -120,7 +120,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     left: this.MARGIN,
   };
 
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
   @ViewChild('svg', { static: true }) svg!: ElementRef;
   @ViewChild('g', { static: true }) g!: ElementRef;
@@ -132,12 +132,12 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
   width: number;
   height: number;
 
-  horizontalStretch$ = this.sankey.horizontalStretch$;
-  verticalStretch$ = this.sankey.verticalStretch$;
+  readonly horizontalStretch$ = this.sankey.horizontalStretch$;
+  readonly verticalStretch$ = this.sankey.verticalStretch$;
 
   // resize and listen to future resize events
   // would be nice to listen on #g but SVG lacks support for that
-  viewBox$ = createResizeObservable(this.wrapper.nativeElement, { leading: true }).pipe(
+  readonly viewBox$ = createResizeObservable(this.wrapper.nativeElement, { leading: true }).pipe(
     takeUntil(this.destroyed$),
     map((viewPort) => ({
       width: viewPort.width - this.margin.left - this.margin.right,
@@ -177,7 +177,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
       this.zoom.transform(newTransform, undefined, true);
     });
 
-  renderedLinks$ = combineLatest([this.sankey.graph$, this.sankey.linkPath$]).pipe(
+  readonly renderedLinks$ = combineLatest([this.sankey.graph$, this.sankey.linkPath$]).pipe(
     map(([{ links }, linkPath]) => {
       const {
         sankey: { id, linkTitle, circular },
@@ -223,7 +223,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     shareReplay(1)
   );
 
-  renderedNodes$ = combineLatest([this.sankey.graph$, this.sankey.fontSize$]).pipe(
+  readonly renderedNodes$ = combineLatest([this.sankey.graph$, this.sankey.fontSize$]).pipe(
     map(([{ nodes }, fontSize]) => {
       const {
         updateNodeRect,
@@ -296,7 +296,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
    * Run d3 lifecycle code to update DOM
    * @param graph: { links, nodes } to be rendered
    */
-  updateDOM$ = combineLatest([this.renderedLinks$, this.renderedNodes$]).pipe(
+  readonly updateDOM$ = combineLatest([this.renderedLinks$, this.renderedNodes$]).pipe(
     map(([linkSelection, nodeSelection]) => ({
       linkSelection,
       nodeSelection,
@@ -305,7 +305,7 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  updateSearch$ = this.search.preprocessedMatches$.pipe(
+  readonly updateSearch$ = this.search.preprocessedMatches$.pipe(
     takeUntil(this.destroyed$),
     map((entities) => groupBy(entities, 'type')),
     publish((matches$) =>
@@ -375,10 +375,10 @@ export abstract class SankeyAbstractComponent<Base extends TypeContext>
     debug('updateSearch')
   );
 
-  lastHoveredLink$ = new Subject();
-  lastHoveredNode$ = new Subject();
+  readonly lastHoveredLink$ = new Subject();
+  readonly lastHoveredNode$ = new Subject();
 
-  hoverUpdate$ = combineLatest([
+  readonly hoverUpdate$ = combineLatest([
     this.lastHoveredLink$.pipe(
       throttleTime(0, animationFrameScheduler, { leading: true, trailing: true }),
       switchMap(({ data, element }) =>

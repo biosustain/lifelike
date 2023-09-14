@@ -15,7 +15,7 @@ import * as UserActions from './actions';
 export class UserEffects {
   constructor(public actions$: Actions, private accountService: AccountService) {}
 
-  updateUserPassword$ = createEffect(() =>
+  readonly updateUserPassword$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.changePassword),
       exhaustMap(({ userUpdates }) => {
@@ -38,7 +38,7 @@ export class UserEffects {
     )
   );
 
-  updateUserPasswordSuccess$ = createEffect(() =>
+  readonly updateUserPasswordSuccess$ = createEffect(() =>
     this.actions$.pipe(
       ofType(UserActions.changePasswordSuccess),
       map((_) =>

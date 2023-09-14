@@ -38,7 +38,7 @@ export class BaseEnrichmentDocument {
   duplicateGenes: string[] = [];
   fileId = '';
   markForRegeneration = false;
-  changed$ = new Subject<void>();
+  readonly changed$ = new Subject<void>();
 
   private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {
     // parse the file content to get gene list and organism tax id and name

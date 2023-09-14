@@ -20,7 +20,8 @@ export class CopyrightInfringementFormComponent implements OnInit, OnDestroy {
   COUNTRY_LIST = COUNTRY_NAME_LIST;
 
   form: FormGroup;
-  submitEvent: Subject<boolean>;
+  // TODO: All observable should be readonly to avoid mistakes
+  private submitEvent: Subject<boolean>;
 
   constructor(
     private reportsService: ReportsService,

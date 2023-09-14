@@ -17,8 +17,8 @@ export class SankeyNodeDetailsComponent extends SankeyEntityDetailsComponent {
     super(baseView.common, route);
   }
 
-  nodeValueAccessors$ = this.common.nodeValueAccessors$;
-  nodeValueAccessor$ = this.baseView.nodeValueAccessor$;
+  readonly nodeValueAccessors$ = this.common.nodeValueAccessors$;
+  readonly nodeValueAccessor$ = this.baseView.nodeValueAccessor$;
 
   fixCircumstantialBiocycLink(link) {
     // Manual parsing seems like only choice

@@ -32,9 +32,9 @@ import { FilesystemService } from '../services/filesystem.service';
   ],
 })
 export class ObjectVersionHistoryComponent implements ControlValueAccessor {
-  page$ = new BehaviorSubject<number>(1);
-  _limit$ = new BehaviorSubject<number>(20);
-  limit$ = this._limit$.pipe(distinctUntilChanged());
+  readonly page$ = new BehaviorSubject<number>(1);
+  private readonly _limit$ = new BehaviorSubject<number>(20);
+  readonly limit$ = this._limit$.pipe(distinctUntilChanged());
 
   @Input() set limit(limit: number) {
     this._limit$.next(limit);

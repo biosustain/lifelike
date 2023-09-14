@@ -36,8 +36,8 @@ import { getTermsFromGraphEntityArray } from '../utils/terms';
 export class InfoViewPanelComponent implements OnChanges, OnDestroy {
   constructor(protected readonly internalSearch: InternalSearchService) {}
 
-  change$ = new ReplaySubject<SimpleChanges>(1);
-  entities$: Observable<Set<string>> = this.change$.pipe(
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Set<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     startWith({}),
@@ -53,9 +53,9 @@ export class InfoViewPanelComponent implements OnChanges, OnDestroy {
         )
     )
   );
-  private temperature$: ReplaySubject<number> = new ReplaySubject(1);
+  private readonly temperature$: ReplaySubject<number> = new ReplaySubject(1);
 
-  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
+  readonly groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
     this.change$.pipe(
       map(_get('selected')),
       filter(Boolean),

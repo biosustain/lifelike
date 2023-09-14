@@ -22,6 +22,6 @@ export interface ShouldConfirmUnload {
 
 export interface ModuleAwareComponent {
   modulePropertiesChange?: Observable<ModuleProperties>;
-  sourceData$?: Observable<Source[]>;
+  readonly sourceData$?: Observable<Source[]>;
   linkParams?: Promise<Record<string, string>>;
 }

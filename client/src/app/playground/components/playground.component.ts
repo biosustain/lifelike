@@ -104,9 +104,9 @@ export class PlaygroundComponent implements OnDestroy, OnChanges {
   @ViewChild('modeForm', { static: true, read: ViewContainerRef }) modeFormView: ViewContainerRef;
   @Input() temperature: number;
 
-  private temperature$ = new ReplaySubject<number>(1);
+  private readonly temperature$ = new ReplaySubject<number>(1);
 
-  private destroy$: Subject<void> = new Subject();
+  private readonly destroy$: Subject<void> = new Subject();
   private readonly promptComposers: Map<PromptComposer, DynamicComponentRef<PromptComposer>> =
     new Map();
   private readonly promptComposer$ = new ReplaySubject<DynamicComponentRef<PromptComposer>>(1);

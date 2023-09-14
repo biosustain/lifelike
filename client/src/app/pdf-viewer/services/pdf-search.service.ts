@@ -13,8 +13,8 @@ interface ResultSummary {
 
 @Injectable()
 export class PDFSearchService {
-  public resultSummary$ = new ReplaySubject<ResultSummary>(1);
-  public query$ = new ReplaySubject<string>(1);
-  public next$ = new Subject();
-  public prev$ = new Subject();
+  public readonly resultSummary$ = new ReplaySubject<ResultSummary>(1);
+  public readonly query$ = new ReplaySubject<string>(1);
+  public readonly next$ = new Subject();
+  public readonly prev$ = new Subject();
 }
