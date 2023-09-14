@@ -35,8 +35,8 @@ export class AdvancedSearchDialogComponent {
   @Input() typeChoices: SearchType[] = [];
 
   fileHierarchyTree: TreeNode<FilesystemObject>[] = [];
-  try$ = new BehaviorSubject<any>(undefined);
-  fileHierarchyTree$: Observable<TreeNode<FilesystemObject>[]> = this.try$.pipe(
+  readonly try$ = new BehaviorSubject<any>(undefined);
+  readonly fileHierarchyTree$: Observable<TreeNode<FilesystemObject>[]> = this.try$.pipe(
     switchMap(() =>
       this.filesystemService
         .getHierarchy(true)
@@ -48,11 +48,11 @@ export class AdvancedSearchDialogComponent {
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  fileHierarchyTreeWithStatus$ = this.fileHierarchyTree$.pipe(
+  readonly fileHierarchyTreeWithStatus$ = this.fileHierarchyTree$.pipe(
     addStatus([] as TreeNode<FilesystemObject>[])
   );
 
-  resetHierarchyTreeSubject = new Subject<boolean>();
+  readonly resetHierarchyTreeSubject = new Subject<boolean>();
 
   // Removing `phrase` and `wildcard` for now, in favor of just putting them in `q`. See a related comment in the template.
 

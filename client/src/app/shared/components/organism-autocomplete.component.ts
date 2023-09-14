@@ -27,9 +27,10 @@ export class OrganismAutocompleteComponent implements OnChanges {
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete | null>();
 
   @Input() inputText = '';
+  // TODO: All observables should be readonly
   @Output() inputTextChange = new Subject<string>();
 
-  searcher$: Observable<OrganismAutocomplete[]> = this.inputTextChange.pipe(
+  readonly searcher$: Observable<OrganismAutocomplete[]> = this.inputTextChange.pipe(
     distinctUntilChanged(),
     debounceTime(300),
     tap(() => {

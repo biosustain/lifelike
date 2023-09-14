@@ -10,12 +10,12 @@ export interface TooltipDetails {
 
 @Injectable()
 export class TooltipControlService implements OnDestroy {
-  private hideTooltipSource = new Subject<boolean>();
-  private updatePopperSource = new Subject<TooltipDetails>();
-  protected completeSubjectsSource = new Subject<boolean>();
+  private readonly hideTooltipSource = new Subject<boolean>();
+  private readonly updatePopperSource = new Subject<TooltipDetails>();
+  protected readonly completeSubjectsSource = new Subject<boolean>();
 
-  hideTooltip$: Observable<boolean>;
-  updatePopper$: Observable<TooltipDetails>;
+  readonly hideTooltip$: Observable<boolean>;
+  readonly updatePopper$: Observable<TooltipDetails>;
 
   constructor() {
     // The `takeUntil` here unsures that even if any subscribers to our subjects forget to unsubscribe, we

@@ -16,7 +16,7 @@ export class SharedNgrxEffects {
     private messageDialog: MessageDialog
   ) {}
 
-  displaySnackbar$ = createEffect(
+  readonly displaySnackbar$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(displaySnackbar),
@@ -26,7 +26,7 @@ export class SharedNgrxEffects {
     { dispatch: false }
   );
 
-  displayMessageDialog$ = createEffect(
+  readonly displayMessageDialog$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(displayMessageDialog),

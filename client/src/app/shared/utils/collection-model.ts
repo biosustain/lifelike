@@ -13,7 +13,7 @@ type Filter<T> = (item: T) => boolean;
 type Sort<T> = (a: T, b: T) => number;
 
 export interface ObservableObject<UpdateLoad = any> {
-  changed$: Observable<UpdateLoad>;
+  readonly changed$: Observable<UpdateLoad>;
 }
 
 export class CollectionModel<T extends ObservableObject | any> {
@@ -35,11 +35,11 @@ export class CollectionModel<T extends ObservableObject | any> {
   }
 
   multipleSelection = false;
-  private _updateView$ = new BehaviorSubject<boolean>(false);
-  filter$ = new BehaviorSubject<Filter<T>>(null);
-  sort$ = new BehaviorSubject<Sort<T>>(null);
-  private _items$ = new BehaviorSubject<Array<T>>([]);
-  items$: Observable<readonly T[]> = this._items$.pipe(
+  private readonly _updateView$ = new BehaviorSubject<boolean>(false);
+  readonly filter$ = new BehaviorSubject<Filter<T>>(null);
+  readonly sort$ = new BehaviorSubject<Sort<T>>(null);
+  private readonly _items$ = new BehaviorSubject<Array<T>>([]);
+  readonly items$: Observable<readonly T[]> = this._items$.pipe(
     switchMap((items) =>
       merge(...items.filter((i) => has(i, 'changed$')).map((i) => i.changed$)).pipe(
         startWith({}),
@@ -48,26 +48,29 @@ export class CollectionModel<T extends ObservableObject | any> {
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  private _selection$ = new BehaviorSubject<Array<T>>([]);
-  selection$: Observable<readonly T[]> = combineLatest([this.items$, this._selection$]).pipe(
+  private readonly _selection$ = new BehaviorSubject<Array<T>>([]);
+  readonly selection$: Observable<readonly T[]> = combineLatest([
+    this.items$,
+    this._selection$,
+  ]).pipe(
     map(([items, selection]) => selection.filter((item) => items.includes(item))),
     map((items) => Object.freeze(items)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  selectionLength$ = this.selection$.pipe(
+  readonly selectionLength$ = this.selection$.pipe(
     map((items) => items.length),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  lastSelection$ = this.selection$.pipe(
+  readonly lastSelection$ = this.selection$.pipe(
     // todo cosider populating selection in reverse order
     map((selection) => last(selection)),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  firstSelection$ = this.selection$.pipe(
+  readonly firstSelection$ = this.selection$.pipe(
     map((selection) => first(selection)),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -85,7 +88,7 @@ export class CollectionModel<T extends ObservableObject | any> {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  view$: Observable<T[]> = combineLatest([
+  readonly view$: Observable<T[]> = combineLatest([
     this.items$,
     this.filter$,
     this.sort$,
@@ -105,7 +108,7 @@ export class CollectionModel<T extends ObservableObject | any> {
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  viewLength$ = this.view$.pipe(
+  readonly viewLength$ = this.view$.pipe(
     map(({ length }) => length),
     distinctUntilChanged(),
     shareReplay({ bufferSize: 1, refCount: true })

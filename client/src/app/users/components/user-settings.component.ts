@@ -14,7 +14,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './user-settings.component.html',
 })
 export class UserSettingsComponent {
-  currentUsers$: Observable<AppUser>;
+  readonly currentUsers$: Observable<AppUser>;
   activeTab: 'profile' | 'security';
 
   // TODO: Better to have an environment variable for this

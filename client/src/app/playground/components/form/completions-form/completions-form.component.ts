@@ -81,7 +81,7 @@ export class CompletionsFormComponent implements OnChanges, CompletionForm<Compl
       )
     )
   );
-  requestParams$ = new ReplaySubject<CompletionOptions>(1);
+  readonly requestParams$ = new ReplaySubject<CompletionOptions>(1);
 
   @Input() params: CompletionFormProjectedParams;
   @Output() request = this.requestParams$.pipe(

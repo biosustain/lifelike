@@ -46,7 +46,7 @@ export class ProjectImpl implements ObservableObject {
   root: FilesystemObject;
   privileges: ProjectPrivileges;
   fontAwesomeIcon = `fa-4x ${FAClass.Project}`;
-  changed$ = new Subject();
+  readonly changed$ = new Subject();
 
   get starred(): boolean {
     return this.root?.starred;
@@ -215,7 +215,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   highlightAnnotated?: boolean[];
   annotationsTooltipContent: string;
   starred?: boolean;
-  changed$ = new Subject();
+  readonly changed$ = new Subject();
 
   get isDirectory() {
     return this.mimeType === MimeTypes.Directory;

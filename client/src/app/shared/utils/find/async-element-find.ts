@@ -24,7 +24,7 @@ export class AsyncElementFind implements AsyncFindController {
   protected readonly highlighter = new AsyncTextHighlighter(document.body);
   protected activeQuery: string | undefined = null;
   protected index = 0;
-  public current$ = new ReplaySubject<NodeTextRange>(1);
+  public readonly current$ = new ReplaySubject<NodeTextRange>(1);
 
   constructor(
     target: Element = null,

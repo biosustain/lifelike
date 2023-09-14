@@ -47,7 +47,7 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     protected readonly objectTypeService: ObjectTypeService
   ) {}
 
-  createActions$ = this.objectTypeService.all().pipe(
+  readonly createActions$ = this.objectTypeService.all().pipe(
     map((providers) => {
       const createActions: RankedItem<CreateDialogAction>[] = [].concat(
         ...providers.map((provider) => provider.getCreateDialogOptions())
@@ -57,10 +57,10 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     })
   );
 
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  @Output() readonly modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
-  protected _hashId$ = new ReplaySubject<string>(1);
-  protected hashId$ = merge(
+  protected readonly _hashId$ = new ReplaySubject<string>(1);
+  protected readonly hashId$ = merge(
     this._hashId$,
     this.route.params.pipe(
       switchMap(({ dir_id, project_name }) =>
@@ -94,7 +94,7 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
 
   protected subscriptions = new Subscription();
 
-  object$ = this.hashId$.pipe(
+  readonly object$ = this.hashId$.pipe(
     switchMap((hashId) =>
       this.filesystemService.get(hashId).pipe(
         tap((object) =>
@@ -109,11 +109,13 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     ),
     shareReplay(1)
   );
-  objectWithStatus$ = this.object$.pipe(
+  readonly objectWithStatus$ = this.object$.pipe(
     addStatus(filesystemObjectLoadingMock(mockArrayOf(filesystemObjectLoadingMock)))
   );
 
-  sourceData$ = defer(() => this.object$.pipe(map((object) => object.getGraphEntitySources())));
+  readonly sourceData$ = defer(() =>
+    this.object$.pipe(map((object) => object.getGraphEntitySources()))
+  );
 
   encodeURIComponent = encodeURIComponent;
 

@@ -54,15 +54,15 @@ class EntityTypeEntry {
 export class PDFAnnotationService {
   hashId: string;
 
-  filterChange$ = new Subject<void>();
-  annotations$ = new ReplaySubject<Annotation[]>(1);
-  pageGroupedAnnotations$ = this.annotations$.pipe(
+  readonly filterChange$ = new Subject<void>();
+  readonly annotations$ = new ReplaySubject<Annotation[]>(1);
+  readonly pageGroupedAnnotations$ = this.annotations$.pipe(
     map((annotations) => groupBy(annotations, 'pageNumber'))
   );
   /**
    * A mapping of annotation type (i.e. Genes) to a list of those annotations.
    */
-  annotationEntityTypeMap$: Observable<Map<string, Annotation[]>> = this.annotations$.pipe(
+  readonly annotationEntityTypeMap$: Observable<Map<string, Annotation[]>> = this.annotations$.pipe(
     map((annotations) => {
       // Create index of annotation types
       const annotationEntityTypeMap = new Map();
@@ -81,7 +81,7 @@ export class PDFAnnotationService {
       return annotationEntityTypeMap;
     })
   );
-  sortedEntityTypeEntries$: Observable<EntityTypeEntry[]> = this.annotations$.pipe(
+  readonly sortedEntityTypeEntries$: Observable<EntityTypeEntry[]> = this.annotations$.pipe(
     map((annotations) =>
       ENTITY_TYPES.map(
         (entityType) =>
@@ -100,18 +100,18 @@ export class PDFAnnotationService {
       })
     )
   );
-  highlightAnnotation$ = new BehaviorSubject<{
+  readonly highlightAnnotation$ = new BehaviorSubject<{
     id: string;
     text: string;
   }>(null);
-  highlightAnnotationId$: Observable<string> = this.highlightAnnotation$.pipe(
+  readonly highlightAnnotationId$: Observable<string> = this.highlightAnnotation$.pipe(
     map((value) => value?.id)
     // Allowing for the same annotation to be returned consecutively to allow for
     // highlighting search to be reset when the user clicks on the same annotation.
     // https://sbrgsoftware.atlassian.net/browse/LL-5246
     // distinctUntilChanged()
   );
-  foundHighlightAnnotations$ = this.highlightAnnotationId$.pipe(
+  readonly foundHighlightAnnotations$ = this.highlightAnnotationId$.pipe(
     switchMap(
       (highlightAnnotationId) =>
         iif(
@@ -134,7 +134,7 @@ export class PDFAnnotationService {
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  highlightedAnnotation$ = this.foundHighlightAnnotations$.pipe(
+  readonly highlightedAnnotation$ = this.foundHighlightAnnotations$.pipe(
     switchMap((foundHighlightAnnotations) =>
       iif(
         () => isNil(foundHighlightAnnotations),
@@ -145,7 +145,7 @@ export class PDFAnnotationService {
       )
     )
   );
-  annotationHighlightChange$: Observable<AnnotationHighlightResult | null> =
+  readonly annotationHighlightChange$: Observable<AnnotationHighlightResult | null> =
     this.foundHighlightAnnotations$.pipe(
       switchMap((foundHighlightAnnotations) =>
         iif(

@@ -64,11 +64,11 @@ export class FindControllerService implements OnDestroy {
       });
   }
 
-  destroy$ = new Subject<any>();
-  type$ = new ReplaySubject<'text' | 'annotation'>(1);
-  query$ = new ReplaySubject<string>(1);
-  target$ = new ReplaySubject<Element | null>(null);
-  elementFind$ = this.type$.pipe(
+  readonly destroy$ = new Subject<any>();
+  readonly type$ = new ReplaySubject<'text' | 'annotation'>(1);
+  readonly query$ = new ReplaySubject<string>(1);
+  readonly target$ = new ReplaySubject<Element | null>(null);
+  readonly elementFind$ = this.type$.pipe(
     withLatestFrom(this.target$.pipe(startWith(null))), // lazy init
     map(
       ([type, target]) =>
@@ -85,7 +85,7 @@ export class FindControllerService implements OnDestroy {
     }),
     shareReplay({ refCount: true, bufferSize: 1 })
   );
-  focusElement$ = this.elementFind$.pipe(switchMap((elementMap) => elementMap.current$));
+  readonly focusElement$ = this.elementFind$.pipe(switchMap((elementMap) => elementMap.current$));
 
   ngOnDestroy() {
     this.destroy$.next();

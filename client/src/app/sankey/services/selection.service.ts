@@ -11,14 +11,14 @@ import { SelectionEntity, SelectionType } from '../interfaces/selection';
 export class SankeySelectionService {
   constructor(private sankeyController: ControllerService) {}
 
-  multiselect$ = new BehaviorSubject<boolean>(true);
+  readonly multiselect$ = new BehaviorSubject<boolean>(true);
 
   set multiselect(value: boolean) {
     this.multiselect$.next(value);
   }
 
-  private _selection$ = new BehaviorSubject<SelectionEntity[]>([]);
-  selection$ = combineLatest([this._selection$, this.multiselect$]).pipe(
+  private readonly _selection$ = new BehaviorSubject<SelectionEntity[]>([]);
+  readonly selection$ = combineLatest([this._selection$, this.multiselect$]).pipe(
     map(([selection, multiselect]) =>
       multiselect ? selection : first(selection) || ({} as SelectionEntity)
     )

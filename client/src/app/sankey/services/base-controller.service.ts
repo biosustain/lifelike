@@ -1,6 +1,6 @@
 import { Injectable, Injector, OnDestroy } from '@angular/core';
 
-import { Observable, of, iif, merge as rxjs_merge, Subject, combineLatest } from 'rxjs';
+import { Observable, of, iif, merge as rxjs_merge, Subject, combineLatest, defer } from 'rxjs';
 import { map, tap, switchMap, first, distinctUntilChanged } from 'rxjs/operators';
 import { merge, isNil, omitBy, has, pick, isEqual, isEmpty, omit } from 'lodash-es';
 
@@ -39,9 +39,9 @@ export type DefaultBaseControllerService = BaseControllerService<TypeContext>;
 @Injectable()
 export class BaseControllerService<Base extends TypeContext>
   extends StateControlAbstractService<Base['options'], Base['state']>
-  implements ServiceOnInit, OnDestroy
+  implements OnDestroy
 {
-  hasPendingChanges$ = combineLatest([
+  readonly hasPendingChanges$ = combineLatest([
     this.update.edited$,
     this.delta$.pipe(
       switchMap((baseViewDelta) =>
@@ -57,16 +57,63 @@ export class BaseControllerService<Base extends TypeContext>
     ),
   ]).pipe(map((editFlags) => editFlags.some((f) => f)));
 
-  destroy$ = new Subject<void>();
+  readonly destroy$ = new Subject<void>();
 
-  fontSizeScale$: Observable<unknown>;
+  readonly fontSizeScale$: Observable<unknown>;
 
-  nodeHeight$: Observable<SankeyNodeHeight>;
-  networkTraceData$: Observable<NetworkTraceData<Base>>;
+  /**
+   * Values from inheriting class are not avaliable when parsing code of base
+   * therefore we need to postpone their execution by ussing defer
+   */
+  readonly nodeHeight$: Observable<SankeyNodeHeight> = defer(() =>
+    this.stateAccessor('nodeHeight')
+  );
+  readonly networkTraceData$: Observable<NetworkTraceData<Base>>;
   viewBase;
-  nodeValueAccessor$: Observable<ValueGenerator<Base>>;
-  linkValueAccessor$: Observable<ValueGenerator<Base>>;
-  predefinedValueAccessor$: Observable<MultiValueAccessor>;
+  readonly nodeValueAccessor$: Observable<ValueGenerator<Base>> = defer(() =>
+    unifiedSingularAccessor(this.state$, 'nodeValueAccessorId').pipe(
+      map((nodeValueAccessorId) =>
+        nodeValueAccessorId
+          ? this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
+            this.nodePropertyAcessor(nodeValueAccessorId)
+          : (this.warningController.warn(
+              ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)
+            ),
+            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none])
+      )
+    )
+  );
+  readonly linkValueAccessor$: Observable<ValueGenerator<Base>> = defer(() =>
+    unifiedSingularAccessor(this.state$, 'linkValueAccessorId').pipe(
+      switchMap((linkValueAccessorId) =>
+        iif(
+          () => has(this.linkValueAccessors, linkValueAccessorId),
+          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
+          unifiedSingularAccessor(this.common.options$, 'linkValueAccessors').pipe(
+            map(
+              (linkValueAccessors) =>
+                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(
+                  linkValueAccessorId
+                ) ??
+                (this.warningController.warn(
+                  ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)
+                ),
+                this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0])
+            )
+          )
+        )
+      )
+    )
+  );
+  readonly predefinedValueAccessor$: Observable<MultiValueAccessor> = defer(() =>
+    unifiedSingularAccessor(this.common.options$, 'predefinedValueAccessors').pipe(
+      switchMap((predefinedValueAccessors) =>
+        unifiedSingularAccessor(this.state$, 'predefinedValueAccessorId').pipe(
+          map((predefinedValueAccessorId) => predefinedValueAccessors[predefinedValueAccessorId])
+        )
+      )
+    )
+  );
 
   // @ts-ignore
   readonly linkValueAccessors: {
@@ -155,57 +202,6 @@ export class BaseControllerService<Base extends TypeContext>
 
   ngOnDestroy() {
     this.destroy$.next();
-  }
-
-  /**
-   * Values from inheriting class are not avaliable when parsing code of base therefore we need to postpone this execution
-   */
-  onInit() {
-    this.nodeValueAccessor$ = unifiedSingularAccessor(this.state$, 'nodeValueAccessorId').pipe(
-      map((nodeValueAccessorId) =>
-        nodeValueAccessorId
-          ? this.nodeValueAccessors[nodeValueAccessorId as NODE_VALUE_GENERATOR] ??
-            this.nodePropertyAcessor(nodeValueAccessorId)
-          : (this.warningController.warn(
-              ErrorMessages.missingNodeValueAccessor(nodeValueAccessorId)
-            ),
-            this.nodeValueAccessors[NODE_VALUE_GENERATOR.none])
-      )
-    );
-
-    this.linkValueAccessor$ = unifiedSingularAccessor(this.state$, 'linkValueAccessorId').pipe(
-      switchMap((linkValueAccessorId) =>
-        iif(
-          () => has(this.linkValueAccessors, linkValueAccessorId),
-          of(this.linkValueAccessors[linkValueAccessorId as LINK_VALUE_GENERATOR]),
-          unifiedSingularAccessor(this.common.options$, 'linkValueAccessors').pipe(
-            map(
-              (linkValueAccessors) =>
-                this.linkPropertyAcessors[linkValueAccessors[linkValueAccessorId]?.type]?.(
-                  linkValueAccessorId
-                ) ??
-                (this.warningController.warn(
-                  ErrorMessages.missingLinkValueAccessor(linkValueAccessorId)
-                ),
-                this.linkValueAccessors[LINK_VALUE_GENERATOR.fixedValue0])
-            )
-          )
-        )
-      )
-    );
-
-    this.predefinedValueAccessor$ = unifiedSingularAccessor(
-      this.common.options$,
-      'predefinedValueAccessors'
-    ).pipe(
-      switchMap((predefinedValueAccessors) =>
-        unifiedSingularAccessor(this.state$, 'predefinedValueAccessorId').pipe(
-          map((predefinedValueAccessorId) => predefinedValueAccessors[predefinedValueAccessorId])
-        )
-      )
-    );
-
-    this.nodeHeight$ = this.stateAccessor('nodeHeight');
   }
 
   // As of (https://github.com/SBRG/kg-prototypes/pull/1927)

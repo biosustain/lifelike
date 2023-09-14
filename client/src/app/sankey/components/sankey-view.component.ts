@@ -111,7 +111,7 @@ interface BaseViewContext {
 export class SankeyViewComponent
   implements OnInit, ModuleAwareComponent, AfterViewInit, ShouldConfirmUnload
 {
-  searchParams$ = this.sankeyController.state$.pipe(
+  readonly searchParams$ = this.sankeyController.state$.pipe(
     map(
       ({ networkTraceIdx, viewName, baseView }: any) =>
         omitBy(
@@ -259,9 +259,10 @@ export class SankeyViewComponent
 
   fileContent: GraphFile;
 
-  unsavedChanges$ = new Subject<boolean>();
+  readonly unsavedChanges$ = new Subject<boolean>();
 
-  predefinedValueAccessors$: Observable<any> = this.sankeyController.predefinedValueAccessors$;
+  readonly predefinedValueAccessors$: Observable<any> =
+    this.sankeyController.predefinedValueAccessors$;
   paramsSubscription: Subscription;
 
   private dynamicComponentRef = new Map();
@@ -273,52 +274,52 @@ export class SankeyViewComponent
   loadTask: BackgroundTask<string, [FilesystemObject, GraphFile]>;
   openSankeySub: Subscription;
   ready = false;
-  object$ = new ReplaySubject<FilesystemObject>(1);
+  readonly object$ = new ReplaySubject<FilesystemObject>(1);
   // https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/sankeyjs-dist/index.d.ts
   modulePropertiesChange = new EventEmitter<ModuleProperties>();
-  searchPanel$ = new BehaviorSubject(false);
+  readonly searchPanel$ = new BehaviorSubject(false);
   advancedPanel = false;
   currentFileId;
-  entitySearchTerm$ = new ReplaySubject<string>(1);
+  readonly entitySearchTerm$ = new ReplaySubject<string>(1);
 
   isArray = Array.isArray;
-  entitySearchList$ = new BehaviorSubject([]);
-  _entitySearchListIdx$ = new ReplaySubject<number>(1);
-  networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
+  readonly entitySearchList$ = new BehaviorSubject([]);
+  readonly _entitySearchListIdx$ = new ReplaySubject<number>(1);
+  readonly networkTracesMap$ = this.sankeyController.networkTraces$.pipe(
     map(
       (networkTraces) =>
         new ExtendedMap(networkTraces.map((networkTrace, index) => [index, networkTrace]))
     )
   );
-  data$ = this.sankeyController.data$;
+  readonly data$ = this.sankeyController.data$;
 
-  activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
+  readonly activeViewBaseName$: Observable<string> = this.viewController.activeViewBase$.pipe(
     map((activeViewBase) => viewBaseToNameMapping[activeViewBase]),
     debug('activeViewBaseName$'),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  pendingChanges$ = defer(() =>
+  readonly pendingChanges$ = defer(() =>
     this.baseView$.pipe(
       switchMap((baseView) => baseView.hasPendingChanges$),
       startWith(false)
     )
   );
 
-  state$ = this.sankeyController.state$;
-  options$ = this.sankeyController.options$;
-  networkTrace$ = this.sankeyController.networkTrace$;
+  readonly state$ = this.sankeyController.state$;
+  readonly options$ = this.sankeyController.options$;
+  readonly networkTrace$ = this.sankeyController.networkTrace$;
 
-  detailsPanel$ = new BehaviorSubject(false);
+  readonly detailsPanel$ = new BehaviorSubject(false);
 
-  viewName$ = this.sankeyController.viewName$;
+  readonly viewName$ = this.sankeyController.viewName$;
 
   viewBase = ViewBase;
 
   /**
    * Load different base view components upon base view change
    */
-  baseViewContext$ = this.sankeyController.baseViewName$.pipe(
+  readonly baseViewContext$ = this.sankeyController.baseViewName$.pipe(
     scan((prev, baseViewName) => {
       prev.moduleRef?.destroy();
 
@@ -361,17 +362,17 @@ export class SankeyViewComponent
     shareReplay<BaseViewContext>(1)
   );
 
-  baseView$ = this.baseViewContext$.pipe(map(({ baseView }) => baseView));
-  predefinedValueAccessor$ = this.baseView$.pipe(
+  readonly baseView$ = this.baseViewContext$.pipe(map(({ baseView }) => baseView));
+  readonly predefinedValueAccessor$ = this.baseView$.pipe(
     switchMap((sankeyBaseViewControl) => sankeyBaseViewControl.predefinedValueAccessor$)
   );
-  layout$ = this.baseViewContext$.pipe(map(({ layout }) => layout));
-  graph$ = this.layout$.pipe(
+  readonly layout$ = this.baseViewContext$.pipe(map(({ layout }) => layout));
+  readonly graph$ = this.layout$.pipe(
     switchMap<DefaultLayoutService, Observable<any>>((layout) => layout.graph$)
   );
-  selection$ = this.baseViewContext$.pipe(map(({ selection }) => selection));
+  readonly selection$ = this.baseViewContext$.pipe(map(({ selection }) => selection));
 
-  moduleProperties$ = combineLatest([
+  readonly moduleProperties$ = combineLatest([
     this.object$,
     this.baseView$.pipe(switchMap((baseView) => baseView.hasPendingChanges$)),
   ]).pipe(
@@ -382,7 +383,7 @@ export class SankeyViewComponent
     }))
   );
 
-  dragTitleData$ = this.object$.pipe(
+  readonly dragTitleData$ = this.object$.pipe(
     switchMap((object) =>
       defer(() => this.moduleContext.appLink).pipe(
         map((url) => ({
@@ -417,7 +418,9 @@ export class SankeyViewComponent
     )
   );
 
-  sourceData$ = defer(() => this.object$.pipe(map((object) => object.getGraphEntitySources())));
+  readonly sourceData$ = defer(() =>
+    this.object$.pipe(map((object) => object.getGraphEntitySources()))
+  );
 
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event) {

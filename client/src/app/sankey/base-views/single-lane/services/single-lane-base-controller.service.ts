@@ -31,7 +31,7 @@ import { EditService } from '../../../services/edit.service';
 @Injectable()
 export class SingleLaneBaseControllerService
   extends BaseControllerService<Base>
-  implements ServiceOnInit, OnDestroy
+  implements OnDestroy
 {
   constructor(
     readonly common: ControllerService,
@@ -40,7 +40,6 @@ export class SingleLaneBaseControllerService
     protected readonly update: EditService
   ) {
     super(common, warningController, injector, update);
-    this.onInit();
   }
 
   viewBase = ViewBase.sankeySingleLane;

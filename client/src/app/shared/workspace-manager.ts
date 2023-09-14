@@ -491,7 +491,7 @@ export class WorkspaceManager {
   tabCreationTargetPane: Pane | undefined;
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
-  panes$ = new BehaviorSubject<Pane[]>([]);
+  readonly panes$ = new BehaviorSubject<Pane[]>([]);
 
   constructor(
     private readonly router: Router,

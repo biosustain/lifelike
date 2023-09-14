@@ -7,8 +7,8 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
 @Injectable()
 export class OpenFileProvider {
-  private object$$ = new ReplaySubject<Observable<FilesystemObject>>(1);
-  private _object$ = this.object$$.pipe(
+  private readonly object$$ = new ReplaySubject<Observable<FilesystemObject>>(1);
+  private readonly _object$ = this.object$$.pipe(
     switchMap((object$) => object$),
     switchMap((object) =>
       object.changed$.pipe(
