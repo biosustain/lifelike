@@ -84,7 +84,7 @@ export class VisJsNetworkComponent implements AfterViewInit {
 
   cursorStyle: string;
 
-  selected;
+  readonly selected;
 
   @Output() selectionChange = new EventEmitter();
   @Output() nodeHover = new EventEmitter();

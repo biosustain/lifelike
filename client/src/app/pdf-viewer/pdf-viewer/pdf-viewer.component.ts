@@ -230,8 +230,8 @@ export class PdfViewerComponent implements OnChanges, OnInit, OnDestroy {
   @Output() pageChange: EventEmitter<number> = new EventEmitter<number>(true);
   @Input() src: PDFSource;
   @Input() search: string;
-  private destroy$ = new Subject<any>();
-  private search$ = new ReplaySubject<string>(1);
+  private readonly destroy$ = new Subject<any>();
+  private readonly search$ = new ReplaySubject<string>(1);
 
   static getLinkTarget(type: string) {
     switch (type) {

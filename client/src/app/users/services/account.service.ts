@@ -17,8 +17,8 @@ import { ResultList } from 'app/shared/schemas/common';
 export class AccountService implements OnDestroy {
   readonly accountApi = '/api/accounts';
 
-  private completedSubjectsSource = new Subject<boolean>();
-  private userListSource = new BehaviorSubject<AppUser[]>([]);
+  private readonly completedSubjectsSource = new Subject<boolean>();
+  private readonly userListSource = new BehaviorSubject<AppUser[]>([]);
   readonly userList = this.userListSource
     .asObservable()
     .pipe(takeUntil(this.completedSubjectsSource));

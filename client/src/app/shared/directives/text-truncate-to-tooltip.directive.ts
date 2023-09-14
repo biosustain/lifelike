@@ -35,13 +35,13 @@ export class TextTruncateToTooltipDirective
 
   // Nest observable so we can maintain subscription even if input changes
   // createScrollObservable actually creates new observable but inits it on subscription
-  scroll$$ = new BehaviorSubject<Observable<any>>(
+  readonly scroll$$ = new BehaviorSubject<Observable<any>>(
     // @ts-ignore - we are using private variable of parent (didn't found the way around it)
     createScrollObservable(this._elementRef.nativeElement, document)
   );
 
   // Flattern nested observable
-  _scroll$ = this.scroll$$.pipe(switchMap((scroll$) => scroll$));
+  readonly _scroll$ = this.scroll$$.pipe(switchMap((scroll$) => scroll$));
 
   scrollSubscription: Subscription;
 

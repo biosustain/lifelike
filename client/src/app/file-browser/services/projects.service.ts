@@ -32,7 +32,7 @@ export class ProjectsService {
   /**
    * The list of projects has been updated.
    */
-  update$ = new Subject();
+  readonly update$ = new Subject();
 
   constructor(protected readonly http: HttpClient) {}
 

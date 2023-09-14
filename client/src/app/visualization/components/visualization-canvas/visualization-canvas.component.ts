@@ -246,7 +246,7 @@ export class VisualizationCanvasComponent<NodeData = object, EdgeData = object>
   openClusteringRequests: number;
   selectedClusterNodeData: VisNode[];
 
-  clusterCreatedSource: Subject<boolean>;
+  readonly clusterCreatedSource: Subject<boolean>;
   clusteringSubscription: Subscription;
 
   contextMenuTooltipOptions: Partial<Options>;

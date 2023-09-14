@@ -348,6 +348,6 @@ export interface FileAnnotationChangeData {
 export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotationChangeData> {}
 
 export interface HttpObservableResponse<T> {
-  body$: Observable<T>;
-  progress$: Observable<HttpEvent<T>>;
+  readonly body$: Observable<T>;
+  readonly progress$: Observable<HttpEvent<T>>;
 }

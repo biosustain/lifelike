@@ -11,9 +11,9 @@ import { SankeyNode } from '../model/sankey-document';
 
 @Injectable()
 export class EditService {
-  reset$ = new BehaviorSubject<any>(false);
-  movedNode$ = new Subject<SankeyNode>();
-  movedNodes$ = this.reset$.pipe(
+  readonly reset$ = new BehaviorSubject<any>(false);
+  readonly movedNode$ = new Subject<SankeyNode>();
+  readonly movedNodes$ = this.reset$.pipe(
     switchMap(() =>
       this.movedNode$.pipe(
         startWith([] as SankeyNode[]),
@@ -22,11 +22,11 @@ export class EditService {
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-  edited$ = this.movedNodes$.pipe(
+  readonly edited$ = this.movedNodes$.pipe(
     map((movedNodes) => isNotEmpty(movedNodes)),
     distinctUntilChanged()
   );
-  movedNodesExtent$ = this.movedNodes$.pipe(
+  readonly movedNodesExtent$ = this.movedNodes$.pipe(
     map((movedNodes) =>
       movedNodes.length
         ? {
@@ -38,8 +38,10 @@ export class EditService {
         : null
     )
   );
-  viewPort$ = new ReplaySubject<{ x0: number; y0: number; width: number; height: number }>(1);
-  viewBox$ = combineLatest([this.viewPort$, this.movedNodesExtent$]).pipe(
+  readonly viewPort$ = new ReplaySubject<{ x0: number; y0: number; width: number; height: number }>(
+    1
+  );
+  readonly viewBox$ = combineLatest([this.viewPort$, this.movedNodesExtent$]).pipe(
     map(([viewPort, movedNodesExtent]) => {
       let { width, height } = viewPort;
       let x0 = 0;

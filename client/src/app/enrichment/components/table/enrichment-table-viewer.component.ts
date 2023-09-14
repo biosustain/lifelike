@@ -87,7 +87,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   @ViewChild(EnrichmentTableComponent) enrichmentTable: EnrichmentTableComponent;
 
   annotation: AnnotationData;
-  private destroy$ = new Subject<any>();
+  private readonly destroy$ = new Subject<any>();
 
   readonly fileIdChange$ = new ReplaySubject<string>(1);
 

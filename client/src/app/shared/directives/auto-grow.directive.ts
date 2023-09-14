@@ -20,11 +20,11 @@ export class AutoGrowDirective implements OnInit, OnDestroy {
   // for compatibility with global styling (e.g. bootstrap) avoiding to change box-sizing
   @Input() paddingBorderAdjustment = 'calc( 0.65rem + 1px )';
   @Input() type: string;
-  metaRecalculate = new BehaviorSubject(of());
+  readonly metaRecalculate = new BehaviorSubject(of());
   @Input() set recalculate(recalculateObservable: Observable<any>) {
     this.metaRecalculate.next(recalculateObservable);
   }
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
   @HostBinding('style.width') width: string;
 

@@ -38,7 +38,7 @@ export class AuthEffects {
     private readonly progressDialog: ProgressDialog
   ) {}
 
-  checkTermsOfService$ = createEffect(() =>
+  readonly checkTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.checkTermsOfService),
       map(({ credential }) => {
@@ -77,12 +77,12 @@ export class AuthEffects {
     )
   );
 
-  termsOfServiceAgreeing$ = createEffect(
+  readonly termsOfServiceAgreeing$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.termsOfServiceAgreeing)),
     { dispatch: false }
   );
 
-  agreeTermsOfService$ = createEffect(() =>
+  readonly agreeTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.agreeTermsOfService),
       exhaustMap(({ credential, timeStamp }) => {
@@ -92,7 +92,7 @@ export class AuthEffects {
     )
   );
 
-  disagreeTermsOfService$ = createEffect(() =>
+  readonly disagreeTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.disagreeTermsOfService),
       exhaustMap(() => {
@@ -109,7 +109,7 @@ export class AuthEffects {
     )
   );
 
-  updatePassword$ = createEffect(() =>
+  readonly updatePassword$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updatePassword),
       map(() => {
@@ -129,7 +129,7 @@ export class AuthEffects {
     )
   );
 
-  failedPasswordUpdate$ = createEffect(() =>
+  readonly failedPasswordUpdate$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.failedPasswordUpdate),
       exhaustMap(() => {
@@ -146,12 +146,12 @@ export class AuthEffects {
     )
   );
 
-  successPasswordUpdate$ = createEffect(
+  readonly successPasswordUpdate$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.successPasswordUpdate)),
     { dispatch: false }
   );
 
-  updateUser$ = createEffect(() =>
+  readonly updateUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateUser),
       exhaustMap(({ userUpdateData, hashId }) => {
@@ -188,7 +188,7 @@ export class AuthEffects {
     )
   );
 
-  updateUserSuccess$ = createEffect(() =>
+  readonly updateUserSuccess$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateUserSuccess),
       map((_) =>
@@ -203,7 +203,7 @@ export class AuthEffects {
     )
   );
 
-  updateOAuthUser$ = createEffect(() =>
+  readonly updateOAuthUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateOAuthUser),
       exhaustMap(({ userUpdateData }) => {
@@ -240,7 +240,7 @@ export class AuthEffects {
     )
   );
 
-  updateOAuthUserSuccess$ = createEffect(() =>
+  readonly updateOAuthUserSuccess$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateOAuthUserSuccess),
       map((_) => {
@@ -255,7 +255,7 @@ export class AuthEffects {
     )
   );
 
-  login$ = createEffect(() =>
+  readonly login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
       exhaustMap(({ credential }) => {
@@ -272,7 +272,7 @@ export class AuthEffects {
     )
   );
 
-  loginSuccess$ = createEffect(
+  readonly loginSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
@@ -287,12 +287,12 @@ export class AuthEffects {
     { dispatch: false }
   );
 
-  oauthLoginSuccess$ = createEffect(
+  readonly oauthLoginSuccess$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.oauthLoginSuccess)),
     { dispatch: false }
   );
 
-  loginRedirect$ = createEffect(
+  readonly loginRedirect$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginRedirect),
@@ -301,7 +301,7 @@ export class AuthEffects {
     { dispatch: false }
   );
 
-  logout$ = createEffect(() =>
+  readonly logout$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.logout),
       map((_) => {
@@ -318,7 +318,7 @@ export class AuthEffects {
     )
   );
 
-  oauthLogout$ = createEffect(
+  readonly oauthLogout$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.oauthLogout),

@@ -4,6 +4,6 @@ import { Subject } from 'rxjs';
 
 @Injectable()
 export class EnrichmentVisualisationSelectService {
-  public goTerm$ = new Subject<string>();
-  public geneName$ = new Subject<string>();
+  public readonly goTerm$ = new Subject<string>();
+  public readonly geneName$ = new Subject<string>();
 }

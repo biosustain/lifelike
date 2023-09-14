@@ -38,8 +38,8 @@ export class MultiselectFormComponent extends EntityForm implements OnChanges, O
 
   protected readonly TABS: string[] = ['graph', 'explanation'];
 
-  change$ = new ReplaySubject<SimpleChanges>(1);
-  entities$: Observable<Iterable<string>> = this.change$.pipe(
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['selected', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     map(
@@ -54,7 +54,7 @@ export class MultiselectFormComponent extends EntityForm implements OnChanges, O
         )
     )
   );
-  groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
+  readonly groupedSelection$: Observable<Partial<Record<GraphEntityType, GraphEntity[]>>> =
     this.change$.pipe(
       map(_get('selected')),
       filter(Boolean),

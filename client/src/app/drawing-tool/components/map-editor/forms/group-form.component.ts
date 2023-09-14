@@ -56,8 +56,8 @@ export class GroupFormComponent extends EntityForm implements OnChanges, OnDestr
     this.updatedGroup.style = this.updatedGroup.style || {};
   }
 
-  change$ = new ReplaySubject<SimpleChanges>(1);
-  entities$: Observable<Iterable<string>> = this.change$.pipe(
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['group', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     map(

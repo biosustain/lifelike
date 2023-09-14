@@ -45,11 +45,11 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     private readonly modalService: NgbModal
   ) {}
 
-  private destroy$: Subject<void> = new Subject();
+  private readonly destroy$: Subject<void> = new Subject();
 
   @Input() entities!: Iterable<string>;
-  private entitiesChange$ = new ReplaySubject<DrawingToolPromptComponent['entities']>(1);
-  private entities$: Observable<DrawingToolPromptComponent['entities']> = defer(() =>
+  private readonly entitiesChange$ = new ReplaySubject<DrawingToolPromptComponent['entities']>(1);
+  private readonly entities$: Observable<DrawingToolPromptComponent['entities']> = defer(() =>
     this.entitiesChange$.pipe(
       startWith(this.entities),
       distinctUntilChanged(),
@@ -57,21 +57,22 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     )
   );
 
-  tempertaure$: Subject<number> = new BehaviorSubject(0);
+  readonly tempertaure$: Subject<number> = new BehaviorSubject(0);
 
-  private contexts$: Observable<FilesystemObject['contexts']> = this.openFileProvider.object$.pipe(
-    map(({ contexts }) => contexts),
-    startWith([]),
-    distinctUntilChanged(),
-    shareReplay({ bufferSize: 1, refCount: true })
-  );
+  private readonly contexts$: Observable<FilesystemObject['contexts']> =
+    this.openFileProvider.object$.pipe(
+      map(({ contexts }) => contexts),
+      startWith([]),
+      distinctUntilChanged(),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
 
-  contextsController$: Observable<DropdownController<string>> = this.contexts$.pipe(
+  readonly contextsController$: Observable<DropdownController<string>> = this.contexts$.pipe(
     map(dropdownControllerFactory),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
-  params$ = combineLatest([
+  readonly params$ = combineLatest([
     this.entities$,
     this.tempertaure$.pipe(distinctUntilChanged()),
     this.contextsController$.pipe(switchMap((controller) => controller.current$)),
@@ -84,9 +85,9 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   /**
    * This subject is used to trigger the explanation generation and its value changes output visibility.
    */
-  explain$ = new ReplaySubject<boolean>(1);
+  readonly explain$ = new ReplaySubject<boolean>(1);
 
-  explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
+  readonly explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
     withLatestFrom(this.params$),
     map(([_, params]) => params),
     takeUntil(this.destroy$),
@@ -97,22 +98,20 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     )
   );
 
-  playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> = combineLatest([
-    this.params$,
-    this.contexts$,
-  ]).pipe(
-    map(([{ temperature, entities, context }, contexts]) => ({
-      promptFormParams: {
-        formInput: {
-          entities: Array.from(entities),
-          context,
+  readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =
+    combineLatest([this.params$, this.contexts$]).pipe(
+      map(([{ temperature, entities, context }, contexts]) => ({
+        promptFormParams: {
+          formInput: {
+            entities: Array.from(entities),
+            context,
+          },
+          contexts,
         },
-        contexts,
-      },
-      promptForm: DrawingToolPromptFormComponent,
-      temperature,
-    }))
-  );
+        promptForm: DrawingToolPromptFormComponent,
+        temperature,
+      }))
+    );
 
   generateExplanation() {
     this.explain$.next(true);

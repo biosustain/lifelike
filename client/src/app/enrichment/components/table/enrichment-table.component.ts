@@ -22,7 +22,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
     private readonly element: ElementRef
   ) {}
 
-  private destroy$ = new Subject<any>();
+  private readonly destroy$ = new Subject<any>();
   @ViewChild(GenericTableComponent) table: GenericTableComponent;
   @ViewChild('findTarget') findTarget: ElementRef;
 

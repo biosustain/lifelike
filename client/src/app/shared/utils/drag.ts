@@ -20,7 +20,7 @@ export class DragImage {
 export class CdkNativeDragItegration<T = any> {
   constructor(private dragData$: Observable<Record<string, string>>, private ngZone: NgZone) {}
 
-  trackTarget$ = fromEvent(document, 'mousemove').pipe(
+  readonly trackTarget$ = fromEvent(document, 'mousemove').pipe(
     inDevModeTap(NgZone.assertNotInAngularZone),
     throttle(() => interval(0, animationFrameScheduler), { leading: true, trailing: true }),
     map((event: MouseEvent) => document.elementFromPoint(event.clientX, event.clientY)),

@@ -26,10 +26,10 @@ export abstract class SankeyAbstractAdvancedPanelComponent<
     protected formBuilder: FormBuilder
   ) {}
   uuid: string = uuidv4();
-  options$ = this.stateController.options$;
+  readonly options$ = this.stateController.options$;
   form: FormGroup;
   formToStateSubscribtion: Subscription;
-  formStateSync$ = this.stateController.state$.pipe(
+  readonly formStateSync$ = this.stateController.state$.pipe(
     tap((state) => this.form.patchValue(state, { emitEvent: false })),
     map(() => this.form.value as Partial<State>),
     debug('formStateSync$'),

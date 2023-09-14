@@ -27,20 +27,20 @@ export class ViewControllerService {
     protected readonly update: EditService
   ) {}
 
-  views$ = this.common.views$;
+  readonly views$ = this.common.views$;
 
-  activeViewBase$ = this.common.baseViewName$;
+  readonly activeViewBase$ = this.common.baseViewName$;
 
-  activeViewName$ = this.common.state$.pipe(map(({ viewName }) => viewName));
+  readonly activeViewName$ = this.common.state$.pipe(map(({ viewName }) => viewName));
 
-  layout$ = new ReplaySubject<DefaultLayoutService>(1);
-  baseView$ = this.layout$.pipe(map(({ baseView }) => baseView));
+  readonly layout$ = new ReplaySubject<DefaultLayoutService>(1);
+  readonly baseView$ = this.layout$.pipe(map(({ baseView }) => baseView));
 
   readonly statusOmitProperties = ['viewName', 'baseViewInitialState'];
 
-  graph$ = this.layout$.pipe(switchMap((layout) => layout.graph$));
+  readonly graph$ = this.layout$.pipe(switchMap((layout) => layout.graph$));
 
-  graphViewport$ = this.layout$.pipe(switchMap((layout) => layout.extent$));
+  readonly graphViewport$ = this.layout$.pipe(switchMap((layout) => layout.extent$));
 
   selectView(networkTraceIdx, viewName) {
     return this.common.setState({ networkTraceIdx, viewName });

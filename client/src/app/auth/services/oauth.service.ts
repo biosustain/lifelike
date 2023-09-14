@@ -18,11 +18,11 @@ import { AuthActions } from '../store';
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class LifelikeOAuthService {
-  private isAuthenticatedSubject$ = new BehaviorSubject<boolean>(false);
-  public isAuthenticated$ = this.isAuthenticatedSubject$.asObservable();
+  private readonly isAuthenticatedSubject$ = new BehaviorSubject<boolean>(false);
+  public readonly isAuthenticated$ = this.isAuthenticatedSubject$.asObservable();
 
-  private isDoneLoadingSubject$ = new BehaviorSubject<boolean>(false);
-  public isDoneLoading$ = this.isDoneLoadingSubject$.asObservable();
+  private readonly isDoneLoadingSubject$ = new BehaviorSubject<boolean>(false);
+  public readonly isDoneLoading$ = this.isDoneLoadingSubject$.asObservable();
 
   /**
    * Publishes `true` if and only if (a) all the asynchronous initial

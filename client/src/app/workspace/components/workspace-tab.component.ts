@@ -46,7 +46,7 @@ export class WorkspaceTabComponent implements OnChanges {
     protected readonly ngZone: NgZone
   ) {}
 
-  dragData$ = defer(() =>
+  readonly dragData$ = defer(() =>
     combineLatest(
       compact([
         this.tab.component?.sourceData$,
