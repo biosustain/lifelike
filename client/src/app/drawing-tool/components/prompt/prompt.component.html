@@ -69,7 +69,7 @@
   } as state"
 >
   <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
-    <ng-container *ngIf="state.explain && !state.explanation; else settled">
+    <ng-container *ngIf="state.explain && state.explanation?.loading; else settled">
       <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation
     </ng-container>
     <ng-template #settled>
@@ -77,16 +77,22 @@
     </ng-template>
   </button>
   <br />
-  <div class="mt-2 card" style="white-space: pre-line" *ngIf="state.explanation">
+  <div class="card mt-2" style="white-space: pre-line" *ngIf="state.explanation?.value">
     <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
       <span
         style="float: right"
         class="ml-2 mb-2"
-        (click)="openInfo(state.explanation.query_params)"
+        (click)="openInfo(state.explanation.value.query_params)"
       >
         <i class="fas fa-info-circle"></i>
       </span>
-      {{ state.explanation.result }}
+      {{ state.explanation.value.result }}
     </div>
   </div>
+
+  <app-module-error
+    class="d-block mt-4"
+    *ngIf="state.explanation?.error as error"
+    [error]="error"
+  ></app-module-error>
 </ng-container>
