@@ -10,7 +10,7 @@ import zipfile
 
 from neo4japp.models import AppUser, Files, Projects
 from neo4japp.models.files import FileContent, StarredFile
-from neo4japp.util import snake_to_camel
+from neo4japp.utils import snake_to_camel
 
 from tests.api.filesystem.conftest import (
     ParameterizedFile as TestFile,

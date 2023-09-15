@@ -4,27 +4,34 @@ import html
 import io
 import json
 import time
-import unicodedata
-
-import sqlalchemy as sa
 
 from datetime import datetime
-from flask import Blueprint, current_app, g, make_response, request, jsonify, send_file
+from typing import Optional, List, Dict, Any
+
+import sqlalchemy as sa
+from flask import (
+    Blueprint,
+    current_app,
+    g,
+    make_response,
+    request,
+    jsonify,
+    send_file,
+)
 from flask.views import MethodView
 from http import HTTPStatus
 from json import JSONDecodeError
 from marshmallow import validate, fields
 from sqlalchemy import and_
 from sqlalchemy.exc import SQLAlchemyError
-from typing import Optional, List, Dict, Any
-from urllib.parse import quote
 from webargs.flaskparser import use_args
 
+from neo4japp.exceptions import AnnotationError, ServerException
 from neo4japp.exceptions import wrap_exceptions
 from .auth import login_exempt
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
-
+from .utils import get_missing_hash_ids
 from ..constants import LogEventType, TIMEZONE
 from ..database import (
     db,
@@ -32,13 +39,11 @@ from ..database import (
     get_enrichment_table_service,
     get_or_create_arango_client,
 )
-from neo4japp.exceptions import AnnotationError, ServerException
 from ..models import (
     AppUser,
     Files,
     GlobalList,
 )
-from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..models.files import AnnotationChangeCause, FileAnnotationsVersion
 from ..models.files_queries import get_nondeleted_recycled_children_query
 from ..schemas.annotations import (
@@ -58,13 +63,13 @@ from ..schemas.annotations import (
 from ..schemas.common import PaginatedRequestSchema
 from ..schemas.enrichment import EnrichmentTableSchema
 from ..schemas.filesystem import BulkFileRequestSchema
+from ..schemas.formats.enrichment_tables import validate_enrichment_table
 from ..services.annotations.annotation_graph_service import get_organisms_from_gene_ids
 from ..services.annotations.constants import (
     DEFAULT_ANNOTATION_CONFIGS,
     EntityType,
     ManualAnnotationType,
 )
-from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.initializer import (
     get_annotation_service,
     get_annotation_db_service,
@@ -76,6 +81,7 @@ from ..services.annotations.initializer import (
     get_recognition_service,
     get_sorted_annotation_service,
 )
+from ..services.annotations.pipeline import Pipeline
 from ..services.annotations.sorted_annotation_service import (
     default_sorted_annotation,
     sorted_annotations_dict,
@@ -86,9 +92,8 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
-from ..utils import FileContentBuffer
-from ..utils.logger import UserEventLog
 from ..utils.http import make_cacheable_file_response
+from ..utils.logger import UserEventLog
 from ..utils.string import sub_whitespace
 
 bp = Blueprint('annotations', __name__, url_prefix='/annotations')
@@ -252,6 +257,27 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         return jsonify({})
 
 
+def get_sorted_annotation_rows(anno_dict: Dict, value_prop: str):
+    count_keys = sorted(
+        anno_dict, key=lambda key: anno_dict[key][value_prop], reverse=True
+    )
+
+    for key in count_keys:
+        annotation = anno_dict[key]['annotation']
+        meta = annotation['meta']
+        if annotation.get('keyword', None) is not None:
+            text = annotation['keyword'].strip()
+        else:
+            text = annotation['meta']['allText'].strip()
+        yield [
+            sub_whitespace(meta['id']),
+            meta['type'],
+            sub_whitespace(text),
+            sub_whitespace(annotation.get('primaryName', '').strip()),
+            anno_dict[key][value_prop],
+        ]
+
+
 class FileAnnotationCountsView(FilesystemBaseView):
     def get_rows(self, files):
         manual_annotations_service = get_manual_annotation_service()
@@ -275,22 +301,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
                 else:
                     counts[key]['count'] += 1
 
-        count_keys = sorted(counts, key=lambda key: counts[key]['count'], reverse=True)
-
-        for key in count_keys:
-            annotation = counts[key]['annotation']
-            meta = annotation['meta']
-            if annotation.get('keyword', None) is not None:
-                text = annotation['keyword'].strip()
-            else:
-                text = annotation['meta']['allText'].strip()
-            yield [
-                sub_whitespace(meta['id']),
-                meta['type'],
-                sub_whitespace(text),
-                sub_whitespace(annotation.get('primaryName', '').strip()),
-                counts[key]['count'],
-            ]
+        yield from get_sorted_annotation_rows(counts, 'count')
 
     def post(self, hash_id: str):
         current_user = g.current_user
@@ -335,22 +346,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
             'value',
         ]
 
-        value_keys = sorted(values, key=lambda key: values[key]['value'], reverse=True)
-
-        for key in value_keys:
-            annotation = values[key]['annotation']
-            meta = annotation['meta']
-            if annotation.get('keyword', None) is not None:
-                text = annotation['keyword'].strip()
-            else:
-                text = annotation['meta']['allText'].strip()
-            yield [
-                sub_whitespace(meta['id']),
-                meta['type'],
-                sub_whitespace(text),
-                sub_whitespace(annotation.get('primaryName', '').strip()),
-                values[key]['value'],
-            ]
+        yield from get_sorted_annotation_rows(values, 'value')
 
     @use_args(
         {
@@ -596,7 +592,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         if params.get('annotation_configs'):
             override_annotation_configs = params['annotation_configs']
 
-        missing = self.get_missing_hash_ids(targets['hash_ids'], files)
+        missing = get_missing_hash_ids(targets['hash_ids'], files)
 
         updated_files, versions, results = self.annotate_files(
             files, current_user.id, override_organism, override_annotation_configs
@@ -615,6 +611,32 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 }
             )
         )
+
+    @staticmethod
+    def _compose_annotation_update(
+        file: Files, annotations_json, *, cause, user_id, organism, **kwargs
+    ):
+        update = {
+            'id': file.id,
+            'annotations': annotations_json,
+            'annotations_date': datetime.now(TIMEZONE),
+            **kwargs,
+        }
+
+        if organism:
+            update['organism_name'] = organism.get('organism_name')
+            update['organism_synonym'] = organism.get('synonym')
+            update['organism_taxonomy_id'] = (organism.get('tax_id'),)
+
+        version = {
+            'file_id': file.id,
+            'cause': cause,
+            'custom_annotations': file.custom_annotations,
+            'excluded_annotations': file.excluded_annotations,
+            'user_id': user_id,
+        }
+
+        return update, version
 
     def _annotate(
         self,
@@ -658,26 +680,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             )
         )
 
-        update = {
-            'id': file.id,
-            'annotations': annotations_json,
-            'annotations_date': datetime.now(TIMEZONE),
-        }
-
-        if organism:
-            update['organism_name'] = organism.get('organism_name')
-            update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = (organism.get('tax_id'),)
-
-        version = {
-            'file_id': file.id,
-            'cause': cause,
-            'custom_annotations': file.custom_annotations,
-            'excluded_annotations': file.excluded_annotations,
-            'user_id': user_id,
-        }
-
-        return update, version
+        return self._compose_annotation_update(
+            file, annotations_json, cause=cause, user_id=user_id, organism=organism
+        )
 
     def _annotate_enrichment_table(
         self,
@@ -790,27 +795,14 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
             f'Time to create enrichment snippets {time.time() - start}'
         )
 
-        update = {
-            'id': file.id,
-            'annotations': annotations_json,
-            'annotations_date': datetime.now(TIMEZONE),
-            'enrichment_annotations': enrichment,
-        }
-
-        if organism:
-            update['organism_name'] = organism.get('organism_name')
-            update['organism_synonym'] = organism.get('synonym')
-            update['organism_taxonomy_id'] = (organism.get('tax_id'),)
-
-        version = {
-            'file_id': file.id,
-            'cause': cause,
-            'custom_annotations': file.custom_annotations,
-            'excluded_annotations': file.excluded_annotations,
-            'user_id': user_id,
-        }
-
-        return update, version
+        return self._compose_annotation_update(
+            file,
+            annotations_json,
+            cause=cause,
+            user_id=user_id,
+            organism=organism,
+            enrichment_annotations=enrichment,
+        )
 
     def _highlight_annotations(self, original_text: str, annotations: List[dict]):
         # If done right, we would parse the XML but the built-in XML libraries in Python
@@ -939,33 +931,35 @@ class GlobalAnnotationExportInclusions(MethodView):
         yield response
 
 
+def exclusions_query_factory():
+    return (
+        db.session.query(
+            GlobalList.id.label('global_list_id'),
+            AppUser.username.label('creator'),
+            Files.hash_id.label('file_uuid'),
+            Files.deleter_id.label('file_deleted_by'),
+            GlobalList.creation_date.label('creation_date'),
+            GlobalList.annotation['text'].astext.label('text'),
+            GlobalList.annotation['isCaseInsensitive'].astext.label('case_insensitive'),
+            GlobalList.annotation['type'].astext.label('entity_type'),
+            GlobalList.annotation['id'].astext.label('entity_id'),
+            GlobalList.annotation['reason'].astext.label('reason'),
+            GlobalList.annotation['comment'].astext.label('comment'),
+        )
+        .join(AppUser, AppUser.id == GlobalList.annotation['user_id'].as_integer())
+        .outerjoin(Files, Files.id == GlobalList.file_id)
+        .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
+        .order_by(sa.asc(GlobalList.annotation['text'].astext.label('text')))
+    )
+
+
 class GlobalAnnotationExportExclusions(MethodView):
     decorators = [requires_role('admin')]
 
     def get(self):
         yield g.current_user
 
-        exclusions = (
-            db.session.query(
-                GlobalList.id.label('global_list_id'),
-                AppUser.username.label('creator'),
-                Files.hash_id.label('file_uuid'),
-                Files.deleter_id.label('file_deleted_by'),
-                GlobalList.creation_date.label('creation_date'),
-                GlobalList.annotation['text'].astext.label('text'),
-                GlobalList.annotation['isCaseInsensitive'].astext.label(
-                    'case_insensitive'
-                ),
-                GlobalList.annotation['type'].astext.label('entity_type'),
-                GlobalList.annotation['id'].astext.label('entity_id'),
-                GlobalList.annotation['reason'].astext.label('reason'),
-                GlobalList.annotation['comment'].astext.label('comment'),
-            )
-            .join(AppUser, AppUser.id == GlobalList.annotation['user_id'].as_integer())
-            .outerjoin(Files, Files.id == GlobalList.file_id)
-            .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
-            .order_by(sa.asc(GlobalList.annotation['text'].astext.label('text')))
-        )
+        exclusions = exclusions_query_factory()
 
         def get_exclusion_for_review(exclusion):
             user = AppUser.query.filter_by(id=exclusion.file_deleted_by).one_or_none()
@@ -1021,30 +1015,7 @@ class GlobalAnnotationListView(MethodView):
             global_type['global_annotation_type']
             == ManualAnnotationType.EXCLUSION.value
         ):
-            exclusions = (
-                db.session.query(
-                    GlobalList.id.label('global_list_id'),
-                    AppUser.username.label('creator'),
-                    Files.hash_id.label('file_uuid'),
-                    Files.deleter_id.label('file_deleted_by'),
-                    GlobalList.creation_date.label('creation_date'),
-                    GlobalList.annotation['text'].astext.label('text'),
-                    GlobalList.annotation['isCaseInsensitive'].astext.label(
-                        'case_insensitive'
-                    ),
-                    GlobalList.annotation['type'].astext.label('entity_type'),
-                    GlobalList.annotation['id'].astext.label('entity_id'),
-                    GlobalList.annotation['reason'].astext.label('reason'),
-                    GlobalList.annotation['comment'].astext.label('comment'),
-                )
-                .join(
-                    AppUser, AppUser.id == GlobalList.annotation['user_id'].as_integer()
-                )
-                .outerjoin(Files, Files.id == GlobalList.file_id)
-                .filter(GlobalList.type == ManualAnnotationType.EXCLUSION.value)
-                .order_by(sa.asc(GlobalList.annotation['text'].astext.label('text')))
-                .paginate(page, limit)
-            )
+            exclusions = exclusions_query_factory().paginate(page, limit)
 
             data = [
                 {
@@ -1112,6 +1083,7 @@ class GlobalAnnotationListView(MethodView):
         yield jsonify(GlobalAnnotationListSchema().dump(results))
 
     @use_args(GlobalAnnotationsDeleteSchema())
+    @wrap_exceptions(ServerException, title='Could not delete exclusion')
     def delete(self, params):
         yield g.current_user
 
@@ -1138,7 +1110,6 @@ class GlobalAnnotationListView(MethodView):
             except SQLAlchemyError as e:
                 db.session.rollback()
                 raise ServerException(
-                    title='Could not delete exclusion',
                     message='A database error occurred when deleting the global exclusion(s).',
                 ) from e
 
@@ -1162,7 +1133,6 @@ class GlobalAnnotationListView(MethodView):
                     ).to_dict(),
                 )
                 raise ServerException(
-                    title='Could not delete inclusion',
                     message='A database error occurred when deleting the global inclusion(s).',
                 ) from e
 

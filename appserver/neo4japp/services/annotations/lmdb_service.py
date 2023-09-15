@@ -1,9 +1,11 @@
 import csv
-import lmdb
 import json
-
 from os import path
+from typing import Callable, Dict, Any
 
+import lmdb
+
+from neo4japp.utils import normalize_str
 from .constants import (
     CHEMICALS_LMDB,
     COMPOUNDS_LMDB,
@@ -30,8 +32,6 @@ from .utils.lmdb import (
     create_ner_type_protein,
     create_ner_type_species,
 )
-
-from neo4japp.util import normalize_str
 
 # reference to this directory
 directory = path.realpath(path.dirname(__file__))
@@ -119,10 +119,16 @@ class LMDBService(LMDBConnection):
                             continue
         print('Done creating genes')
 
-    def create_lmdb_chemicals_database(self):
-        with open(path.join(directory, LMDB_CHEMICALS_SOURCE), 'r') as f:
-            env = self._lmdb_open('chemicals')
-            db = env.open_db(CHEMICALS_LMDB.encode('utf-8'), dupsort=True)
+    def create_lmdb_unified_entity_database(
+        self,
+        _path: str,
+        _type: str,
+        _lmdb: str,
+        _entity_factory: Callable[[str, str, str], Dict[str, Any]],
+    ):
+        with open(path.join(directory, _path), 'r') as f:
+            env = self._lmdb_open(_type)
+            db = env.open_db(_lmdb.encode('utf-8'), dupsort=True)
 
             with env.begin(db=db, write=True) as transaction:
                 reader = csv.reader(f, delimiter='\t', quotechar='"')
@@ -130,27 +136,24 @@ class LMDBService(LMDBConnection):
                 # id	name	synonym
                 next(reader)
                 for line in reader:
-                    chemical_id = line[0]
-                    chemical_name = line[1]
-                    synonym = line[2]
-
-                    chemical = create_ner_type_chemical(
-                        id=chemical_id,
-                        name=chemical_name,
-                        synonym=synonym,
-                    )
+                    entity = _entity_factory(*line[:3])
 
                     try:
                         transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(chemical).encode('utf-8'),
+                            normalize_str(entity['synonym']).encode('utf-8'),
+                            json.dumps(entity).encode('utf-8'),
                         )
                     except lmdb.BadValsizeError:
                         # ignore any keys that are too large
                         # LMDB has max key size 512 bytes
                         # can change but larger keys mean performance issues
                         continue
-        print('Done creating chemicals')
+        print(f'Done creating {type}')
+
+    def create_lmdb_chemicals_database(self):
+        self.create_lmdb_unified_entity_database(
+            LMDB_CHEMICALS_SOURCE, 'chemicals', CHEMICALS_LMDB, create_ner_type_chemical
+        )
 
     def create_lmdb_compounds_database(self):
         with open(path.join(directory, LMDB_COMPOUNDS_SOURCE), 'r') as f:
@@ -276,163 +279,35 @@ class LMDBService(LMDBConnection):
         print('Done creating taxonomy')
 
     def create_lmdb_diseases_database(self):
-        with open(path.join(directory, LMDB_DISEASES_SOURCE), 'r') as f:
-            env = self._lmdb_open('diseases')
-            db = env.open_db(DISEASES_LMDB.encode('utf-8'), dupsort=True)
-
-            with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
-                # skip headers
-                # MeshID	Name	Synonym
-                next(reader)
-                for line in reader:
-                    disease_id = line[0]
-                    disease_name = line[1]
-                    synonym = line[2]
-
-                    disease = create_ner_type_disease(
-                        id=disease_id, name=disease_name, synonym=synonym
-                    )
-
-                    try:
-                        transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(disease).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
-        print('Done creating disease')
+        return self.create_lmdb_unified_entity_database(
+            LMDB_DISEASES_SOURCE, 'diseases', DISEASES_LMDB, create_ner_type_disease
+        )
 
     def create_lmdb_phenomenas_database(self):
-        with open(path.join(directory, LMDB_PHENOMONAS_SOURCE), 'r') as f:
-            env = self._lmdb_open('phenomenas')
-            db = env.open_db(PHENOMENAS_LMDB.encode('utf-8'), dupsort=True)
-
-            with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
-                # skip headers
-                # mesh_id,name,synonym
-                next(reader)
-                for line in reader:
-                    phenomena_id = line[0]
-                    phenomena_name = line[1]
-                    synonym = line[2]
-
-                    phenomena = create_ner_type_phenomena(
-                        id=phenomena_id, name=phenomena_name, synonym=synonym
-                    )
-
-                    try:
-                        transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(phenomena).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
-        print('Done creating phenomenas')
+        return self.create_lmdb_unified_entity_database(
+            LMDB_PHENOMONAS_SOURCE,
+            'phenomenas',
+            PHENOMENAS_LMDB,
+            create_ner_type_phenomena,
+        )
 
     def create_lmdb_phenotypes_database(self):
-        with open(path.join(directory, LMDB_PHENOTYPE_SOURCE), 'r') as f:
-            env = self._lmdb_open('phenotypes')
-            db = env.open_db(PHENOTYPES_LMDB.encode('utf-8'), dupsort=True)
-
-            with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
-                # skip headers
-                # mesh_id,name,synonym
-                next(reader)
-                for line in reader:
-                    phenotype_id = line[0]
-                    phenotype_name = line[1]
-                    synonym = line[2]
-
-                    phenotype = create_ner_type_phenotype(
-                        id=phenotype_id, name=phenotype_name, synonym=synonym
-                    )
-
-                    try:
-                        transaction.put(
-                            normalize_str(synonym).encode('utf-8'),
-                            json.dumps(phenotype).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
-        print('Done creating phenotypes')
+        return self.create_lmdb_unified_entity_database(
+            LMDB_PHENOTYPE_SOURCE,
+            'phenotypes',
+            PHENOTYPES_LMDB,
+            create_ner_type_phenotype,
+        )
 
     def create_lmdb_foods_database(self):
-        with open(path.join(directory, LMDB_FOOD_SOURCE), 'r') as f:
-            env = self._lmdb_open('foods')
-            db = env.open_db(FOODS_LMDB.encode('utf-8'), dupsort=True)
-
-            with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
-                # skip headers
-                # MeshID	Name	Synonym
-                headers = next(reader)
-                for line in reader:
-                    foods_id = line[0]
-                    foods_name = line[1]
-                    foods_synonym = line[2]
-
-                    foods = create_ner_type_food(
-                        id=foods_id,
-                        name=foods_name,
-                        synonym=foods_synonym,
-                    )
-
-                    try:
-                        transaction.put(
-                            normalize_str(foods_synonym).encode('utf-8'),
-                            json.dumps(foods).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
-        print('Done creating foods')
+        return self.create_lmdb_unified_entity_database(
+            LMDB_FOOD_SOURCE, 'foods', FOODS_LMDB, create_ner_type_food
+        )
 
     def create_lmdb_anatomy_database(self):
-        with open(path.join(directory, LMDB_ANATOMY_SOURCE), 'r') as f:
-            env = self._lmdb_open('anatomy')
-            db = env.open_db(ANATOMY_LMDB.encode('utf-8'), dupsort=True)
-
-            with env.begin(db=db, write=True) as transaction:
-                reader = csv.reader(f, delimiter='\t', quotechar='"')
-                # skip headers
-                # MeshID	Name	Synonym
-                next(reader)
-                for line in reader:
-                    anatomy_id = line[0]
-                    anatomy_name = line[1]
-                    anatomy_synonym = line[2]
-
-                    anatomy = create_ner_type_anatomy(
-                        id=anatomy_id,
-                        name=anatomy_name,
-                        synonym=anatomy_synonym,
-                    )
-
-                    try:
-                        transaction.put(
-                            normalize_str(anatomy_synonym).encode('utf-8'),
-                            json.dumps(anatomy).encode('utf-8'),
-                        )
-                    except lmdb.BadValsizeError:
-                        # ignore any keys that are too large
-                        # LMDB has max key size 512 bytes
-                        # can change but larger keys mean performance issues
-                        continue
-        print('Done creating anatomy')
+        return self.create_lmdb_unified_entity_database(
+            LMDB_ANATOMY_SOURCE, 'anatomy', ANATOMY_LMDB, create_ner_type_anatomy
+        )
 
     def create_lmdb_files(self, file_type=None):
         funcs = {

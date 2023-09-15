@@ -11,7 +11,7 @@ from sqlalchemy.types import TIMESTAMP
 from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.database import db
-from neo4japp.util import snake_to_camel, camel_to_snake
+from neo4japp.utils import snake_to_camel, camel_to_snake
 
 
 def generate_hash_id():

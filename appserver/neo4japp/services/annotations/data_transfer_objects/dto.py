@@ -1,8 +1,8 @@
-import attr
-
 from typing import Dict, List, Optional, Set, Tuple
 
-from neo4japp.util import CamelDictMixin
+import attr
+
+from neo4japp.utils import CamelDictMixin
 
 
 @attr.s(slots=True)

@@ -100,7 +100,7 @@ def test_nonadmin_cannot_create_user(client, test_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_admin_can_get_all_users(client, mock_users, fix_admin_user):

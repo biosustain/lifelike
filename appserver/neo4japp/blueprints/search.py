@@ -1,14 +1,14 @@
 import html
 import re
+from typing import List, Optional
 
 from flask import Blueprint, current_app, jsonify, g
 from flask_apispec import use_kwargs
-from typing import List, Optional
 from webargs.flaskparser import use_args
 
+from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.projects import ProjectBaseView
 from neo4japp.constants import FRAGMENT_SIZE, LogEventType
-from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
     get_search_service_dao,
@@ -28,9 +28,9 @@ from neo4japp.schemas.search import (
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
 from neo4japp.utils.globals import config
+from neo4japp.utils.jsonify import jsonify_with_class
 from neo4japp.utils.logger import EventLog, UserEventLog
 from neo4japp.utils.request import Pagination
-from neo4japp.utils.jsonify import jsonify_with_class
 
 bp = Blueprint('search', __name__, url_prefix='/search')
 

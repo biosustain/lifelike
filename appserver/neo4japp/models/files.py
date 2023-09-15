@@ -3,11 +3,12 @@ import enum
 import hashlib
 import os
 import re
-import sqlalchemy
-
 from dataclasses import dataclass
-from flask import current_app
 from pathlib import Path
+from typing import Optional, List, Dict
+
+import sqlalchemy
+from flask import current_app
 from sqlalchemy import (
     UniqueConstraint,
     and_,
@@ -26,13 +27,13 @@ from sqlalchemy import (
     func,
     BIGINT,
     cast,
+    Index,
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Mapper, column_property
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.types import TIMESTAMP
-from typing import Optional, List, Dict
 
 from neo4japp.constants import (
     LogEventType,
@@ -41,7 +42,6 @@ from neo4japp.constants import (
 )
 from neo4japp.database import db, get_elastic_service
 from neo4japp.exceptions import ServerException
-from neo4japp.models.projects import Projects
 from neo4japp.models.common import (
     RDBMSBase,
     TimestampMixin,
@@ -49,59 +49,53 @@ from neo4japp.models.common import (
     FullTimestampMixin,
     HashIdMixin,
 )
-from neo4japp.utils import EventLog, FileContentBuffer
-from neo4japp.utils.sqlalchemy import get_model_changes
+from neo4japp.models.projects import Projects
+from neo4japp.utils import EventLog, get_model_changes
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 
-file_collaborator_role = db.Table(
-    'file_collaborator_role',
-    db.Column('id', db.Integer, primary_key=True, autoincrement=True),
-    db.Column(
-        'file_id', db.Integer(), db.ForeignKey('files.id'), nullable=False, index=True
-    ),
-    db.Column(
-        'collaborator_id',
-        db.Integer(),
-        db.ForeignKey('appuser.id'),
-        nullable=True,
-        index=True,
-    ),
-    db.Column('collaborator_email', db.String(254), nullable=True, index=True),
-    db.Column(
-        'role_id',
-        db.Integer(),
-        db.ForeignKey('app_role.id'),
-        nullable=False,
-        index=True,
-    ),
-    db.Column('owner_id', db.Integer(), db.ForeignKey('appuser.id'), nullable=False),
-    db.Column(
-        'creation_date',
-        db.TIMESTAMP(timezone=True),
-        nullable=False,
-        default=db.func.now(),
-    ),
-    db.Column(
-        'modified_date',
+
+class FileCollaboratorRole(RDBMSBase):
+    __tablename__ = 'file_collaborator_role'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_id = db.Column(
+        db.Integer(), db.ForeignKey('files.id'), nullable=False, index=True
+    )
+    file = db.relationship("Files", foreign_keys=[file_id])
+    collaborator_id = db.Column(
+        db.Integer(), db.ForeignKey('appuser.id'), nullable=True, index=True
+    )
+    collaborator_email = db.Column(db.String(254), nullable=True, index=True)
+    collaborator = db.relationship("AppUser", foreign_keys=[collaborator_id])
+    role_id = db.Column(
+        db.Integer(), db.ForeignKey('app_role.id'), nullable=False, index=True
+    )
+    owner_id = db.Column(db.Integer(), db.ForeignKey('appuser.id'), nullable=False)
+    creation_date = db.Column(
+        db.TIMESTAMP(timezone=True), nullable=False, default=db.func.now()
+    )
+    modified_date = db.Column(
         db.TIMESTAMP(timezone=True),
         nullable=False,
         default=db.func.now(),
         onupdate=db.func.now(),
-    ),
-    db.Column('deletion_date', db.TIMESTAMP(timezone=True), nullable=True),
-    db.Column('creator_id', db.Integer, db.ForeignKey('appuser.id'), nullable=True),
-    db.Column('modifier_id', db.Integer, db.ForeignKey('appuser.id'), nullable=True),
-    db.Column('deleter_id', db.Integer, db.ForeignKey('appuser.id'), nullable=True),
-    db.Index(
-        'uq_file_collaborator_role',
-        'file_id',
-        'collaborator_id',
-        'collaborator_email',
-        'role_id',
-        'owner_id',
-        unique=True,
-        postgresql_where=text('deletion_date IS NULL'),
-    ),
-)
+    )
+    deletion_date = db.Column(db.TIMESTAMP(timezone=True), nullable=True)
+    creator_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+    modifier_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+    deleter_id = db.Column(db.Integer, db.ForeignKey('appuser.id'), nullable=True)
+
+    __table_args__ = (
+        Index(
+            'uq_file_collaborator_role',
+            'file_id',
+            'collaborator_id',
+            'collaborator_email',
+            'role_id',
+            'owner_id',
+            unique=True,
+            postgresql_where=text('deletion_date IS NULL'),
+        ),
+    )
 
 
 class MapLinks(RDBMSBase):
@@ -663,25 +657,35 @@ def before_file_update(mapper: Mapper, connection: Connection, target: Files):
         orm.attributes.flag_modified(target, 'modified_date')
 
 
+def _get_file_or_its_children_ids(file: Files) -> List[str]:
+    # todo: local imports are not best practice.
+    #  if we face circular deps probably things should be struc differently
+    # Import what we need, when we need it (Helps to avoid circular dependencies)
+    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
+    from neo4japp.services.file_types.providers import DirectoryTypeProvider
+
+    if file.mime_type == DirectoryTypeProvider.MIME_TYPE:
+        family = get_nondeleted_recycled_children_query(
+            Files.id == file.id,
+            children_filter=and_(Files.recycling_date.is_(None)),
+            lazy_load_content=True,
+        ).all()
+        return [member.hash_id for member in family]
+    else:
+        return [file.hash_id]
+
+
 def _after_file_update(target: Files, changes: dict):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from app import app
-    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
     # This will be called by the Redis queue service outside of the normal flask app context, so
     # here we manually ensure there is a context.
     with app.app_context():
         try:
             elastic_service = get_elastic_service()
-            files_to_update = [target.hash_id]
-            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(Files.recycling_date.is_(None)),
-                    lazy_load_content=True,
-                ).all()
-                files_to_update = [member.hash_id for member in family]
+
+            files_to_update = _get_file_or_its_children_ids(target)
 
             # Only delete a file when it changes from "not-deleted" to "deleted"
             if (
@@ -742,22 +746,13 @@ def after_file_update(mapper: Mapper, connection: Connection, target: Files):
 def _after_file_delete(target: Files):
     # Import what we need, when we need it (Helps to avoid circular dependencies)
     from app import app
-    from neo4japp.models.files_queries import get_nondeleted_recycled_children_query
-    from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
     # This will be called by the Redis queue service outside of the normal flask app context, so
     # here we manually ensure there is a context.
     with app.app_context():
         try:
             elastic_service = get_elastic_service()
-            files_to_delete = [target.hash_id]
-            if target.mime_type == DirectoryTypeProvider.MIME_TYPE:
-                family = get_nondeleted_recycled_children_query(
-                    Files.id == target.id,
-                    children_filter=and_(Files.recycling_date.is_(None)),
-                    lazy_load_content=True,
-                ).all()
-                files_to_delete = [member.hash_id for member in family]
+            files_to_delete = _get_file_or_its_children_ids(target)
             current_app.logger.info(
                 f'Attempting to delete files in elastic with hash_ids: {files_to_delete}',
                 extra=EventLog(event_type=LogEventType.ELASTIC.value).to_dict(),

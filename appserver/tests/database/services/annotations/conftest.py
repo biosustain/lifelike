@@ -38,7 +38,7 @@ from neo4japp.services.annotations.utils.lmdb import (
     create_ner_type_protein,
     create_ner_type_species,
 )
-from neo4japp.util import normalize_str
+from neo4japp.utils import normalize_str
 
 
 # reference to this directory

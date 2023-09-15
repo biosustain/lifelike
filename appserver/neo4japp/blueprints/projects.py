@@ -37,7 +37,8 @@ from neo4japp.schemas.projects import (
     ProjectCollaboratorListSchema,
     ProjectMultiCollaboratorUpdateRequest,
 )
-from neo4japp.utils.request import Pagination
+from .utils import get_missing_hash_ids
+from neo4japp.utils import Pagination
 
 
 class ProjectBaseView(MethodView):
@@ -168,7 +169,7 @@ class ProjectBaseView(MethodView):
         # Handle helper require_hash_ids argument that check to see if all projected wanted
         # actually appeared in the results
         if require_hash_ids:
-            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, projects)
+            missing_hash_ids = get_missing_hash_ids(require_hash_ids, projects)
 
             if len(missing_hash_ids):
                 raise FileNotFound(
@@ -257,7 +258,7 @@ class ProjectBaseView(MethodView):
 
         projects, total = self.get_nondeleted_projects(Projects.hash_id.in_(hash_ids))
         self.check_project_permissions(projects, user, ['readable'])
-        missing_hash_ids = self.get_missing_hash_ids(hash_ids, projects)
+        missing_hash_ids = get_missing_hash_ids(hash_ids, projects)
 
         for project in projects:
             for field in ('name', 'description'):
@@ -277,16 +278,6 @@ class ProjectBaseView(MethodView):
                 raise ValidationError("The project name is already taken.") from e
 
         return missing_hash_ids
-
-    def get_missing_hash_ids(
-        self, expected_hash_ids: Iterable[str], files: Iterable[Projects]
-    ):
-        found_hash_ids = set(file.hash_id for file in files)
-        missing = set()
-        for hash_id in expected_hash_ids:
-            if hash_id not in found_hash_ids:
-                missing.add(hash_id)
-        return missing
 
 
 class ProjectListView(ProjectBaseView):

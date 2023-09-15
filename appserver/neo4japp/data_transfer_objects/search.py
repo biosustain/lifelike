@@ -1,8 +1,9 @@
-import attr
 from typing import Optional, List
 
+import attr
+
 from neo4japp.models import GraphNode
-from neo4japp.util import CamelDictMixin
+from neo4japp.utils import CamelDictMixin
 
 
 @attr.s(frozen=True)

@@ -84,3 +84,6 @@ def _find_first_start_quote(s: str, quote: str, start_idx=0) -> int:
     if idx > 0 and not s[idx - 1] in string.whitespace:
         return _find_first_start_quote(s, quote, idx + 1)
     return idx
+
+
+__all__ = ['parse_query_terms']

@@ -27,3 +27,6 @@ def window(seq, n=2):
     for elem in it:
         result = result[1:] + (elem,)
         yield result
+
+
+__all__ = ['find', 'find_index', 'window']
