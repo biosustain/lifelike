@@ -1,12 +1,11 @@
 import uuid
-
 from datetime import datetime
 from http import HTTPStatus
+from typing import List, Tuple
+from uuid import uuid4
 
 from flask import current_app
 from neo4j.exceptions import ServiceUnavailable
-from typing import List, Tuple
-from uuid import uuid4
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -18,12 +17,8 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
-from neo4japp.util import standardize_str
-from neo4japp.utils.logger import EventLog
-
-from .exceptions import AnnotationLimitationError
+from neo4japp.utils import standardize_str, EventLog
 from .annotation_graph_service import AnnotationGraphService
-from .tokenizer import Tokenizer
 from .constants import (
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
@@ -34,9 +29,11 @@ from .constants import (
     MIN_ENTITY_LENGTH,
 )
 from .data_transfer_objects.dto import PDFWord
+from .exceptions import AnnotationLimitationError
+from .tokenizer import Tokenizer
 from .utils.common import has_center_point
-from .utils.parsing import parse_content
 from .utils.graph_queries import *
+from .utils.parsing import parse_content
 from ...utils.globals import warn
 
 

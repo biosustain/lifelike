@@ -34,9 +34,7 @@ from neo4japp.services import (
 )
 from neo4japp.services.arangodb import create_db, get_db
 from neo4japp.services.elastic import ElasticService
-from neo4japp.util import (
-    snake_to_camel_dict,
-)
+from neo4japp.utils import snake_to_camel_dict
 from neo4japp.utils.labels import get_first_known_label_from_node
 
 

@@ -1,21 +1,21 @@
-from http import HTTPStatus
-from pathlib import Path
-
-import gdown
 import hashlib
 import itertools
 import json
 import os
 import urllib
 import zipfile
-
 from collections import defaultdict
 from datetime import datetime, timedelta
+from http import HTTPStatus
+from itertools import chain
+from pathlib import Path
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
+from urllib.error import HTTPError
+
+import gdown
 from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
-from itertools import chain
-
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
@@ -24,8 +24,6 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
-from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
@@ -52,6 +50,8 @@ from neo4japp.exceptions import (
     ServerException,
     FileNotFound,
 )
+from neo4japp.exceptions import ServerWarning
+from neo4japp.exceptions import wrap_exceptions
 from neo4japp.models import (
     Projects,
     Files,
@@ -96,19 +96,20 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema,
 )
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.service import FileTypeService
-
-from neo4japp.utils import FileContentBuffer
-from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.utils.globals import warn
-from neo4japp.utils.collections import window, find_index
-from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.network import ContentTooLongError, read_url
-from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
-from neo4japp.exceptions import wrap_exceptions
-from neo4japp.exceptions import ServerWarning
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.services.file_types.service import FileTypeService
+from neo4japp.utils import (
+    window,
+    find_index,
+    make_cacheable_file_response,
+    UserEventLog,
+)
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 from neo4japp.utils.globals import config
+from neo4japp.utils.globals import warn
+from neo4japp.utils.network import read_url, ContentTooLongError
+from .utils import get_missing_hash_ids
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -282,7 +283,7 @@ class FilesystemBaseView(MethodView):
         # Handle helper require_hash_ids argument that check to see if all files wanted
         # actually appeared in the results
         if require_hash_ids:
-            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
+            missing_hash_ids = get_missing_hash_ids(require_hash_ids, files)
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
@@ -692,16 +693,6 @@ class FilesystemBaseView(MethodView):
             )
         )
 
-    def get_missing_hash_ids(
-        self, expected_hash_ids: Iterable[str], files: Iterable[Files]
-    ):
-        found_hash_ids = set(file.hash_id for file in files)
-        missing = set()
-        for hash_id in expected_hash_ids:
-            if hash_id not in found_hash_ids:
-                missing.add(hash_id)
-        return missing
-
 
 class FileHierarchyView(FilesystemBaseView):
     @use_args(FileHierarchyRequestSchema)
@@ -1055,7 +1046,7 @@ class FileListView(FilesystemBaseView):
             require_hash_ids=require_hash_ids,
             lazy_load_content=True,
         )
-        missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
+        missing_hash_ids = get_missing_hash_ids(query_hash_ids, files)
 
         target_files = []
         linked_files = []

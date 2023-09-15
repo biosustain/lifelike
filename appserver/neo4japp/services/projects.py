@@ -1,13 +1,12 @@
 import re
+from typing import Dict, List, Optional, Sequence, Union
+from uuid import uuid4
 
 from flask import current_app
-from io import BytesIO
 from sqlalchemy import and_, asc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
-from typing import Dict, List, Optional, Sequence, Union
-from uuid import uuid4
 
 from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
@@ -30,7 +29,7 @@ from neo4japp.services.file_types.providers import (
     DirectoryTypeProvider,
     MapTypeProvider,
 )
-from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 
 class ProjectsService(RDBMSBaseDao):
@@ -229,8 +228,9 @@ class ProjectsService(RDBMSBaseDao):
     ):
         def update_map_links(map_json):
             new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
-            for node in map_json['nodes']:
-                for source in node['data'].get('sources', []):
+
+            def map_source_hash_id(entity):
+                for source in entity['data'].get('sources', []):
                     link_search = re.search(new_link_re, source['url'])
                     if link_search is not None:
                         project_name = link_search.group(1)
@@ -242,19 +242,12 @@ class ProjectsService(RDBMSBaseDao):
                                 .replace(hash_id, hash_id_map[hash_id])
                             )
 
+            for node in map_json['nodes']:
+                map_source_hash_id(node)
+
             for edge in map_json['edges']:
                 if 'data' in edge:
-                    for source in edge['data'].get('sources', []):
-                        link_search = re.search(new_link_re, source['url'])
-                        if link_search is not None:
-                            project_name = link_search.group(1)
-                            hash_id = link_search.group(2)
-                            if hash_id in hash_id_map:
-                                source['url'] = (
-                                    source['url']
-                                    .replace(project_name, project.name)
-                                    .replace(hash_id, hash_id_map[hash_id])
-                                )
+                    map_source_hash_id(edge)
 
             return map_json
 

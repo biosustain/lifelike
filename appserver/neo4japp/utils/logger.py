@@ -40,3 +40,6 @@ class ClientErrorLog(ErrorLog):
     """Used to describe client side errors"""
 
     url: str = attr.ib()
+
+
+__all__ = ['EventLog', 'UserEventLog', 'ErrorLog', 'WarningLog', 'ClientErrorLog']

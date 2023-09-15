@@ -7,7 +7,7 @@ from lmdb import Environment
 
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import ServerException, wrap_exceptions
-from neo4japp.utils.logger import EventLog
+from neo4japp.utils import EventLog
 from ..common import DatabaseConnection, TransactionContext
 
 

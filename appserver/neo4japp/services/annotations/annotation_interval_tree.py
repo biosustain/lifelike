@@ -1,8 +1,6 @@
-from typing import List, Tuple
+from typing import List, Tuple, Protocol
 
 from intervaltree import Interval, IntervalTree
-
-from neo4japp.services.annotations.data_transfer_objects import Annotation
 
 
 class AnnotationInterval(Interval):
@@ -21,15 +19,19 @@ class AnnotationIntervalTree(IntervalTree):
     def __init__(self, intervals=None):
         super().__init__(intervals=intervals)
 
-    def merge_equals(
-        self,
-        data_reducer=None,
-        data_initializer=None,
+    class _MergeConditionType(Protocol):
+        def __call__(
+            self, higher: AnnotationInterval, lower: AnnotationInterval
+        ) -> bool:
+            ...
+
+    def _merge(
+        self, condition: _MergeConditionType, data_reducer=None, data_initializer=None
     ) -> List[Tuple[int, int]]:
         """Override to change return type and how the merged is added.
         See self.__init__ comment.
 
-        Merge all annotations with equal intervals based on
+        Merge all annotations intervals based on condition
         `data_reducer` function.
         """
         if not self:
@@ -55,7 +57,7 @@ class AnnotationIntervalTree(IntervalTree):
         for higher in sorted_intervals:
             if merged:  # series already begun
                 lower = merged[-1]
-                if higher.range_matches(lower):  # should merge
+                if condition(higher=higher, lower=lower):  # should merge
                     upper_bound = max(lower.end, higher.end)
                     if data_reducer is not None:
                         current_reduced[0] = data_reducer(
@@ -71,6 +73,23 @@ class AnnotationIntervalTree(IntervalTree):
             else:  # not merged; is first of Intervals to merge
                 new_series()
         return [(interval.begin, interval.end) for interval in merged]
+
+    def merge_equals(
+        self,
+        data_reducer=None,
+        data_initializer=None,
+    ) -> List[Tuple[int, int]]:
+        """Override to change return type and how the merged is added.
+        See self.__init__ comment.
+
+        Merge all annotations with equal intervals based on
+        `data_reducer` function.
+        """
+
+        def condition(higher: AnnotationInterval, lower: AnnotationInterval) -> bool:
+            return higher.range_matches(lower)
+
+        return self._merge(condition, data_reducer, data_initializer)
 
     def merge_overlaps(
         self,
@@ -84,44 +103,8 @@ class AnnotationIntervalTree(IntervalTree):
         Merge all annotations with overlapping intervals based on
         `data_reducer` function.
         """
-        if not self:
-            return []
 
-        sorted_intervals = sorted(self.all_intervals)  # get sorted intervals
-        merged = []
-        # use mutable object to allow new_series() to modify it
-        current_reduced = [None]
-        higher = None  # iterating variable, which new_series() needs access to
+        def condition(higher: AnnotationInterval, lower: AnnotationInterval) -> bool:
+            return higher.begin < lower.end or not strict and higher.begin == lower.end
 
-        def new_series():
-            if data_initializer is None:
-                current_reduced[0] = higher.data
-                merged.append(higher)
-            else:
-                current_reduced[0] = data_initializer.copy()
-                current_reduced[0] = data_reducer(current_reduced[0], higher.data)
-                merged.append(
-                    AnnotationInterval(higher.begin, higher.end, current_reduced[0])
-                )
-
-        for higher in sorted_intervals:
-            if merged:  # series already begun
-                lower = merged[-1]
-                if (
-                    higher.begin < lower.end or not strict and higher.begin == lower.end
-                ):  # should merge
-                    upper_bound = max(lower.end, higher.end)
-                    if data_reducer is not None:
-                        current_reduced[0] = data_reducer(
-                            current_reduced[0], higher.data
-                        )
-                    else:  # annihilate the data, since we don't know how to merge it
-                        current_reduced[0] = None
-                    merged[-1] = AnnotationInterval(
-                        lower.begin, upper_bound, current_reduced[0]
-                    )
-                else:
-                    new_series()
-            else:  # not merged; is first of Intervals to merge
-                new_series()
-        return [(interval.begin, interval.end) for interval in merged]
+        return self._merge(condition, data_reducer, data_initializer)

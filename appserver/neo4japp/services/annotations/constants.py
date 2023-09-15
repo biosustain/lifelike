@@ -1,10 +1,10 @@
+import os
 import re
 from enum import Enum
-import os
 from string import punctuation
 from typing import Dict, Union
 
-from neo4japp.constants import Enumd
+from neo4japp.utils import Enumd
 
 # lmdb database names
 ANATOMY_LMDB = 'anatomy_lmdb'

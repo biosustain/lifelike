@@ -6,16 +6,15 @@ from neo4j import Record as N4jRecord, Transaction as Neo4jTx
 
 from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import FTSQueryRecord, FTSResult, FTSTaxonomyRecord
+from neo4japp.exceptions import ServerWarning
 from neo4japp.models import GraphNode
 from neo4japp.services.common import GraphBaseDao
-from neo4japp.util import normalize_str, snake_to_camel_dict
+from neo4japp.utils import snake_to_camel_dict, normalize_str, EventLog
 from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import (
     get_first_known_label_from_list,
     get_known_domain_labels_from_list,
 )
-from neo4japp.utils.logger import EventLog
-from neo4japp.exceptions import ServerWarning
 
 
 class SearchService(GraphBaseDao):

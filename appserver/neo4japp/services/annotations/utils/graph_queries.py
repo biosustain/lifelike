@@ -1,4 +1,4 @@
-from neo4japp.utils.string import compose_lines
+from neo4japp.utils import compose_lines
 from ..constants import EntityType
 
 

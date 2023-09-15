@@ -1,6 +1,8 @@
 import abc
 from datetime import datetime
+from typing import Any, Callable
 
+from neo4j import Session
 from neo4j.exceptions import ServiceUnavailable
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -125,12 +127,10 @@ class GraphConnection(DatabaseConnection):
                 'Please try again at a later time.'
             ) from e
 
-    def exec_read_query_with_params(self, query: str, values: dict):
+    def _exec_with_wrapped_exceptions(self, exec: Callable[[Session], Any]):
         try:
             with self.begin() as session:
-                return session.read_transaction(
-                    lambda tx: list(tx.run(query, **values))
-                )
+                return exec(session)
         except BrokenPipeError as e:
             raise BrokenPipeError(
                 'The graph connection became stale while processing data, '
@@ -142,22 +142,19 @@ class GraphConnection(DatabaseConnection):
                 'Please try again at a later time.'
             ) from e
 
+    def exec_read_query_with_params(self, query: str, values: dict):
+        return self._exec_with_wrapped_exceptions(
+            lambda session: session.read_transaction(
+                lambda tx: list(tx.run(query, **values))
+            )
+        )
+
     def exec_write_query_with_params(self, query: str, values: dict):
-        try:
-            with self.begin() as session:
-                return session.write_transaction(
-                    lambda tx: list(tx.run(query, **values))
-                )
-        except BrokenPipeError as e:
-            raise BrokenPipeError(
-                'The graph connection became stale while processing data, '
-                'Please refresh the browser and try again.'
-            ) from e
-        except ServiceUnavailable as e:
-            raise ServiceUnavailable(
-                'Timed out trying to establish connection to the graph database. '
-                'Please try again at a later time.'
-            ) from e
+        return self._exec_with_wrapped_exceptions(
+            lambda session: session.write_transaction(
+                lambda tx: list(tx.run(query, **values))
+            )
+        )
 
 
 class GraphBaseDao:

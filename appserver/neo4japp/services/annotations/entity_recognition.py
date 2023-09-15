@@ -1,6 +1,5 @@
 import json
-
-from typing import Dict, List
+from typing import Dict, List, Set, Tuple
 
 from .constants import (
     EntityType,
@@ -48,19 +47,7 @@ class EntityRecognitionService:
             self.entity_exclusions.excluded_genes_case_insensitive
         )
 
-        key_results: Dict[str, List[dict]] = {}
-
-        with self.lmdb.begin(dbname=GENES_LMDB) as txn:
-            cursor = txn.cursor()
-            matched_results = cursor.getmulti(
-                [k.encode('utf-8') for k in keys], dupdata=True
-            )
-
-            for key, value in matched_results:
-                decoded_key = key.decode('utf-8')
-                match_list = key_results.get(decoded_key, [])
-                match_list.append(json.loads(value))
-                key_results[decoded_key] = match_list
+        key_results, _ = self._load_key_results(GENES_LMDB, keys)
 
         # gene is a bit different
         # we want both from lmdb and inclusions
@@ -106,17 +93,12 @@ class EntityRecognitionService:
                     lmdb_matches.append(match)
         return lmdb_matches
 
-    def _check_lmdb_species(self, tokens: List[PDFWord]):
-        keys = {token.normalized_keyword for token in tokens}
-
-        global_inclusion = self.entity_inclusions.included_species
-        local_inclusion = self.entity_inclusions.included_local_species
-        global_exclusion = self.entity_exclusions.excluded_species
-
+    def _load_key_results(
+        self, dbname: str, keys
+    ) -> Tuple[Dict[str, List[dict]], Set[str]]:
         key_results: Dict[str, List[dict]] = {}
-        key_results_local: Dict[str, List[dict]] = {}
 
-        with self.lmdb.begin(dbname=SPECIES_LMDB) as txn:
+        with self.lmdb.begin(dbname=dbname) as txn:
             cursor = txn.cursor()
             matched_results = cursor.getmulti(
                 [k.encode('utf-8') for k in keys], dupdata=True
@@ -130,6 +112,13 @@ class EntityRecognitionService:
 
         unmatched_keys = keys - set(key_results)
 
+        return key_results, unmatched_keys
+
+    def _load_species_key_results(
+        self, dbname: str, keys, global_inclusion
+    ) -> Tuple[Dict[str, List[dict]], Set[str]]:
+        key_results, unmatched_keys = self._load_key_results(dbname, keys)
+
         # for species, check both global and local inclusions
         for key in unmatched_keys:
             found = global_inclusion.get(key, None)
@@ -137,6 +126,20 @@ class EntityRecognitionService:
                 key_results[key] = found
 
         unmatched_keys = keys - set(key_results)
+
+        return key_results, unmatched_keys
+
+    def _check_lmdb_species(self, tokens: List[PDFWord]):
+        keys = {token.normalized_keyword for token in tokens}
+
+        global_inclusion = self.entity_inclusions.included_species
+        local_inclusion = self.entity_inclusions.included_local_species
+        global_exclusion = self.entity_exclusions.excluded_species
+
+        key_results_local: Dict[str, List[dict]] = {}
+        key_results, unmatched_keys = self._load_species_key_results(
+            SPECIES_LMDB, keys, global_inclusion
+        )
 
         for key in unmatched_keys:
             found = local_inclusion.get(key, None)
@@ -317,26 +320,9 @@ class EntityRecognitionService:
                 and global_inclusion is not None
                 and global_exclusion is not None
             ):
-                key_results: Dict[str, List[dict]] = {}
-
-                with self.lmdb.begin(dbname=dbname) as txn:
-                    cursor = txn.cursor()
-                    matched_results = cursor.getmulti(
-                        [k.encode('utf-8') for k in keys], dupdata=True
-                    )
-
-                    for key, value in matched_results:
-                        decoded_key = key.decode('utf-8')
-                        match_list = key_results.get(decoded_key, [])
-                        match_list.append(json.loads(value))
-                        key_results[decoded_key] = match_list
-
-                unmatched_keys = keys - set(key_results)
-
-                for key in unmatched_keys:
-                    found = global_inclusion.get(key, None)
-                    if found:
-                        key_results[key] = found
+                key_results, unmatched_keys = self._load_species_key_results(
+                    dbname, keys, global_inclusion
+                )
 
                 lmdb_matches = []
                 for token in tokens:
