@@ -19,7 +19,6 @@ updates:
       - skitionek
   - package-ecosystem: "docker"
     directory: "/appserver"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -30,7 +29,6 @@ updates:
   # ArangoDB
   - package-ecosystem: "docker"
     directory: "/arangodb"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -50,7 +48,6 @@ updates:
       - skitionek
   - package-ecosystem: "docker"
     directory: "/cache-invalidator"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -70,7 +67,6 @@ updates:
       - skitionek
   - package-ecosystem: "docker"
     directory: "/client"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -81,7 +77,6 @@ updates:
   # Elasticsearch
   - package-ecosystem: "docker"
     directory: "/elasticsearch"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -92,7 +87,6 @@ updates:
   # Filebeat
   - package-ecosystem: "docker"
     directory: "/filebeat"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -103,7 +97,6 @@ updates:
   # Logstash
   - package-ecosystem: "docker"
     directory: "/logstash"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -114,7 +107,6 @@ updates:
   # Metricbeat
   - package-ecosystem: "docker"
     directory: "/metricbeat"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
@@ -134,7 +126,6 @@ updates:
       - skitionek
   - package-ecosystem: "docker"
     directory: "/statistical-enrichment"
-    versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
     schedule:
       interval: "weekly"
