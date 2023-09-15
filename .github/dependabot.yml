@@ -1,0 +1,80 @@
+# Github Dependabot configuration file
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: "pipenv"
+    directory: "/appserver"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/appserver"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/arangodb"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pipenv"
+    directory: "/cache-invalidator"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/cache-invalidator"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "yarn"
+    directory: "/client"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/client"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/elasticsearch"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/filebeat"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/logstash"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/metricbeat"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "pipenv"
+    directory: "/statistical-enrichment"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/statistical-enrichment"
+    versioning-strategy: increase
+    schedule:
+      interval: "weekly"
+
