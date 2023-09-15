@@ -59,7 +59,7 @@ updates:
       - skitionek
 
   # Client
-  - package-ecosystem: "yarn"
+  - package-ecosystem: "npm"
     directory: "/client"
     versioning-strategy: increase
     open-pull-requests-limit: 0  # Disable PRs which are not security updates
