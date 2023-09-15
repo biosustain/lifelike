@@ -9,7 +9,6 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.orm.session import Session
 
 from neo4japp.constants import (
-    FILE_MIME_TYPE_DIRECTORY,
     FILE_MIME_TYPE_MAP,
     MASTER_INITIAL_PROJECT_NAME,
 )
@@ -163,91 +162,84 @@ class ProjectsService(RDBMSBaseDao):
         )
         self.session.commit()
 
-    def _add_generic_file(
+    def _copy_generic_file(
         self,
         master_file: Files,
         content_id: int,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
+        parent: Files,
         hash_id_map: Dict[str, str],
     ) -> Files:
         new_file = Files(
+            **master_file.to_dict(
+                exclude={
+                    'id',
+                    'hash_id',
+                    'parent_id',
+                    'content_id',
+                    'public',
+                    'pinned',
+                },
+                keyfn=lambda k: k,
+            ),
             hash_id=hash_id_map[master_file.hash_id],
-            filename=master_file.filename,
-            parent_id=parent_id,
+            parent=parent,
             content_id=content_id,
-            user_id=user.id,
             public=False,
             pinned=False,
-            description=master_file.description,
-            mime_type=master_file.mime_type,
-            doi=master_file.doi,
-            annotations=master_file.annotations,
-            annotations_date=master_file.annotations_date,
-            annotation_configs=master_file.annotation_configs,
-            organism_name=master_file.organism_name,
-            organism_synonym=master_file.organism_synonym,
-            organism_taxonomy_id=master_file.organism_taxonomy_id,
         )
         db.session.add(new_file)
-        db.session.flush()
-        current_app.logger.info(
-            f'Initial file with id {new_file.id} flushed to pending transaction. '
-            + f'User: {user.id}.'
-        )
+        current_app.logger.info(f'Coppied file: {new_file.hash_id}')
 
         if master_file.annotations:
-            self._add_file_annotations_version(new_file, user)
+            self._add_file_annotations_version(new_file)
 
         return new_file
 
-    def _add_file_annotations_version(self, file: Files, user: AppUser):
-        new_file_annotations_version = FileAnnotationsVersion(
-            file_id=file.id,
+    def _add_file_annotations_version(self, file: Files):
+        new_annotations_version = FileAnnotationsVersion(
+            file=file,
             hash_id=str(uuid4()),
             cause=AnnotationChangeCause.SYSTEM_REANNOTATION,
             custom_annotations=[],
             excluded_annotations=[],
-            user_id=user.id,
+            user=file.user,
         )
-        db.session.add(new_file_annotations_version)
-        db.session.flush()
+        db.session.add(new_annotations_version)
         current_app.logger.info(
-            f'Annotations version with id {new_file_annotations_version.id} flushed to '
-            + f'pending transaction. User: {user.id}.'
+            f'Added annotations version: {new_annotations_version.hash_id}'
         )
 
     def _add_map(
         self,
         master_map: Files,
-        project: Projects,
-        parent_id: int,
-        user: AppUser,
+        parent: Files,
         hash_id_map: Dict[str, str],
+        project: Optional[Projects],
     ):
         def update_map_links(map_json):
             new_link_re = r'^\/projects\/([^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
 
-            def map_source_hash_id(entity):
-                for source in entity['data'].get('sources', []):
+            def update_sources(data):
+                for source in data.get('sources', []):
                     link_search = re.search(new_link_re, source['url'])
                     if link_search is not None:
                         project_name = link_search.group(1)
                         hash_id = link_search.group(2)
                         if hash_id in hash_id_map:
-                            source['url'] = (
-                                source['url']
-                                .replace(project_name, project.name)
-                                .replace(hash_id, hash_id_map[hash_id])
+                            if project:
+                                source['url'] = source['url'].replace(
+                                    project_name, project.name
+                                )
+                            source['url'] = source['url'].replace(
+                                hash_id, hash_id_map[hash_id]
                             )
 
             for node in map_json['nodes']:
-                map_source_hash_id(node)
+                update_sources(node['data'])
 
             for edge in map_json['edges']:
                 if 'data' in edge:
-                    map_source_hash_id(edge)
+                    update_sources(edge['data'])
 
             return map_json
 
@@ -258,12 +250,10 @@ class ProjectsService(RDBMSBaseDao):
             {}, map_content, update_map_links
         )
         map_content_id = FileContent().get_or_create(updated_map_content)
-        self._add_generic_file(
+        return self._copy_generic_file(
             master_map,
             map_content_id,
-            project,
-            parent_id,
-            user,
+            parent,
             hash_id_map,
         )
 
@@ -272,12 +262,9 @@ class ProjectsService(RDBMSBaseDao):
         project.name = f'{user.username}-example'
         project.description = f'Initial project for {user.username}'
         try:
-            db.session.begin_nested()
-            self.create_project_uncommitted(user, project)
-            db.session.commit()
-            db.session.flush()
+            with db.session.begin_nested():
+                self.create_project_uncommitted(user, project)
         except IntegrityError as e:
-            db.session.rollback()
             current_app.logger.warning(
                 f'Failed to create initial project with default name {project.name} for user '
                 + f'{user.username}. Will retry project creation with a unique project name.',
@@ -285,12 +272,9 @@ class ProjectsService(RDBMSBaseDao):
             )
             project.name += '-' + uuid4().hex[:8]
             try:
-                db.session.begin_nested()
-                self.create_project_uncommitted(user, project)
-                db.session.commit()
-                db.session.flush()
+                with db.session.begin_nested():
+                    self.create_project_uncommitted(user, project)
             except IntegrityError as e:
-                db.session.rollback()
                 current_app.logger.error(
                     f'Failed to create initial project for user {user.username} with modified '
                     + f'project name: {project.name}. See attached exception info for details.',
@@ -300,8 +284,8 @@ class ProjectsService(RDBMSBaseDao):
                 return None
         return project
 
-    def _get_all_master_project_files(self) -> List[Files]:
-        master_initial_***ARANGO_USERNAME***_folder = (
+    def _get_initial_project_***ARANGO_USERNAME***(self) -> Files:
+        return (
             db.session.query(Files)
             .join(
                 Projects,
@@ -313,55 +297,59 @@ class ProjectsService(RDBMSBaseDao):
             .one()
         )
 
+    def _get_folder_flatten_hierarchy(self, folder: Files) -> List[Files]:
         return (
             db.session.query(Files)
-            .filter(Files.path.startswith(master_initial_***ARANGO_USERNAME***_folder.path))
+            .filter(Files.path.startswith(folder.path))
             .order_by(asc(Files.path))
             .all()
         )
 
     def _copy_master_files(self, new_project: Projects, user: AppUser):
-        master_files = self._get_all_master_project_files()
+        initial_project_***ARANGO_USERNAME*** = self._get_initial_project_***ARANGO_USERNAME***()
+
+        copied_file_map = self._copy_folder_content(
+            initial_project_***ARANGO_USERNAME***, new_project.***ARANGO_USERNAME***
+        )
+
+        for file in copied_file_map.values():
+            file.user = user
+            for version in file.annotations_versions:
+                version.user = user
+
+    def _copy_folder_content(
+        self,
+        source_folder: Files,
+        target_folder: Files,
+        *,
+        target_project: Projects = None,
+    ):
+        files = self._get_folder_flatten_hierarchy(source_folder)
 
         # Pre-calculate hash ids for all files so we can update the new maps with the new hash ids
-        file_hash_id_map = {file.hash_id: generate_hash_id() for file in master_files}
+        file_hash_id_map = {file.hash_id: generate_hash_id() for file in files}
 
-        # Assume ***ARANGO_USERNAME*** folder is always first in the list since we order by path
-        master_***ARANGO_USERNAME***_folder = master_files.pop(0)
-        master_folder_stack = [master_***ARANGO_USERNAME***_folder.id]
-        new_folder_stack = [new_project.***ARANGO_USERNAME***_id]
+        # Assume source_folder folder is always first in the list since we order by path
+        source_folder = files.pop(0)
+        copy_map = {source_folder.id: target_folder}
 
         # Note that at this point, everything EXCEPT the ***ARANGO_USERNAME*** folder is in this list!
-        for master_file in master_files:
-            # If we've moved past a folder's last child, cutoff that path
-            if master_file.parent_id != master_folder_stack[-1]:
-                cutoff = master_folder_stack.index(master_file.parent_id)
-                master_folder_stack = master_folder_stack[
-                    : cutoff + 1
-                ]  # Include the cutoff index
-                new_folder_stack = new_folder_stack[: cutoff + 1]
+        for file in files:
+            parent = copy_map[file.parent_id]
 
-            if master_file.mime_type == FILE_MIME_TYPE_MAP:
-                self._add_map(
-                    master_file,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
-                    file_hash_id_map,
-                )
+            if file.mime_type == FILE_MIME_TYPE_MAP:
+                new_file = self._add_map(file, parent, file_hash_id_map, target_project)
             else:
-                new_file = self._add_generic_file(
-                    master_file,
-                    master_file.content_id,
-                    new_project,
-                    new_folder_stack[-1],
-                    user,
+                new_file = self._copy_generic_file(
+                    file,
+                    file.content_id,
+                    parent,
                     file_hash_id_map,
                 )
-                # If this file is a folder, then add it to the stacks
-                if master_file.mime_type == FILE_MIME_TYPE_DIRECTORY:
-                    master_folder_stack.append(master_file.id)
-                    new_folder_stack.append(new_file.id)
+
+            copy_map[file.id] = new_file
+
+        return copy_map
 
     def create_initial_project(self, user: AppUser):
         """

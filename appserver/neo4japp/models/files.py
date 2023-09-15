@@ -302,6 +302,9 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     excluded_annotations = db.Column(
         postgresql.JSONB, nullable=True, server_default='[]'
     )
+    annotations_versions = db.relationship(
+        'FileAnnotationsVersion', back_populates="file"
+    )
 
     """
     Fallback organism related columns
@@ -653,7 +656,11 @@ def before_file_update(mapper: Mapper, connection: Connection, target: Files):
         target = _update_path_of_file_and_descendants(connection, target)
 
     # Only update the modified date if any of the specified columns *did not* change
-    if not _did_columns_update(target, UPDATE_DATE_MODIFIED_COLUMNS):
+    if (
+        not _did_columns_update(target, UPDATE_DATE_MODIFIED_COLUMNS)
+        # This might be updating in memory object which does not have modified_date in state
+        and 'modified_date' in target.__dict__
+    ):
         orm.attributes.flag_modified(target, 'modified_date')
 
 
@@ -802,7 +809,7 @@ class FileAnnotationsVersion(RDBMSBase, TimestampMixin, HashIdMixin):
         index=True,
         nullable=False,
     )
-    file = db.relationship('Files', foreign_keys=file_id)
+    file = db.relationship('Files', back_populates="annotations_versions")
     cause = db.Column(db.Enum(AnnotationChangeCause), nullable=False)
     custom_annotations = db.Column(postgresql.JSONB, nullable=True, server_default='[]')
     excluded_annotations = db.Column(
