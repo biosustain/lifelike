@@ -1,4 +1,5 @@
 from http import HTTPStatus
+
 from flask import Blueprint
 
 from neo4japp.blueprints.auth import login_exempt

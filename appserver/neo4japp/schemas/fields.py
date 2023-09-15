@@ -4,8 +4,7 @@ from typing import Optional, Dict, Iterable
 
 from marshmallow import fields, ValidationError
 
-from neo4japp.utils.request import parse_sort
-from neo4japp.utils.string import stripped_characters, is_nice_filename_char
+from neo4japp.utils import parse_sort, stripped_characters, is_nice_filename_char
 
 
 class NiceFilenameString(fields.String):

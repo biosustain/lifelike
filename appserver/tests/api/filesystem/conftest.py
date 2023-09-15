@@ -1,11 +1,11 @@
-from collections import namedtuple
 import datetime
 import io
 import json
-import typing
-import pytest
-from typing import Optional
 import zipfile
+from collections import namedtuple
+from typing import Optional
+
+import pytest
 
 from neo4japp.models import (
     AppUser,
@@ -13,7 +13,7 @@ from neo4japp.models import (
     FileContent,
     Projects,
     projects_collaborator_role,
-    file_collaborator_role,
+    FileCollaboratorRole,
 )
 from neo4japp.models.files import StarredFile
 from neo4japp.services import AccountService
@@ -21,6 +21,7 @@ from neo4japp.services.file_types.providers import (
     DirectoryTypeProvider,
     GraphTypeProvider,
 )
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 
 @pytest.fixture(scope='function')
@@ -193,37 +194,33 @@ def file_in_project(
         assert param.in_folder
 
         for role_name in param.user_roles_for_file:
-            session.execute(
-                file_collaborator_role.insert(),
-                [
-                    {
-                        'file_id': file.id,
-                        'collaborator_id': user_with_project_roles.id,
-                        'owner_id': user_with_project_roles.id,
-                        'role_id': account_user.get_or_create_role(role_name).id,
-                        'creator_id': user_with_project_roles.id,
-                        'modifier_id': user_with_project_roles.id,
-                    }
-                ],
+            session.add(
+                FileCollaboratorRole(
+                    file_id=file.id,
+                    collaborator_id=user_with_project_roles.id,
+                    owner_id=user_with_project_roles.id,
+                    role_id=account_user.get_or_create_role(role_name).id,
+                    creator_id=user_with_project_roles.id,
+                    modifier_id=user_with_project_roles.id,
+                )
             )
 
     if param.user_roles_for_folder:
         assert folder is not None
 
         for role_name in param.user_roles_for_folder:
-            session.execute(
-                file_collaborator_role.insert(),
-                [
-                    {
-                        'file_id': folder.id,
-                        'collaborator_id': user_with_project_roles.id,
-                        'owner_id': user_with_project_roles.id,
-                        'role_id': account_user.get_or_create_role(role_name).id,
-                        'creator_id': user_with_project_roles.id,
-                        'modifier_id': user_with_project_roles.id,
-                    }
-                ],
+            session.add(
+                FileCollaboratorRole(
+                    file_id=folder.id,
+                    collaborator_id=user_with_project_roles.id,
+                    owner_id=user_with_project_roles.id,
+                    role_id=account_user.get_or_create_role(role_name).id,
+                    creator_id=user_with_project_roles.id,
+                    modifier_id=user_with_project_roles.id,
+                )
             )
+
+    session.commit()
 
     return file
 
@@ -237,17 +234,17 @@ def map_file_in_project(
     user_with_project_roles: AppUser,
     project_owner_user: AppUser,
 ) -> Files:
-    content = io.BytesIO()
-    with zipfile.ZipFile(
-        content, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
-    ) as zip_fp:
-        byte_graph = json.dumps(
-            {"nodes": [], "edges": [], "groups": []}, separators=(',', ':')
-        ).encode('utf-8')
-        zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
-    content.seek(0)
+    content_buffer = FileContentBuffer()
+    with content_buffer as buffer_view:
+        with zipfile.ZipFile(
+            buffer_view, 'w', zipfile.ZIP_DEFLATED, strict_timestamps=False
+        ) as zip_fp:
+            byte_graph = json.dumps(
+                {"nodes": [], "edges": [], "groups": []}, separators=(',', ':')
+            ).encode('utf-8')
+            zip_fp.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
 
-    file_content_id = FileContent.get_or_create(content)
+    file_content_id = FileContent.get_or_create(content_buffer)
 
     if hasattr(request, 'param'):
         param: ParameterizedFile = request.param
@@ -297,37 +294,33 @@ def map_file_in_project(
         assert param.in_folder
 
         for role_name in param.user_roles_for_file:
-            session.execute(
-                file_collaborator_role.insert(),
-                [
-                    {
-                        'file_id': file.id,
-                        'collaborator_id': user_with_project_roles.id,
-                        'owner_id': user_with_project_roles.id,
-                        'role_id': account_user.get_or_create_role(role_name).id,
-                        'creator_id': user_with_project_roles.id,
-                        'modifier_id': user_with_project_roles.id,
-                    }
-                ],
+            session.add(
+                FileCollaboratorRole(
+                    file_id=file.id,
+                    collaborator_id=user_with_project_roles.id,
+                    owner_id=user_with_project_roles.id,
+                    role_id=account_user.get_or_create_role(role_name).id,
+                    creator_id=user_with_project_roles.id,
+                    modifier_id=user_with_project_roles.id,
+                )
             )
 
     if param.user_roles_for_folder:
         assert folder is not None
 
         for role_name in param.user_roles_for_folder:
-            session.execute(
-                file_collaborator_role.insert(),
-                [
-                    {
-                        'file_id': folder.id,
-                        'collaborator_id': user_with_project_roles.id,
-                        'owner_id': user_with_project_roles.id,
-                        'role_id': account_user.get_or_create_role(role_name).id,
-                        'creator_id': user_with_project_roles.id,
-                        'modifier_id': user_with_project_roles.id,
-                    }
-                ],
+            session.add(
+                FileCollaboratorRole(
+                    file_id=folder.id,
+                    collaborator_id=user_with_project_roles.id,
+                    owner_id=user_with_project_roles.id,
+                    role_id=account_user.get_or_create_role(role_name).id,
+                    creator_id=user_with_project_roles.id,
+                    modifier_id=user_with_project_roles.id,
+                )
             )
+
+    session.commit()
 
     return file
 

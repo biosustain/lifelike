@@ -1,4 +1,5 @@
 import json
+
 import attr
 import hashlib
 import itertools
@@ -8,7 +9,9 @@ from decimal import Decimal, InvalidOperation
 from enum import EnumMeta, Enum
 from json import JSONDecodeError
 from string import punctuation, whitespace
-from typing import Any, Iterator, Dict
+from typing import Any, Optional, Type, Iterator, Dict
+
+# Do not import from app
 
 
 def normalize_str(s) -> str:

@@ -187,7 +187,7 @@ class ContentTooLongError(URLError):
     """Raised when the content is too big."""
 
 
-def _check_acceptable_response(accept_header, content_type_header):
+def check_acceptable_response(accept_header, content_type_header):
     if content_type_header is not None:
         # Reminder that mime-types have this structure: type/subtype;parameter=value
         # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
@@ -273,7 +273,7 @@ def read_url(
     # If there is no accept header, no need to check the response type matches
     if accept_header is not None:
         content_type_header = conn.headers.get('Content-Type', None)
-        _check_acceptable_response(accept_header, content_type_header)
+        check_acceptable_response(accept_header, content_type_header)
 
     # Then, check the content length returned by the server, if any
     server_length = conn.headers.get('Content-Length')
@@ -303,3 +303,18 @@ def read_url(
         buffer.write(chunk)
 
     return buffer
+
+
+__all__ = [
+    'ControlledConnectionMixin',
+    'ControlledHTTPConnection',
+    'ControlledHTTPSConnection',
+    'DirectDownloadDetectorHandler',
+    'URLFixerHandler',
+    'ControlledHTTPHandler',
+    'ControlledHTTPSHandler',
+    'ContentTooLongError',
+    'check_acceptable_size',
+    'check_acceptable_response',
+    'read_url',
+]

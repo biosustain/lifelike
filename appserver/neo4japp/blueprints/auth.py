@@ -9,8 +9,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import get_projects_service, db, get_jwt_client
-from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
+from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES, LogEventType
+from neo4japp.database import db, get_jwt_client, get_account_service
 from neo4japp.exceptions import (
     AuthenticationError,
     JWTTokenException,
@@ -20,7 +20,7 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.schemas.auth import LifelikeJWTTokenResponse
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils import UserEventLog
 from neo4japp.utils.globals import config
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -186,12 +186,10 @@ def verify_token(token):
         # Add the "user" role to the new user
         user_role = AppRole.query.filter_by(name='user').one()
         user.roles.append(user_role)
-        projects_service = get_projects_service()
 
         # Finally, add the new user to the DB
         try:
-            projects_service.create_initial_project(user)
-            db.session.add(user)
+            get_account_service().create_user(user)
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()

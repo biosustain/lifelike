@@ -91,8 +91,3 @@ class AppUser(RDBMSBase, TimestampMixin, HashIdMixin):
 
     def to_dict(self, exclude=None, **kwargs):
         return super().to_dict(exclude=['password_hash'] + (exclude or []), **kwargs)
-
-
-class AppUserSchema(ma.ModelSchema):  # type: ignore
-    class Meta:
-        model = AppUser

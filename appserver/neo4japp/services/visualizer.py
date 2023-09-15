@@ -1,6 +1,7 @@
+from typing import List
+
 from flask.globals import current_app
 from neo4j import Record as Neo4jRecord, Transaction as Neo4jTx
-from typing import List
 
 from neo4japp.constants import (
     LogEventType,
@@ -25,14 +26,13 @@ from neo4japp.data_transfer_objects.visualization import (
     Snippet,
     GetAssociatedTypesResult,
 )
+from neo4japp.exceptions import ServerWarning
 from neo4japp.models import GraphNode
 from neo4japp.models.entity_resources import DomainURLsMap
 from neo4japp.services import KgService
-from neo4japp.util import snake_to_camel_dict
+from neo4japp.utils import snake_to_camel_dict, EventLog
 from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import get_first_known_label_from_list
-from neo4japp.utils.logger import EventLog
-from neo4japp.exceptions import ServerWarning
 
 
 class VisualizerService(KgService):
@@ -300,6 +300,29 @@ class VisualizerService(KgService):
             query_data=edge,
         )
 
+    @staticmethod
+    def _compose_snippet_from_reference(reference) -> Snippet:
+        return Snippet(
+            reference=GraphNode(
+                reference['snippet']['id'],
+                'Snippet',
+                [],
+                snake_to_camel_dict(reference['snippet']['data'], {}),
+                [],
+                None,
+                None,
+            ),
+            publication=GraphNode(
+                reference['publication']['id'],
+                'Publication',
+                [],
+                snake_to_camel_dict(reference['publication']['data'], {}),
+                [],
+                None,
+                None,
+            ),
+        )
+
     def get_snippets_for_cluster(
         self,
         edges: List[DuplicateEdgeConnectionData],
@@ -332,26 +355,7 @@ class VisualizerService(KgService):
                 to_node_id=id_pairs[(row['from_id'], row['to_id'])]['to'],
                 association=row['description'],
                 snippets=[
-                    Snippet(
-                        reference=GraphNode(
-                            reference['snippet']['id'],
-                            'Snippet',
-                            [],
-                            snake_to_camel_dict(reference['snippet']['data'], {}),
-                            [],
-                            None,
-                            None,
-                        ),
-                        publication=GraphNode(
-                            reference['publication']['id'],
-                            'Publication',
-                            [],
-                            snake_to_camel_dict(reference['publication']['data'], {}),
-                            [],
-                            None,
-                            None,
-                        ),
-                    )
+                    self._compose_snippet_from_reference(reference)
                     for reference in row['references']
                 ],
             )
@@ -391,26 +395,7 @@ class VisualizerService(KgService):
                 to_node_id=row['to_id'],
                 association=row['description'],
                 snippets=[
-                    Snippet(
-                        reference=GraphNode(
-                            reference['snippet']['id'],
-                            'Snippet',
-                            [],
-                            snake_to_camel_dict(reference['snippet']['data'], {}),
-                            [],
-                            None,
-                            None,
-                        ),
-                        publication=GraphNode(
-                            reference['publication']['id'],
-                            'Publication',
-                            [],
-                            snake_to_camel_dict(reference['publication']['data'], {}),
-                            [],
-                            None,
-                            None,
-                        ),
-                    )
+                    self._compose_snippet_from_reference(reference)
                     for reference in row['references']
                 ],
             )

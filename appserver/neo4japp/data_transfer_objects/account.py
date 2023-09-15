@@ -1,9 +1,9 @@
+from typing import List
+
 import attr
 
 from neo4japp.models import AppUser
-from neo4japp.util import CamelDictMixin
-
-from typing import List
+from neo4japp.utils import CamelDictMixin
 
 
 @attr.s(frozen=True)

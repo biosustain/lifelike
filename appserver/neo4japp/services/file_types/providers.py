@@ -1,22 +1,25 @@
-from http import HTTPStatus
-
-import bioc
-import graphviz
 import io
 import json
 import os
-import numpy as np
 import re
-import requests
-import svg_stack
 import tempfile
 import textwrap
 import typing
 import zipfile
-
 from base64 import b64encode
-from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from dataclasses import dataclass
+from http import HTTPStatus
+from typing import Optional, List
+
+import bioc
+import graphviz
+import numpy as np
+import requests
+import svg_stack
+from PIL import Image, ImageColor
+from PyPDF4 import PdfFileWriter, PdfFileReader
+from PyPDF4.generic import DictionaryObject
+from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
 from flask import current_app
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
@@ -25,10 +28,6 @@ from marshmallow import ValidationError
 from math import ceil, floor
 from pdfminer import high_level
 from pdfminer.pdfdocument import PDFTextExtractionNotAllowed, PDFEncryptionError
-from PIL import Image, ImageColor
-from PyPDF4 import PdfFileWriter, PdfFileReader
-from PyPDF4.generic import DictionaryObject
-from typing import Optional, List
 
 from neo4japp.constants import (
     ANNOTATION_STYLES_DICT,
@@ -93,14 +92,13 @@ from neo4japp.schemas.formats.graph import (
 )
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
-from neo4japp.utils import FileContentBuffer
-from neo4japp.utils.globals import warn, inform
-from neo4japp.utils.logger import EventLog
+from neo4japp.utils import EventLog, extract_text, compose_lines
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
-from neo4japp.utils.string import extract_text, compose_lines
 from neo4japp.utils.globals import config
+from neo4japp.utils.globals import warn, inform
 
 extension_mime_types = {
     '.pdf': 'application/pdf',

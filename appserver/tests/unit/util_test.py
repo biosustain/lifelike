@@ -1,10 +1,9 @@
 import pytest
-import jwt
 
 from decimal import Decimal
 from enum import Enum
 
-from neo4japp.util import (
+from neo4japp.utils import (
     camel_to_snake,
     camel_to_snake_dict,
     encode_to_str,

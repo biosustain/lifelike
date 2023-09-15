@@ -1,8 +1,9 @@
 from sqlalchemy.exc import SQLAlchemyError
 
+from neo4japp.database import get_projects_service, db
 from neo4japp.exceptions import ServerException, NotAuthorized, wrap_exceptions
-from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.models import AppRole, AppUser
+from neo4japp.services.common import RDBMSBaseDao
 
 
 class AccountService(RDBMSBaseDao):
@@ -16,6 +17,26 @@ class AccountService(RDBMSBaseDao):
             self.session.add(retval)
             self.commit_or_flush(commit_now)
         return retval
+
+    @staticmethod
+    def create_user(user: AppUser):
+        projects_service = get_projects_service()
+
+        # Finally, add the new user to the DB
+        try:
+            with db.session.begin_nested():
+                projects_service.create_initial_project(user)
+                db.session.add(user)
+        except SQLAlchemyError as e:
+            raise ServerException(
+                title='Unexpected Database Transaction Error',
+                message='Something unexpected occurred while adding the user to the database.',
+                fields={
+                    'user_id': user.id if user.id is not None else 'N/A',
+                    'username': user.username,
+                    'user_email': user.email,
+                },
+            ) from e
 
     @wrap_exceptions(ServerException, title='Failed to Delete User')
     def delete_user(self, admin_username: str, username: str, commit_now=True):

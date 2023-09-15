@@ -18,23 +18,20 @@ from neo4japp.constants import (
     KGDomain,
 )
 from neo4japp.exceptions import ServerException
+from neo4japp.exceptions import ServerWarning
 from neo4japp.models import (
     DomainURLsMap,
     GraphNode,
     GraphRelationship,
 )
 from neo4japp.services.common import HybridDBDao
-from neo4japp.util import (
-    snake_to_camel_dict,
-    compact,
-)
+from neo4japp.utils import EventLog, snake_to_camel_dict
+from neo4japp.utils.dict import compact
 from neo4japp.utils.globals import warn
 from neo4japp.utils.labels import (
     get_first_known_label_from_node,
     get_first_known_label_from_list,
 )
-from neo4japp.utils.logger import EventLog
-from neo4japp.exceptions import ServerWarning
 
 
 class KgService(HybridDBDao):

@@ -10,3 +10,6 @@ class SizeLimitedBuffer(io.BytesIO):
         if self.tell() + len(b) > self.max_size:
             raise OverflowError()
         return super().write(b)
+
+
+__all__ = ['SizeLimitedBuffer']
