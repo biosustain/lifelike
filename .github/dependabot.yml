@@ -2,68 +2,143 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
-x-tracking-options: &tracking-options
-  versioning-strategy: increase
-  open-pull-requests-limit: 0  # Disable PRs which are not security updates
-  schedule:
-    interval: "weekly"
+# Sadly this file does not support YAML anchors, nor action definitions
+# Therefore we have to repeat the same configuration for each action
 
 version: 2
 updates:
   # Appserver
   - package-ecosystem: "pipenv"
     directory: "/appserver"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
   - package-ecosystem: "docker"
     directory: "/appserver"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # ArangoDB
   - package-ecosystem: "docker"
     directory: "/arangodb"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Cache Invalidator
   - package-ecosystem: "pipenv"
     directory: "/cache-invalidator"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
   - package-ecosystem: "docker"
     directory: "/cache-invalidator"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Client
   - package-ecosystem: "yarn"
     directory: "/client"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
   - package-ecosystem: "docker"
     directory: "/client"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Elasticsearch
   - package-ecosystem: "docker"
     directory: "/elasticsearch"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Filebeat
   - package-ecosystem: "docker"
     directory: "/filebeat"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Logstash
   - package-ecosystem: "docker"
     directory: "/logstash"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Metricbeat
   - package-ecosystem: "docker"
     directory: "/metricbeat"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
   # Statistical Enrichment
   - package-ecosystem: "pipenv"
     directory: "/statistical-enrichment"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
   - package-ecosystem: "docker"
     directory: "/statistical-enrichment"
-    <<: *tracking-options
+    versioning-strategy: increase
+    open-pull-requests-limit: 0  # Disable PRs which are not security updates
+    schedule:
+      interval: "weekly"
+    reviewers:
+      - esanche06
+      - skitionek
 
