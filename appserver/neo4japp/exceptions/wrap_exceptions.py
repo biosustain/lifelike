@@ -1,10 +1,15 @@
 import functools
-from typing import Tuple, Union, Type
+from typing import Tuple, Union, Type, Callable, Protocol
 from neo4japp.exceptions import ServerException
 
 
+class WrappingExceptionFactory(Protocol):
+    def __call__(self, exception: Exception, **kwargs) -> Exception:
+        ...
+
+
 def wrap_exceptions(
-    wrapping_exception,
+    wrapping_exception: Union[Type[Exception], WrappingExceptionFactory],
     wrapped_exceptions: Union[
         Type[Exception], Tuple[Type[Exception], ...]
     ] = ServerException,
@@ -18,7 +23,11 @@ def wrap_exceptions(
             try:
                 return func(*args, **kwargs)
             except wrapped_exceptions as e:
-                raise wrapping_exception(**exception_kwargs) from e
+                if isinstance(wrapping_exception, type):
+                    # noinspection PyArgumentList
+                    raise wrapping_exception(**exception_kwargs) from e
+                else:
+                    raise wrapping_exception(e, **exception_kwargs) from e
 
         wrapper.__wrapped__ = func
         return wrapper

@@ -1,15 +1,58 @@
+from random import random
+
 import openai
 from cachetools import Cache, cached
+from math import floor
+from openai import OpenAIError
 
 from neo4japp.models.chatgpt_usage import (
     save_stream_response_to_usage_tracking_table,
     save_response_to_usage_tracking_table,
 )
+from neo4japp.exceptions import wrap_exceptions
+from neo4japp.exceptions.exceptions import OpenAiServerException, ServerException
 from neo4japp.services.rcache import RedisCache
 
 
+def map_openai_exception(e: OpenAIError):
+    exception_type = type(e)
+    if exception_type == openai.error.AuthenticationError:
+        return ServerException(
+            message="OpenAI API Key is invalid. Please contact the administrator."
+        )
+    return OpenAiServerException()
+
+
+"""Function call wrapper which maps OpenAI exceptions to our own exception format"""
+# noinspection PyTypeChecker
+openai_exception_wrapper = wrap_exceptions(map_openai_exception, OpenAIError)  # type: ignore
+
+EXCEPTION_TEST_CASES = [
+    openai.error.InvalidRequestError(
+        "Could not determine which URL to request: %s instance "
+        "has invalid ID: %r, %s. ID should be of type `str` (or"
+        " `unicode`)",
+        "id",
+    ),
+    openai.error.InvalidAPIType("Unsupported API type %s"),
+    openai.error.InvalidRequestError(
+        "Must provide an 'engine' or 'model' parameter to create a %s",
+        "engine",
+    ),
+    openai.error.APIError(
+        "Deployment operations are only available for the Azure API type."
+    ),
+    openai.error.InvalidAPIType(
+        "This operation is not supported by the Azure OpenAI API yet."
+    ),
+    openai.error.AuthenticationError(),
+]
+
+
 class ChatGPT:
-    DELIMITER = "```"
+    """Wrapper for OpenAI's Chat API"""
+
+    DELIMITER = "```"  # Used to escape user defined input
 
     @staticmethod
     def escape(text: str):
@@ -46,10 +89,13 @@ class ChatGPT:
         @staticmethod
         @cached(cache=cache)
         @save_response_to_usage_tracking_table
+        @openai_exception_wrapper
         def create(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
+        @staticmethod
         @save_stream_response_to_usage_tracking_table
+        @openai_exception_wrapper
         def create_stream(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
@@ -82,10 +128,13 @@ class ChatGPT:
         @staticmethod
         @cached(cache=cache)
         @save_response_to_usage_tracking_table
+        @openai_exception_wrapper
         def create(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
+        @staticmethod
         @save_stream_response_to_usage_tracking_table
+        @openai_exception_wrapper
         def create_stream(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
@@ -94,9 +143,13 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
+        @openai_exception_wrapper
         def list(*args, **kwargs):
             return openai.Model.list(*args, **kwargs)['data']
 
     @staticmethod
     def init_app(app):
         openai.api_key = app.config.get("OPENAI_API_KEY")
+
+
+__all__ = ["ChatGPT"]
