@@ -322,10 +322,8 @@ class ProjectListView(ProjectBaseView):
         project.creator = current_user
 
         try:
-            db.session.begin_nested()
             project_service.create_project_uncommitted(current_user, project)
             db.session.commit()
-            db.session.flush()
         except IntegrityError as e:
             db.session.rollback()
             raise ValidationError(
