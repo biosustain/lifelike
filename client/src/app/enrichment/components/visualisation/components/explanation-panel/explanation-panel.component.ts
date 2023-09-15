@@ -37,6 +37,7 @@ import {
   EnrichmentVisualisationService,
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -155,7 +156,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
    */
   readonly explain$ = new ReplaySubject<boolean>(1);
 
-  readonly explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
+  readonly explanation$: Observable<PipeStatus<ChatGPTResponse>> = this.explain$.pipe(
     withLatestFrom(
       combineLatest([
         this.contextsController$.pipe(
@@ -176,7 +177,9 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(startWith(null))
+      this.enrichmentService
+        .enrichTermWithContext(goTerm, context, geneName)
+        .pipe(startWith(null), addStatus())
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );

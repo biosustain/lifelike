@@ -18,6 +18,7 @@ export function toRequest<Arguments extends Array<any>, Result extends object>(
           tap(() => loading$.next(false)),
           catchError((error) => {
             error$.next(error);
+            loading$.next(false);
             return EMPTY;
           }),
           finalize(() => {

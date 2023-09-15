@@ -5,7 +5,6 @@ import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subje
 import {
   distinctUntilChanged,
   map,
-  observeOn,
   shareReplay,
   startWith,
   switchMap,
@@ -18,10 +17,7 @@ import {
   DrawingToolPromptFormComponent,
   DrawingToolPromptFormParams,
 } from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
-import {
-  OpenPlaygroundComponent,
-  OpenPlaygroundParams,
-} from 'app/playground/components/open-playground/open-playground.component';
+import { OpenPlaygroundParams } from 'app/playground/components/open-playground/open-playground.component';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { ExplainService } from 'app/shared/services/explain.service';
 import {
@@ -32,6 +28,7 @@ import { openModal } from 'app/shared/utils/modals';
 import { PlaygroundComponent } from 'app/playground/components/playground.component';
 import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
+import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 
 @Component({
   selector: 'app-drawing-tool-prompt',
@@ -87,14 +84,14 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
    */
   readonly explain$ = new ReplaySubject<boolean>(1);
 
-  readonly explanation$: Observable<ChatGPTResponse | null> = this.explain$.pipe(
+  readonly explanation$: Observable<PipeStatus<ChatGPTResponse>> = this.explain$.pipe(
     withLatestFrom(this.params$),
     map(([_, params]) => params),
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
       this.explainService
         .relationship(entities, context, { temperature })
-        .pipe(startWith(undefined))
+        .pipe(startWith(undefined), addStatus())
     )
   );
 

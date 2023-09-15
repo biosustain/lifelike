@@ -211,7 +211,7 @@ def handle_warning(warn):
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
 
 
-def handle_generic_error(code: int, ex: Exception):
+def handle_generic_error(code: HTTPStatus, ex: Exception):
     # create a default server error
     # display to user the default error message
     # but log with the real exception message below
@@ -228,7 +228,7 @@ def handle_generic_error(code: int, ex: Exception):
     )
 
     try:
-        raise ServerException() from ex
+        raise ServerException(code=code) from ex
     except ServerException as newex:
         return jsonify(ErrorResponseSchema().dump(newex)), newex.code
 

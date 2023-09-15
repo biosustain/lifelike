@@ -1,82 +1,16 @@
-from dataclasses import dataclass, asdict, MISSING, field
+from dataclasses import dataclass, asdict, field
 from http import HTTPStatus
-from typing import Tuple, Optional, TypeVar, Generic, overload, Any
+from typing import Tuple, Optional, Callable, Any
 
-from neo4japp.utils.transaction_id import transaction_id
-from neo4japp.utils.dataclass import TemplateDescriptor
+from openai import OpenAIError
+
 from neo4japp.base_server_exception import BaseServerException
-
-T = TypeVar('T')
-
-
-class CauseDefaultingDescriptor(Generic[T]):
-    _default: T
-    _prefix: str
-
-    def __init__(self, default: T = MISSING, prefix: str = '_'):  # type: ignore
-        self._default = default
-        self._prefix = prefix
-
-    def __set_name__(self, owner, name):
-        self._name = name
-
-    @property
-    def _prefixed_name(self):
-        return self._prefix + self._name
-
-    @overload
-    def __get__(self, instance: None, owner: Any) -> T:
-        ...
-
-    @overload
-    def __get__(self, instance: object, owner: Any) -> T:
-        ...
-
-    def __get__(self, instance: Any, owner: Any) -> T:
-        # Dealing with frozen instances (once we read the value should be consider frozen)
-        if not hasattr(instance, self._prefixed_name):
-            object.__setattr__(instance, self._prefixed_name, MISSING)
-
-        set_value = getattr(instance, self._prefixed_name, MISSING)
-        if set_value is not MISSING:
-            return set_value
-        cause = getattr(instance, '__cause__', MISSING)
-        if cause is not MISSING:
-            cause_value = getattr(cause, self._name, MISSING)
-            if cause_value is not MISSING:
-                return cause_value
-        return self._default
-
-    def __set__(self, instance, value):
-        if value is not self:
-            # Dealing with frozen instances (once we read the value should be consider frozen)
-            if hasattr(instance, self._prefixed_name):
-                setattr(instance, self._prefixed_name, value)
-            else:
-                object.__setattr__(instance, self._prefixed_name, value)
-
-    def __repr__(self):
-        return f'<{type(self).__name__} {self._name}>'
-
-
-def cause_field(*, default=MISSING, default_factory=MISSING, **kwargs):
-    """
-    Convinience function which inits dataclass field with defaults created based on
-    exception __cause__
-    :param default: same as for dataclass.field
-    :param default_factory: same as for dataclass.field
-    :param kwargs: same as for dataclass.field
-    :return:
-    """
-    return field(
-        default=CauseDefaultingDescriptor(default)
-        if default is not MISSING
-        else MISSING,
-        default_factory=(lambda: CauseDefaultingDescriptor(default_factory()))
-        if default_factory is not MISSING
-        else MISSING,
-        **kwargs,
-    )
+from neo4japp.utils.dataclass import (
+    TemplateDescriptor,
+    CauseDefaultingDescriptor,
+    LazyDefaulDescriptor,
+)
+from neo4japp.utils.transaction_id import transaction_id
 
 
 @dataclass(repr=False, eq=False, frozen=True)
@@ -95,11 +29,17 @@ class ServerException(Exception, BaseServerException):
     :param fields:
     """
 
-    title: str = cause_field(default="We're sorry!")
-    message: Optional[str] = cause_field(default="Looks like something went wrong!")
-    additional_msgs: Tuple[str, ...] = cause_field(default=tuple())
-    fields: Optional[dict] = cause_field(default=None)
-    code: HTTPStatus = cause_field(default=HTTPStatus.INTERNAL_SERVER_ERROR)
+    title: str = field(default=CauseDefaultingDescriptor("We're sorry!"))  # type: ignore
+    message: Optional[str] = field(  # type: ignore
+        default=CauseDefaultingDescriptor("Looks like something went wrong!")
+    )
+    additional_msgs: Tuple[str, ...] = field(
+        default=CauseDefaultingDescriptor(tuple())  # type: ignore
+    )
+    fields: Optional[dict] = field(default=CauseDefaultingDescriptor(None))  # type: ignore
+    code: HTTPStatus = field(  # type: ignore
+        default=CauseDefaultingDescriptor(HTTPStatus.INTERNAL_SERVER_ERROR)
+    )
 
     @property
     def type(self):
@@ -138,10 +78,12 @@ class StatisticalEnrichmentError(ServerException):
 class AnnotationError(ServerException):
     term: Optional[str] = None
     title: str = 'Unable to Annotate'
-    message = TemplateDescriptor(  # type: ignore
-        default='There was a problem annotating "$term". '
-        'Please make sure the term is correct, '
-        'including correct spacing and no extra characters.'
+    message: str = field(  # type: ignore
+        default=TemplateDescriptor(
+            'There was a problem annotating "$term". '
+            'Please make sure the term is correct, '
+            'including correct spacing and no extra characters.'
+        )
     )
 
     def __post_init__(self):
@@ -299,15 +241,43 @@ class AccessRequestRequiredError(ServerException):
     req_access: Optional[str] = None
     hash_id: Optional[str] = None
     title: str = 'You need access'
-    message = TemplateDescriptor(  # type: ignore
-        default='You have "$curr_access" access. Please request "$req_access" '
-        'access at minimum for this content.'
+    message: str = field(  # type: ignore
+        default=TemplateDescriptor(
+            'You have "$curr_access" access.'
+            ' Please request "$req_access" access at minimum for this content.'
+        )
     )
     code: HTTPStatus = HTTPStatus.FORBIDDEN
 
 
 class GDownException(Exception):
     code: HTTPStatus = HTTPStatus.BAD_REQUEST
+
+
+def openai_cause_accessor(prop: str, default) -> Callable[[Any, str], Any]:
+    def _accessor(obj, _):
+        if isinstance(obj.__cause__, OpenAIError):
+            value = getattr(obj.__cause__, prop)
+            if value:
+                return value
+        return default
+
+    return _accessor
+
+
+@dataclass(repr=False, eq=False, frozen=True)
+class OpenAiServerException(ServerException):
+    title: str = 'OpenAI Server Error'
+    message: str = field(  # type: ignore
+        default=LazyDefaulDescriptor(
+            openai_cause_accessor('user_message', "OpenAI Server Error")
+        )
+    )
+    code: HTTPStatus = field(  # type: ignore
+        default=LazyDefaulDescriptor(
+            openai_cause_accessor('http_status', HTTPStatus.INTERNAL_SERVER_ERROR)
+        )
+    )
 
 
 __all__ = [
@@ -332,4 +302,5 @@ __all__ = [
     # "FilesystemAccessRequestRequired",
     "AccessRequestRequiredError",
     "GDownException",
+    "OpenAiServerException",
 ]
