@@ -115,18 +115,6 @@ class NotAuthorized(ServerException):
 
 
 @dataclass(repr=False, eq=False, frozen=True)
-class CannotCreateNewUser(ServerException):
-    title: str = 'Cannot Create New User'
-    code: HTTPStatus = HTTPStatus.BAD_REQUEST
-
-
-@dataclass(repr=False, eq=False, frozen=True)
-class CannotCreateNewProject(ServerException):
-    title: str = 'Cannot Create New Project'
-    code: HTTPStatus = HTTPStatus.BAD_REQUEST
-
-
-@dataclass(repr=False, eq=False, frozen=True)
 class FailedToUpdateUser(ServerException):
     title: str = 'Failed to Update User'
     code: HTTPStatus = HTTPStatus.BAD_REQUEST
