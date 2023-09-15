@@ -2,79 +2,68 @@
 # Please see the documentation for all configuration options:
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
+x-tracking-options: &tracking-options
+  versioning-strategy: increase
+  open-pull-requests-limit: 0  # Disable PRs which are not security updates
+  schedule:
+    interval: "weekly"
+
 version: 2
 updates:
+  # Appserver
   - package-ecosystem: "pipenv"
     directory: "/appserver"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
   - package-ecosystem: "docker"
     directory: "/appserver"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # ArangoDB
   - package-ecosystem: "docker"
     directory: "/arangodb"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Cache Invalidator
   - package-ecosystem: "pipenv"
     directory: "/cache-invalidator"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
   - package-ecosystem: "docker"
     directory: "/cache-invalidator"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Client
   - package-ecosystem: "yarn"
     directory: "/client"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
   - package-ecosystem: "docker"
     directory: "/client"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Elasticsearch
   - package-ecosystem: "docker"
     directory: "/elasticsearch"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Filebeat
   - package-ecosystem: "docker"
     directory: "/filebeat"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Logstash
   - package-ecosystem: "docker"
     directory: "/logstash"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Metricbeat
   - package-ecosystem: "docker"
     directory: "/metricbeat"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
+  # Statistical Enrichment
   - package-ecosystem: "pipenv"
     directory: "/statistical-enrichment"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
   - package-ecosystem: "docker"
     directory: "/statistical-enrichment"
-    versioning-strategy: increase
-    schedule:
-      interval: "weekly"
+    <<: *tracking-options
 
