@@ -17,10 +17,10 @@ from neo4japp.exceptions import (
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.arangodb import get_db, execute_arango_query
-from neo4japp.utils import standardize_str, EventLog
+from neo4japp.utils.logger import EventLog
+from neo4japp.utils.string import standardize_str
 
 from .exceptions import AnnotationLimitationError
-from .tokenizer import Tokenizer
 from .constants import (
     ManualAnnotationType,
     MAX_ENTITY_WORD_LENGTH,
@@ -31,10 +31,8 @@ from .constants import (
     MIN_ENTITY_LENGTH,
 )
 from .data_transfer_objects.dto import PDFWord
-from .exceptions import AnnotationLimitationError
 from .tokenizer import Tokenizer
 from .utils.common import has_center_point
-from .utils.parsing import parse_content
 from .utils.graph_queries import (
     EntityType,
     get_chemical_global_inclusion_exist_query,

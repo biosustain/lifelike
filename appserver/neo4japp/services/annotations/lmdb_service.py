@@ -5,7 +5,8 @@ from typing import Callable, Dict, Any
 
 import lmdb
 
-from neo4japp.utils import normalize_str
+from neo4japp.utils.string import normalize_str
+
 from .constants import (
     CHEMICALS_LMDB,
     COMPOUNDS_LMDB,

@@ -1,6 +1,5 @@
 import json
 import time
-from typing import List, Tuple
 
 from flask import current_app
 from typing import List, Optional, Tuple
@@ -8,7 +7,8 @@ from typing import List, Optional, Tuple
 from neo4japp.constants import LogEventType, FILE_MIME_TYPE_PDF
 from neo4japp.database import get_or_create_arango_client
 from neo4japp.exceptions import AnnotationError
-from neo4japp.utils import normalize_str, EventLog
+from neo4japp.utils.string import normalize_str
+from neo4japp.utils.logger import EventLog
 
 from .annotation_graph_service import get_entity_inclusions
 from .constants import SPECIES_LMDB

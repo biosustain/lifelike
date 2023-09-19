@@ -1,16 +1,17 @@
 import hashlib
-from http import HTTPStatus
-from io import BytesIO
 import json
 import pytest
+import zipfile
+
+from http import HTTPStatus
+from io import BytesIO
 from sqlalchemy.orm import make_transient
 from typing import Any, Dict
 from urllib.parse import quote
-import zipfile
 
 from neo4japp.models import AppUser, Files, Projects
 from neo4japp.models.files import FileContent, StarredFile
-from neo4japp.utils import snake_to_camel
+from neo4japp.utils.string import snake_to_camel
 
 from tests.api.filesystem.conftest import (
     ParameterizedFile as TestFile,

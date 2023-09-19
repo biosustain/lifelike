@@ -3,16 +3,17 @@ import time
 
 from arango.client import ArangoClient
 from bisect import bisect_left
+from flask import current_app
+from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
 from urllib.parse import quote as uri_encode
 from uuid import uuid4
 
-from flask import current_app
-from math import inf, isinf
-
 from neo4japp.constants import LogEventType
 from neo4japp.exceptions import wrap_exceptions, AnnotationError, ServerException
-from neo4japp.utils import EventLog, equal_number_of_words, normalize_str
+from neo4japp.utils.logger import EventLog
+from neo4japp.utils.string import equal_number_of_words, normalize_str
+
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree

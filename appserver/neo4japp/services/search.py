@@ -7,7 +7,7 @@ from neo4japp.constants import LogEventType
 from neo4japp.data_transfer_objects import FTSQueryRecord, FTSTaxonomyRecord
 from neo4japp.models import GraphNode
 from neo4japp.services.arangodb import execute_arango_query, get_db
-from neo4japp.utils import snake_to_camel_dict, normalize_str, EventLog
+from neo4japp.utils.string import snake_to_camel_dict, normalize_str
 from neo4japp.utils.labels import (
     get_first_known_label_from_list,
     get_known_domain_labels_from_data_source,

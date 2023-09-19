@@ -357,6 +357,11 @@ def equal_number_of_words(term_a: str, term_b: str) -> bool:
     return len(term_a.split(' ')) == len(term_b.split(' '))
 
 
+def stream_to_json_lines(stream):
+    for chunk in stream:
+        yield json.dumps(chunk) + '\n'
+
+
 __all__ = [
     'is_nice_word_boundary_char',
     'is_nice_char',
@@ -378,4 +383,5 @@ __all__ = [
     'CamelDictMixin',
     'CasePreservedDict',
     'equal_number_of_words',
+    'stream_to_json_lines',
 ]

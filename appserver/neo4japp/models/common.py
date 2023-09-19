@@ -1,18 +1,18 @@
-from datetime import datetime
-from decimal import Decimal
-from typing import Iterable, Callable, TypeVar
-
 import sqlalchemy as sa
 import timeflake
+
+from datetime import datetime
+from decimal import Decimal
 from flask import g
 from marshmallow import fields
 from marshmallow_sqlalchemy.convert import ModelConverter as BaseModelConverter
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.types import TIMESTAMP
 from sqlalchemy_utils.types import TSVectorType
+from typing import Iterable, Callable, TypeVar
 
 from neo4japp.database import db
-from neo4japp.utils import snake_to_camel, camel_to_snake
+from neo4japp.utils.string import snake_to_camel, camel_to_snake
 
 
 def generate_hash_id():
