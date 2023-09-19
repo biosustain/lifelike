@@ -30,9 +30,9 @@ from neo4japp.data_transfer_objects.visualization import (
 )
 from neo4japp.models import GraphNode
 from neo4japp.services.arangodb import execute_arango_query, get_db
-from neo4japp.utils import snake_to_camel_dict, EventLog
 from neo4japp.utils.labels import get_first_known_label_from_list
 from neo4japp.utils.logger import EventLog
+from neo4japp.utils.string import snake_to_camel_dict
 
 
 def _get_uri_of_node_data(id: str, label: str, entity_id: str):
