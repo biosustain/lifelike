@@ -25,10 +25,10 @@ export class StarredBrowserComponent implements OnInit, OnDestroy {
   );
 
   searchText: string;
-  filter$: BehaviorSubject<(item: FilesystemObject) => boolean> = new BehaviorSubject(
+  readonly filter$: BehaviorSubject<(item: FilesystemObject) => boolean> = new BehaviorSubject(
     (item: FilesystemObject) => !isNil(item.starred)
   );
-  listModel$: Observable<FilesystemObjectList> = this.loadTask.results$.pipe(
+  readonly listModel$: Observable<FilesystemObjectList> = this.loadTask.results$.pipe(
     map(({ result }) => result),
     switchMap((listModel) =>
       this.filter$.pipe(

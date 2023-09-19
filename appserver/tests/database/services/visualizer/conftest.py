@@ -12,7 +12,7 @@ from neo4japp.data_transfer_objects.visualization import (
 )
 from neo4japp.models.neo4j import GraphNode, GraphRelationship
 from neo4japp.services.arangodb import add_document_to_collection
-from neo4japp.util import snake_to_camel_dict
+from neo4japp.utils.string import snake_to_camel_dict
 from neo4japp.utils.labels import get_first_known_label_from_list
 
 

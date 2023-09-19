@@ -14,6 +14,6 @@ import { createScrollObservable } from '../rxjs/scroll-observable';
 export class ElementObserverDirective {
   constructor(protected _elementRef: ElementRef<HTMLElement>) {}
 
-  size$ = createResizeObservable(this._elementRef.nativeElement, { leading: true });
-  scroll$ = createScrollObservable(this._elementRef.nativeElement);
+  readonly size$ = createResizeObservable(this._elementRef.nativeElement, { leading: true });
+  readonly scroll$ = createScrollObservable(this._elementRef.nativeElement);
 }

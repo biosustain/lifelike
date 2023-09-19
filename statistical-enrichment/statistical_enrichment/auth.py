@@ -26,7 +26,7 @@ class TokenService:
         self.algorithm = algorithm
 
     def _get_key(self, token: str):
-        if current_app.config['JWKS_URL'] is not None:
+        if current_app.config['JWKS_URL']:
             return jwt_client.get_signing_key_from_jwt(token).key
         elif current_app.config['JWT_SECRET']:
             return current_app.config['JWT_SECRET']

@@ -61,8 +61,8 @@ export class BackgroundTask<T, R> {
   readonly delayedRunningInitialDelay = 0;
   readonly delayedRunningMinimumLength = 500;
 
-  public values$ = new Subject<T>();
-  public status$ = new BehaviorSubject<TaskStatus>({
+  public readonly values$ = new Subject<T>();
+  public readonly status$ = new BehaviorSubject<TaskStatus>({
     state: TaskState.Idle,
     running: false,
     delayedRunning: false,
@@ -75,8 +75,8 @@ export class BackgroundTask<T, R> {
     resultsShown: false,
     error: null,
   });
-  public results$ = new Subject<TaskResult<T, R>>();
-  public errors$ = new Subject<any>();
+  public readonly results$ = new Subject<TaskResult<T, R>>();
+  public readonly errors$ = new Subject<any>();
 
   private started = false;
   private currentState: TaskState = TaskState.Idle;

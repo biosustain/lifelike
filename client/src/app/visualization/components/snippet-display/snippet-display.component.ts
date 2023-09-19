@@ -27,6 +27,7 @@ import {
 } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { AppURL } from 'app/shared/utils/url';
+import { VISUALIZER_SNIPPET_TRANSFER_TYPE } from 'app/visualization/providers/visualizer-object-data.provider';
 
 @Component({
   selector: 'app-snippet-display',
@@ -45,9 +46,9 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
 
   initNewEntity: boolean;
 
-  loadingDataSource: Subject<boolean>;
-  completeSubjectsSource: Subject<boolean>;
-  dataLoaded$: Observable<boolean>;
+  readonly loadingDataSource: Subject<boolean>;
+  readonly completeSubjectsSource: Subject<boolean>;
+  readonly dataLoaded$: Observable<boolean>;
   dataLoaded: boolean;
 
   // Pagination properties
@@ -177,16 +178,27 @@ export class SnippetDisplayComponent implements OnChanges, OnDestroy {
 
   snippetDragStart(event: DragEvent, snippet: AssociationSnippet) {
     const dataTransfer: DataTransfer = event.dataTransfer;
+    const snippetUrl = new AppURL(
+      snippet.publication.data.pmid
+        ? this.getSnippetPubtatorLink(snippet.publication.data.pmid)
+        : snippet.publication.entityUrl
+    );
+
     dataTransfer.setData('text/plain', snippet.reference.data.sentence);
     GenericDataProvider.setURIs(dataTransfer, [
       {
         title: snippet.reference.data.sentence,
-        uri: new AppURL(
-          snippet.publication.data.pmid
-            ? this.getSnippetPubtatorLink(snippet.publication.data.pmid)
-            : snippet.publication.entityUrl
-        ),
+        uri: snippetUrl,
       },
     ]);
+
+    // This currently only interacts with the links-panel component!
+    dataTransfer.setData(
+      VISUALIZER_SNIPPET_TRANSFER_TYPE,
+      JSON.stringify({
+        title: snippet.reference.data.sentence,
+        uri: snippetUrl.toString(),
+      })
+    );
   }
 }

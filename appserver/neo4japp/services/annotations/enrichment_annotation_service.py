@@ -4,16 +4,15 @@ import time
 
 from arango.client import ArangoClient
 from collections import defaultdict
+from flask import current_app
 from typing import Dict, List, Set, Tuple
 
-from flask import current_app
-
 from neo4japp.constants import LogEventType
-from neo4japp.utils.logger import EventLog
+from neo4japp.utils import EventLog
 
-from .annotation_service import AnnotationService
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import get_genes_to_organisms, get_proteins_to_organisms
+from .annotation_service import AnnotationService
 from .constants import EntityType
 from .data_transfer_objects import (
     Annotation,
@@ -43,23 +42,7 @@ class EnrichmentAnnotationService(AnnotationService):
 
         entities_to_create: List[CreateAnnotationObjParams] = []
 
-        entity_token_pairs = []
-        gene_names: Set[str] = set()
-        for match in matches_list:
-            entities_set = set()
-            for entity in match.entities:
-                gene_names.add(entity['synonym'])
-                entities_set.add(
-                    (entity['synonym'], entity['id_type'], entity.get('hyperlinks', ''))
-                )
-            for synonym, datasource, hyperlinks in entities_set:
-                if hyperlinks == '':
-                    hyperlinks = []
-                entity_token_pairs.append(
-                    (synonym, datasource, hyperlinks, match.token)
-                )
-
-        gene_names_list = list(gene_names)
+        gene_names_list, entity_token_pairs = self._parse_matches_list(matches_list)
 
         gene_match_time = time.time()
         fallback_graph_results = get_genes_to_organisms(
@@ -208,23 +191,14 @@ class EnrichmentAnnotationService(AnnotationService):
         specified_organism: SpecifiedOrganismStrain,
         **kwargs,
     ) -> List[Annotation]:
-        self.specified_organism = specified_organism
         self.enrichment_mappings = kwargs['enrichment_mappings']
-
-        annotations = self._create_annotations(
-            types_to_annotate=entity_type_and_id_pairs,
-            custom_annotations=custom_annotations,
-            recognized_entities=entity_results,
+        return super().create_annotations(
+            custom_annotations,
+            entity_results,
+            entity_type_and_id_pairs,
+            specified_organism,
+            **kwargs,
         )
-
-        start = time.time()
-        cleaned = self._clean_annotations(annotations=annotations)
-
-        current_app.logger.info(
-            f'Time to clean and run annotation interval tree {time.time() - start}',
-            extra=EventLog(event_type=LogEventType.ANNOTATION.value).to_dict(),
-        )
-        return cleaned
 
     def _clean_annotations(self, annotations: List[Annotation]) -> List[Annotation]:
         fixed_unified_annotations = self._get_fixed_false_positive_unified_annotations(

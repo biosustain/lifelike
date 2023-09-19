@@ -1,13 +1,23 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { catchError } from 'rxjs/operators';
-import { from, never, Observable, pipe, throwError } from 'rxjs';
+import { identity, isEmpty, isEqual, isObject, isObjectLike, transform } from 'lodash-es';
+import { from, Observable, pipe, throwError } from 'rxjs';
 import { UnaryFunction } from 'rxjs/internal/types';
-import { transform, isEqual, isObject, isEmpty, identity, unary, isObjectLike } from 'lodash-es';
+import { catchError } from 'rxjs/operators';
+import {
+  filter as _filter,
+  flow as _flow,
+  isArray as _isArray,
+  isObject as _isObject,
+  map as _map,
+  mapValues as _mapValues,
+  negate as _negate,
+  omitBy as _omitBy,
+} from 'lodash/fp';
 
 import { OperatingSystems } from 'app/interfaces/shared.interface';
 
-import { FAClass, CustomIconColors, Unicodes } from './constants';
+import { CustomIconColors, FAClass, Unicodes } from './constants';
 import { RecursiveReadonly } from './utils/types';
 
 /**
@@ -351,3 +361,11 @@ export const freezeDeep = <O extends Record<string, any>>(obj: O) =>
       obj as Record<string, any>
     )
   ) as RecursiveReadonly<O>;
+
+export const omitByDeep = (predicate: (any) => boolean) => {
+  const omit = (obj: any) =>
+    _isArray(obj) ? omitArray(obj) : _isObject(obj) ? omitObject(obj) : obj;
+  const omitObject = _flow(_omitBy(predicate), _mapValues(omit));
+  const omitArray = _flow(_filter(_negate(predicate)), _map(omit));
+  return omit;
+};

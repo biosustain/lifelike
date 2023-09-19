@@ -161,9 +161,9 @@ export class LayoutService<Base extends TypeContext>
     this.extent$.subscribe(this.update.viewPort$);
   }
 
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
-  graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
+  readonly graph$: Observable<Base['data']> = this.baseView.common.view$.pipe(
     // ensure no calculation of view if base view changed
     takeUntil(this.destroyed$),
     // temporary fixes end
@@ -193,7 +193,7 @@ export class LayoutService<Base extends TypeContext>
     takeUntil(this.destroyed$)
   );
 
-  linkPath$ = this.baseView.common.normalizeLinks$.pipe(
+  readonly linkPath$ = this.baseView.common.normalizeLinks$.pipe(
     map((normalizeLinks) => {
       const { calculateLinkPathParams, composeLinkPath } = this;
       return (link) => {
@@ -203,7 +203,7 @@ export class LayoutService<Base extends TypeContext>
     })
   );
 
-  fontSize$ = this.baseView.common.fontSizeScale$.pipe(
+  readonly fontSize$ = this.baseView.common.fontSizeScale$.pipe(
     map(
       (fontSizeScale) =>
         // noinspection JSUnusedLocalSymbols
@@ -212,15 +212,15 @@ export class LayoutService<Base extends TypeContext>
     )
   );
 
-  horizontalStretch$ = new BehaviorSubject(1);
-  verticalStretch$ = new BehaviorSubject(1);
+  readonly horizontalStretch$ = new BehaviorSubject(1);
+  readonly verticalStretch$ = new BehaviorSubject(1);
 
-  state$: Partial<SankeyState>;
-  baseState$: Partial<SankeyBaseState>;
+  readonly state$: Partial<SankeyState>;
+  readonly baseState$: Partial<SankeyBaseState>;
 
-  viewPort$ = new ReplaySubject(1);
+  readonly viewPort$ = new ReplaySubject(1);
 
-  extent$: Observable<ProcessedExtent> = this.viewPort$.pipe(
+  readonly extent$: Observable<ProcessedExtent> = this.viewPort$.pipe(
     map(({ x0, x1, y0, y1 }) => ({
       x0,
       x1,
@@ -251,14 +251,14 @@ export class LayoutService<Base extends TypeContext>
     shareReplay(1)
   );
 
-  horizontal$: Observable<Horizontal> = this.extent$.pipe(
+  readonly horizontal$: Observable<Horizontal> = this.extent$.pipe(
     map(({ x0, x1, width }) => ({ x0, x1, width })),
     distinctUntilChanged(_isEqual),
     debug('horizontal$'),
     shareReplay(1)
   );
 
-  vertical$: Observable<Vertical> = this.extent$.pipe(
+  readonly vertical$: Observable<Vertical> = this.extent$.pipe(
     map(({ y0, y1, height }) => ({ y0, y1, height })),
     distinctUntilChanged(_isEqual),
     debug('vertical$'),
@@ -267,7 +267,7 @@ export class LayoutService<Base extends TypeContext>
 
   private calculateLayout$;
 
-  isAutoLayout$ = combineLatest([this.update.edited$, this.baseView.common.view$]).pipe(
+  readonly isAutoLayout$ = combineLatest([this.update.edited$, this.baseView.common.view$]).pipe(
     map((args) => args.every((a) => !a)),
     shareReplay({ refCount: true, bufferSize: 1 })
   );

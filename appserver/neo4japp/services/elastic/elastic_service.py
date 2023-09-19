@@ -17,12 +17,9 @@ from pyparsing import (
 )
 from sqlalchemy import and_
 from sqlalchemy.orm import joinedload, raiseload
-from typing import (
-    Any,
-    Dict,
-    List,
-)
+from typing import Any, Dict, List
 
+from app import app
 from neo4japp.constants import LogEventType
 from neo4japp.database import get_file_type_service, ElasticConnection
 from neo4japp.exceptions import ServerException, wrap_exceptions
@@ -42,8 +39,7 @@ from neo4japp.services.elastic.query_parser_helpers import (
     BoolShould,
 )
 from neo4japp.utils import EventLog
-from app import app
-from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 from neo4japp.utils.globals import config
 
 ParserElement.enablePackrat()
@@ -223,7 +219,7 @@ class ElasticService(ElasticConnection):
         if file.content:
             content = file.content.raw_file
             file_type_service = get_file_type_service()
-            return file_type_service.get(file).to_indexable_content(
+            return file_type_service.get(file.mime_type).to_indexable_content(
                 FileContentBuffer(content)
             )
         else:

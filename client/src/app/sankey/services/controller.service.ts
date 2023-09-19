@@ -124,12 +124,12 @@ export class ControllerService
       });
   }
 
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
-  delta$ = new ReplaySubject<Partial<SankeyState>>(1);
-  _data$ = new ReplaySubject<Graph.File>(1);
+  readonly delta$ = new ReplaySubject<Partial<SankeyState>>(1);
+  readonly _data$ = new ReplaySubject<Graph.File>(1);
 
-  state$ = this.delta$
+  readonly state$ = this.delta$
     .pipe(
       map((delta) => _mergeAll([{}, { networkTraceIdx: 0 }, delta])),
       switchMap((delta) =>
@@ -205,15 +205,15 @@ export class ControllerService
     )
     .pipe(debug('state$'), shareReplay({ bufferSize: 1, refCount: true }));
 
-  networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
-  baseViewName$ = this.stateAccessor('baseViewName');
+  readonly networkTraceIdx$ = this.stateAccessor('networkTraceIdx');
+  readonly baseViewName$ = this.stateAccessor('baseViewName');
   // do not use standart accessor for this one cause we want null if it wasnt set
-  viewName$ = this.state$.pipe(
+  readonly viewName$ = this.state$.pipe(
     map(({ viewName = null }) => viewName),
     distinctUntilChanged()
   );
 
-  data$ = this._data$.pipe(
+  readonly data$ = this._data$.pipe(
     $freezeInDev,
     map((file) => new SankeyDocument(file, this.warningController)),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -223,17 +223,20 @@ export class ControllerService
    * Observable of current view options
    * based on currently loaded data and choosen base view
    */
-  options$ = this.data$.pipe(
+  readonly options$ = this.data$.pipe(
     map((data) => _mergeAll([{}, this.staticOptions, this.extractOptionsFromGraph(data)])),
     debug('options$'),
     shareReplay<SankeyOptions>(1)
   );
 
-  networkTrace$ = this.optionStateAccessor<TraceNetwork>('networkTraces', 'networkTraceIdx');
+  readonly networkTrace$ = this.optionStateAccessor<TraceNetwork>(
+    'networkTraces',
+    'networkTraceIdx'
+  );
 
-  networkTraces$ = unifiedSingularAccessor(this.options$, 'networkTraces');
+  readonly networkTraces$ = unifiedSingularAccessor(this.options$, 'networkTraces');
 
-  views$ = this.networkTrace$.pipe(
+  readonly views$ = this.networkTrace$.pipe(
     switchMap((trace) => trace.views$),
     debug('views$'),
     shareReplay<Record<string, View>>(1)
@@ -241,16 +244,16 @@ export class ControllerService
   /**
    * Returns active view or null if no view is active
    */
-  view$ = this.views$.pipe(
+  readonly view$ = this.views$.pipe(
     switchMap((views) => this.viewName$.pipe(map((viewName) => views[viewName as string] ?? null))),
     debug('view'),
     shareReplay<View>({ bufferSize: 1, refCount: true })
   );
 
-  viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
-  fontSizeScale$ = this.stateAccessor('fontSizeScale');
+  readonly viewsUpdate$: Subject<SankeyViews> = new Subject<SankeyViews>();
+  readonly fontSizeScale$ = this.stateAccessor('fontSizeScale');
 
-  labelEllipsis$ = this.stateAccessor('labelEllipsis');
+  readonly labelEllipsis$ = this.stateAccessor('labelEllipsis');
 
   /**
    * Predefined options for Sankey visualisation which are not based on loaded data not user input
@@ -299,15 +302,15 @@ export class ControllerService
     this._data$.next(data);
   }
 
-  oneToMany$ = this.networkTrace$.pipe(
+  readonly oneToMany$ = this.networkTrace$.pipe(
     map(({ sources, targets }) => Math.min(sources.length, targets.length) === 1)
   );
   private excludedProperties = new Set(['source', 'target', 'dbId', 'id', 'node', 'id']);
 
-  prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
-  align$ = this.optionStateAccessor<Align>('aligns', 'alignId');
+  readonly prescaler$ = this.optionStateAccessor<Prescaler>('prescalers', 'prescalerId');
+  readonly align$ = this.optionStateAccessor<Align>('aligns', 'alignId');
 
-  pathReports$ = this.data$.pipe(
+  readonly pathReports$ = this.data$.pipe(
     map(({ nodes, getNodeById, links, graph: { traceNetworks } }) =>
       _transform(
         traceNetworks,
@@ -398,11 +401,11 @@ export class ControllerService
     shareReplay(1)
   );
 
-  predefinedValueAccessors$ = this.options$.pipe(
+  readonly predefinedValueAccessors$ = this.options$.pipe(
     map(({ predefinedValueAccessors }) => predefinedValueAccessors)
   );
 
-  networkTraceDefaultSizing$ = this.networkTrace$.pipe(
+  readonly networkTraceDefaultSizing$ = this.networkTrace$.pipe(
     switchMap((networkTrace) =>
       iif(
         () => networkTrace.defaultSizing,
@@ -412,16 +415,19 @@ export class ControllerService
     )
   );
 
-  prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
-  maximumLabelLength$ = unifiedSingularAccessor(this.options$, 'maximumLabelLength');
-  maximumShortestPathPlusN$ = unifiedSingularAccessor(this.options$, 'maximumShortestPathPlusN');
-  aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
-  linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
-  linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
-  nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
-  nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
-  normalizeLinks$ = this.stateAccessor('normalizeLinks');
-  fileUpdated$ = new Subject<Graph.File>();
+  readonly prescalers$ = unifiedSingularAccessor(this.options$, 'prescalers');
+  readonly maximumLabelLength$ = unifiedSingularAccessor(this.options$, 'maximumLabelLength');
+  readonly maximumShortestPathPlusN$ = unifiedSingularAccessor(
+    this.options$,
+    'maximumShortestPathPlusN'
+  );
+  readonly aligns$ = unifiedSingularAccessor(this.options$, 'aligns');
+  readonly linkValueGenerators$ = unifiedSingularAccessor(this.options$, 'linkValueGenerators');
+  readonly linkValueAccessors$ = unifiedSingularAccessor(this.options$, 'linkValueAccessors');
+  readonly nodeValueGenerators$ = unifiedSingularAccessor(this.options$, 'nodeValueGenerators');
+  readonly nodeValueAccessors$ = unifiedSingularAccessor(this.options$, 'nodeValueAccessors');
+  readonly normalizeLinks$ = this.stateAccessor('normalizeLinks');
+  readonly fileUpdated$ = new Subject<Graph.File>();
 
   ngOnDestroy() {
     this.destroyed$.next();

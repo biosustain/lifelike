@@ -4,8 +4,21 @@ from typing import Any, Dict, List
 
 from flask import current_app
 
+from neo4japp.constants import LogEventType
+from neo4japp.exceptions import InvalidArgument
+from neo4japp.services.arangodb import execute_arango_query, get_db
+from neo4japp.utils import EventLog, normalize_str
+from neo4japp.utils.logger import EventLog
+
 from .constants import EntityType
 from .data_transfer_objects import GlobalInclusions, GeneOrProteinToOrganism
+from .utils.graph_queries import (
+    get_gene_to_organism_query,
+    get_global_inclusions_by_type_query,
+    get_***ARANGO_DB_NAME***_global_inclusions_by_type_query,
+    get_organisms_from_gene_ids_query,
+    get_protein_to_organism_query,
+)
 from .utils.lmdb import (
     create_ner_type_anatomy,
     create_ner_type_chemical,
@@ -31,12 +44,6 @@ from .utils.graph_queries import (
     get_organisms_from_gene_ids_query,
     get_protein_to_organism_query,
 )
-
-from neo4japp.constants import LogEventType
-from neo4japp.exceptions import InvalidArgument
-from neo4japp.util import normalize_str
-from neo4japp.utils.logger import EventLog
-from neo4japp.services.arangodb import execute_arango_query, get_db
 
 
 def _create_entity_inclusion(

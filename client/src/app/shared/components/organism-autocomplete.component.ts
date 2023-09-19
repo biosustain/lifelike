@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, Input, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { isEmpty, isNil } from 'lodash-es';
 import { iif, Observable, of, Subject } from 'rxjs';
@@ -26,10 +26,11 @@ export class OrganismAutocompleteComponent implements OnChanges {
 
   @Output() organismPicked = new EventEmitter<OrganismAutocomplete | null>();
 
-  inputText = '';
-  inputText$ = new Subject<string>();
+  @Input() inputText = '';
+  // TODO: All observables should be readonly
+  @Output() inputTextChange = new Subject<string>();
 
-  searcher$: Observable<OrganismAutocomplete[]> = this.inputText$.pipe(
+  readonly searcher$: Observable<OrganismAutocomplete[]> = this.inputTextChange.pipe(
     distinctUntilChanged(),
     debounceTime(300),
     tap(() => {
@@ -64,9 +65,14 @@ export class OrganismAutocompleteComponent implements OnChanges {
 
   constructor(private search: SharedSearchService) {}
 
-  ngOnChanges(): void {
-    if (this.organismTaxId) {
-      this.search.getOrganismFromTaxId(this.organismTaxId).subscribe((response) => {
+  setInputText(text: string) {
+    this.inputText = text;
+    this.inputTextChange.next(this.inputText);
+  }
+
+  ngOnChanges({ inputText, organismTaxId }: SimpleChanges): void {
+    if (organismTaxId) {
+      this.search.getOrganismFromTaxId(organismTaxId.currentValue).subscribe((response) => {
         // If response is null that means there was no match found
         if (!isNil(response)) {
           this.inputText = response.organism_name;
@@ -74,18 +80,20 @@ export class OrganismAutocompleteComponent implements OnChanges {
         }
       });
     }
+    if (inputText) {
+      this.setInputText(inputText.currentValue);
+    }
   }
 
   selectOrganism(organism: OrganismAutocomplete) {
     this.isOrganismSelected = true;
-    this.inputText = organism.organism_name;
+    this.setInputText(organism.organism_name);
     this.organismPicked.emit(organism);
   }
 
   clear() {
     this.isOrganismSelected = false;
-    this.inputText = '';
-    this.inputText$.next(this.inputText); // Clear the result list
+    this.setInputText(''); // Clear the result list
     this.organismPicked.emit(null);
   }
 }

@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { UrlTree } from '@angular/router';
+import { Router } from '@angular/router';
 
-import { assign, first, unary } from 'lodash-es';
+import { assign, escapeRegExp as _escapeRegExp, first, merge as _merge, unary } from 'lodash-es';
 
 import { SEARCH_LINKS } from 'app/shared/links';
 import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { Annotation } from '../../annotation-type';
 import { PDFAnnotationService } from '../../services/pdf-annotation.service';
@@ -17,7 +18,9 @@ import { PDFAnnotationService } from '../../services/pdf-annotation.service';
 export class AnnotationTooltipComponent implements OnChanges {
   constructor(
     protected readonly internalSearch: InternalSearchService,
-    protected readonly annotationService: PDFAnnotationService
+    protected readonly annotationService: PDFAnnotationService,
+    protected readonly workspaceManager: WorkspaceManager,
+    protected readonly router: Router
   ) {}
 
   @Input() private annotation!: Annotation;
@@ -32,7 +35,7 @@ export class AnnotationTooltipComponent implements OnChanges {
   exclusionComment: string;
   idHyperlinks: { label: string; url: string }[];
   searchLinks: { label: string; url: string }[];
-  internalSearchLinks: { label: string; url: UrlTree }[];
+  internalSearchLinks: { label: string; arguments: Parameters<WorkspaceManager['navigate']> }[];
 
   removeCustom() {
     return this.annotationService.annotationRemoved(this.annotation.uuid);
@@ -94,19 +97,31 @@ export class AnnotationTooltipComponent implements OnChanges {
       }));
       this.internalSearchLinks = [
         {
-          url: this.internalSearch.getVisualizerLink(allText),
+          arguments: this.internalSearch.getVisualizerArguments(allText),
           label: 'Knowledge Graph',
         },
         {
-          url: this.internalSearch.getFileContentLink(allText),
+          arguments: this.internalSearch.getFileContentsArguments(allText),
           label: 'File Content',
         },
         {
-          url: this.internalSearch.getFileContentLink(allText, { types: ['map'] }),
+          arguments: this.internalSearch.getFileContentsArguments(allText, { types: ['map'] }),
           label: 'Map Content',
         },
       ];
     }
+  }
+
+  openInternalLink([commands, extras]: Parameters<WorkspaceManager['navigate']>) {
+    return this.workspaceManager.navigate(
+      commands,
+      _merge(extras, {
+        // If tab with exact same url exist do not open new tab
+        matchExistingTab: _escapeRegExp(this.router.createUrlTree(commands, extras).toString()),
+        // Keep focus on current tab so subsequent clicks on the same annotation will open tabs in same panel
+        keepFocus: true,
+      })
+    );
   }
 
   removeCustomAnnotation() {

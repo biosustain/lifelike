@@ -296,7 +296,7 @@ def test_local_inclusion_affect_gene_organism_matching(
                 'chebi': 'https://www.ebi.ac.uk/chebi/advancedSearchFT.do?searchString=hooman',
                 'pubchem': 'https://pubchem.ncbi.nlm.nih.gov/#query=hooman',
                 'google': 'https://www.google.com/search?q=hooman',
-                'uniprot': 'https://www.uniprot.org/uniprot/?sort=score&query=hooman',
+                'uniprot': 'https://www.uniprot.org/uniprotkb?query=hooman',
                 'wikipedia': 'https://www.google.com/search?q=site:+wikipedia.org+hooman',
             },
             'idType': '',

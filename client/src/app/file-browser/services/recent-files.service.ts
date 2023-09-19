@@ -14,8 +14,8 @@ import { FilesystemObjectData } from '../schema';
 export class RecentFileHashesService implements OnDestroy {
   static readonly RECENT_KEY = '***ARANGO_DB_NAME***_workspace_recentList';
   private readonly storage = localStorage;
-  private _hashes: BehaviorSubject<string[]>;
-  hashes: Observable<string[]>;
+  private readonly _hashes: BehaviorSubject<string[]>;
+  readonly hashes: Observable<string[]>;
 
   get currentHashes() {
     // create copy cause rxjs is having problem with mutation
@@ -109,7 +109,7 @@ export class RecentFileHashesService implements OnDestroy {
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class RecentFilesService extends RecentFileHashesService {
-  list: ReplaySubject<FilesystemObject[]>;
+  readonly list: ReplaySubject<FilesystemObject[]>;
   loadTask;
   fileObjects = new Map();
 

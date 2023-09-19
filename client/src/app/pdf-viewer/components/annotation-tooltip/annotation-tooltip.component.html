@@ -66,8 +66,9 @@ Data Source: {{ idType ? idType : 'None' }}
   >
     <a
       *ngFor="let link of internalSearchLinks"
-      target="_blank"
-      [href]="link.url"
+      [appLink]="link.arguments[0]"
+      [handleClick]="false"
+      (click)="openInternalLink(link.arguments); $event.preventDefault()"
       [style.display]="'block'"
     >
       {{ link.label }}

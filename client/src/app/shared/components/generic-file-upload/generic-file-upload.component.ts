@@ -23,6 +23,7 @@ export class GenericFileUploadComponent implements OnInit, OnDestroy {
 
   // string should be in the same format as the 'accept' attribute on file input html elements
   @Input() accept: string;
+  // TODO: all observable should be readonly
   @Input() resetFileInputSubject: Subject<boolean>;
 
   fileName: string;

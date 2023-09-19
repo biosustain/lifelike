@@ -1,9 +1,10 @@
+import uuid
+
 from arango.client import ArangoClient
 from datetime import datetime
 from flask import current_app
 from http import HTTPStatus
 from typing import Callable, Dict, List, Tuple
-import uuid
 
 from neo4japp.constants import TIMEZONE, LogEventType
 from neo4japp.database import db
@@ -16,8 +17,7 @@ from neo4japp.exceptions import (
 from neo4japp.models import Files, GlobalList, AppUser
 from neo4japp.models.files import FileAnnotationsVersion, AnnotationChangeCause
 from neo4japp.services.arangodb import get_db, execute_arango_query
-from neo4japp.util import standardize_str
-from neo4japp.utils.logger import EventLog
+from neo4japp.utils import standardize_str, EventLog
 
 from .exceptions import AnnotationLimitationError
 from .tokenizer import Tokenizer
@@ -31,6 +31,8 @@ from .constants import (
     MIN_ENTITY_LENGTH,
 )
 from .data_transfer_objects.dto import PDFWord
+from .exceptions import AnnotationLimitationError
+from .tokenizer import Tokenizer
 from .utils.common import has_center_point
 from .utils.parsing import parse_content
 from .utils.graph_queries import (
@@ -55,6 +57,7 @@ from .utils.graph_queries import (
     get_species_global_inclusion_exist_query,
     query_builder,
 )
+from .utils.parsing import parse_content
 from ...utils.globals import warn
 
 

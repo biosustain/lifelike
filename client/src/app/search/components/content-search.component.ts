@@ -1,28 +1,25 @@
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, Input, NgZone, OnDestroy, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { flatten, isNil } from 'lodash-es';
-import { Observable, of } from 'rxjs';
-import { mergeMap, tap } from 'rxjs/operators';
+import { combineLatest, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { map, mergeMap, scan, shareReplay, take, takeUntil, tap } from 'rxjs/operators';
 
 import { HighlightDisplayLimitChange } from 'app/file-browser/components/object-info.component';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { getObjectMatchExistingTab } from 'app/file-browser/utils/objects';
-import { PDFResult, PDFSnippets } from 'app/interfaces';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { PdfViewComponent } from 'app/pdf-viewer/components/pdf-view.component';
 import { PaginatedResultListComponent } from 'app/shared/components/base/paginated-result-list.component';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
+import { ModuleAwareComponent } from 'app/shared/modules';
 import { RankedItem, SearchableRequestOptions } from 'app/shared/schemas/common';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { uuidv4 } from 'app/shared/utils';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { FindOptions } from 'app/shared/utils/find';
-import { getChoicesFromQuery } from 'app/shared/utils/params';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { getPath } from 'app/shared/utils/files';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/schemas/tracking';
@@ -31,6 +28,7 @@ import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { rankedItemLoadingMock } from 'app/shared/mocks/loading/common';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 import { getURLFromSnapshot } from 'app/shared/utils/router';
+import { updateSubject } from 'app/shared/rxjs/update';
 
 import { AdvancedSearchDialogComponent } from './advanced-search-dialog.component';
 import { RejectedOptionsDialogComponent } from './rejected-options-dialog.component';
@@ -40,8 +38,8 @@ import { ContentSearchService } from '../services/content-search.service';
 import { SearchType } from '../shared';
 import { ContentSearchResponse } from '../schema';
 import {
-  ContentSearchQueryParameters,
   ContentSearchParameters,
+  ContentSearchQueryParameters,
   createContentSearchParamsFromQuery,
   getContentSearchQueryParams,
 } from '../utils/search';
@@ -56,33 +54,47 @@ export class ContentSearchComponent
   implements OnInit, OnDestroy, ModuleAwareComponent
 {
   @Input() snippetAnnotations = false; // false due to LL-2052 - Remove annotation highlighting
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
+  @Output() modulePropertiesChange = this.loadTask.values$.pipe(
+    map((value: ContentSearchOptions) => ({
+      title: value.q.length ? `Search: ${value.q}` : 'Search',
+      fontAwesomeIcon: 'search',
+    }))
+  );
 
   private readonly DEFAULT_LIMIT = 20;
   readonly id = uuidv4(); // Used in the template to prevent duplicate ids across panes
 
-  results = new CollectionModel<RankedItem<FilesystemObject>>(
-    mockArrayOf(() => rankedItemLoadingMock(filesystemObjectLoadingMock())),
-    { multipleSelection: false }
-  );
-  fileResults: PDFResult = { hits: [{} as PDFSnippets], maxScore: 0, total: 0 };
+  readonly loadedResults$: Observable<CollectionModel<RankedItem<FilesystemObject>>> =
+    this.resultList$.pipe(
+      scan(
+        (model, { results }) => {
+          model.replace(results);
+          return model;
+        },
+        new CollectionModel<RankedItem<FilesystemObject>>(
+          mockArrayOf(() => rankedItemLoadingMock(filesystemObjectLoadingMock())),
+          { multipleSelection: false }
+        )
+      ),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
   highlightTerms: string[] = [];
   highlightOptions: FindOptions = { keepSearchSpecialChars: true, wholeWord: true };
-  searchTypes: SearchType[];
-  searchTypesMap: Map<string, SearchType>;
-
-  queryString = '';
-
-  get emptyParams(): boolean {
-    if (isNil(this.params)) {
-      return true;
-    }
-    const qExists = this.params.hasOwnProperty('q') && this.params.q.length !== 0;
-    const typesExists = this.params.hasOwnProperty('types') && this.params.types.length !== 0;
-    const foldersExists = this.params.hasOwnProperty('folders') && this.params.folders.length !== 0;
-
-    return !(qExists || typesExists || foldersExists);
-  }
+  readonly searchTypes$: Observable<SearchType[]> = this.objectTypeService.all().pipe(
+    map((providers) => flatten(providers.map((provider) => provider.getSearchTypes()))),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
+  readonly searchTypesMap$: Observable<Map<string, SearchType>> = this.searchTypes$.pipe(
+    map(
+      (searchTypes) => new Map(searchTypes.map((searchType) => [searchType.shorthand, searchType]))
+    ),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
+  readonly queryString$ = new ReplaySubject<string>(1);
+  readonly emptyParams$ = this.params$.pipe(
+    map((params) => this.areParamsEmpty(params)),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
 
   constructor(
     private modalService: NgbModal,
@@ -96,24 +108,29 @@ export class ContentSearchComponent
     private readonly tracking: TrackingService
   ) {
     super(route, workspaceManager);
-    objectTypeService.all().subscribe((providers: ObjectTypeProvider[]) => {
-      this.searchTypes = flatten(providers.map((provider) => provider.getSearchTypes()));
-      this.searchTypesMap = new Map(
-        Array.from(this.searchTypes.values()).map((value) => [value.shorthand, value])
-      );
-    });
+
+    this.route.queryParams
+      .pipe(
+        mergeMap((params) => this.deserializeParams(params as ContentSearchQueryParameters)),
+        map((params) => this.getQueryStringFromParams(params)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(this.queryString$);
+  }
+
+  areParamsEmpty(params) {
+    if (isNil(params)) {
+      return true;
+    }
+    const qExists = params.hasOwnProperty('q') && params.q.length !== 0;
+    const typesExists = params.hasOwnProperty('types') && params.types.length !== 0;
+    const foldersExists = params.hasOwnProperty('folders') && params.folders.length !== 0;
+
+    return !(qExists || typesExists || foldersExists);
   }
 
   ngOnInit() {
     super.ngOnInit();
-
-    this.subscriptions.add(
-      this.route.queryParams
-        .pipe(mergeMap((params) => this.deserializeParams(params as ContentSearchQueryParameters)))
-        .subscribe((params) => {
-          this.queryString = this.getQueryStringFromParams(params);
-        })
-    );
   }
 
   getBreadCrumbsTitle(object: FilesystemObject): string {
@@ -122,16 +139,9 @@ export class ContentSearchComponent
       .join(' > ');
   }
 
-  valueChanged(value: ContentSearchOptions) {
-    this.modulePropertiesChange.emit({
-      title: value.q.length ? `Search: ${value.q}` : 'Search',
-      fontAwesomeIcon: 'search',
-    });
-  }
-
   getResults(params: ContentSearchOptions): Observable<ContentSearchResponse> {
     // No point sending a request if the params are completely empty
-    if (this.emptyParams) {
+    if (this.areParamsEmpty(params)) {
       return of({
         total: 0,
         results: [],
@@ -182,11 +192,14 @@ export class ContentSearchComponent
   }
 
   deserializeParams(params: ContentSearchQueryParameters): Observable<ContentSearchParameters> {
-    return of(
-      createContentSearchParamsFromQuery(params, {
-        defaultLimit: this.DEFAULT_LIMIT,
-        searchTypesMap: this.searchTypesMap,
-      })
+    return this.searchTypesMap$.pipe(
+      take(1),
+      map((searchTypesMap) =>
+        createContentSearchParamsFromQuery(params, {
+          defaultLimit: this.DEFAULT_LIMIT,
+          searchTypesMap,
+        })
+      )
     );
   }
 
@@ -315,35 +328,43 @@ export class ContentSearchComponent
    * complicated parser, the current implementation simply opts to not extract the options from the query string, in favor of the user
    * re-selecting them by hand.
    */
-  extractAdvancedParamsFromString(q: string) {
-    const advancedParams: ContentSearchOptions = {};
-
-    // Remove 'types' from q and add to the types option of the advancedParams
-    const typeMatches = q.match(/\btype:\S*/g);
-    const extractedTypes =
-      typeMatches == null ? [] : typeMatches.map((typeVal) => typeVal.split(':')[1]);
-    advancedParams.types = getChoicesFromQuery(
-      { types: extractedTypes.join(';') },
-      'types',
-      this.searchTypesMap
-    );
-    q = q.replace(/\btype:\S*/g, '');
-
-    // Remove 'folders' from q and add to the folders option of the advancedParams
-    // const folderMatches = q.match(/\bfolder:\S*/g);
-    // const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
-    // advancedParams.folders = extractedFilepaths;
-    // q = q.replace(/\bfolder:\S*/g, '');
-    // TODO: If we ever want to put folders back into the query string, uncomment the above
-    advancedParams.folders = this.params.folders || [];
-
-    // Do one last whitespace replacement to clean up the query string
-    q = q.replace(/\s+/g, ' ').trim();
-
-    advancedParams.q = q;
-
-    return advancedParams;
-  }
+  // Not used?
+  // extractAdvancedParamsFromString(q: string) {
+  //   return promiseOfOne(
+  //     combineLatest([
+  //       this.searchTypesMap$,
+  //       this.params$,
+  //     ]),
+  //   ).then(([searchTypesMap, params]) => {
+  //     const advancedParams: ContentSearchOptions = {};
+  //
+  //     // Remove 'types' from q and add to the types option of the advancedParams
+  //     const typeMatches = q.match(/\btype:\S*/g);
+  //     const extractedTypes =
+  //       typeMatches == null ? [] : typeMatches.map((typeVal) => typeVal.split(':')[1]);
+  //     advancedParams.types = getChoicesFromQuery(
+  //       {types: extractedTypes.join(';')},
+  //       'types',
+  //       searchTypesMap,
+  //     );
+  //     q = q.replace(/\btype:\S*/g, '');
+  //
+  //     // Remove 'folders' from q and add to the folders option of the advancedParams
+  //     // const folderMatches = q.match(/\bfolder:\S*/g);
+  //     // const extractedFilepaths = folderMatches === null ? [] : folderMatches.map(projectVal => projectVal.split(':')[1]);
+  //     // advancedParams.folders = extractedFilepaths;
+  //     // q = q.replace(/\bfolder:\S*/g, '');
+  //     // TODO: If we ever want to put folders back into the query string, uncomment the above
+  //     advancedParams.folders = params.folders || [];
+  //
+  //     // Do one last whitespace replacement to clean up the query string
+  //     q = q.replace(/\s+/g, ' ').trim();
+  //
+  //     advancedParams.q = q;
+  //
+  //     return advancedParams;
+  //   });
+  // }
 
   /**
    * Opens the advanced search dialog. Users can add special options to their query using this feature.
@@ -352,14 +373,21 @@ export class ContentSearchComponent
     const modalRef = this.modalService.open(AdvancedSearchDialogComponent, {
       size: 'md',
     });
+    const destroyModal$ = new Subject();
     // Get the starting options from the content search form query
-    modalRef.componentInstance.params = {
-      q: this.queryString,
-      folders: this.params.folders,
-    } as ContentSearchOptions;
-    modalRef.componentInstance.typeChoices = this.searchTypes
-      .concat()
-      .sort((a, b) => a.name.localeCompare(b.name));
+    combineLatest([this.params$, this.queryString$])
+      .pipe(takeUntil(destroyModal$))
+      .subscribe(([{ folders }, q]) => {
+        modalRef.componentInstance.params = {
+          q,
+          folders,
+        } as ContentSearchOptions;
+      });
+    this.searchTypes$.pipe(takeUntil(destroyModal$)).subscribe((searchTypes) => {
+      modalRef.componentInstance.typeChoices = searchTypes
+        .concat()
+        .sort((a, b) => a.name.localeCompare(b.name));
+    });
     modalRef.result
       // Advanced search was triggered
       .then((params: ContentSearchOptions) => {
@@ -367,7 +395,11 @@ export class ContentSearchComponent
       })
       // Advanced search dialog was dismissed or rejected
       .catch((params: ContentSearchOptions) => {
-        this.queryString = this.getQueryStringFromParams(params);
+        this.queryString$.next(this.getQueryStringFromParams(params));
+      })
+      .finally(() => {
+        destroyModal$.next();
+        destroyModal$.complete();
       });
   }
 
@@ -380,11 +412,13 @@ export class ContentSearchComponent
     });
     modalRef.result
       // Synonym search was submitted
-      .then((expressionsToAdd: string[]) => {
-        this.queryString = (
-          (isNil(this.queryString) ? '' : `${this.queryString} `) + expressionsToAdd.join(' ')
-        ).trim();
-      })
+      .then((expressionsToAdd: string[]) =>
+        updateSubject(
+          this.queryString$,
+          (queryString) =>
+            (isNil(queryString) ? '' : `${queryString} `) + expressionsToAdd.join(' ')
+        )
+      )
       // Synonym search dialog was dismissed or rejected
       .catch(() => {});
   }

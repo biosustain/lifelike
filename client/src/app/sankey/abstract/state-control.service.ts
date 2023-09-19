@@ -8,9 +8,9 @@ import { debug } from 'app/shared/rxjs/debug';
 import { unifiedAccessor } from '../utils/rxjs';
 
 export abstract class StateControlAbstractService<Options extends object, State extends object> {
-  delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
-  state$: Observable<State>;
-  options$: Observable<Options>;
+  readonly delta$: Subject<Partial<State>> = new ReplaySubject<Partial<State>>(1);
+  readonly state$: Observable<State>;
+  readonly options$: Observable<Options>;
 
   /**
    * Pick property from property value from state object

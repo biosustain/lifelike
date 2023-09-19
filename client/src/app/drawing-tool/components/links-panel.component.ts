@@ -1,7 +1,8 @@
 import { Component, HostListener, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 
-import { cloneDeep, first, sortBy } from 'lodash-es';
+import { cloneDeep, sortBy } from 'lodash-es';
+import { isMatch as _isMatch, first as _first, last as _last } from 'lodash';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractControlValueAccessor } from 'app/shared/utils/forms/abstract-control-value-accessor';
@@ -16,6 +17,7 @@ import { openPotentialExternalLink, toValidLink } from 'app/shared/utils/browser
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { VISUALIZER_URI_TOKEN } from 'app/visualization/providers/visualizer-object-data.provider';
 
 import { Hyperlink, Source } from '../services/interfaces';
 import { LinkEditDialogComponent } from './map-editor/dialog/link-edit-dialog.component';
@@ -98,15 +100,26 @@ export class LinksPanelComponent extends AbstractControlValueAccessor<(Source | 
       const uriData: URIData[] = [];
 
       for (const item of sortBy(items, 'confidence')) {
-        if ([URI_TOKEN, LIFELIKE_URI_TOKEN].includes(item.token)) {
+        if ([URI_TOKEN, LIFELIKE_URI_TOKEN, VISUALIZER_URI_TOKEN].includes(item.token)) {
           uriData.unshift(...(item.data as URIData[]));
         } else if (item.token === LABEL_TOKEN) {
           text = item.data as string;
         }
       }
 
+      let uri = _first(uriData)?.uri;
+      // KGsearch returns a list of URIs, where last one tends to be a publication link
+      if (_isMatch(uri, { pathSegments: ['kg-visualizer'] })) {
+        for (const uriRecord of uriData) {
+          if (_isMatch(uriRecord.uri, { pathSegments: ['kg-visualizer'] })) {
+            continue;
+          }
+          uri = uriRecord.uri;
+        }
+      }
+
       return this.openCreateDialog({
-        url: first(uriData)?.uri?.href ?? '',
+        url: uri?.href ?? '',
         domain: text.trim(),
       });
     }

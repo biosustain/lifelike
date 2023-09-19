@@ -1,0 +1,136 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label> Model </label>
+    <app-model-control
+      [modelControl]="form.get('model')"
+      [models]="models$ | async"
+    ></app-model-control>
+  </div>
+  <div class="form-group" *ngIf="form.get('prompt') as control">
+    <label [for]="input.uid"> Prompt </label>
+    <textarea
+      class="form-control"
+      [formControl]="control"
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="2"
+      appUid
+      #input="uid"
+    ></textarea>
+  </div>
+  <div class="form-row">
+    <div class="form-group col">
+      <label [for]="input.uid"> Timeout </label>
+      <input class="form-control" type="number" formControlName="timeout" appUid #input="uid" />
+    </div>
+    <div class="form-group col">
+      <label [for]="input.uid"> Max Tokens </label>
+      <input class="form-control" type="number" formControlName="maxTokens" appUid #input="uid" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col">
+      <label [for]="input.uid"> Temperature </label>
+      <input
+        class="form-control"
+        type="number"
+        formControlName="temperature"
+        appUid
+        step="0.1"
+        #input="uid"
+      />
+    </div>
+    <div class="form-group col">
+      <label [for]="input.uid"> Top P </label>
+      <input class="form-control" type="number" formControlName="topP" appUid #input="uid" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col">
+      <label [for]="input.uid"> N </label>
+      <input
+        class="form-control"
+        type="number"
+        formControlName="n"
+        appUid
+        #input="uid"
+        [max]="form.get('bestOf').value"
+      />
+    </div>
+    <div class="form-group col">
+      <label [for]="input.uid"> Best Of </label>
+      <input class="form-control" type="number" formControlName="bestOf" appUid #input="uid" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <div class="form-group form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          formControlName="echo"
+          appUid
+          #input="uid"
+        />
+        <label class="form-check-label" [for]="input.uid">Echo</label>
+      </div>
+    </div>
+    <div class="col">
+      <div class="form-group form-check">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          formControlName="stream"
+          appUid
+          #input="uid"
+        />
+        <label class="form-check-label" [for]="input.uid">Stream</label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label [for]="input.uid"> Logprobs</label>
+    <input class="form-control" type="number" formControlName="logprobs" appUid #input="uid" />
+  </div>
+  <div class="form-group d-flex justify-content-between flex-wrap align-items-center">
+    <label>Stop Sequences</label>
+    <app-stop-control [stopControl]="form.get('stop')"></app-stop-control>
+  </div>
+  <div class="form-row">
+    <div class="form-group col">
+      <label [for]="input.uid"> Presence Penalty </label>
+      <input
+        class="form-control"
+        type="number"
+        formControlName="presencePenalty"
+        appUid
+        #input="uid"
+      />
+    </div>
+    <div class="form-group col">
+      <label [for]="input.uid"> Frequency Penalty </label>
+      <input
+        class="form-control"
+        type="number"
+        formControlName="frequencyPenalty"
+        appUid
+        #input="uid"
+      />
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Logit Bias</label>
+    <app-logit-bias-control [logitBiasControl]="form.get('logitBias')"></app-logit-bias-control>
+  </div>
+  <button class="btn btn-primary" type="submit">Request</button>
+  <small *ngIf="estimatedCost$ | async as estimatedCost">
+    Estimated cost
+    <ng-template #costEstimateTooltip>
+      <app-cost-estimate-tooltip></app-cost-estimate-tooltip>
+    </ng-template>
+    <span [ngbTooltip]="costEstimateTooltip"
+      >{{ estimatedCost[0] | currency : 'USD' : '' : '1.2-7' }} -{{
+        estimatedCost[1] | currency : 'USD' : 'symbol' : '1.2-7'
+      }}</span
+    >
+  </small>
+</form>

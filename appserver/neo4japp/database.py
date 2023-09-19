@@ -10,6 +10,7 @@ from flask_sqlalchemy import SQLAlchemy
 from jwt import PyJWKClient
 from redis import Redis
 from sqlalchemy import MetaData, Table, UniqueConstraint
+from typing import Union
 
 from neo4japp.utils.flask import scope_flask_app_ctx
 from neo4japp.utils.globals import config
@@ -49,7 +50,7 @@ db = SQLAlchemy(
     },
 )
 
-_jwt_client: PyJWKClient
+_jwt_client: Union[PyJWKClient, None] = None
 
 
 # Note that this client should only be used when JWKS_URL has been configured!

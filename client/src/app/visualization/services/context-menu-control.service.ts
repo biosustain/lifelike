@@ -8,15 +8,15 @@ import { TooltipControlService } from 'app/shared/services/tooltip-control-servi
 @Injectable()
 export class ContextMenuControlService extends TooltipControlService implements OnDestroy {
   // "Group by Relationship" submenu controls
-  private delayGroupByRelSource = new Subject<boolean>();
-  private interruptGroupByRelSource = new Subject<boolean>();
-  private showGroupByRelResultSource = new Subject<boolean>();
+  private readonly delayGroupByRelSource = new Subject<boolean>();
+  private readonly interruptGroupByRelSource = new Subject<boolean>();
+  private readonly showGroupByRelResultSource = new Subject<boolean>();
 
   private delayGroupByRelSourceSubscription: Subscription;
 
-  delayGroupByRel$: Observable<boolean>;
-  interruptGroupByRel$: Observable<boolean>;
-  showGroupByRelResult$: Observable<boolean>;
+  readonly delayGroupByRel$: Observable<boolean>;
+  readonly interruptGroupByRel$: Observable<boolean>;
+  readonly showGroupByRelResult$: Observable<boolean>;
 
   // "Pull Out Node" submenu controls
   private delayPullOutNodeSource = new Subject<boolean>();
@@ -25,9 +25,9 @@ export class ContextMenuControlService extends TooltipControlService implements 
 
   private delayPullOutNodeSourceSubscription: Subscription;
 
-  delayPullOutNode$: Observable<boolean>;
-  interruptPullOutNode$: Observable<boolean>;
-  showPullOutNodeResult$: Observable<boolean>;
+  readonly delayPullOutNode$: Observable<boolean>;
+  readonly interruptPullOutNode$: Observable<boolean>;
+  readonly showPullOutNodeResult$: Observable<boolean>;
 
   constructor() {
     super();

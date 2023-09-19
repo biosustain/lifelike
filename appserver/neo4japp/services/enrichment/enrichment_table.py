@@ -22,7 +22,7 @@ from neo4japp.services.arangodb import execute_arango_query, get_db
 from neo4japp.services.common import RDBMSBaseDao
 from neo4japp.services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
-from neo4japp.util import compact
+from neo4japp.utils.dict import compact
 from neo4japp.utils.globals import warn
 from neo4japp.utils.logger import EventLog
 

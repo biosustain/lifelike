@@ -23,9 +23,9 @@ import { filterSearchableTreeNode } from './utils';
   encapsulation: ViewEncapsulation.None,
 })
 export class SearchableTreeComponent implements OnChanges {
-  tree$ = new ReplaySubject<SearchableTreeNode>(1);
-  search$ = new BehaviorSubject<string>('');
-  filteredBranches$ = combineLatest([
+  readonly tree$ = new ReplaySubject<SearchableTreeNode>(1);
+  readonly search$ = new BehaviorSubject<string>('');
+  readonly filteredBranches$ = combineLatest([
     this.tree$,
     this.search$.pipe(map((searchTerm) => inText(searchTerm))),
   ]).pipe(

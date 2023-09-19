@@ -14,8 +14,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, combineLatest, defer, Observable, of, Subscription } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  defer,
+  Observable,
+  of,
+  ReplaySubject,
+  Subscription,
+} from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
+import { runInContext } from 'lodash';
 
 import { ModuleProperties } from 'app/shared/modules';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
@@ -33,6 +42,9 @@ import { DataTransferDataService } from 'app/shared/services/data-transfer-data.
 import { CopyKeyboardShortcutBehavior } from 'app/graph-viewer/renderers/canvas/behaviors/copy-keyboard-shortcut.behavior';
 import { MimeTypes } from 'app/shared/constants';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
+import { runInNgZone } from 'app/shared/rxjs/run-in-ng-zone';
+import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
+import { debug } from 'app/shared/rxjs/debug';
 
 import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
@@ -49,12 +61,24 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   @Input() highlightTerms: string[] | undefined;
   @Output() saveStateListener: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
-
-  @ViewChild(GraphViewDirective, { static: true }) graphCanvasDirective!: GraphViewDirective;
+  private _graphCanvas: CanvasGraphView;
+  readonly graphCanvas$ = new ReplaySubject<CanvasGraphView>(1);
+  @ViewChild(GraphViewDirective, { static: true }) set graphCanvasDirective(
+    graphCanvasDirective: GraphViewDirective
+  ) {
+    this._graphCanvas = graphCanvasDirective.canvasGraphView;
+    this.graphCanvas$.next(this._graphCanvas);
+  }
 
   get graphCanvas() {
-    return this.graphCanvasDirective.canvasGraphView;
+    return this._graphCanvas;
   }
+
+  selection$ = this.graphCanvas$.pipe(
+    switchMap((graphCanvas) =>
+      graphCanvas.selection.items$.pipe(runInNgZone(this.ngZone), debug('selection$'))
+    )
+  );
 
   loadTask: BackgroundTask<string, [FilesystemObject, Blob, ExtraResult]> = new BackgroundTask(
     (hashId) =>
@@ -76,7 +100,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   unsavedChangesSubscription: Subscription;
   providerSubscription$ = new Subscription();
 
-  unsavedChanges$ = new BehaviorSubject<boolean>(false);
+  readonly unsavedChanges$ = new BehaviorSubject<boolean>(false);
 
   entitySearchTerm = '';
   entitySearchList: GraphEntity[] = [];

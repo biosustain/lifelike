@@ -5,8 +5,8 @@ import { transform, isBoolean } from 'lodash-es';
 
 @Injectable()
 export class WarningControllerService implements OnDestroy {
-  warnings = new BehaviorSubject([]);
-  currentWarnings = new BehaviorSubject([]);
+  readonly warnings = new BehaviorSubject([]);
+  readonly currentWarnings = new BehaviorSubject([]);
   private wm = new Map();
   showUnique = true;
 

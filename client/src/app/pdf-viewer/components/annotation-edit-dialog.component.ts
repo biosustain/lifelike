@@ -54,7 +54,7 @@ export class AnnotationEditDialogComponent
 
   isTextEnabled = false;
   sourceLinks: Hyperlink[] = [];
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {

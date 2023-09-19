@@ -28,7 +28,7 @@ export class AnnotationFilterComponent<T extends AnnotationFilterEntity>
   _sortingAlgorithm: SortingAlgorithm;
   _annotationData: T[];
 
-  outputSubject: Subject<boolean>;
+  readonly outputSubject: Subject<boolean>;
   outputSubjectSub: Subscription;
 
   wordVisibilityMap: Map<string, boolean>;

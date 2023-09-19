@@ -1,21 +1,21 @@
-from http import HTTPStatus
-from pathlib import Path
-
-import gdown
 import hashlib
 import itertools
 import json
 import os
 import urllib
 import zipfile
-
 from collections import defaultdict
 from datetime import datetime, timedelta
+from http import HTTPStatus
+from itertools import chain
+from pathlib import Path
+from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
+from urllib.error import HTTPError
+
+import gdown
 from deepdiff import DeepDiff
 from flask import Blueprint, current_app, g, jsonify, make_response, request
 from flask.views import MethodView
-from itertools import chain
-
 from marshmallow import ValidationError
 from more_itertools import flatten
 from sqlalchemy import and_, asc as asc_, desc as desc_, or_
@@ -24,8 +24,6 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import raiseload, joinedload, lazyload, aliased, contains_eager
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import text
-from typing import List, Dict, Iterable, Literal, Optional, Tuple, Set, Union
-from urllib.error import HTTPError
 from webargs.flaskparser import use_args
 
 from neo4japp.constants import (
@@ -52,6 +50,8 @@ from neo4japp.exceptions import (
     ServerException,
     FileNotFound,
 )
+from neo4japp.exceptions import ServerWarning
+from neo4japp.exceptions import wrap_exceptions
 from neo4japp.models import (
     Projects,
     Files,
@@ -96,19 +96,20 @@ from neo4japp.schemas.filesystem import (
     MultipleFileResponseSchema,
 )
 from neo4japp.services.file_types.exports import ExportFormatError
-from neo4japp.services.file_types.service import FileTypeService
-
-from neo4japp.utils import FileContentBuffer
-from neo4japp.services.file_types.providers import DirectoryTypeProvider
-from neo4japp.utils.globals import warn
-from neo4japp.utils.collections import window, find_index
-from neo4japp.utils.http import make_cacheable_file_response
-from neo4japp.utils.network import ContentTooLongError, read_url
-from neo4japp.utils.logger import UserEventLog
 from neo4japp.services.file_types.providers import BiocTypeProvider
-from neo4japp.exceptions import wrap_exceptions
-from neo4japp.exceptions import ServerWarning
+from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.services.file_types.service import FileTypeService
+from neo4japp.utils import (
+    window,
+    find_index,
+    make_cacheable_file_response,
+    UserEventLog,
+)
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 from neo4japp.utils.globals import config
+from neo4japp.utils.globals import warn
+from neo4japp.utils.network import read_url, ContentTooLongError
+from .utils import get_missing_hash_ids
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -282,7 +283,7 @@ class FilesystemBaseView(MethodView):
         # Handle helper require_hash_ids argument that check to see if all files wanted
         # actually appeared in the results
         if require_hash_ids:
-            missing_hash_ids = self.get_missing_hash_ids(require_hash_ids, files)
+            missing_hash_ids = get_missing_hash_ids(require_hash_ids, files)
 
             if len(missing_hash_ids):
                 raise RecordNotFound(
@@ -568,7 +569,7 @@ class FilesystemBaseView(MethodView):
                         )
 
                     # Get the provider
-                    provider = file_type_service.get(file)
+                    provider = file_type_service.get(file.mime_type)
                     buffer = provider.prepare_content(buffer, params, file)
                     try:
                         provider.validate_content(buffer, log_status_messages=True)
@@ -691,16 +692,6 @@ class FilesystemBaseView(MethodView):
                 )
             )
         )
-
-    def get_missing_hash_ids(
-        self, expected_hash_ids: Iterable[str], files: Iterable[Files]
-    ):
-        found_hash_ids = set(file.hash_id for file in files)
-        missing = set()
-        for hash_id in expected_hash_ids:
-            if hash_id not in found_hash_ids:
-                missing.add(hash_id)
-        return missing
 
 
 class FileHierarchyView(FilesystemBaseView):
@@ -918,7 +909,7 @@ class FileListView(FilesystemBaseView):
                 file.mime_type = mime_type
 
             # Get the provider based on what we know now
-            provider = file_type_service.get(file)
+            provider = file_type_service.get(file.mime_type)
             # if no provider matched try to convert
 
             # if it is a bioc-xml file
@@ -934,7 +925,7 @@ class FileListView(FilesystemBaseView):
                 file_name, extension = os.path.splitext(file.filename)
                 if extension.isupper():
                     file.mime_type = 'application/pdf'
-                provider = file_type_service.get(file)
+                provider = file_type_service.get(file.mime_type)
                 provider.convert(buffer)
 
             # Check if the user can even upload this type of file
@@ -1055,7 +1046,7 @@ class FileListView(FilesystemBaseView):
             require_hash_ids=require_hash_ids,
             lazy_load_content=True,
         )
-        missing_hash_ids = self.get_missing_hash_ids(query_hash_ids, files)
+        missing_hash_ids = get_missing_hash_ids(query_hash_ids, files)
 
         target_files = []
         linked_files = []
@@ -1459,7 +1450,7 @@ class FileExportView(FilesystemBaseView):
         )
 
         file_type_service = get_file_type_service()
-        file_type = file_type_service.get(file)
+        file_type = file_type_service.get(file.mime_type)
 
         if (
             params['export_linked']
@@ -1574,7 +1565,7 @@ class FileValidateView(FilesystemBaseView):
         )
 
         file_type_service: FileTypeService = get_file_type_service()
-        file_type = file_type_service.get(file)
+        file_type = file_type_service.get(file.mime_type)
 
         file_type.validate_content(FileContentBuffer(file.content.raw_file))
 
@@ -1616,11 +1607,14 @@ class FileBackupView(FilesystemBaseView):
                 # resetting the image manager memory - we are only appending new stuff to it.
                 # This is why we do not need to store all images within the backup -
                 # - just the unsaved ones.
-                zip_content.writestr('graph.json', params['content_value'].read())
+                zip_content.writestr(
+                    zipfile.ZipInfo('graph.json'), params['content_value'].read()
+                )
                 new_images = params.get('new_images') or []
                 for image in new_images:
                     zip_content.writestr(
-                        'images/' + image.filename + '.png', image.read()
+                        zipfile.ZipInfo('images/' + image.filename + '.png'),
+                        image.read(),
                     )
                 zip_content.close()
             with new_content as bufferView:

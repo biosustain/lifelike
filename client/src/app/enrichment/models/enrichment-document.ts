@@ -1,11 +1,12 @@
 import { Observable, of, Subject } from 'rxjs';
-import { map, mergeMap, tap } from 'rxjs/operators';
+import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import {
   compact as _compact,
   has as _has,
   isEmpty as _isEmpty,
   omitBy as _omitBy,
   pick as _pick,
+  isEqual as _isEqual,
 } from 'lodash/fp';
 
 import { mapBlobToBuffer } from 'app/shared/utils/files';
@@ -37,7 +38,7 @@ export class BaseEnrichmentDocument {
   duplicateGenes: string[] = [];
   fileId = '';
   markForRegeneration = false;
-  changed$ = new Subject<void>();
+  readonly changed$ = new Subject<void>();
 
   private parseParameters(params: EnrichmentParsedData): Partial<EnrichmentParsedData> {
     // parse the file content to get gene list and organism tax id and name
@@ -66,7 +67,7 @@ export class BaseEnrichmentDocument {
     }
 
     // We set these all at the end to be thread/async-safe
-    return _omitBy((value, key) => this[key] === value)({
+    return _omitBy((value, key) => _isEqual(this[key], value))({
       ...params,
       ...parsedParams,
     });
@@ -209,7 +210,7 @@ export class EnrichmentDocument extends BaseEnrichmentDocument {
       this.changed$.next();
       return this.worksheetViewerService
         .refreshEnrichmentAnnotations([this.fileId])
-        .pipe(mergeMap((_) => this.annotate()));
+        .pipe(switchMap((_) => this.annotate()));
     }
   }
 

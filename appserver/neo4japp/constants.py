@@ -1,13 +1,12 @@
 import codecs
 import re
 import string
-
 from datetime import timezone
 from enum import Enum
 
 from werkzeug.local import LocalProxy
 
-from neo4japp.util import Enumd
+from neo4japp.utils.enum import Enumd
 from neo4japp.utils.globals import config
 
 TIMEZONE = timezone.utc

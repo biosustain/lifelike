@@ -51,11 +51,11 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   getClusterSnippetsResult: GetClusterSnippetsResult;
   getSnippetsError: HttpErrorResponse;
 
-  getEdgeSnippetsSubject: Subject<NewEdgeSnippetsPageRequest>;
-  getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
+  readonly getEdgeSnippetsSubject: Subject<NewEdgeSnippetsPageRequest>;
+  readonly getClusterSnippetsSubject: Subject<NewClusterSnippetsPageRequest>;
   getSnippetsSubscription: Subscription;
 
-  nodeSelectedSubject: Subject<boolean>;
+  readonly nodeSelectedSubject: Subject<boolean>;
 
   // TODO: Will we need to have a legend for each database? i.e. the literature
   // data, biocyc, etc...

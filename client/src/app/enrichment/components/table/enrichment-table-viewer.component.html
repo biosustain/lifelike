@@ -20,6 +20,7 @@
         [showDelete]="false"
         [showRestore]="true"
         (objectRestore)="restore($event)"
+        (objectUpdate)="refreshData()"
       >
       </app-module-menu>
       <div *ngIf="queuedChanges$.value">
@@ -136,7 +137,7 @@
         </ng-container>
         <ng-template #textSearchControl>
           <app-search-control
-            [ngModel]="findController.query"
+            [(ngModel)]="findController.query"
             (ngModelChange)="findController.nextOrStart()"
             [resultIndex]="findController.getResultIndex()"
             [resultCount]="findController.getResultCount()"

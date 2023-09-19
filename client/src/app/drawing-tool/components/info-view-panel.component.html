@@ -103,7 +103,7 @@
 
     <ng-container *ngIf="!one || one.type !== 'node'">
       <h4 class="mt-4">Explanation</h4>
-      <app-prompt [entities]="entities$ | async"></app-prompt>
+      <app-drawing-tool-prompt [entities]="entities$ | async"></app-drawing-tool-prompt>
     </ng-container>
   </div>
 </div>

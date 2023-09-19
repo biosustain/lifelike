@@ -1,8 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Input, OnDestroy } from '@angular/core';
+import { Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 
 import { isNil } from 'lodash-es';
-import { Subject, Subscription } from 'rxjs';
+import { Observable, ReplaySubject, Subject, Subscription } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 
@@ -10,18 +11,8 @@ import { GenericFlatTreeComponent } from '../generic-flat-tree/generic-flat-tree
 
 export abstract class ChecklistFlatTreeComponent<T>
   extends GenericFlatTreeComponent<T>
-  implements OnDestroy
+  implements OnDestroy, OnChanges, OnInit
 {
-  private _resetTree: Subject<boolean>;
-  @Input() set resetTree(resetSubject: Subject<boolean>) {
-    this.completeResetTreeSubject();
-    this._resetTree = resetSubject;
-    if (!isNil(this._resetTree)) {
-      this._resetTree.subscribe(() => this.reset());
-    }
-  }
-
-  private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
   @Input() set initiallyCheckedNodesFilterFn(filterFn: (t: FlatNode<T>) => boolean) {
     this._initiallyCheckedNodesFilterFn = filterFn;
     if (!isNil(this.treeData)) {
@@ -37,29 +28,40 @@ export abstract class ChecklistFlatTreeComponent<T>
     return super.treeData;
   }
 
-  selectionChangedSubscription: Subscription;
+  constructor() {
+    super();
+    this.checklistSelection.changed
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.selectionChanged());
+    this._initiallyCheckedNodesFilterFn = (t: FlatNode<T>) => false;
+  }
+  private readonly destroy$ = new Subject();
+  private readonly _resetTree$$ = new ReplaySubject<Subject<boolean>>(1);
+  private readonly _resetTree: Observable<boolean> = this._resetTree$$.pipe(
+    switchMap((subject) => subject),
+    takeUntil(this.destroy$)
+  );
+  @Input() resetTree: Subject<boolean>;
+
+  private _initiallyCheckedNodesFilterFn: (t: FlatNode<T>) => boolean;
 
   /** The selection for checklist */
   checklistSelection = new SelectionModel<FlatNode<T>>(true /* multiple */);
 
-  constructor() {
-    super();
-    this.selectionChangedSubscription = this.checklistSelection.changed.subscribe(() =>
-      this.selectionChanged()
-    );
-    this._initiallyCheckedNodesFilterFn = (t: FlatNode<T>) => false;
+  ngOnChanges({ resetTree }: SimpleChanges) {
+    if (resetTree) {
+      this._resetTree$$.next(resetTree.currentValue);
+    }
+  }
+
+  ngOnInit() {
+    this._resetTree.subscribe(() => this.reset());
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
-    this.selectionChangedSubscription.unsubscribe();
-    this.completeResetTreeSubject();
-  }
-
-  completeResetTreeSubject() {
-    if (!isNil(this._resetTree)) {
-      this._resetTree.complete();
-    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   reset() {

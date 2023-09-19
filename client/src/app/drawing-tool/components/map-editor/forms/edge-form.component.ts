@@ -51,8 +51,8 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
   originalEdge: UniversalGraphEdge;
   updatedEdge: UniversalGraphEdge;
 
-  change$ = new ReplaySubject<SimpleChanges>(1);
-  entities$: Observable<Iterable<string>> = this.change$.pipe(
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['edge', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     map(

@@ -1,9 +1,8 @@
-import math
 from typing import Sequence
 
 import attr
 
-from neo4japp.util import CamelDictMixin
+from neo4japp.utils import CamelDictMixin
 
 
 @attr.s(frozen=True)

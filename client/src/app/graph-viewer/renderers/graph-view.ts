@@ -146,12 +146,12 @@ export abstract class GraphView<BT extends Behavior> implements GraphActionRecei
   /**
    * Stream of events when history changes in any way.
    */
-  historyChanges$ = new Subject<void>();
+  readonly historyChanges$ = new Subject<void>();
 
   /**
    * Stream of events when a graph entity needs to be focused.
    */
-  editorPanelFocus$ = new Subject<void>();
+  readonly editorPanelFocus$ = new Subject<void>();
 
   /**
    * Defines how close to the node we have to click to terminate the node search early.

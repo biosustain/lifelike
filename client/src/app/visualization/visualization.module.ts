@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { SearchModule } from 'app/search/search.module';
+import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { SharedModule } from 'app/shared/shared.module';
 
 import { ContextMenuComponent } from './components/context-menu/context-menu.component';
@@ -14,6 +15,7 @@ import { VisualizationQuickbarComponent } from './components/visualization-quick
 import { VisualizationSettingsComponent } from './components/visualization-settings/visualization-settings.component';
 import { VisualizationComponent } from './containers/visualization/visualization.component';
 import { SidenavTypeViewComponent } from './components/sidenav-type-view/sidenav-type-view.component';
+import { VisualizerDataProvider } from './providers/visualizer-object-data.provider';
 
 const components = [
   ContextMenuComponent,
@@ -31,7 +33,14 @@ const components = [
 @NgModule({
   imports: [SearchModule, SharedModule],
   declarations: components,
-  providers: [VisualizationService],
+  providers: [
+    VisualizationService,
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: VisualizerDataProvider,
+      multi: true,
+    },
+  ],
   exports: components,
   // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
 })

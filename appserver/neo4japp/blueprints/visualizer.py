@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from flask.views import MethodView
 from flask_apispec import use_kwargs
 from http import HTTPStatus
@@ -25,9 +25,8 @@ from neo4japp.services.visualizer import (
     get_snippets_for_cluster,
     get_snippets_for_node_pair,
 )
-from neo4japp.util import camel_to_snake_dict
-from neo4japp.utils.jsonify import jsonify_with_class
 from neo4japp.schemas.common import SuccessResponse
+from neo4japp.utils.jsonify import camel_to_snake_dict, jsonify_with_class
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 

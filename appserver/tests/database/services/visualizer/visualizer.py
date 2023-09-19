@@ -4,7 +4,7 @@ from neo4japp.services.visualizer import (
     get_snippets_for_cluster,
     get_snippets_for_edge,
 )
-from neo4japp.util import camel_to_snake_dict
+from neo4japp.utils.string import camel_to_snake_dict
 
 
 def test_get_reference_table_data(

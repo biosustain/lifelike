@@ -104,7 +104,7 @@ export class Trace implements SankeyDocumentPartMixin<Graph.Trace> {
 
 export class TraceNetwork implements SankeyDocumentPartMixin<Graph.TraceNetwork> {
   traces: Trace[];
-  views$: BehaviorSubject<Record<string, View>>;
+  readonly views$: BehaviorSubject<Record<string, View>>;
   private sankeyDocument;
   sources: SankeyNode[];
   targets: SankeyNode[];
@@ -430,7 +430,7 @@ export class SankeyDocument implements SankeyDocumentPartMixin<Graph.File> {
   links: SankeyLink[];
   graph: SankeyGraph;
   private nodeById: Map<SankeyId, SankeyNode>;
-  isDirty$: BehaviorSubject<boolean>;
+  readonly isDirty$: BehaviorSubject<boolean>;
   directed: boolean;
   multigraph: boolean;
   warningController: WarningControllerService;
@@ -497,17 +497,17 @@ export class SankeyFile {
     this.filesystemService.getContent(hash).pipe(mapBlobToBuffer(), mapBufferToJson())
   );
 
-  metadata$ = this.metaLoadTask.results$.pipe(
+  readonly metadata$ = this.metaLoadTask.results$.pipe(
     map(({ result }) => result),
     shareReplay<FilesystemObject>({ bufferSize: 1, refCount: true })
   );
 
-  content$ = this.contentLoadTask.results$.pipe(
+  readonly content$ = this.contentLoadTask.results$.pipe(
     map(({ result }) => result),
     shareReplay<Graph.File>({ bufferSize: 1, refCount: true })
   );
 
-  document$ = this.content$.pipe(
+  readonly document$ = this.content$.pipe(
     map((raw) => new SankeyDocument(raw, this.warningController)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -520,7 +520,7 @@ export class SankeyFile {
    * `new SankeyDocument(FileContent).toString() = FileContent`
    * yet current implementation cannot guarantee that just yet.
    */
-  contentWithOnlyViewsUpdated$ = this.content$.pipe(
+  readonly contentWithOnlyViewsUpdated$ = this.content$.pipe(
     switchMap(({ graph: { trace_networks, ...fcGraph }, ...fc }) =>
       this.document$.pipe(
         map(({ graph: { traceNetworks } }) => ({
