@@ -17,7 +17,6 @@ import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provi
 import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 
 import { PromptComposer } from '../../../interface';
-import { ChatGPT } from '../../../ChatGPT';
 
 export interface DrawingToolPromptFormParams {
   formInput: {
@@ -34,11 +33,7 @@ export interface DrawingToolPromptFormParams {
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
   TEMPLATE = `
-Given list of terms delimited by ${ChatGPT.DELIMITER}, explain what is the relationship between them?
-List of terms: ${ChatGPT.DELIMITER}
-  ...[entities],
-  [context]
-${ChatGPT.DELIMITER}
+What is the relationship between [entities], [context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
@@ -56,11 +51,11 @@ ${ChatGPT.DELIMITER}
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
     return (
-      `Given list of terms delimited by ${ChatGPT.DELIMITER}, ` +
-      `explain what is the relationship between them?\n` +
-      `List of terms: ${ChatGPT.DELIMITER}\n` +
-      `\t${entities.join(`\n\t`)}\n` +
-      `${ChatGPT.DELIMITER}`
+      'What is the relationship between ' +
+      entities.join(', ') +
+      (context ? `, ${context}` : '') +
+      '?'
+      // + '\nPlease provide URL sources for your answer.'
     );
   }
 
