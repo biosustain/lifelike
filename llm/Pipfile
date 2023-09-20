@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+mypy = "*"
+pycodestyle = "*"
+
+[packages]
+flask-marshmallow = "*"
+Flask = "*"
+gunicorn = "*"
+python-arango = "*"
+openai = "*"
+langchain = "*"
+redis = "*"
+
+[requires]
+python_version = ">=3.11"
