@@ -78,16 +78,10 @@ otherwise:
       );
     }
     if (organism && term && geneName) {
-      return (
-        `For ${organism}, ` +
-        `what function does ${geneName} have in ${term}?`
-      );
+      return `For ${organism}, ` + `what function does ${geneName} have in ${term}?`;
     }
     if (organism && term && context) {
-      return (
-        `For ${organism}, ` +
-        `what is the relationship between ${term} and ${context}?`
-      );
+      return `For ${organism}, ` + `what is the relationship between ${term} and ${context}?`;
     }
     if (organism && term) {
       return `What is the ralationship between ${organism} and ${term}?`;
