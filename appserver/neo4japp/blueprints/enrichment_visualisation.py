@@ -86,37 +86,24 @@ def enrich_go():
     return forward_request()
 
 
-def escape(param: str):
-    return f"{ChatGPT.DELIMITER}{ChatGPT.escape(param)}{ChatGPT.DELIMITER}"
-
-
 def compose_prompt(organism, term, context, gene_name):
     if organism and term and context and gene_name:
         return (
-            f'For {escape(organism)}, '
-            f'what function does {escape(gene_name)} have in {escape(term)}, '
-            f'in context of {escape(context)}?'
+            f'For {organism}, what function does {gene_name} have in {term},'
+            f' in context of {context}?'
         )
     if organism and term and gene_name:
-        return (
-            f'For {escape(organism)},'
-            f' what function does {escape(gene_name)} have in {escape(term)}?'
-        )
+        return f'For {organism}, what function does {gene_name} have in {term}?'
     elif organism and term and context:
-        return (
-            f'For {escape(organism)},'
-            f' what is the relationship between {escape(term)} and {escape(context)}?'
-        )
+        return f'For {organism}, what is the relationship between {term} and {context}?'
     elif organism and term:
-        return (
-            f'What is the ralationship between {escape(organism)} and {escape(term)}?'
-        )
+        return f'What is the ralationship between {organism} and {term}?'
     else:
         defined_params = tuple(
             filter(lambda a: a, (organism, term, context, gene_name))
         )
         if len(defined_params) > 1:
-            list_str = ", ".join(map(escape, defined_params))
+            list_str = ", ".join(defined_params)
             return f'What is the ralationship between {list_str}?'
         else:
             return 'Return message that not enough parameters were defined.'
@@ -125,16 +112,16 @@ def compose_prompt(organism, term, context, gene_name):
 @bp.route('/enrich-with-context', methods=['POST'])
 def enrich_context():
     data = request.get_json()
-    organism = data.get('organism')
-    term = data.get('term')
-    context = data.get('context')
-    gene_name = data.get('geneName')
+    organism = data.get('organism', '')
+    term = data.get('term', '')
+    context = data.get('context', '')
+    gene_name = data.get('geneName', '')
     create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
             dict(
                 role="user",
-                content=(compose_prompt(organism, term, context, gene_name)),
+                content=compose_prompt(organism, term, context, gene_name),
             )
         ],
         temperature=0,
