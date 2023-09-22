@@ -1393,8 +1393,8 @@ class FileContentView(FilesystemBaseView):
             return filename if filename.endswith('.json') else f'{filename}.json'
         elif mime_type == FILE_MIME_TYPE_GRAPH:
             return filename if filename.endswith('.graph') else f'{filename}.graph'
-        elif mime_type == FILE_MIME_TYPE_DIRECTORY:
-            return f'{filename.split("/")[1]}.zip'
+        elif mime_type == FILE_MIME_TYPE_PDF:
+            return filename if filename.endswith('.pdf') else f'{filename}.pdf'
         else:
             return filename
 
@@ -1406,9 +1406,6 @@ class FileContentView(FilesystemBaseView):
         """
         current_user = g.current_user
         hash_ids = params['hash_ids']
-
-        # Default name for file downloads
-        download_filename = '***ARANGO_DB_NAME***.zip'
 
         if len(hash_ids) == 0:
             raise ServerException(
@@ -1439,9 +1436,6 @@ class FileContentView(FilesystemBaseView):
                     filename=self._get_special_filename(file.filename, file.mime_type),
                     mime_type=file.mime_type,
                 )
-
-            # If the file is a folder, then we can set the download file name to its name
-            download_filename = self._get_special_filename(file.path, file.mime_type)
 
         # If we reach this block, then there were either many hash ids, or a single folder hash id.
         response_data = FileContentBuffer()
@@ -1498,7 +1492,7 @@ class FileContentView(FilesystemBaseView):
                         )
 
                     zip_filepath = self._get_special_filename(
-                        zip_filepath, file.mime_type
+                        zip_filepath, file_to_zip.mime_type
                     )
 
                     zip_file.writestr(zip_filepath, content.getvalue())
@@ -1507,7 +1501,7 @@ class FileContentView(FilesystemBaseView):
             request,
             response_data.getvalue(),
             etag=hashlib.sha256(response_data.getvalue()).hexdigest(),
-            filename=download_filename,
+            filename='***ARANGO_DB_NAME***-download.zip',
             mime_type='application.zip',
         )
 
