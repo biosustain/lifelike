@@ -4,18 +4,23 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pytest = "*"
-mypy = "*"
-pycodestyle = "*"
+pytest = "==7.4.2"
+mypy = "==1.5.1"
+pycodestyle = "==2.11.0"
+jupyterlab = "*"
+llmlib = {file = ".", editable = true}
+neo4j = "*"
 
 [packages]
-flask-marshmallow = "*"
-Flask = "*"
-gunicorn = "*"
-python-arango = "*"
-openai = "*"
-langchain = "*"
-redis = "*"
+flask-marshmallow = "==0.15.0"
+Flask = "==2.3.3"
+gunicorn = "==21.2.0"
+python-arango = "==7.6.2"
+openai = "==0.28.0"
+langchain = "==0.0.296"
+redis = "==5.0.0"
+cachetools = "==5.3.1"
+webargs = "*"
 
 [requires]
-python_version = ">=3.11"
+python_version = "3.11"

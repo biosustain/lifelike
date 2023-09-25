@@ -4,7 +4,7 @@
 __dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Runs linting on only files that are staged
-staged_files=$(getStaged llm '\.(py)$')
+staged_files=$(getStaged llmlib '\.(py)$')
 
 # shellcheck disable=SC2236
 if [[ -n $staged_files ]];
@@ -13,13 +13,13 @@ then
     echo "> 🌽 Running flake8..."
     echo ${staged_files} | \
       xargs docker run --rm \
-      -v $(pwd)/llm:/apps \
+      -v $(pwd)/llmlib:/apps \
       alpine/flake8:6.0.0
   ) && (
     echo "> 🐍 Running pycodestyle..."
     echo ${staged_files} | \
       xargs docker run --rm \
-      -v $(pwd)/llm:/data \
+      -v $(pwd)/llmlib:/data \
       cytopia/pycodestyle:2
   )
 else
