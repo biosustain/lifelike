@@ -3,7 +3,7 @@ version: "3.8"
 
 x-appserver: &appserver
   image: ***ARANGO_DB_NAME***.azurecr.io/kg-appserver:${GITHUB_HASH}
-  environment:
+  environment: &appserver_env
     - NEO4J_HOST=neo4j
     - NEO4J_AUTH=neo4j/password
     - NEO4J_PORT=7687
@@ -45,6 +45,11 @@ services:
   worker:
     <<: *appserver
     command: rq worker -c rq_config --with-scheduler
+
+  llm:
+    image: ***ARANGO_DB_NAME***.azurecr.io/kg-llmlib:${GITHUB_HASH}
+    environment:
+      <<: *appserver_env
 
   postgres:
     image: postgres:13
