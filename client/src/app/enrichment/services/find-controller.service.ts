@@ -1,97 +1,113 @@
 import { Injectable, NgZone, OnDestroy } from '@angular/core';
 
-import { escapeRegExp, isNil } from 'lodash-es';
-import { asyncScheduler, ReplaySubject, Subject } from 'rxjs';
+import { escapeRegExp } from 'lodash-es';
+import {
+  animationFrame,
+  animationFrameScheduler,
+  asyncScheduler,
+  BehaviorSubject,
+  combineLatest,
+  interval,
+  ReplaySubject,
+  Subject,
+} from 'rxjs';
 import {
   map,
   observeOn,
   pairwise,
-  scan,
+  share,
   shareReplay,
   startWith,
   switchMap,
   takeUntil,
+  tap,
   withLatestFrom,
 } from 'rxjs/operators';
 
 import { NodeTextRange } from 'app/shared/utils/dom';
-import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
+import { AsyncElementFindController } from 'app/shared/utils/find/async-element-find';
+import { idle } from 'app/shared/rxjs/idle-observable';
+import { runInAngularZone } from 'app/shared/rxjs/run-in-angular-zone';
+import { AsyncTextHighlighter } from 'app/shared/utils/dom/async-text-highlighter';
 
+/**
+ * Find controller service for finding items within an DOM element.
+ * It:
+ * + finds items
+ * + highlights them
+ * + manages focused one
+ * + provides visual feedback for focused item
+ *
+ * Since it directly interacts with DOM, this class bridges Angular and DOM utils.
+ */
 @Injectable()
 export class FindControllerService implements OnDestroy {
-  constructor(private ngZone: NgZone) {
-    this.query$
-      .pipe(
-        withLatestFrom(this.elementFind$), // changing elementFind$ should not rerun query
-        observeOn(asyncScheduler),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(([query, elementFind]) => {
-        elementFind.query = query;
-        elementFind.start();
-      });
-    this.elementFind$
-      .pipe(
-        takeUntil(this.destroy$),
-        scan(
-          (runRef: { handle: number }, elementFind) => {
-            // animationFrameScheduler runs in Angular context
-            this.ngZone.runOutsideAngular(() => {
-              if (isNil(runRef.handle)) {
-                cancelAnimationFrame(runRef.handle);
-              }
-              const step = () => {
-                elementFind.tick();
-                runRef.handle = requestAnimationFrame(step);
-              };
-              runRef.handle = requestAnimationFrame(step);
-            });
-            return { handle: runRef.handle };
-          },
-          { handle: null }
-        )
-      )
-      .subscribe();
-    this.target$
-      .pipe(
-        // lazy init
-        takeUntil(this.destroy$),
-        withLatestFrom(this.elementFind$)
-      )
-      .subscribe(([target, elementFind]) => {
-        elementFind.target = target;
-        elementFind.start();
-      });
+  constructor(private readonly ngZone: NgZone) {}
+
+  // region Service inputs
+  public readonly type$ = new ReplaySubject<'text' | 'annotation'>(1);
+  public readonly query$ = new ReplaySubject<string | null>(1);
+  public readonly target$ = new ReplaySubject<Element>(1);
+  // endregion
+  private readonly findGenerator$ = this.type$.pipe(
+    map((type) =>
+      type === 'annotation' ? this.generateAnnotationFindQueue : this.generateTextFindQueue
+    )
+  );
+  private readonly elementFind = new AsyncElementFindController(
+    this.query$,
+    this.target$,
+    this.findGenerator$
+  );
+  private readonly highlighter = new AsyncTextHighlighter(this.target$, this.elementFind.search$);
+  private readonly highlighterSubscription = this.highlighter.render$.subscribe();
+  // region Service outputs
+  /**
+   * Underlying search control - provide access to search results without entering Angular zone.
+   */
+  public readonly search$ = this.elementFind.search$;
+  /**
+   * Index of currently focused item.
+   */
+  public readonly index$ = this.elementFind.search$.pipe(
+    switchMap((search) => search.index$),
+    runInAngularZone(this.ngZone)
+  );
+  /**
+   * Currently focused item.
+   */
+  public readonly current$ = this.elementFind.search$.pipe(
+    switchMap((search) => search.current$),
+    runInAngularZone(this.ngZone)
+  );
+  /**
+   * Number of found items.
+   */
+  public readonly count$ = this.elementFind.search$.pipe(
+    switchMap((search) => search.count$),
+    runInAngularZone(this.ngZone)
+  );
+  // endregion
+
+  // region Service methods
+  public next() {
+    this.elementFind.next();
   }
 
-  destroy$ = new Subject<any>();
-  type$ = new ReplaySubject<'text' | 'annotation'>(1);
-  query$ = new ReplaySubject<string>(1);
-  target$ = new ReplaySubject<Element | null>(null);
-  elementFind$ = this.type$.pipe(
-    withLatestFrom(this.target$.pipe(startWith(null))), // lazy init
-    map(
-      ([type, target]) =>
-        new AsyncElementFind(
-          target,
-          type === 'annotation' ? this.generateAnnotationFindQueue : this.generateTextFindQueue
-        )
-    ),
-    startWith(null),
-    pairwise(),
-    map(([prev, next]) => {
-      prev?.stop();
-      return next;
-    }),
-    shareReplay({ refCount: true, bufferSize: 1 })
-  );
-  focusElement$ = this.elementFind$.pipe(switchMap((elementMap) => elementMap.current$));
+  public previous() {
+    this.elementFind.previous();
+  }
+  // endregion
 
   ngOnDestroy() {
-    this.destroy$.next();
+    this.highlighterSubscription.unsubscribe();
   }
 
-  private *generateAnnotationFindQueue(***ARANGO_USERNAME***: Node, query: string) {
+  // region Find generator functions
+  private *generateAnnotationFindQueue(***ARANGO_USERNAME***: Node, query: string | null) {
+    if (!query) {
+      return;
+    }
     const annotations = Array.from(
       (***ARANGO_USERNAME*** as Element).querySelectorAll('[data-annotation-meta]')
     ) as HTMLElement[];
@@ -112,9 +128,13 @@ export class FindControllerService implements OnDestroy {
 
   private *generateTextFindQueue(
     ***ARANGO_USERNAME***: Node,
-    query: string
+    query: string | null
   ): IterableIterator<NodeTextRange | undefined> {
+    if (!query) {
+      return;
+    }
     const queue: Node[] = [***ARANGO_USERNAME***];
+    const regex = new RegExp(escapeRegExp(query), 'ig');
 
     while (queue.length !== 0) {
       const node = queue.shift();
@@ -128,7 +148,6 @@ export class FindControllerService implements OnDestroy {
           const style = window.getComputedStyle(el);
           // Should be true when we find the top-level container for the table cell
           if (style.display === 'block') {
-            const regex = new RegExp(escapeRegExp(query), 'ig');
             let match = regex.exec(node.textContent);
 
             // If there's no match in the ***ARANGO_USERNAME***, then there's no reason to continue
@@ -174,4 +193,5 @@ export class FindControllerService implements OnDestroy {
       }
     }
   }
+  // endregion
 }

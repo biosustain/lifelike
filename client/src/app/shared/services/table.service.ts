@@ -38,10 +38,10 @@ function matches(data: any, term: string) {
 
 @Injectable()
 export class DataService {
-  private _loading$ = new BehaviorSubject<boolean>(true);
-  private _search$ = new Subject<void>();
-  private _data$ = new ReplaySubject<any[]>(1);
-  private _total$ = new ReplaySubject<number>(1);
+  private readonly _loading$ = new BehaviorSubject<boolean>(true);
+  private readonly _search$ = new Subject<void>();
+  private readonly _data$ = new ReplaySubject<any[]>(1);
+  private readonly _total$ = new ReplaySubject<number>(1);
 
   private _state: State = {
     page: 1,

@@ -28,9 +28,9 @@ import { TraceNode } from './interfaces';
   providers: [TruncatePipe, WarningControllerService, ModuleContext],
 })
 export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
-  destroyed = new Subject();
+  readonly destroyed = new Subject();
 
-  loadTask = new BackgroundTask((id: string) =>
+  readonly loadTask = new BackgroundTask((id: string) =>
     combineLatest([
       this.filesystemService.open(id),
       this.filesystemService.getContent(id).pipe(
@@ -53,18 +53,18 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     )
   );
 
-  data$ = this.loadTask.results$.pipe(map(({ result: [, fileContent] }) => fileContent));
+  readonly data$ = this.loadTask.results$.pipe(map(({ result: [, fileContent] }) => fileContent));
 
-  title$ = this.data$.pipe(
+  readonly title$ = this.data$.pipe(
     map(({ startNode, endNode }) => `${startNode.title} → ${endNode.title}`)
   );
 
-  header$ = combineLatest([
+  readonly header$ = combineLatest([
     this.title$,
     this.loadTask.results$.pipe(map(({ result: [object] }) => object)),
   ]).pipe(map(([title, object]) => ({ title, object })));
 
-  modulePropertiesChange = this.title$.pipe(
+  readonly modulePropertiesChange = this.title$.pipe(
     map((title) => ({
       title,
       fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
@@ -90,7 +90,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
     });
   }
 
-  sourceData$ = defer(() =>
+  readonly sourceData$ = defer(() =>
     of([
       {
         domain: 'Source File',

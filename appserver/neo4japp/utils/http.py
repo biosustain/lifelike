@@ -27,3 +27,6 @@ def make_cacheable_file_response(
         ] = f'attachment; filename="{fallback_filename}"; filename*=UTF-8\'\'{quoted_filename}'
         response.headers['ETag'] = f'"{etag}"'
         return response
+
+
+__all__ = ['make_cacheable_file_response']

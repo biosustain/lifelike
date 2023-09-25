@@ -26,6 +26,12 @@
             <app-annotations-table></app-annotations-table>
           </ng-template>
         </li>
+        <li ngbNavItem="chatGptUsage">
+          <a ngbNavLink>ChatGPT Usage</a>
+          <ng-template ngbNavContent>
+            <app-chatgpt-usage></app-chatgpt-usage>
+          </ng-template>
+        </li>
       </ul>
 
       <div [ngbNavOutlet]="nav" class="mt-4"></div>

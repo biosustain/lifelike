@@ -19,6 +19,7 @@ import {
   mergeMap,
   mergeScan,
   shareReplay,
+  skip,
   startWith,
   switchMap,
   take,
@@ -32,7 +33,6 @@ import { ObjectUpdateRequest } from 'app/file-browser/schema';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
@@ -73,7 +73,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     protected readonly enrichmentService: EnrichmentService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
-    private readonly findControllerService: FindControllerService
+    readonly findControllerService: FindControllerService
   ) {
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
@@ -86,28 +86,37 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   @ViewChild(EnrichmentTableComponent) enrichmentTable: EnrichmentTableComponent;
 
   annotation: AnnotationData;
-  private destroy$ = new Subject<any>();
+  private readonly destroy$ = new Subject<any>();
 
-  fileIdChange$ = new ReplaySubject<string>(1);
+  readonly fileIdChange$ = new ReplaySubject<string>(1);
 
   set fileId(id: string) {
     this.fileIdChange$.next(id);
   }
 
-  fileId$: Observable<string> = merge(
+  readonly fileId$: Observable<string> = merge(
     this.fileIdChange$,
     this.route.params.pipe(
       map(({ file_id }) => file_id),
       filter((fileId) => !!fileId)
     )
   );
-  object$: Observable<FilesystemObject> = this.fileId$.pipe(
+  readonly object$: Observable<FilesystemObject> = this.fileId$.pipe(
     switchMap((fileId) => this.enrichmentService.get(fileId)),
     shareReplay()
   );
-  document$: Observable<EnrichmentDocument> = this.fileId$.pipe(
+  // TODO: Restore seems to be dissabled for enrichment tables, delete?
+  readonly restore$ = new ReplaySubject<ObjectVersion>(1);
+  readonly document$: Observable<EnrichmentDocument> = this.fileId$.pipe(
     switchMap((fileId) =>
       this.enrichmentService.getContent(fileId).pipe(
+        switchMap((blob) =>
+          this.restore$.pipe(
+            map((version) => version.contentValue),
+            tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
+            startWith(blob)
+          )
+        ),
         mergeScan(
           (document, blob) => document.loadResult(blob, fileId),
           new EnrichmentDocument(this.worksheetViewerService)
@@ -122,26 +131,27 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     ),
     shareReplay()
   );
-  table$: Observable<EnrichmentTable> = this.document$.pipe(
+  readonly table$: Observable<EnrichmentTable> = this.document$.pipe(
     mergeScan((table, document) => table.load(document), new EnrichmentTable()),
     this.errorHandler.create({ label: 'Load enrichment table' }),
     shareReplay()
   );
-  modulePropertiesChange = this.object$.pipe(
+  readonly modulePropertiesChange = this.object$.pipe(
     map((object) => ({
       title: object ? object.filename : 'Enrichment Table',
       fontAwesomeIcon: 'table',
     }))
   );
-  findController$: Observable<AsyncElementFind> = this.findControllerService.elementFind$;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
    * due to the addition of annotations to enrichment tables, this feature has been broken.
    */
-  queuedChanges$ = new BehaviorSubject<ObjectUpdateRequest | undefined>(null);
+  readonly queuedChanges$ = new BehaviorSubject<ObjectUpdateRequest | undefined>(null);
 
-  dragTitleData$ = defer(() => this.object$.pipe(map((object) => object.getTransferData())));
+  readonly dragTitleData$ = defer(() =>
+    this.object$.pipe(map((object) => object.getTransferData()))
+  );
 
   scrollTop() {
     this.enrichmentTable.scrollTop();
@@ -161,37 +171,26 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
   }
 
   restore(version: ObjectVersion) {
-    this.document$ = this.fileId$.pipe(
-      mergeScan(
-        (document, fileId) => document.loadResult(version.contentValue, fileId),
-        new EnrichmentDocument(this.worksheetViewerService)
-      ),
-      tap(() => this.queuedChanges$.next(this.queuedChanges$.value || {})),
-      shareReplay()
-    );
-    this.table$ = this.document$.pipe(
-      mergeMap((document) => {
-        return new EnrichmentTable().load(document);
-      }),
-      this.errorHandler.create({ label: 'Restore enrichment table' }),
-      shareReplay()
-    );
+    return this.restore$.next(version);
   }
 
   refreshData() {
-    this.table$ = combineLatest(this.document$, this.table$).pipe(
-      take(1),
-      mergeMap(([document, table]) =>
-        document.refreshData().pipe(
-          mergeMap(() => new EnrichmentTable().load(document)),
-          tap((newTable) => {
-            this.snackBar.open(`Data refreshed.`, 'Close', { duration: 5000 });
-          })
-        )
-      ),
-      shareReplay(),
-      this.errorHandler.create({ label: 'Load enrichment table' })
-    );
+    return this.fileId$
+      .pipe(take(1))
+      .toPromise()
+      .then((fileId) => {
+        const resultSnackbar = this.enrichmentService
+          .getContent(fileId)
+          .pipe(
+            skip(1), // skip the first one, which is the current value
+            take(1) // waits for first update
+          )
+          .toPromise()
+          .then((blob) => this.snackBar.open(`Data refreshed.`, 'Close', { duration: 5000 }));
+        // Reload fileRef
+        this.enrichmentService.update(fileId);
+        return resultSnackbar;
+      });
   }
 
   save() {
@@ -208,24 +207,26 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     const observable = combineLatest(
       this.object$,
       this.document$.pipe(
+        take(1),
         // need to use updateParameters instead of save
         // because save only update the import genes list
         // not the matched results
         // so a new version of the file will not get created
         // the newly added gene matched
-        mergeMap((document) => document.updateParameters())
+        switchMap((document) => document.updateParameters())
       )
     ).pipe(
       take(1),
       mergeMap(([object, blob]) =>
-        this.enrichmentService.save([object.hashId], {
-          contentValue: blob,
-          ...this.queuedChanges$.value,
-        })
+        this.enrichmentService.save(
+          [object.hashId],
+          {
+            contentValue: blob,
+            ...this.queuedChanges$.value,
+          },
+          { [object.hashId]: object }
+        )
       ),
-      map(() => {
-        this.refreshData();
-      }),
       tap(() => this.queuedChanges$.next(null)),
       this.errorHandler.create({ label: 'Save enrichment table' }),
       shareReplay(),
@@ -253,14 +254,8 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
       return dialogRef.result.then(
         (result) => {
           if (document.domains !== result) {
-            document.domains = result;
+            document.setParameters({ domains: result });
             this.queuedChanges$.next(this.queuedChanges$.value || {});
-            this.table$ = new EnrichmentTable()
-              .load(document)
-              .pipe(
-                this.errorHandler.create({ label: 'Re-order enrichment table' }),
-                shareReplay()
-              );
           }
         },
         () => {}
@@ -282,7 +277,6 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     dialogRef.componentInstance.fileId = this.fileId;
     dialogRef.componentInstance.accept = (result: EnrichmentTableEditDialogValue) => {
       this.queueChange(result.objectChanges);
-      document.setParameters(result.documentChanges);
       this.save();
     };
     return dialogRef.result;
@@ -297,11 +291,13 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
 
   switchToTextFind() {
     this.annotation = { id: '', text: '', color: '' };
+    this.findControllerService.query$.next(null);
     this.findControllerService.type$.next('text');
   }
 
   switchToAnnotationFind(id: string, text: string, color: string) {
     this.annotation = { id, text, color };
+    this.findControllerService.query$.next(null);
     this.findControllerService.type$.next('annotation');
   }
 

@@ -14,5 +14,5 @@ export abstract class SankeyAbstractDetailsPanelComponent {
 
   SelectionType = SelectionType;
 
-  details$ = this.selectionService.selection$;
+  readonly details$ = this.selectionService.selection$;
 }

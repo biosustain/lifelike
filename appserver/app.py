@@ -1,25 +1,25 @@
 import base64
-import click
 import copy
 import hashlib
 import importlib
 import json
 import logging
-import math
 import os
 import re
-import requests
 import sys
-import timeflake
 import uuid
 import zipfile
-
 from collections import namedtuple
+from typing import List
+
+import click
+import math
+import requests
+import timeflake
 from flask import request, g
 from marshmallow.exceptions import ValidationError
 from sqlalchemy import inspect, Table
 from sqlalchemy.sql.expression import and_, text
-from typing import List
 
 from neo4japp.blueprints.auth import auth
 from neo4japp.constants import (
@@ -46,13 +46,13 @@ from neo4japp.models import AppUser
 from neo4japp.models.common import generate_hash_id
 from neo4japp.models.files import FileContent, Files
 from neo4japp.schemas.formats.drawing_tool import validate_map
-from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.annotations.constants import EntityType
+from neo4japp.services.annotations.initializer import get_lmdb_service
 from neo4japp.services.redis.redis_queue_service import RedisQueueService
-from neo4japp.utils import FileContentBuffer
-from neo4japp.utils.globals import warn
-from neo4japp.utils.logger import EventLog
+from neo4japp.utils import EventLog
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 from neo4japp.utils.globals import config
+from neo4japp.utils.globals import warn
 
 app_config = os.environ.get('FLASK_APP_CONFIG', 'Development')
 app = create_app(config_package=f'config.{app_config}')
@@ -639,7 +639,7 @@ def add_file(
         )
 
     # Get the provider based on what we know now
-    provider = file_type_service.get(file)
+    provider = file_type_service.get(file.mime_type)
 
     # Check if the user can even upload this type of file
     if not provider.can_create():
@@ -1138,6 +1138,20 @@ def fix_broken_map_links():
         .yield_per(100)
     )
 
+    def fix_sources(entity):
+        for source in entity['data'].get('sources', []):
+            link_search = re.search(new_link_re, source['url'])
+            if link_search is not None:
+                hash_id = link_search.group(1)
+                if hash_id in HASH_CONVERSION_MAP:
+                    print(
+                        f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
+                        + f'{HASH_CONVERSION_MAP[hash_id]}'
+                    )
+                    source['url'] = source['url'].replace(
+                        hash_id, HASH_CONVERSION_MAP[hash_id]
+                    )
+
     new_link_re = r'^\/projects\/(?:[^\/]+)\/[^\/]+\/([a-zA-Z0-9-]+)'
     need_to_update = []
     for fcid, raw_file in raw_maps_to_fix:
@@ -1146,33 +1160,11 @@ def fix_broken_map_links():
         map_json = json.loads(zip_file.read('graph.json'))
 
         for node in map_json['nodes']:
-            for source in node['data'].get('sources', []):
-                link_search = re.search(new_link_re, source['url'])
-                if link_search is not None:
-                    hash_id = link_search.group(1)
-                    if hash_id in HASH_CONVERSION_MAP:
-                        print(
-                            f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
-                            + f'{HASH_CONVERSION_MAP[hash_id]}'
-                        )
-                        source['url'] = source['url'].replace(
-                            hash_id, HASH_CONVERSION_MAP[hash_id]
-                        )
+            fix_sources(node)
 
         for edge in map_json['edges']:
             if 'data' in edge:
-                for source in edge['data'].get('sources', []):
-                    link_search = re.search(new_link_re, source['url'])
-                    if link_search is not None:
-                        hash_id = link_search.group(1)
-                        if hash_id in HASH_CONVERSION_MAP:
-                            print(
-                                f'\tFound hash_id {hash_id} in file #{fcid}, replacing with '
-                                + f'{HASH_CONVERSION_MAP[hash_id]}'
-                            )
-                            source['url'] = source['url'].replace(
-                                hash_id, HASH_CONVERSION_MAP[hash_id]
-                            )
+                fix_sources(edge)
 
         byte_graph = json.dumps(map_json, separators=(',', ':')).encode('utf-8')
         validate_map(json.loads(byte_graph))
@@ -1180,7 +1172,7 @@ def fix_broken_map_links():
         # Zip the file back up before saving to the DB
         zip_bytes2 = FileContentBuffer()
         with zipfile.ZipFile(zip_bytes2, 'x', zipfile.ZIP_DEFLATED) as zip_file:
-            zip_file.writestr('graph.json', byte_graph)
+            zip_file.writestr(zipfile.ZipInfo('graph.json'), byte_graph)
         new_bytes = zip_bytes2.getvalue()
         new_hash = hashlib.sha256(new_bytes).digest()
         need_to_update.append(

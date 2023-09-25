@@ -1,5 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Iterable, Callable, TypeVar
 
 import sqlalchemy as sa
 import timeflake
@@ -11,7 +12,7 @@ from sqlalchemy.types import TIMESTAMP
 from sqlalchemy_utils.types import TSVectorType
 
 from neo4japp.database import db
-from neo4japp.util import snake_to_camel, camel_to_snake
+from neo4japp.utils import snake_to_camel, camel_to_snake
 
 
 def generate_hash_id():
@@ -61,7 +62,16 @@ class RDBMSBase(db.Model):  # type: ignore
     def __get_columns(self):
         return {x.name: x.type for x in sa.inspect(self).mapper.columns}
 
-    def to_dict(self, exclude=None, include=None, only=None, keyfn=None, valuefn=None):
+    _T = TypeVar('_T')
+
+    def to_dict(
+        self,
+        exclude: Iterable = None,
+        include: Iterable = None,
+        only: Iterable = None,
+        keyfn: Callable[[str], str] = None,
+        valuefn: Callable[[_T], _T] = None,
+    ):
         """Returns a dictionary of the model object.
 
         Attribute names (exclude, include, only, etc) are in snake_case.
@@ -99,6 +109,8 @@ class RDBMSBase(db.Model):  # type: ignore
         else:
             if include:
                 attrs = include
+                # todo: in this implementation include works the same as only
+                #  - probably not intended
             else:
                 exclude = exclude or []
                 attrs = [k for k in columns.keys() if k not in exclude]

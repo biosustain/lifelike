@@ -9,8 +9,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.exc import NoResultFound
 from typing_extensions import TypedDict
 
-from neo4japp.database import get_projects_service, db, get_jwt_client
-from neo4japp.constants import LogEventType, MAX_ALLOWED_LOGIN_FAILURES
+from neo4japp.constants import MAX_ALLOWED_LOGIN_FAILURES, LogEventType
+from neo4japp.database import db, get_jwt_client, get_account_service
 from neo4japp.exceptions import (
     AuthenticationError,
     JWTTokenException,
@@ -20,7 +20,7 @@ from neo4japp.exceptions import (
 )
 from neo4japp.models.auth import AppRole, AppUser
 from neo4japp.schemas.auth import LifelikeJWTTokenResponse
-from neo4japp.utils.logger import UserEventLog
+from neo4japp.utils import UserEventLog
 from neo4japp.utils.globals import config
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -90,7 +90,7 @@ class TokenService:
         }
 
     def _get_key(self, token: str):
-        if config['JWKS_URL'] is not None:
+        if config['JWKS_URL']:
             return get_jwt_client().get_signing_key_from_jwt(token).key
         elif config['JWT_SECRET']:
             return config['JWT_SECRET']
@@ -157,46 +157,51 @@ def verify_token(token):
     token_service = TokenService(config['JWT_SECRET'], config['JWT_ALGORITHM'])
     decoded = token_service.decode_token(token, audience=config['JWT_AUDIENCE'])
 
-    with db.session.begin_nested():
+    try:
+        # See if the token has the email as a property, otherwise try to get it from the subject.
+        email_from_token = decoded.get('email', False) or decoded.get('sub', None)
+
+        # If there was no email or subject in the token, reject it
+        if email_from_token is None:
+            return False
+
+        user = AppUser.query_by_email(email_from_token).one()
+        current_app.logger.info(
+            f'Active user: {user.email}',
+            extra=UserEventLog(
+                username=user.username, event_type=LogEventType.LAST_ACTIVE.value
+            ).to_dict(),
+        )
+    except NoResultFound:
+        # Note that this except block should only trigger when a user signs in via OAuth for the
+        # first time.
+        user = AppUser(
+            username=decoded['preferred_username'],
+            email=decoded['email'],
+            first_name=decoded.get('given_name') or decoded.get('name', ''),
+            last_name=decoded.get('family_name', ''),
+            subject=decoded.get('sub'),
+        )
+
+        # Add the "user" role to the new user
+        user_role = AppRole.query.filter_by(name='user').one()
+        user.roles.append(user_role)
+
+        # Finally, add the new user to the DB
         try:
-            user = AppUser.query_by_subject(decoded['sub']).one()
-            current_app.logger.info(
-                f'Active user: {user.email}',
-                extra=UserEventLog(
-                    username=user.username, event_type=LogEventType.LAST_ACTIVE.value
-                ).to_dict(),
-            )
-        except NoResultFound:
-            # Note that this except block should only trigger when a user signs in via OAuth for the
-            # first time.
-            user = AppUser(
-                username=decoded['username'],
-                email=decoded['email'],
-                first_name=decoded['first_name'],
-                last_name=decoded['last_name'],
-                subject=decoded['sub'],
-            )
-
-            # Add the "user" role to the new user
-            user_role = AppRole.query.filter_by(name='user').one()
-            user.roles.append(user_role)
-            projects_service = get_projects_service()
-
-            # Finally, add the new user to the DB
-            try:
-                with db.session.begin_nested():
-                    projects_service.create_initial_project(user)
-                    db.session.add(user)
-            except SQLAlchemyError as e:
-                raise ServerException(
-                    title='Unexpected Database Transaction Error',
-                    message='Something unexpected occurred while adding the user to the database.',
-                    fields={
-                        'user_id': user.id if user.id is not None else 'N/A',
-                        'username': user.username,
-                        'user_email': user.email,
-                    },
-                ) from e
+            get_account_service().create_user(user)
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            raise ServerException(
+                title='Unexpected Database Transaction Error',
+                message='Something unexpected occurred while adding the user to the database.',
+                fields={
+                    'user_id': user.id if user.id is not None else 'N/A',
+                    'username': user.username,
+                    'user_email': user.email,
+                },
+            ) from e
 
     g.current_user = user
     return True
@@ -260,35 +265,37 @@ def login():
     data = request.get_json()
     exception = None
 
-    with db.session.begin_nested():
-        # Pull user by email
-        try:
-            user = AppUser.query.filter_by(email=data.get('email')).one()
-        except NoResultFound as e:
-            exception = e
-        else:
-            if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
-                raise ServerException(
-                    message='The account has been suspended after too many failed login attempts.\
-                    Please contact an administrator for help.',
-                    code=HTTPStatus.LOCKED,
-                )
-            elif user.check_password(data.get('password')):
-                current_app.logger.info(
-                    UserEventLog(
-                        username=user.username,
-                        event_type=LogEventType.AUTHENTICATION.value,
-                    ).to_dict()
-                )
-                token_service = TokenService(
-                    config['JWT_SECRET'], config['JWT_ALGORITHM']
-                )
-                access_jwt = token_service.get_access_token(user.email)
-                refresh_jwt = token_service.get_refresh_token(user.email)
-                user.failed_login_count = 0
+    # Pull user by email
+    try:
+        user = AppUser.query.filter_by(email=data.get('email')).one()
+    except NoResultFound as e:
+        exception = e
+    else:
+        if user.failed_login_count >= MAX_ALLOWED_LOGIN_FAILURES:
+            raise ServerException(
+                message='The account has been suspended after too many failed login attempts.\
+                Please contact an administrator for help.',
+                code=HTTPStatus.LOCKED,
+            )
+        elif user.check_password(data.get('password')):
+            current_app.logger.info(
+                UserEventLog(
+                    username=user.username,
+                    event_type=LogEventType.AUTHENTICATION.value,
+                ).to_dict()
+            )
+            token_service = TokenService(config['JWT_SECRET'], config['JWT_ALGORITHM'])
+            access_jwt = token_service.get_access_token(user.email)
+            refresh_jwt = token_service.get_refresh_token(user.email)
+            user.failed_login_count = 0
 
+            try:
                 db.session.add(user)
-
+                db.session.commit()
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                exception = e
+            else:
                 return jsonify(
                     LifelikeJWTTokenResponse().dump(
                         {
@@ -307,10 +314,14 @@ def login():
                         }
                     )
                 )
-            else:
-                user.failed_login_count += 1
-
+        else:
+            user.failed_login_count += 1
+            try:
                 db.session.add(user)
+                db.session.commit()
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                exception = e
 
     raise ServerException(
         message='Could not find an account with that username/password combination. '

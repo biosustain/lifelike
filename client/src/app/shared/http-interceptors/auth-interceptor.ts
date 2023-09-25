@@ -21,7 +21,7 @@ import { environment } from '../../../environments/environment';
 @Injectable()
 export class AuthenticationInterceptor implements HttpInterceptor {
   isRefreshingToken = false;
-  refreshTokenSubj = new BehaviorSubject<any>(null);
+  readonly refreshTokenSubj = new BehaviorSubject<any>(null);
 
   constructor(
     private auth: AuthenticationService,

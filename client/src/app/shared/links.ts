@@ -12,7 +12,7 @@ export const SEARCH_LINKS: readonly Hyperlink[] = Object.freeze(
     },
     {
       domain: 'UniProt',
-      url: 'https://www.uniprot.org/uniprot/?sort=score&query=%s',
+      url: 'https://www.uniprot.org/uniprotkb?query=%s',
     },
     {
       domain: 'MeSH',

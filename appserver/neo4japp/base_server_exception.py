@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import asdict, dataclass
 from typing import Optional, Tuple
 
-from pipenv.vendor.ruamel import yaml
+import yaml
 
 from neo4japp.utils.string import indent_lines, compose_lines
 from neo4japp.utils.transaction_id import transaction_id

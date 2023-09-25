@@ -1,0 +1,21 @@
+app-playground .model-group {
+  @import 'variables';
+
+  width: 100%;
+  padding: 0;
+
+  .model-group-card {
+    [role='tab'] {
+      padding: 0.25rem 1.5rem;
+    }
+
+    [role='tabpanel'] .card-body {
+      padding: 0.25rem 0;
+
+      .selected {
+        background: $dropdown-link-hover-bg;
+        color: $dropdown-link-hover-color;
+      }
+    }
+  }
+}

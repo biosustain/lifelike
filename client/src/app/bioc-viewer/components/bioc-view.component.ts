@@ -129,19 +129,19 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   returnUrl: string;
 
   entityTypeVisibilityMap: Map<string, boolean> = new Map();
-  @Output() filterChangeSubject = new Subject<void>();
+  @Output() readonly filterChangeSubject = new Subject<void>();
 
-  searchChanged: Subject<{ keyword: string; findPrevious: boolean }> = new Subject<{
+  readonly searchChanged: Subject<{ keyword: string; findPrevious: boolean }> = new Subject<{
     keyword: string;
     findPrevious: boolean;
   }>();
   searchQuery = '';
-  goToPosition: Subject<Location> = new Subject<Location>();
-  highlightAnnotations = new BehaviorSubject<{
+  readonly goToPosition: Subject<Location> = new Subject<Location>();
+  readonly highlightAnnotations = new BehaviorSubject<{
     id: string;
     text: string;
   }>(null);
-  highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
+  readonly highlightAnnotationIds: Observable<string> = this.highlightAnnotations.pipe(
     map((value) => (value ? value.id : null))
   );
   loadTask: BackgroundTask<[string], [FilesystemObject, Document[]]>;
@@ -174,7 +174,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
   selectedText = '';
   createdNode;
 
-  dragTitleData$ = defer(() =>
+  readonly dragTitleData$ = defer(() =>
     of({
       'text/plain': this.object.filename,
       'application/***ARANGO_DB_NAME***-node': JSON.stringify({
@@ -211,7 +211,7 @@ export class BiocViewComponent implements OnDestroy, ModuleAwareComponent {
     })
   );
 
-  sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
+  readonly sourceData$ = defer(() => of(this.object?.getGraphEntitySources()));
 
   getFigureCaption(passage) {
     return passage.infons.id || 'Fig';

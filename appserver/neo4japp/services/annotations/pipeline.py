@@ -1,18 +1,16 @@
 import json
 import time
-
-from flask import current_app
 from typing import List, Tuple
 
+from flask import current_app
+
+from neo4japp.constants import LogEventType, FILE_MIME_TYPE_PDF
+from neo4japp.exceptions import AnnotationError
+from neo4japp.utils import normalize_str, EventLog
 from .constants import SPECIES_LMDB
 from .data_transfer_objects import PDFWord, SpecifiedOrganismStrain
 from .utils.nlp import predict
 from .utils.parsing import parse_content
-
-from neo4japp.constants import LogEventType, FILE_MIME_TYPE_PDF
-from neo4japp.exceptions import AnnotationError
-from neo4japp.util import normalize_str
-from neo4japp.utils.logger import EventLog
 
 
 class Pipeline:

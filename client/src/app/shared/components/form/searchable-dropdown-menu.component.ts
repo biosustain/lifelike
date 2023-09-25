@@ -70,10 +70,10 @@ import { ExtendedMap } from '../../utils/types';
 })
 export class SearchableDropdownMenuComponent<Id, Item> implements OnChanges {
   @HostBinding('@blockInitialRenderAnimation') blockInitialRenderAnimation = true;
-  value$ = new ReplaySubject<Id>(1);
-  items$ = new ReplaySubject<ExtendedMap<Id, Item>>(1);
-  search$ = new BehaviorSubject<string>('');
-  filteredItems$ = combineLatest([
+  readonly value$ = new ReplaySubject<Id>(1);
+  readonly items$ = new ReplaySubject<ExtendedMap<Id, Item>>(1);
+  readonly search$ = new BehaviorSubject<string>('');
+  readonly filteredItems$ = combineLatest([
     this.items$,
     this.search$.pipe(map((searchTerm) => inText(searchTerm))),
   ]).pipe(

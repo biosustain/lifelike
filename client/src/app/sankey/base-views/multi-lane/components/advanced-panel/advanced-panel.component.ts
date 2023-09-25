@@ -46,11 +46,11 @@ export class MultiLaneBaseAdvancedPanelComponent
     nodeValueAccessorId: [undefined, []],
   });
 
-  linkPalettes$ = this.baseView.linkPalettes$;
-  linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
-  linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
-  nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
-  nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
+  readonly linkPalettes$ = this.baseView.linkPalettes$;
+  readonly linkValueGenerators$ = this.baseView.common.linkValueGenerators$;
+  readonly linkValueAccessors$ = this.baseView.common.linkValueAccessors$;
+  readonly nodeValueGenerators$ = this.baseView.common.nodeValueGenerators$;
+  readonly nodeValueAccessors$ = this.baseView.common.nodeValueAccessors$;
 
   ngOnInit() {
     super.ngOnInit();

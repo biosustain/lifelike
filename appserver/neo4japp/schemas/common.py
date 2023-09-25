@@ -1,5 +1,4 @@
 import traceback
-
 from typing import Any
 
 import attr
@@ -9,8 +8,8 @@ from marshmallow import post_load, fields
 
 from neo4japp.schemas.base import CamelCaseSchema
 from neo4japp.schemas.fields import StringIntegerField
+from neo4japp.utils import CamelDictMixin
 from neo4japp.utils.globals import warnings, info
-from neo4japp.util import CamelDictMixin
 from neo4japp.utils.request import Pagination
 
 

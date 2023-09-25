@@ -17,7 +17,7 @@ from typing import Optional, Union, Literal
 
 from neo4japp.database import db
 from . import AppUser, AppRole, Projects
-from .files import Files, StarredFile, file_collaborator_role, FileContent
+from .files import Files, StarredFile, FileCollaboratorRole, FileContent
 from .projects_queries import ProjectCalculator
 from ..schemas.filesystem import FilePrivileges
 
@@ -271,9 +271,9 @@ def add_file_user_role_columns(
             t_user = db.aliased(AppUser)
 
             file_role_sq = (
-                db.session.query(file_collaborator_role, t_role.name)
-                .join(t_role, t_role.id == file_collaborator_role.c.role_id)
-                .join(t_user, t_user.id == file_collaborator_role.c.collaborator_id)
+                db.session.query(FileCollaboratorRole, t_role.name)
+                .join(t_role, t_role.id == FileCollaboratorRole.role_id)
+                .join(t_user, t_user.id == FileCollaboratorRole.collaborator_id)
                 .subquery()
             )
 

@@ -39,8 +39,8 @@ export class LockService implements OnDestroy {
     return this.lockIntervalId != null || this.lockStartIntervalId != null;
   }
 
-  private destroy$ = new Subject<any>();
-  private lastActivityTime$ = merge(
+  private readonly destroy$ = new Subject<any>();
+  private readonly lastActivityTime$ = merge(
     fromEvent(window, 'mousemove'),
     fromEvent(window, 'keydown')
   ).pipe(

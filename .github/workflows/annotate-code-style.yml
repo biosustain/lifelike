@@ -7,7 +7,7 @@ on:
       autoFix:
         description: "Auto Fix"
         required: false
-        default: "false"
+        default: "true"
         type: boolean
       blackAutoFix:
         description: "Black Auto Fix"
@@ -19,37 +19,40 @@ on:
         required: false
         default: "true"
         type: boolean
-  issue_comment:
-    types: [created]
+# This feature would be nice to have yet it is not supported yet by `lint-action`.
+# See
+# - https://github.com/wearerequired/lint-action/issues/559
+#
+# Meanwhile we can use workflow_dispatch to trigger the action manually.
+#
+#  issue_comment:
+#    types: [created]
+
+# Down scope as necessary via https://docs.github.com/en/actions/security-guides/automatic-token-authentication#modifying-the-permissions-for-the-github_token
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
+env:
+  AUTOFIX_URL: ${{ github.server_url }}/${{ github.repository }}/actions/manual?branch=${{ github.head_ref || github.ref_name }}&workflow=.github%2Fworkflows%2Fannotate-code-style.yml
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "github.event.action ${{ github.event.action }}"
-      - run: echo "github.event.issue.pull_request ${{ github.event.issue.pull_request }}"
-      - run: echo "github.event.sender.id ${{ github.event.sender.id }}"
-      - run: echo "github.event.issue.user.id ${{ github.event.issue.user.id }}"
-      - run: echo "github.event.comment.body ${{ github.event.comment.body }}"
-
-  appserver:
+  run-linters:
     name: Annotate code style
-    if: |
-      (github.event.action != 'issue_comment') || (
-       github.event.issue.pull_request &&
-       (github.event.comment.body == 'autofix') &&
-       (github.event.sender.id == github.event.issue.user.id)
-      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
 
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
         with:
-          auto_fix: ${{ github.event.inputs.autoFix || github.event.comment.body == 'autofix' }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          auto_fix: ${{ github.event.inputs.autoFix }}
           neutral_check_on_warning: true
-          continue_on_error: true
+          continue_on_error: false
           black: true
           black_auto_fix: ${{ github.event.inputs.blackAutoFix || true }}
           black_command_prefix: |
@@ -60,3 +63,15 @@ jobs:
           prettier_command_prefix: |
             docker run --rm -v $(pwd):/work tmknom/prettier:2.8.7
           prettier_args: --ignore-unknown
+
+      - name: Inform how to run autofix
+        if: failure() && (github.event_name == 'pull_request')
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "Code style issues has been found - [AUTOFIX](${{ env.AUTOFIX_URL }})"
+            })

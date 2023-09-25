@@ -20,6 +20,7 @@
         [showDelete]="false"
         [showRestore]="true"
         (objectRestore)="restore($event)"
+        (objectUpdate)="refreshData()"
       >
       </app-module-menu>
       <div *ngIf="queuedChanges$.value">
@@ -120,29 +121,29 @@
         </button>
       </div>
 
-      <div class="ml-auto" *ngIf="findController$ | async as findController">
+      <div class="ml-auto">
         <ng-container *ngIf="annotation.id; else textSearchControl">
           <app-result-control
             [value]="annotation.text"
             [annotationColor]="annotation.color"
-            [resultIndex]="findController.getResultIndex()"
-            [resultCount]="findController.getResultCount()"
-            (previous)="findController.previous()"
-            (next)="findController.next()"
-            (enterPress)="findController.next()"
+            [resultIndex]="findControllerService.index$ | async"
+            [resultCount]="findControllerService.count$ | async"
+            (previous)="findControllerService.previous()"
+            (next)="findControllerService.next()"
+            (enterPress)="findControllerService.next()"
             (valueClear)="switchToTextFind()"
           >
           </app-result-control>
         </ng-container>
         <ng-template #textSearchControl>
           <app-search-control
-            [ngModel]="findController.query"
-            (ngModelChange)="findController.nextOrStart()"
-            [resultIndex]="findController.getResultIndex()"
-            [resultCount]="findController.getResultCount()"
-            (previous)="findController.previous()"
-            (next)="findController.next()"
-            (valueClear)="findController.stop()"
+            [ngModel]="findControllerService.query$ | async"
+            (ngModelChange)="findControllerService.query$.next($event)"
+            [resultIndex]="findControllerService.index$ | async"
+            [resultCount]="findControllerService.count$ | async"
+            (previous)="findControllerService.previous()"
+            (next)="findControllerService.next()"
+            (valueClear)="findControllerService.query$.next(null)"
           >
           </app-search-control>
         </ng-template>

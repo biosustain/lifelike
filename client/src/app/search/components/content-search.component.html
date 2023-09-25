@@ -2,10 +2,11 @@
   <div class="module" appContainerBreakpoints [appShowPlaceholders]="status.placeholdersShown">
     <div class="module-header">
       <div class="module-toolbar mt-2">
-        <ng-container *ngIf="searchTypes">
+        <ng-container *ngIf="searchTypes$ | async">
           <app-content-search-form
             class="w-100"
-            [(queryString)]="queryString"
+            [queryString]="queryString$ | async"
+            (queryStringChange)="queryString$.next($event)"
             (formResult)="search($event)"
           >
           </app-content-search-form>
@@ -26,14 +27,26 @@
         </ng-container>
 
         <ng-template #searchEntered>
-          <ng-container *ngIf="status.placeholdersShown || status.resultsShown">
+          <ng-container
+            *ngIf="
+              (status.placeholdersShown || status.resultsShown) &&
+              (loadedResults$ | async) as results
+            "
+          >
             <ng-container *ngIf="results.length; else noResults">
-              <div class="module-body text-muted" [appShowPlaceholders]="status.placeholdersShown">
+              <div
+                class="module-body text-muted"
+                [appShowPlaceholders]="status.placeholdersShown"
+                *ngIf="{
+                  params: params$ | async,
+                  collectionSize: collectionSize$ | async
+                } as pagination"
+              >
                 <div class="mb-3">
                   <app-results-summary
-                    [page]="params.page"
-                    [pageSize]="params.limit"
-                    [collectionSize]="collectionSize"
+                    [page]="pagination.params?.page"
+                    [pageSize]="pagination.params?.limit"
+                    [collectionSize]="pagination.collectionSize"
                   ></app-results-summary>
                 </div>
 
@@ -109,28 +122,31 @@
                 </div>
                 <div class="mt-4">
                   <ngb-pagination
-                    [page]="params.page"
-                    [pageSize]="params.limit"
-                    [collectionSize]="collectionSize"
+                    [page]="pagination.params?.page"
+                    [pageSize]="pagination.params?.limit"
+                    [collectionSize]="pagination.collectionSize"
+                    *ngIf="pagination.collectionSize !== undefined"
                     (pageChange)="goToPage($event)"
                   ></ngb-pagination>
                 </div>
               </div>
             </ng-container>
             <ng-template #noResults>
-              <div *ngIf="emptyParams" class="module-body">
+              <div class="module-body">
                 <div class="text-center my-4 px-4">
-                  Please enter a query in the search box above.
+                  <ng-template #notEmptyParamsTemplate>
+                    No records match your current filters.
+                  </ng-template>
+                  <ng-container *ngIf="emptyParams$ | async; else notEmptyParamsTemplate">
+                    Please enter a query in the search box above.
+                  </ng-container>
                 </div>
-              </div>
-              <div *ngIf="!emptyParams" class="module-body">
-                <div class="text-center my-4 px-4">No records match your current filters.</div>
               </div>
             </ng-template>
           </ng-container>
         </ng-template>
       </div>
-      <div class="module-body-split-sidebar">
+      <div class="module-body-split-sidebar" *ngIf="loadedResults$ | async as results">
         <ng-container *ngIf="results.selectionLength$ | async">
           <app-object-info
             *ngIf="results.firstSelection$ | async as firstSelection"

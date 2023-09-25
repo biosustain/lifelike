@@ -8,7 +8,6 @@ import { filter, map, shareReplay, switchMap, takeUntil } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ExplainService } from 'app/shared/services/explain.service';
 import { SingleResult } from 'app/shared/schemas/common';
 import { debug } from 'app/shared/rxjs/debug';
 import { addStatus, mergeStatuses, MultiPipeStatus } from 'app/shared/pipes/add-status.pipe';
@@ -32,6 +31,10 @@ const addressPrecisionMistake = (d) => {
   return d;
 };
 
+export interface ChatGPTResponse extends SingleResult<string> {
+  query_params: object;
+}
+
 @Injectable()
 export class EnrichmentVisualisationService implements OnDestroy {
   constructor(
@@ -39,11 +42,10 @@ export class EnrichmentVisualisationService implements OnDestroy {
     protected readonly errorHandler: ErrorHandler,
     protected readonly route: ActivatedRoute,
     protected readonly snackBar: MatSnackBar,
-    protected readonly enrichmentService: EnrichmentService,
-    protected readonly explainService: ExplainService
+    protected readonly enrichmentService: EnrichmentService
   ) {}
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   private fileId$: Observable<string> = this.route.params.pipe(
     map(({ file_id }) => file_id),
@@ -121,17 +123,15 @@ export class EnrichmentVisualisationService implements OnDestroy {
       .pipe(map((data: any) => data.map(addressPrecisionMistake)));
   }
 
-  public enrichTermWithContext(term, context?, geneName?): Observable<string> {
+  public enrichTermWithContext(term, context?, geneName?): Observable<ChatGPTResponse> {
     return this.enrichmentDocument$.pipe(
       switchMap(({ organism }) =>
-        this.http
-          .post<SingleResult<string>>(`/api/enrichment-visualisation/enrich-with-context`, {
-            organism,
-            term,
-            context,
-            geneName,
-          })
-          .pipe(map(({ result }) => result))
+        this.http.post<ChatGPTResponse>(`/api/enrichment-visualisation/enrich-with-context`, {
+          organism,
+          term,
+          context,
+          geneName,
+        })
       )
     );
   }

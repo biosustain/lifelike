@@ -27,10 +27,10 @@ export class ObjectSelectService {
   multipleSelection = false;
   objectFilter: (item: FilesystemObject) => boolean;
 
-  hashId$ = new BehaviorSubject<string>(null);
+  readonly hashId$ = new BehaviorSubject<string>(null);
 
   object: FilesystemObject;
-  object$ = this.hashId$.pipe(
+  readonly object$ = this.hashId$.pipe(
     switchMap((hashId) =>
       iif(
         () => hashId == null,

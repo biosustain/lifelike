@@ -1,0 +1,48 @@
+<form name="period-picker">
+  <div
+    ngbDropdown
+    autoClose="outside"
+    #dropdown="ngbDropdown"
+    class="d-inline-block flex-grow-0"
+    placement="bottom-start"
+  >
+    <button class="btn btn-primary w-100 text-truncate" ngbDropdownToggle>
+      <ng-container *ngIf="option$ | async as current"> {{ current.label }} </ng-container>
+    </button>
+    <div ngbDropdownMenu>
+      <div class="d-flex flex-row">
+        <div class="d-flex flex-column" [style.gap.rem]="0.5">
+          <div class="w-100" *ngFor="let optionGroup of optionsGroups">
+            <button
+              ngbDropdownItem
+              class="text-truncate"
+              *ngFor="let option of optionGroup"
+              (click)="selectOption(option); dropdown.close()"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+          <button ngbDropdownItem class="text-truncate" (click)="option$.next(customOption)">
+            Start and end time
+          </button>
+        </div>
+        <form
+          class="d-flex flex-column px-2"
+          *ngIf="customPanel$ | async"
+          (ngSubmit)="applyCustom($event)"
+        >
+          <div class="form-group">
+            <label class="text-nowrap">From</label>
+            <app-date-time-picker [control]="form.get('from')"></app-date-time-picker>
+          </div>
+
+          <div class="form-group">
+            <label class="text-nowrap">To</label>
+            <app-date-time-picker [control]="form.get('to')"></app-date-time-picker>
+          </div>
+          <button class="btn btn-primary">Apply</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</form>

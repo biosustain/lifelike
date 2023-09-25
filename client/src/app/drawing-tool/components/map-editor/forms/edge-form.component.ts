@@ -37,6 +37,7 @@ import { EntityForm } from './entity-form';
 })
 export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestroy {
   @Input() graphView: CanvasGraphView;
+  protected readonly TABS = ['properties', 'explanation', 'style'];
   lineHeadTypeChoices = [
     [
       null,
@@ -50,8 +51,8 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
   originalEdge: UniversalGraphEdge;
   updatedEdge: UniversalGraphEdge;
 
-  change$ = new ReplaySubject<SimpleChanges>(1);
-  entities$: Observable<Iterable<string>> = this.change$.pipe(
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Iterable<string>> = this.change$.pipe(
     map(_pick(['edge', 'graphView'])),
     filter(_flow(_values, _some(Boolean))),
     map(
@@ -83,6 +84,7 @@ export class EdgeFormComponent extends EntityForm implements OnChanges, OnDestro
 
   ngOnChanges(changes: SimpleChanges) {
     this.change$.next(changes);
+    super.ngOnChanges(changes);
   }
 
   ngOnDestroy() {

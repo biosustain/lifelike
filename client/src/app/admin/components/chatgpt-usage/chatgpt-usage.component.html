@@ -1,0 +1,77 @@
+<div class="mb-4 d-flex">
+  <div
+    ngbDropdown
+    class="d-inline-block flex-grow-0"
+    placement="bottom-start"
+    *ngIf="userController$ | async as userController"
+  >
+    <button
+      class="btn btn-primary w-100 text-truncate"
+      ngbDropdownToggle
+      [disabled]="!userController.entities.length"
+    >
+      User
+      <ng-container *ngIf="userController.current$ | async as current">
+        : {{ current.username }}
+      </ng-container>
+    </button>
+    <div ngbDropdownMenu class="w-100">
+      <button ngbDropdownItem class="text-truncate" (click)="userController.currentIdx$.next(-1)">
+        All
+      </button>
+      <button
+        ngbDropdownItem
+        class="text-truncate"
+        *ngFor="let user of userController.entities; let i = index"
+        (click)="userController.currentIdx$.next(i)"
+      >
+        {{ user.username }}
+      </button>
+    </div>
+  </div>
+  <div ngbDropdown class="d-inline-block flex-grow-0 ml-2" placement="bottom">
+    <button
+      class="btn btn-primary w-100 text-truncate"
+      ngbDropdownToggle
+      [disabled]="!intervalController.entities.length"
+    >
+      Interval
+      <ng-container *ngIf="intervalController.current$ | async as current">
+        : {{ current }}
+      </ng-container>
+    </button>
+    <div ngbDropdownMenu class="w-100">
+      <button
+        ngbDropdownItem
+        class="text-truncate"
+        (click)="intervalController.currentIdx$.next(-1)"
+      >
+        none
+      </button>
+      <button
+        ngbDropdownItem
+        class="text-truncate"
+        *ngFor="let interval of intervalController.entities; let i = index"
+        (click)="intervalController.currentIdx$.next(i)"
+      >
+        {{ interval }}
+      </button>
+    </div>
+  </div>
+  <app-period-picker
+    class="d-inline-block ml-2"
+    [period]="period$ | async"
+    (periodChange)="datesChange$.next($event)"
+  ></app-period-picker>
+</div>
+<ng-container *ngIf="usage$ | async as usage">
+  <ng-template #noResults>
+    <ngb-alert type="warning" [dismissible]="false">
+      No results returned for given filters
+    </ngb-alert>
+  </ng-template>
+  <app-chatgpt-usage-graph
+    [usage]="usage"
+    *ngIf="usage.results.length; else noResults"
+  ></app-chatgpt-usage-graph>
+</ng-container>

@@ -38,7 +38,7 @@ export class AuthEffects {
     private readonly progressDialog: ProgressDialog
   ) {}
 
-  checkTermsOfService$ = createEffect(() =>
+  readonly checkTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.checkTermsOfService),
       map(({ credential }) => {
@@ -77,12 +77,12 @@ export class AuthEffects {
     )
   );
 
-  termsOfServiceAgreeing$ = createEffect(
+  readonly termsOfServiceAgreeing$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.termsOfServiceAgreeing)),
     { dispatch: false }
   );
 
-  agreeTermsOfService$ = createEffect(() =>
+  readonly agreeTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.agreeTermsOfService),
       exhaustMap(({ credential, timeStamp }) => {
@@ -92,7 +92,7 @@ export class AuthEffects {
     )
   );
 
-  disagreeTermsOfService$ = createEffect(() =>
+  readonly disagreeTermsOfService$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.disagreeTermsOfService),
       exhaustMap(() => {
@@ -109,7 +109,7 @@ export class AuthEffects {
     )
   );
 
-  updatePassword$ = createEffect(() =>
+  readonly updatePassword$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updatePassword),
       map(() => {
@@ -129,7 +129,7 @@ export class AuthEffects {
     )
   );
 
-  failedPasswordUpdate$ = createEffect(() =>
+  readonly failedPasswordUpdate$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.failedPasswordUpdate),
       exhaustMap(() => {
@@ -146,12 +146,12 @@ export class AuthEffects {
     )
   );
 
-  successPasswordUpdate$ = createEffect(
+  readonly successPasswordUpdate$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.successPasswordUpdate)),
     { dispatch: false }
   );
 
-  updateUser$ = createEffect(() =>
+  readonly updateUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateUser),
       exhaustMap(({ userUpdateData, hashId }) => {
@@ -188,7 +188,7 @@ export class AuthEffects {
     )
   );
 
-  updateUserSuccess$ = createEffect(() =>
+  readonly updateUserSuccess$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateUserSuccess),
       map((_) =>
@@ -203,7 +203,7 @@ export class AuthEffects {
     )
   );
 
-  updateOAuthUser$ = createEffect(() =>
+  readonly updateOAuthUser$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateOAuthUser),
       exhaustMap(({ userUpdateData }) => {
@@ -240,7 +240,7 @@ export class AuthEffects {
     )
   );
 
-  updateOAuthUserSuccess$ = createEffect(() =>
+  readonly updateOAuthUserSuccess$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.updateOAuthUserSuccess),
       map((_) => {
@@ -255,7 +255,7 @@ export class AuthEffects {
     )
   );
 
-  login$ = createEffect(() =>
+  readonly login$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.login),
       exhaustMap(({ credential }) => {
@@ -272,7 +272,7 @@ export class AuthEffects {
     )
   );
 
-  loginSuccess$ = createEffect(
+  readonly loginSuccess$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginSuccess),
@@ -287,47 +287,12 @@ export class AuthEffects {
     { dispatch: false }
   );
 
-  oauthLogin$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(AuthActions.oauthLogin),
-      exhaustMap(({ oauthLoginData }) => {
-        return this.accountService.getUserBySubject(oauthLoginData.subject).pipe(
-          map((user) =>
-            AuthActions.oauthLoginSuccess({ ***ARANGO_DB_NAME***User: user, oauthUser: oauthLoginData })
-          ),
-          catchError((err: HttpErrorResponse) => {
-            // If for some reason we can't retrieve the user from the database after authenticating, log them out and return to the home
-            // page. Also, see the below Github issue:
-            //    https://github.com/manfredsteyer/angular-oauth2-oidc/issues/9
-            // `logOut(true)` will log the user out of Lifelike, but *not* out of the identity provider (e.g. the Keycloak server). The
-            // likelihood of this error block occurring is probably very small (maybe the appserver went down temporarily), so ideally
-            // we should make it as easy as possible to get the user logged in. This way, hopefully they will be able to wait a few moments
-            // and refresh their browser to log in successfully.
-            const error = (err.error as ErrorResponse).message;
-            this.oauthService.logout(true);
-            this.router.navigateByUrl('/dashboard');
-
-            return from([
-              SnackbarActions.displaySnackbar({
-                payload: {
-                  message: error,
-                  action: 'Dismiss',
-                  config: { duration: 10000 },
-                },
-              }),
-            ]);
-          })
-        );
-      })
-    )
-  );
-
-  oauthLoginSuccess$ = createEffect(
+  readonly oauthLoginSuccess$ = createEffect(
     () => this.actions$.pipe(ofType(AuthActions.oauthLoginSuccess)),
     { dispatch: false }
   );
 
-  loginRedirect$ = createEffect(
+  readonly loginRedirect$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.loginRedirect),
@@ -336,7 +301,7 @@ export class AuthEffects {
     { dispatch: false }
   );
 
-  logout$ = createEffect(() =>
+  readonly logout$ = createEffect(() =>
     this.actions$.pipe(
       ofType(AuthActions.logout),
       map((_) => {
@@ -353,7 +318,7 @@ export class AuthEffects {
     )
   );
 
-  oauthLogout$ = createEffect(
+  readonly oauthLogout$ = createEffect(
     () =>
       this.actions$.pipe(
         ofType(AuthActions.oauthLogout),

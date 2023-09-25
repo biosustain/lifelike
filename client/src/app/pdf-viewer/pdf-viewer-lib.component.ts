@@ -106,6 +106,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   @ViewChild('container', { static: true }) containerRef: ElementRef;
 
   @Input() pdfSrc: PDFSource;
+  // TODO: All observables should be readonly
   @Input() goToPosition$: Subject<Location>;
   @Input() debugMode: boolean;
   @Input() showExcludedAnnotations: boolean;
@@ -182,7 +183,7 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
   annotationLayerComponentRef: Map<number, ComponentRef<AnnotationLayerComponent>> = new Map();
   private searchCommand: string;
 
-  destroy$ = new Subject();
+  readonly destroy$ = new Subject();
 
   matchesCountUpdated(matchesCountUpdate) {
     return this.search.resultSummary$.next(matchesCountUpdate);
@@ -724,7 +725,16 @@ export class PdfViewerLibComponent implements OnInit, OnDestroy, OnChanges, Afte
       new ComponentPortal(AnnotationLayerComponent)
     );
     annotationLayerComponentRef.instance.dragStart
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        map(({ rect, ...rest }) => ({
+          ...rest,
+          location: {
+            rect,
+            pageNumber,
+          },
+        }))
+      )
       .subscribe(this.annotationDragStart);
     annotationLayerComponentRef.instance.pdfPageView = source;
     this.annotationLayerComponentRef.set(pageNumber, annotationLayerComponentRef);
@@ -786,7 +796,13 @@ export interface AnnotationHighlightResult {
   firstAnnotation: Annotation;
   firstPageNumber: number;
   found: number;
-  index$: BehaviorSubject<number>;
+  readonly index$: BehaviorSubject<number>;
+}
+
+export interface AnnotationLayerDragEvent {
+  event: DragEvent;
+  meta: Meta;
+  rect: Rect;
 }
 
 export interface AnnotationDragEvent {

@@ -1,15 +1,16 @@
 import json
 import time
-
 from bisect import bisect_left
-from math import inf, isinf
 from typing import cast, Dict, List, Set, Tuple
 from urllib.parse import quote as uri_encode
 from uuid import uuid4
 
 from flask import current_app
+from math import inf, isinf
 
+from neo4japp.constants import LogEventType
 from neo4japp.exceptions import wrap_exceptions, AnnotationError, ServerException
+from neo4japp.utils import EventLog, equal_number_of_words, normalize_str
 from .annotation_db_service import AnnotationDBService
 from .annotation_graph_service import AnnotationGraphService
 from .annotation_interval_tree import AnnotationInterval, AnnotationIntervalTree
@@ -36,10 +37,6 @@ from .data_transfer_objects import (
     SpecifiedOrganismStrain,
 )
 from .utils.common import has_center_point
-
-from neo4japp.constants import LogEventType
-from neo4japp.util import normalize_str, equal_number_of_words
-from neo4japp.utils.logger import EventLog
 
 
 class AnnotationService:
@@ -540,6 +537,28 @@ class AnnotationService:
             specified_organism_id=specified_organism_id,
         )
 
+    @staticmethod
+    def _parse_matches_list(matches_list):
+        entity_token_pairs = []
+        gene_names: Set[str] = set()
+        for match in matches_list:
+            entities_set = set()
+            for entity in match.entities:
+                gene_names.add(entity['synonym'])
+                entities_set.add(
+                    (entity['synonym'], entity['id_type'], entity.get('hyperlinks', ''))
+                )
+            for synonym, datasource, hyperlinks in entities_set:
+                if hyperlinks == '':
+                    hyperlinks = []
+                entity_token_pairs.append(
+                    (synonym, datasource, hyperlinks, match.token)
+                )
+
+        gene_names_list = list(gene_names)
+
+        return gene_names_list, entity_token_pairs
+
     def _annotate_type_gene(
         self, recognized_entities: RecognizedEntities
     ) -> List[Annotation]:
@@ -566,23 +585,8 @@ class AnnotationService:
 
         entities_to_create: List[CreateAnnotationObjParams] = []
 
-        entity_token_pairs = []
-        gene_names: Set[str] = set()
-        for match in matches_list:
-            entities_set = set()
-            for entity in match.entities:
-                gene_names.add(entity['synonym'])
-                entities_set.add(
-                    (entity['synonym'], entity['id_type'], entity.get('hyperlinks', ''))
-                )
-            for synonym, datasource, hyperlinks in entities_set:
-                if hyperlinks == '':
-                    hyperlinks = []
-                entity_token_pairs.append(
-                    (synonym, datasource, hyperlinks, match.token)
-                )
+        gene_names_list, entity_token_pairs = self._parse_matches_list(matches_list)
 
-        gene_names_list = list(gene_names)
         organism_ids = list(self.organism_frequency)
 
         gene_match_time = time.time()

@@ -86,21 +86,27 @@ def enrich_go():
     return forward_request()
 
 
-def composePrompt(organism, term, context, geneName):
-    if organism and term and context and geneName:
+def compose_prompt(organism, term, context, gene_name):
+    if organism and term and context and gene_name:
         return (
-            f'For {organism}, what function does {geneName} have in {term},'
+            f'For {organism}, what function does {gene_name} have in {term},'
             f' in context of {context}?'
         )
-    if organism and term and geneName:
-        return f'For {organism}, what function does {geneName} have in {term}?'
+    if organism and term and gene_name:
+        return f'For {organism}, what function does {gene_name} have in {term}?'
     elif organism and term and context:
         return f'For {organism}, what is the relationship between {term} and {context}?'
     elif organism and term:
         return f'What is the ralationship between {organism} and {term}?'
     else:
-        list_str = ", ".join(filter(lambda a: a, (organism, term, context, geneName)))
-        return f'What is the ralationship between {list_str}?'
+        defined_params = tuple(
+            filter(lambda a: a, (organism, term, context, gene_name))
+        )
+        if len(defined_params) > 1:
+            list_str = ", ".join(defined_params)
+            return f'What is the ralationship between {list_str}?'
+        else:
+            return 'Return message that not enough parameters were defined.'
 
 
 @bp.route('/enrich-with-context', methods=['POST'])
@@ -110,12 +116,20 @@ def enrich_context():
     term = data.get('term', '')
     context = data.get('context', '')
     gene_name = data.get('geneName', '')
-    print(request.get_json())
-    response = ChatGPT.Completion.create(
-        model="text-davinci-003",
-        prompt=composePrompt(organism, term, context, gene_name),
+    create_params = dict(
+        model="gpt-3.5-turbo",
+        messages=[
+            dict(
+                role="user",
+                content=compose_prompt(organism, term, context, gene_name),
+            )
+        ],
         temperature=0,
-        max_tokens=500,
+        max_tokens=2000,
     )
+    response = ChatGPT.ChatCompletion.create(**create_params)
     for choice in response.get('choices'):
-        return {"result": choice.get('text').strip()}
+        return {
+            "result": choice.get('message').get('content').strip(),
+            "query_params": create_params,
+        }

@@ -1,12 +1,11 @@
 from enum import IntEnum, unique
+from typing import Dict, List, Optional, Tuple
 
 import magic
 
-from typing import Dict, List, Optional, Tuple
-
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
-from neo4japp.utils import FileContentBuffer
+from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 
 @unique
@@ -49,7 +48,7 @@ class BaseFileTypeProvider:
         return file.mime_type.lower() in self.mime_types
 
     def detect_provider(
-        self, file: Files
+        self, mime_type: str
     ) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
         """
         Given the file, return a list of possible providers with confidence levels.
@@ -59,14 +58,10 @@ class BaseFileTypeProvider:
         Most implementations should just compare the file's mime type and generally you
         should not override this method.
 
-        :param file: the file
+        :param mime_type: the mime type
         :return: whether this provide should be used
         """
-        return (
-            [(Certanity.match, self)]
-            if file.mime_type.lower() in self.mime_types
-            else []
-        )
+        return [(Certanity.match, self)] if mime_type.lower() in self.mime_types else []
 
     def convert(self, buffer):
         raise NotImplementedError
@@ -196,9 +191,9 @@ class GenericFileTypeProvider(BaseFileTypeProvider):
         self.mime_types = (mime_type,)
 
     def detect_provider(
-        self, file: Files
+        self, mime_type: str
     ) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
-        return [(Certanity.default, GenericFileTypeProvider(file.mime_type))]
+        return [(Certanity.default, GenericFileTypeProvider(mime_type))]
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
@@ -257,15 +252,15 @@ class FileTypeService:
         """
         self.providers.append(provider)
 
-    def get(self, file: Files) -> BaseFileTypeProvider:
+    def get(self, mime_type: str) -> BaseFileTypeProvider:
         """
-        Get the provider for the given file.
-        :param file: the file
+        Get the provider for the given mime type.
+        :param mime_type: the mime_type
         :return: a provider, which may be the default one
         """
         results: List[Tuple[Certanity, BaseFileTypeProvider]] = []
         for provider in self.providers:
-            results.extend(provider.detect_provider(file))
+            results.extend(provider.detect_provider(mime_type))
         if len(results):
             results.sort(key=lambda item: item[0])
             return results[-1][1]

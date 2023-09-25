@@ -29,22 +29,22 @@ interface Viewport {
 export class ConstrainToViewportDirective implements AfterViewInit, OnDestroy, OnChanges {
   constructor(private element: ElementRef, private ngZone: NgZone) {}
 
-  private _margin$ = new BehaviorSubject<number>(30);
-  private _viewport$$ = new BehaviorSubject<Observable<Viewport>>(
+  private readonly _margin$ = new BehaviorSubject<number>(30);
+  private readonly _viewport$$ = new BehaviorSubject<Observable<Viewport>>(
     windowResizeObservable.pipe(map((size) => ({ x: 0, y: 0, ...size })))
   );
-  private _viewport$ = this._viewport$$.pipe(switchMap((viewport$) => viewport$));
-  private _resize$$ = new BehaviorSubject(
+  private readonly _viewport$ = this._viewport$$.pipe(switchMap((viewport$) => viewport$));
+  private readonly _resize$$ = new BehaviorSubject(
     createResizeObservable(this.element.nativeElement, { leading: true })
   );
-  private _resize$ = this._resize$$.pipe(switchMap((resize$) => resize$));
-  @Input() resize$;
-  @Input() margin;
+  private readonly _resize$ = this._resize$$.pipe(switchMap((resize$) => resize$));
+  @Input() resize$: Observable<DOMRectReadOnly>;
+  @Input() margin: Observable<number>;
   @Input('appConstrainToViewport') viewport$;
   @HostBinding('style.maxWidth.px') maxWidth;
   @HostBinding('style.maxHeight.px') maxHeight;
 
-  updateSize$ = this._viewport$.pipe(
+  readonly updateSize$ = this._viewport$.pipe(
     switchMap((viewport) => {
       const { offsetWidth, offsetHeight } = this.element.nativeElement;
       return iif(

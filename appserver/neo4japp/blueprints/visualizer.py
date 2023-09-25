@@ -4,20 +4,20 @@ from flask import Blueprint, request, jsonify
 from flask_apispec import use_kwargs
 
 from neo4japp.constants import ANNOTATION_STYLES_DICT
-from neo4japp.database import get_visualizer_service
 from neo4japp.data_transfer_objects.visualization import (
     ExpandNodeRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
 )
+from neo4japp.database import get_visualizer_service
 from neo4japp.exceptions import InvalidArgument
 from neo4japp.request_schemas.visualizer import (
     GetSnippetsForNodePairRequest,
     AssociatedTypeSnippetCountRequest,
 )
-from neo4japp.utils.jsonify import jsonify_with_class
 from neo4japp.schemas.common import SuccessResponse
+from neo4japp.utils.jsonify import jsonify_with_class
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 

@@ -54,7 +54,7 @@ export class AnnotationEditDialogComponent
 
   isTextEnabled = false;
   sourceLinks: Hyperlink[] = [];
-  destroyed$ = new Subject();
+  readonly destroyed$ = new Subject();
 
   readonly entityTypeChoices = ENTITY_TYPES;
   readonly errors = {
@@ -159,7 +159,7 @@ export class AnnotationEditDialogComponent
   ngOnInit() {}
 
   getValue(): Annotation {
-    // getRawValue will return values of disabled controls too
+    // getRawValue will return values of disabled control too
     const { entityType, source, id, text, includeGlobally } = this.form.getRawValue();
     const idLinkUrl = ENTITY_TYPE_MAP[entityType]?.links.find((link) => link.name === source)?.url;
     if (idLinkUrl) {

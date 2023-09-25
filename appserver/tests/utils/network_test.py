@@ -1,16 +1,17 @@
 from contextlib import contextmanager
+from urllib.error import URLError, HTTPError
+
 import httpretty
 import pytest
-from urllib.error import URLError, HTTPError
 
 from neo4japp.exceptions import UnsupportedMediaTypeError
 from neo4japp.utils.network import (
-    ContentTooLongError,
     ControlledConnectionMixin,
-    DirectDownloadDetectorHandler,
-    URLFixerHandler,
     read_url,
-    _check_acceptable_response,
+    ContentTooLongError,
+    URLFixerHandler,
+    DirectDownloadDetectorHandler,
+    check_acceptable_response,
 )
 
 
@@ -317,7 +318,7 @@ def test_direct_download_handler(url_pair):
 def test_check_acceptable_response_can_match(req_headers, resp_headers, expected):
     accept_header = req_headers.get('Accept', None)
     content_type_header = resp_headers.get('Content-Type', None)
-    assert _check_acceptable_response(accept_header, content_type_header) == expected
+    assert check_acceptable_response(accept_header, content_type_header) == expected
 
 
 @pytest.mark.parametrize(
@@ -353,4 +354,4 @@ def test_check_acceptable_response_can_throw(req_headers, resp_headers, expected
     with pytest.raises(UnsupportedMediaTypeError):
         accept_header = req_headers.get('Accept', None)
         content_type_header = resp_headers.get('Content-Type', None)
-        _check_acceptable_response(accept_header, content_type_header) == expected
+        check_acceptable_response(accept_header, content_type_header) == expected
