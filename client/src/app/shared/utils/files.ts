@@ -23,7 +23,7 @@ export const bufferToJsons = <T>(data: ArrayBuffer | undefined, textDecoder = ut
     : undefined;
 
 export const mapBlobToBuffer = (): OperatorFunction<Blob, ArrayBuffer> =>
-  switchMap((blob) => blob.arrayBuffer());
+  switchMap((blob: Blob) => blob.arrayBuffer());
 
 export const mapBufferToJson = <T>(
   textDecoder?: TextDecoder
@@ -35,7 +35,7 @@ export const mapBufferToJson = <T>(
  * As nodes are stored groups, we add them to the 'nodes' collection - so we would have them all in one place.
  */
 export function mapJsonToGraph(): OperatorFunction<KnowledgeMapGraph, KnowledgeMapGraph> {
-  return map((graph) => {
+  return map((graph: KnowledgeMapGraph) => {
     // TODO: This allows to handle the transition without data migration. Not sure if we want to do that though - maybe migration is better?
     graph.groups = graph.groups ?? [];
     graph.groups.forEach((group) => {
