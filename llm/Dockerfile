@@ -1,4 +1,4 @@
-FROM python:3.8-buster
+FROM python:3.11 as base
 LABEL app=kg-prototypes
 
 ENV _USER user
@@ -21,14 +21,35 @@ WORKDIR $_HOME
 
 # Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
 COPY --chown=$UID:$GID Pipfile .
+
+FROM base as lock
+
+COPY --chown=$UID:$GID . .
+
+CMD [ "pipenv", "lock" ]
+
+FROM base as build
+
 COPY --chown=$UID:$GID Pipfile.lock .
 
-RUN pipenv install --dev --deploy --system
-
 ENV FLASK_APP=llm
+
+RUN pipenv install --deploy --system
 
 COPY --chown=$UID:$GID . .
 
 USER $_USER
 
 CMD [ "bin/startup.sh" ]
+
+FROM build as dev
+
+# Install dev dependencies
+RUN pipenv install --deploy --system --dev
+
+# Jupyter Notebook
+EXPOSE 8888
+
+FROM build as prod
+
+# Just so it is default one
