@@ -34,18 +34,18 @@ interface GetSet<ID, Value> {
 export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implements GetSet<K, V> {
   getSet(key, value) {
     if (this.has(key)) {
-      return super.get(key);
+      return this.get(key);
     }
-    super.set(key, value);
+    this.set(key, value);
     return value;
   }
 
   getSetLazily(key: K, valueAccessor: (key: K) => V) {
     if (this.has(key)) {
-      return super.get(key);
+      return this.get(key);
     }
     const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
-    super.set(key, loadedValue);
+    this.set(key, loadedValue);
     return loadedValue;
   }
 }
@@ -53,18 +53,18 @@ export class ExtendedWeakMap<K extends object, V> extends WeakMap<K, V> implemen
 export class ExtendedMap<K, V> extends Map<K, V> implements GetSet<K, V> {
   getSet(key, value) {
     if (this.has(key)) {
-      return super.get(key);
+      return this.get(key);
     }
-    super.set(key, value);
+    this.set(key, value);
     return value;
   }
 
   getSetLazily(key: K, valueAccessor: (key: K) => V): V {
     if (this.has(key)) {
-      return super.get(key);
+      return this.get(key);
     }
     const loadedValue = valueAccessor instanceof Function ? valueAccessor(key) : valueAccessor;
-    super.set(key, loadedValue);
+    this.set(key, loadedValue);
     return loadedValue;
   }
 

@@ -1,12 +1,13 @@
 import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
 
 import { Subject } from 'rxjs';
-import { map, shareReplay, takeUntil, withLatestFrom } from 'rxjs/operators';
+import { filter, map, shareReplay, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { GenericTableComponent } from 'app/shared/components/table/generic-table.component';
 import { closePopups, relativePosition } from 'app/shared/DOMutils';
 import { createResizeObservable } from 'app/shared/rxjs/resize-observable';
+import { NodeTextRange } from 'app/shared/utils/dom';
 
 import { EnrichmentTable } from '../../models/enrichment-table';
 import { FindControllerService } from '../../services/find-controller.service';
@@ -19,19 +20,22 @@ import { FindControllerService } from '../../services/find-controller.service';
 export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
   constructor(
     private readonly findControllerService: FindControllerService,
-    private readonly element: ElementRef
+    public readonly element: ElementRef
   ) {}
 
   private readonly destroy$ = new Subject<any>();
   @ViewChild(GenericTableComponent) table: GenericTableComponent;
-  @ViewChild('findTarget') findTarget: ElementRef;
 
   @Input() data: EnrichmentTable;
   @Input() object: FilesystemObject;
 
   ngAfterViewInit() {
-    this.findControllerService.focusElement$
+    // Ussing this.findControllerService.search$ instead of this.findControllerService.current$ to avoid
+    // fireing in Angular's zone.
+    this.findControllerService.search$
       .pipe(
+        switchMap(({ current$ }) => current$),
+        filter(Boolean),
         withLatestFrom(
           // Possibly changing margin which is dependednt on table headers
           createResizeObservable(this.table.head.nativeElement, { leading: true }).pipe(
@@ -45,7 +49,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
         ),
         takeUntil(this.destroy$)
       )
-      .subscribe(([result, m]) => {
+      .subscribe(([result, m]: [NodeTextRange, Margin]) => {
         const { top, bottom, left, right } = relativePosition(this.element.nativeElement)(
           result.startNode.parentElement
         );
@@ -56,7 +60,7 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
           behaviour: 'smooth',
         });
       });
-    this.findControllerService.target$.next(this.findTarget.nativeElement);
+    this.findControllerService.target$.next(this.table.elementRef.nativeElement);
   }
 
   scrollTop() {
@@ -75,4 +79,11 @@ export class EnrichmentTableComponent implements OnDestroy, AfterViewInit {
   ngOnDestroy() {
     this.destroy$.next();
   }
+}
+
+interface Margin {
+  top: number;
+  left: number;
+  bottom: number;
+  right: number;
 }

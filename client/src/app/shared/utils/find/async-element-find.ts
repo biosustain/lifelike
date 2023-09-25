@@ -1,274 +1,177 @@
-import { escapeRegExp, isNil } from 'lodash-es';
-import { ReplaySubject } from 'rxjs';
+import { partial as _partial } from 'lodash/fp';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import {
+  distinctUntilChanged,
+  last,
+  map,
+  scan,
+  shareReplay,
+  startWith,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs/operators';
 
-import { NodeTextRange, nonStaticPositionPredicate, walkParentElements } from '../dom';
-import { AsyncTextHighlighter } from '../dom/async-text-highlighter';
-import { AsyncFindController } from './find-controller';
+import { FindController } from './find-controller';
+import { idleBatchIterate } from '../../rxjs/idle-observable';
+import { debug } from '../../rxjs/debug';
+import { DOMFinder } from './types';
+import { mod } from '../math';
 
 /**
  * A find controller for finding items within an element.
  */
-export class AsyncElementFind implements AsyncFindController {
-  private pendingJump = false;
-
-  target: Element;
-  // @ts-ignore // todo: use createResizeObservable
-  resizeObserver = new ResizeObserver(this.redraw.bind(this));
-  scrollToOffset = 100;
-  query = '';
+export class AsyncElementFindController<Results, Query> implements FindController<Results, Query> {
   protected readonly textFinder = new AsyncElementTextFinder(
-    this.matchFind.bind(this),
-    this.findGenerator
+    this.query$,
+    this.target$,
+    this.findGenerator$
   );
-  protected results: NodeTextRange[] = [];
-  protected readonly highlighter = new AsyncTextHighlighter(document.body);
-  protected activeQuery: string | undefined = null;
-  protected index = 0;
-  public readonly current$ = new ReplaySubject<NodeTextRange>(1);
+
+  public readonly search$ = this.textFinder.search$.pipe(
+    debug('search$'),
+    map((search) => {
+      const index$ = new BehaviorSubject(0);
+      return {
+        ...search,
+        index$,
+        current$: combineLatest([index$, search.results$]).pipe(
+          // It will fire for each results change
+          map(([index, { all }]) => all[index] ?? null),
+          distinctUntilChanged(), // but this will only fire when the current result changes
+          shareReplay(1)
+        ),
+        count$: search.results$.pipe(
+          map(({ all }) => all.length),
+          shareReplay(1)
+        ),
+        active$: search.results$.pipe(
+          last(),
+          map(() => false),
+          startWith(true)
+        ),
+      };
+    }),
+    shareReplay(1)
+  );
 
   constructor(
-    target: Element = null,
-    private findGenerator: (
-      root: Node,
-      query: string
-    ) => IterableIterator<NodeTextRange | undefined> = null
-  ) {
-    this.target = target;
+    public readonly query$: Subject<Query>,
+    protected readonly target$: Observable<Element>,
+    private readonly findGenerator$: Observable<
+      (root: Node, query: Query) => IterableIterator<Results | undefined>
+    >
+  ) {}
+
+  private changeIndex(delta): Promise<number> {
+    return this.search$
+      .pipe(
+        switchMap(({ index$, count$ }) =>
+          count$.pipe(
+            map((count: number) => mod(index$.value + delta, count)),
+            tap((index: number) => index$.next(index))
+          )
+        ),
+        take(1)
+      )
+      .toPromise();
   }
 
-  isStarted(): boolean {
-    return this.activeQuery != null;
+  previous(): Promise<number> {
+    return this.changeIndex(-1);
   }
 
-  tick() {
-    this.textFinder.tick();
-    this.highlighter.tick();
-  }
-
-  start() {
-    if (this.target == null) {
-      return;
-    }
-
-    // Start observing the new target
-    this.resizeObserver.disconnect();
-    this.resizeObserver.observe(this.target);
-
-    // Make sure we put the highlights in the right container
-    this.highlighter.container = this.findHighlightContainerElement(this.target);
-
-    // Keep track of what the current find is for
-    this.activeQuery = this.query;
-
-    this.results = [];
-
-    // Delete existing highlights
-    this.highlighter.clear();
-
-    // Start find process if needed
-    if (this.query.length) {
-      this.textFinder.find(this.target, this.query);
-      this.pendingJump = true;
-    } else {
-      this.textFinder.stop();
-    }
-
-    this.index = 0;
-  }
-
-  stop() {
-    this.activeQuery = null;
-    this.results = [];
-    this.resizeObserver.disconnect();
-    this.textFinder.stop();
-    this.highlighter.clear();
-  }
-
-  nextOrStart() {
-    if (this.query.length && this.activeQuery === this.query) {
-      this.next();
-    } else {
-      this.start();
-    }
-  }
-
-  previous(): boolean {
-    if (this.target == null) {
-      return false;
-    }
-
-    if (!this.results.length) {
-      return false;
-    }
-
-    this.leaveResult();
-    this.index--;
-    if (this.index < 0) {
-      this.index = this.results.length - 1;
-    }
-    this.visitResult();
-    return true;
-  }
-
-  next(): boolean {
-    if (this.target == null) {
-      return false;
-    }
-
-    if (!this.results.length) {
-      return false;
-    }
-
-    this.leaveResult();
-    this.index++;
-    if (this.index >= this.results.length) {
-      this.index = 0;
-    }
-    this.visitResult();
-    return true;
-  }
-
-  redraw() {
-    this.highlighter.redraw(this.results);
-  }
-
-  /**
-   * Callback for when the async finder finds new entries.
-   */
-  private matchFind(matches: NodeTextRange[]) {
-    this.highlighter.addAll(matches);
-    this.results.push(...matches);
-
-    if (this.pendingJump) {
-      this.pendingJump = false;
-      this.visitResult();
-    }
-  }
-
-  private findHighlightContainerElement(start: Element): Element {
-    // noinspection LoopStatementThatDoesntLoopJS
-    for (const element of walkParentElements(start, nonStaticPositionPredicate)) {
-      return element;
-    }
-    return document.body;
-  }
-
-  /**
-   * No longer highlight the current find index.
-   */
-  private leaveResult() {
-    this.highlighter.unfocus(this.results[this.index]);
-  }
-
-  /**
-   * Highlight the current findindex.
-   */
-  private visitResult() {
-    const result = this.results[this.index];
-    this.current$.next(result);
-    this.highlighter.focus(result);
-  }
-
-  getResultIndex(): number {
-    return this.index;
-  }
-
-  getResultCount(): number {
-    return this.results.length;
+  next(): Promise<number> {
+    return this.changeIndex(1);
   }
 }
 
 /**
  * Asynchronously finds text in a document.
  */
-class AsyncElementTextFinder {
+class AsyncElementTextFinder<Result, Query> implements DOMFinder<Result, Query> {
   // TODO: Handle DOM changes mid-find
 
-  private findQueue: IterableIterator<NodeTextRange> | undefined;
-  findTimeBudget = 10;
+  public readonly search$ = combineLatest([this.query$, this.target$, this.generator$]).pipe(
+    map(
+      ([query, target, generator]: [
+        Query,
+        Element,
+        (root: Node, query: Query) => IterableIterator<Result | undefined>
+      ]) => {
+        const results$ = idleBatchIterate(_partial(generator, [target, query]), {
+          timeout: 100,
+        }).pipe(
+          scan(
+            ({ all }, currentBatch: Result[]) => ({
+              all: all.concat(currentBatch),
+              currentBatch,
+            }),
+            {
+              all: [] as Result[],
+              currentBatch: [] as Result[],
+            }
+          ),
+          debug('results$'),
+          shareReplay(1)
+        );
+        return {
+          query,
+          results$,
+        };
+      }
+    ),
+    shareReplay(1)
+  );
 
   constructor(
-    protected readonly callback: (matches: NodeTextRange[]) => void,
-    private generator?: (root: Node, query: string) => IterableIterator<NodeTextRange | undefined>
-  ) {
-    if (isNil(this.generator)) {
-      this.generator = this.defaultGenerator;
-    }
-  }
+    private readonly query$: Observable<Query>,
+    private readonly target$: Observable<Element>,
+    private readonly generator$: Observable<
+      (root: Node, query: Query) => IterableIterator<Result | undefined>
+    >
+  ) {}
 
-  find(root: Node, query: string) {
-    this.findQueue = this.generator(root, query);
-  }
-
-  stop() {
-    this.findQueue = null;
-  }
-
-  tick() {
-    if (this.findQueue) {
-      const startTime = window.performance.now();
-      const results: NodeTextRange[] = [];
-
-      while (true) {
-        const result: IteratorResult<NodeTextRange | undefined> = this.findQueue.next();
-
-        if (result.value != null) {
-          results.push(result.value);
-        }
-
-        if (result.done) {
-          // Finished finding!
-          this.findQueue = null;
-          break;
-        }
-
-        // Check find time budget and abort
-        // We'll get back to this point on the next animation frame
-        if (window.performance.now() - startTime > this.findTimeBudget) {
-          break;
-        }
-      }
-
-      if (results.length) {
-        this.callback(results);
-      }
-    }
-  }
-
-  private *defaultGenerator(
-    root: Node,
-    query: string
-  ): IterableIterator<NodeTextRange | undefined> {
-    const queue: Node[] = [root];
-
-    while (queue.length !== 0) {
-      const node = queue.shift();
-      if (node == null) {
-        break;
-      }
-
-      switch (node.nodeType) {
-        case Node.ELEMENT_NODE:
-          for (let child = node.firstChild; child; child = child.nextSibling) {
-            queue.push(child);
-          }
-          break;
-
-        case Node.TEXT_NODE:
-          const regex = new RegExp(escapeRegExp(query), 'ig');
-          while (true) {
-            const match = regex.exec(node.nodeValue);
-            if (match === null) {
-              break;
-            }
-            yield {
-              startNode: node,
-              endNode: node,
-              start: match.index,
-              end: regex.lastIndex,
-            };
-          }
-      }
-    }
-  }
+  /**
+   * Example generator that finds text in a document.
+   *  private* defaultGenerator(
+   *    root: Node,
+   *    query: string | undefined | null,
+   *  ): IterableIterator<NodeTextRange | undefined> {
+   *    if (!query) {
+   *      return;
+   *    }
+   *    const queue: Node[] = [root];
+   *
+   *    while (queue.length !== 0) {
+   *      const node = queue.shift();
+   *      if (node == null) {
+   *        break;
+   *      }
+   *
+   *      switch (node.nodeType) {
+   *        case Node.ELEMENT_NODE:
+   *          for (let child = node.firstChild; child; child = child.nextSibling) {
+   *            queue.push(child);
+   *          }
+   *          break;
+   *
+   *        case Node.TEXT_NODE:
+   *          const regex = new RegExp(_escapeRegExp(query), 'ig');
+   *          while (true) {
+   *            const match = regex.exec(node.nodeValue);
+   *            if (match === null) {
+   *              break;
+   *            }
+   *            yield {
+   *              startNode: node,
+   *              endNode: node,
+   *              start: match.index,
+   *              end: regex.lastIndex,
+   *            };
+   *          }
+   *      }
+   *    }
+   *  }
+   */
 }

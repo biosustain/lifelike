@@ -33,7 +33,6 @@ import { ObjectUpdateRequest } from 'app/file-browser/schema';
 import { ModuleAwareComponent } from 'app/shared/modules';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { AsyncElementFind } from 'app/shared/utils/find/async-element-find';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 
@@ -74,7 +73,7 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
     protected readonly enrichmentService: EnrichmentService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly filesystemObjectActions: FilesystemObjectActions,
-    private readonly findControllerService: FindControllerService
+    readonly findControllerService: FindControllerService
   ) {
     this.annotation = this.parseAnnotationFromUrl(this.route.snapshot.fragment);
 
@@ -143,7 +142,6 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
       fontAwesomeIcon: 'table',
     }))
   );
-  readonly findController$: Observable<AsyncElementFind> = this.findControllerService.elementFind$;
 
   /**
    * Keeps tracks of changes so they aren't saved to the server until you hit 'Save'. However,
@@ -293,11 +291,13 @@ export class EnrichmentTableViewerComponent implements OnDestroy, ModuleAwareCom
 
   switchToTextFind() {
     this.annotation = { id: '', text: '', color: '' };
+    this.findControllerService.query$.next(null);
     this.findControllerService.type$.next('text');
   }
 
   switchToAnnotationFind(id: string, text: string, color: string) {
     this.annotation = { id, text, color };
+    this.findControllerService.query$.next(null);
     this.findControllerService.type$.next('annotation');
   }
 

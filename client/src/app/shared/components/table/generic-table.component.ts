@@ -24,30 +24,16 @@ import { HighlightTextService } from '../../services/highlight-text.service';
   providers: [HighlightTextService],
 })
 export class GenericTableComponent implements OnChanges {
-  HEADER: TableHeader[][];
-
   @ViewChild('head', { read: ElementRef }) public head: ElementRef;
   @ViewChild('body', { read: ElementRef }) public body: ElementRef;
 
-  // Number of columns can be inferred from the headers
-  numColumns: number[];
-
   @Input() object: FilesystemObject | undefined;
-  // Probably don't need setters for all of these
-  @Input()
-  set header(header: TableHeader[][]) {
-    this.HEADER = header;
-    const num = Math.max.apply(
-      null,
-      header.map((x) => x.reduce((a, b) => a + parseInt(b.span, 10), 0))
-    );
-    this.numColumns = new Array(num);
-  }
+  @Input() header: TableHeader[][];
   @Input() entries: TableCell[][];
 
   constructor(
     protected readonly highlightTextService: HighlightTextService,
-    protected readonly elementRef: ElementRef
+    public readonly elementRef: ElementRef
   ) {}
 
   ngOnChanges({ object }: SimpleChanges) {

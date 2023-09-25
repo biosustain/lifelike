@@ -1,137 +1,272 @@
-import { getBoundingClientRectRelativeToContainer, NodeTextRange } from '../dom';
+import { combineLatest, merge, Observable } from 'rxjs';
+import {
+  map,
+  mergeMap,
+  mergeScan,
+  pairwise,
+  scan,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from 'rxjs/operators';
+import { transform } from 'lodash-es';
+import { flatMap as _flatMap, forEach as _forEach, partial as _partial } from 'lodash/fp';
+
+import {
+  getBoundingClientRectRelativeToContainer,
+  NodeTextRange,
+  nonStaticPositionPredicate,
+  walkParentElements,
+} from '../dom';
+import { createResizeObservable } from '../../rxjs/resize-observable';
+import { ExtendedMap } from '../types';
+import { intersection } from '../../rxjs/intersection-observable';
+import { debug } from '../../rxjs/debug';
+import { animationFrameBatchIterate } from '../../rxjs/animation-frame';
+import { Renderer } from './renderer';
+import { SearchControl } from '../find/types';
 
 /**
  * Highlights text in a document asynchronously.
  */
-export class AsyncTextHighlighter {
-  // TODO: Adjust throttling to reduce even minor freezing in browser during scroll
+export class AsyncTextHighlighter implements Renderer {
+  constructor(
+    private readonly target$: Observable<Element>,
+    private readonly search$: Observable<
+      Pick<SearchControl<NodeTextRange, any>, 'results$' | 'current$'>
+    >
+  ) {}
 
-  renderTimeBudget = 1;
-  protected readonly mapping: Map<Element, TextHighlight[]> = new Map();
-  protected readonly intersectionObserver = new IntersectionObserver(
-    this.intersectionChange.bind(this)
-  );
-  protected readonly renderQueue = new Map<TextHighlight, (fragment: DocumentFragment) => any>();
-
-  constructor(public container: Element) {}
-
-  /**
-   * Call this every render frame.
-   */
-  tick() {
-    if (this.mapping.size) {
-      const startTime = window.performance.now();
-      const fragment = document.createDocumentFragment();
-
-      for (const [highlight, func] of this.renderQueue.entries()) {
-        func(fragment);
-        this.renderQueue.delete(highlight);
-
-        // Check find time budget and abort
-        // We'll get back to this point on the next animation frame
-        if (window.performance.now() - startTime > this.renderTimeBudget) {
-          break;
-        }
-      }
-
-      this.container.appendChild(fragment);
-    }
-  }
-
-  addAll(entries: NodeTextRange[]) {
-    let firstResult = true && !(this.mapping.size > 0);
-    for (const entry of entries) {
-      const element = entry.startNode.parentElement;
-
-      let highlights = this.mapping.get(element);
-      if (highlights == null) {
-        highlights = [];
-        this.mapping.set(element, highlights);
-        this.intersectionObserver.observe(element);
-      }
-
-      highlights.push(
-        new TextHighlight(entry.startNode, entry.endNode, entry.start, entry.end, firstResult)
+  private readonly mapping$: Observable<HighlightCollection> = this.search$.pipe(
+    mergeScan((prev: HighlightCollection, { results$ }) => {
+      prev?.disconnect();
+      return results$.pipe(
+        // if we just started take all existing, otherwise take only the new ones
+        map(({ all, currentBatch }, index) => (index ? currentBatch : all)),
+        scan(
+          (currentMapping, entities) =>
+            transform(
+              entities,
+              (mapping, entry, index) =>
+                mapping
+                  .getSet(entry.startNode.parentElement /*element*/, []) /*highlights*/
+                  .push(
+                    new TextHighlight(
+                      entry.startNode,
+                      entry.endNode,
+                      entry.start,
+                      entry.end,
+                      !index /*firstResult*/
+                    )
+                  ),
+              currentMapping
+            ),
+          new HighlightCollection()
+        )
       );
+    }, null),
+    shareReplay(1)
+  );
 
-      if (firstResult) {
-        firstResult = false;
-      }
-    }
-  }
+  private readonly highlight$ = this.target$.pipe(
+    map((target) => this.findHighlightContainerElement(target)),
+    switchMap((container: HTMLElement) => {
+      // We create new render queue every time container changes so unrelated tasks are dropped.
+      const renderQueue = new RenderQueue();
+      return merge(
+        /*redraw*/ createResizeObservable(container as HTMLElement).pipe(
+          withLatestFrom(
+            this.mapping$,
+            this.search$.pipe(
+              switchMap(({ results$ }) => results$),
+              map(({ all }) => all)
+            )
+          ),
+          map(([_, mapping, entries]) =>
+            _flatMap(
+              (entry) =>
+                (mapping.get(entry.startNode.parentElement /*element*/) ?? []) /*highlights*/
+                  .map((highlight) => renderQueue.set(highlight, RenderAction.Redraw)),
+              entries
+            )
+          )
+        ),
+        /*intersection change*/ this.mapping$.pipe(
+          mergeMap((mapping) =>
+            mapping.intersection$.pipe(
+              tap(
+                // just run side effect of adding calls to renderQueue
+                _forEach((entry: IntersectionObserverEntry) =>
+                  (mapping.get(entry.target /*element*/) ?? []) /*highlights*/
+                    .forEach((highlight) =>
+                      entry.intersectionRatio > 0.5
+                        ? renderQueue.set(highlight, RenderAction.Create)
+                        : renderQueue.set(highlight, RenderAction.Remove)
+                    )
+                )
+              )
+            )
+          )
+        )
+      ).pipe(
+        // At this point we are not interested in what arguments we are passed
+        // we are just notified that we need to render something from renderQueue.
+        mergeMap(
+          (
+            renderTasks: [TextHighlight, (fragment: DocumentFragment, container: Element) => void][]
+          ) =>
+            // Iterate with animation frames since we updating DOM.
+            animationFrameBatchIterate(function* () {
+              const fragment = document.createDocumentFragment();
+              for (const func of renderQueue.dequeue()) {
+                yield func(fragment, container);
+              }
+              container.append(fragment);
+            })
+        ),
+        debug('render')
+      );
+    })
+  );
 
-  focus(entry: NodeTextRange) {
-    const element = entry.startNode.parentElement;
-    const highlights = this.mapping.get(element);
-
-    for (const highlight of highlights) {
-      if (highlight.start === entry.start && highlight.end === entry.end) {
-        highlight.focusHighlights();
-      }
-    }
-  }
-
-  unfocus(entry: NodeTextRange) {
-    const element = entry.startNode.parentElement;
-    const highlights = this.mapping.get(element);
-
-    for (const highlight of highlights) {
-      if (highlight.start === entry.start && highlight.end === entry.end) {
-        highlight.unfocusHighlights();
-      }
-    }
-  }
-
-  clear() {
-    this.renderQueue.clear();
-    this.intersectionObserver.disconnect();
-
-    for (const highlights of this.mapping.values()) {
-      for (const highlight of highlights) {
-        highlight.removeHighlights();
-      }
-    }
-
-    this.mapping.clear();
-  }
-
-  redraw(entries: NodeTextRange[]) {
-    for (const entry of entries) {
-      const element = entry.startNode.parentElement;
-      const highlights = this.mapping.get(element);
-
-      for (const highlight of highlights) {
-        // Redrawing could result in new highlight boxes being drawn, so add the redraw to the render queue
-        this.renderQueue.set(highlight, (fragment) =>
-          fragment.append(...highlight.redrawHighlights(this.container))
-        );
-      }
-    }
-  }
-
-  private intersectionChange(entries: IntersectionObserverEntry[], observer: IntersectionObserver) {
-    for (const entry of entries) {
-      const highlights = this.mapping.get(entry.target);
-      if (highlights != null) {
-        for (const highlight of highlights) {
-          if (entry.intersectionRatio > 0) {
-            this.renderQueue.set(highlight, (fragment) =>
-              fragment.append(...highlight.createHighlights(this.container))
-            );
-          } else {
-            this.renderQueue.set(highlight, () => highlight.removeHighlights());
-          }
+  private readonly focus$ = combineLatest([
+    this.mapping$,
+    this.search$.pipe(switchMap(({ current$ }) => current$.pipe(startWith(undefined), pairwise()))),
+  ]).pipe(
+    tap(([mapping, [previous, current]]) => {
+      if (previous) {
+        for (const highlight of this.walkNodeHighlights(previous, mapping)) {
+          highlight.unfocusHighlights();
         }
       }
+      if (current) {
+        for (const highlight of this.walkNodeHighlights(current, mapping)) {
+          highlight.focusHighlights();
+        }
+      }
+    })
+  );
+
+  public readonly render$ = merge(this.highlight$, this.focus$).pipe(map(() => undefined));
+
+  private *walkNodeHighlights(node: NodeTextRange, mapping: Map<Element, TextHighlight[]>) {
+    const element = node.startNode.parentElement;
+    const highlights = mapping.get(element) ?? [];
+
+    for (const highlight of highlights) {
+      if (highlight.start === node.start && highlight.end === node.end) {
+        yield highlight;
+      }
     }
   }
 
-  get results() {
-    return Array.from(this.mapping.values());
+  private findHighlightContainerElement(start: Element): HTMLElement {
+    // noinspection LoopStatementThatDoesntLoopJS
+    for (const element of walkParentElements(start, nonStaticPositionPredicate)) {
+      return element as HTMLElement;
+    }
+    return document.body;
+  }
+}
+
+class HighlightCollection extends ExtendedMap<Element, TextHighlight[]> {
+  public readonly intersection$ = intersection();
+
+  set(element: Element, highlight: TextHighlight[]) {
+    this.intersection$.observe(element);
+    return super.set(element, highlight);
   }
 
-  get length(): number {
-    return this.mapping.size;
+  private removeHighlights(highlights: TextHighlight[]) {
+    highlights.forEach((highlight) => highlight.removeHighlights());
+  }
+
+  delete(key: Element): boolean {
+    this.intersection$.unobserve(key);
+    this.removeHighlights(this.get(key));
+    return super.delete(key);
+  }
+
+  clear(): void {
+    this.forEach((highlights, key) => this.delete(key));
+    super.clear();
+  }
+
+  disconnect() {
+    this.intersection$.disconnect();
+    this.forEach(this.removeHighlights);
+  }
+}
+
+enum RenderAction {
+  Create,
+  Redraw,
+  Remove,
+}
+
+/**
+ * Ussing map to:
+ * 1. Dedupe render calls for the same highlight.
+ *
+ *    *Details:*
+ *    One of 3 render calls which might be executed on next frame:
+ *    + createHighlights - under assumption that DOM representation of the highlight is not yet created,
+ *                         we create it and append to the DOM.
+ *    + redrawHighlights - remove DOM elements which no longer match the model;
+ *                         update position of existing DOM elements;
+ *                         create DOM elements to match the model.
+ *    + removeHighlights - remove DOM elements for the highlight.
+ *    Now considering overwrite of render call for same highlight:
+ *    + createHighlights -> redrawHighlights - can use redrawHighlights since it will also
+ *                                             "create DOM elements to match the model".
+ *    + createHighlights -> removeHighlights - can use removeHighlights, it will simply do nothing
+ *                                             since DOM elements are not yet created.
+ *    + redrawHighlights -> removeHighlights - can use removeHighlights as we simply want them gone.
+ *    + redrawHighlights -> createHighlights - WARNING: this will create DOM elements for the same highlight twice.*
+ *    + removeHighlights -> createHighlights - can use createHighlights as we simply want them created.
+ *    + removeHighlights -> redrawHighlights - can use redrawHighlights as we simply want them redrawn.
+ * 2. Being able to extend it while iterating over it.
+ * @protected
+ */
+class RenderQueue extends Map<TextHighlight, RenderAction> {
+  private readonly renderActionMapping = new Map<
+    RenderAction,
+    (highlight: TextHighlight, fragment: DocumentFragment, container: HTMLElement) => void
+  >([
+    // TODO renderCalls should not consume container, all of them are simply ussing it to calculate
+    //      relative position of the highlight by calling getBoundingClientRect(container).
+    //      If we pass containerRect to renderCalls we can call getBoundingClientRect(container) just once.
+    [
+      RenderAction.Create,
+      (highlight, fragment, container) => fragment.append(...highlight.createHighlights(container)),
+    ],
+    [
+      RenderAction.Redraw,
+      (highlight, fragment, container) => fragment.append(...highlight.redrawHighlights(container)),
+    ],
+    [RenderAction.Remove, (highlight) => highlight.removeHighlights()],
+  ]);
+
+  set(key: TextHighlight, value: RenderAction) {
+    if (value === RenderAction.Create && this.get(key) === RenderAction.Redraw) {
+      /**
+       * Adressing the case:
+       * > WARNING: this will create DOM elements for the same highlight twice.
+       * > See details in the comment above.
+       */
+      return;
+    }
+    return super.set(key, value);
+  }
+
+  *dequeue() {
+    for (const [highlight, renderAction] of this) {
+      const renderCall = this.renderActionMapping.get(renderAction);
+      this.delete(highlight);
+      yield _partial(renderCall, [highlight]);
+    }
   }
 }
 

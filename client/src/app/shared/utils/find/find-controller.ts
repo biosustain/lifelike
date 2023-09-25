@@ -1,61 +1,56 @@
-/**
- * Manages the process of finding some text within something.
- */
-export interface FindController {
+import { Observable, Subject } from 'rxjs';
+
+import { Finder, SearchInstance } from './types';
+
+interface FindControllerSearchInstance<Result, Query> extends SearchInstance<Result, Query> {
   /**
-   * The query to search for.
+   * Query beeing search for.
    */
-  query: string;
+  query: Query;
 
   /**
    * Gets whether a find is in progress.
    */
-  isStarted(): boolean;
+  active$: Observable<boolean>;
 
   /**
-   * Start a find.
+   * The current result index, from -1 to N-1. If it's -1, that means that the find
+   * is not yet focused on a match.
    */
-  start(): void;
+  index$: Observable<number>;
 
   /**
-   * Go to the next result if a find is active otherwise start a find.
+   * The current result, or undefined if there is no current result.
    */
-  nextOrStart();
+  current$: Observable<Result | undefined>;
+
+  /**
+   * The number of matches.
+   */
+  count$: Observable<number>;
+}
+
+/**
+ * Manages the process of finding some text within something.
+ */
+export interface FindController<Result, Query>
+  extends Finder<Result, Query, FindControllerSearchInstance<Result, Query>> {
+  /**
+   * The query to search for.
+   */
+  query$: Subject<Query>;
 
   /**
    * Go to the previous result. Does nothing if no find is active.
    *
    * @return true if a find is active and there was a result
    */
-  previous(): boolean;
+  previous(): Promise<number>;
 
   /**
    * Go to the next result. Does nothing if no find is active.
    *
    * @return true if a find is active and there was a result
    */
-  next(): boolean;
-
-  /**
-   * In case of layout changes, update all highlight rectangles.
-   */
-  redraw(): void;
-
-  /**
-   * Get the current result index, from -1 to N-1. If it's -1, that means that the find
-   * is not yet focused on a match.
-   */
-  getResultIndex(): number;
-
-  /**
-   * Get the number of matches.
-   */
-  getResultCount(): number;
-}
-
-/**
- * An async find implementation.
- */
-export interface AsyncFindController extends FindController {
-  tick(): void;
+  next(): Promise<number>;
 }
