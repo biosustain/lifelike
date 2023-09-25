@@ -40,6 +40,9 @@ x-appserver: &appserver
     # StatisticalEnrichment
     - SE_HOST=statistical-enrichment
     - SE_PORT=5010
+    # LLM
+    - LLM_HOST=llm
+    - LLM_PORT=5000
     # Other
     - DOMAIN=http://localhost:4200
     - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
@@ -89,6 +92,51 @@ services:
       - "4200:4200"
     networks:
       - frontend
+
+  llm:
+    container_name: llm
+    build:
+      context: ./llm
+      target: dev
+    ports:
+      - "5020:5000"
+    env_file:
+      - azure-secrets.env
+    environment:
+      # Flask
+      - FLASK_APP=app
+      - FLASK_APP_CONFIG=Development
+      - FLASK_DEBUG=1
+      - FLASK_ENV=development
+      # Postgres
+      - POSTGRES_HOST=pgdatabase
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      # Neo4j
+      - NEO4J_SCHEME=bolt
+      - NEO4J_HOST=graphdatabase
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PORT=7687
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=***ARANGO_USERNAME***
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=***ARANGO_DB_NAME***
+      # Redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=default
+      - REDIS_PASSWORD=password
+      - REDIS_SSL=false
+    volumes:
+      - ./llm:/home/user
+    networks:
+      - backend
+    depends_on:
+      - graphdatabase
+      - redis
 
   statistical-enrichment:
     container_name: statistical-enrichment
