@@ -1,5 +1,6 @@
 #!/bin/bash
 # Common utils used in git-hook scripts
+cache_dir=".cache"
 
 # Formatting
 b=$(tput bold)
@@ -51,14 +52,30 @@ debug () {
 run_prettier () {
   dir=${1:-'.'}
   staged_files=$(getStaged $dir '\.(css|html|js|json|jsx|md|sass|scss|ts|tsx|vue|yaml|yml)$')
+  prettier_cache_dir="$cache_dir/prettier"
+  mkdir -p $prettier_cache_dir
   # shellcheck disable=SC2236
   if [[ -n $staged_files ]];
   then
     (
       echo "> Running prettier for $(echo "$staged_files" | wc -l) files..."
+      branch_prettier_cache="$prettier_cache_dir/$(git rev-parse --abbrev-ref HEAD)"
+      if [[ ! -f $branch_prettier_cache ]];
+      then
+        recent_cache=$(ls -Atr "$prettier_cache_dir" | tail -1)
+        if [[ ! -z $recent_cache ]];
+        then
+          echo "> Reusing prettier cache from $recent_cache"
+          cp "$prettier_cache_dir/$recent_cache" $branch_prettier_cache
+        fi
+      fi
       echo ${staged_files} | xargs docker run --rm -v $(pwd)/$dir:/work \
-        tmknom/prettier:2.8.7 --write --ignore-unknown \
-        --cache --cache-strategy metadata --cache-location=.cache/.prettier-cache
+        tmknom/prettier:2.8.7 \
+        --write \
+        --ignore-unknown \
+        --cache \
+        --cache-strategy metadata \
+        --cache-location=$branch_prettier_cache
     )
   else
     echo "> Skipping prettier run..."
@@ -68,13 +85,28 @@ run_prettier () {
 run_black () {
   dir=${1:-'.'}
   staged_files=$(getStaged $dir '\.(py)$')
+  black_cache_dir="$cache_dir/black"
+  mkdir -p $black_cache_dir
   # shellcheck disable=SC2236
   if [[ -n $staged_files ]];
   then
     (
     echo "> 🌽 Running black for $(echo "$staged_files" | wc -l) files..."
+    branch_black_cache_dir="$black_cache_dir/$(git rev-parse --abbrev-ref HEAD)"
+    if [[ ! -d $branch_black_cache_dir ]];
+    then
+      recent_cache=$(ls -Atr "$black_cache_dir" | tail -1)
+      if [[ ! -z $recent_cache ]];
+      then
+        echo "> Reusing black cache from $recent_cache"
+        cp -r "$black_cache_dir/$recent_cache" $branch_black_cache_dir
+      else
+        mkdir -p $branch_black_cache_dir
+      fi
+    fi
     echo ${staged_files} | \
       xargs docker run --rm \
+      -v $(pwd)/$branch_black_cache_dir:/***ARANGO_USERNAME***/.cache/black \
       -v $(pwd)/$dir:/data --workdir /data \
       pyfound/black:23.3.0 \
       black --fast --color --skip-string-normalization
