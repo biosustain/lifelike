@@ -81,8 +81,8 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
     super();
   }
 
-  ngOnChanges({ meta }: SimpleChanges) {
-    if (meta) {
+  ngOnChanges({ meta, type }: SimpleChanges) {
+    if (meta || type) {
       this.update();
     }
   }
