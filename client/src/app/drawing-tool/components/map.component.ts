@@ -6,6 +6,7 @@ import {
   NgZone,
   OnChanges,
   OnDestroy,
+  Optional,
   Output,
   SimpleChanges,
   ViewChild,
@@ -120,14 +121,16 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService,
-    readonly openFileProvider: OpenFileProvider
+    @Optional() readonly openFileProvider: OpenFileProvider // Not provided in preview
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(
       ({ result: [mapFile, mapBlob, backupBlob], value }) => {
         this.map = mapFile;
-        this.openFileProvider.object = mapFile;
+        if (this.openFileProvider) {
+          this.openFileProvider.object = mapFile;
+        }
 
         if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
           this.workspaceManager.navigate([
