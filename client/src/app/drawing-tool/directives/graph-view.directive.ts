@@ -6,6 +6,7 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
+  Optional,
   Renderer2,
   SimpleChanges,
 } from '@angular/core';
@@ -40,7 +41,7 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
     private readonly renderer: Renderer2,
     private readonly ngZone: NgZone,
     private readonly errorHandler: ErrorHandler,
-    private readonly eventManagerService: EventManagerService
+    @Optional() private readonly eventManagerService: EventManagerService // Not provided in preview
   ) {
     ngZone.runOutsideAngular(() => {
       const style = new KnowledgeMapStyle(new DelegateResourceManager(mapImageProviderService));
@@ -49,7 +50,7 @@ export class GraphViewDirective implements OnDestroy, OnChanges, OnInit {
         edgeRenderStyle: style,
         groupRenderStyle: style,
       });
-      this.eventManagerService.registerGraphView(this.canvasGraphView);
+      this.eventManagerService?.registerGraphView(this.canvasGraphView);
     });
   }
 
