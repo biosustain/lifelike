@@ -1,0 +1,27 @@
+@import '~bootstrap/scss/functions';
+@import '~bootstrap/scss/variables';
+
+.cdk-drop-list-dragging tr th.cdk-drag-placeholder {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+th.cdk-drag {
+  cursor: move;
+}
+
+.drag-preview {
+  // Same as .table thead th
+  font-size: $font-size-sm;
+  border-top: 0;
+  border-bottom: 0;
+  color: $gray-600;
+  vertical-align: bottom;
+  padding: 0.45rem;
+  font-weight: bold;
+}
+
+.column-visibility-popover {
+  .popover-body {
+    padding: 0.5rem 0;
+  }
+}

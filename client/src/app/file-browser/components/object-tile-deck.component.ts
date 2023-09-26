@@ -20,10 +20,12 @@ import { ObjectListComponent } from './object-list.component';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';
 import { FilesystemService } from '../services/filesystem.service';
 import { FilesystemObject } from '../models/filesystem-object';
+import { ObjectListService } from '../services/object-list.service';
 
 @Component({
   selector: 'app-object-tile-deck',
   templateUrl: './object-tile-deck.component.html',
+  providers: [ObjectListService],
 })
 export class ObjectTileDeckComponent extends ObjectListComponent {
   @Input() tileDeckSize = 'md';
@@ -34,37 +36,4 @@ export class ObjectTileDeckComponent extends ObjectListComponent {
   @Input() moreLink = [];
   @Input() moreButtonText = 'View more...';
   @ContentChild('tileToolbar', { static: false }) tileToolbar: TemplateRef<any>;
-
-  constructor(
-    router: Router,
-    snackBar: MatSnackBar,
-    modalService: NgbModal,
-    errorHandler: ErrorHandler,
-    route: ActivatedRoute,
-    workspaceManager: WorkspaceManager,
-    actions: FilesystemObjectActions,
-    filesystemService: FilesystemService,
-    elementRef: ElementRef,
-    progressDialog: ProgressDialog,
-    cdr: ChangeDetectorRef
-  ) {
-    super(
-      router,
-      snackBar,
-      modalService,
-      errorHandler,
-      route,
-      workspaceManager,
-      actions,
-      filesystemService,
-      elementRef,
-      progressDialog,
-      cdr
-    );
-  }
-
-  objectDragStart(event: DragEvent, object: FilesystemObject) {
-    const dataTransfer: DataTransfer = event.dataTransfer;
-    object.addDataTransferData(dataTransfer);
-  }
 }

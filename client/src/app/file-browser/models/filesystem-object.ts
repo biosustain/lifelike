@@ -191,7 +191,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   annotationsDate: string;
   readonly creationDate: string;
   readonly modifiedDate: string;
-  protected updatedTimestamp: number;
+  updatedTimestamp: number;
   recyclingDate: string;
   project: ProjectImpl;
   parent: FilesystemObject;
