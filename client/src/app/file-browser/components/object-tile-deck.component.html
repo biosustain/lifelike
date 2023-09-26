@@ -7,7 +7,7 @@
     *ngFor="let o of objects.view$ | async"
     class="tile d-flex flex-column"
     draggable="true"
-    (dragstart)="objectDragStart($event, o)"
+    (dragstart)="controller.objectDragStart($event, o, objects)"
   >
     <div class="d-flex tile-toolbar" *ngIf="tileToolbar">
       <ng-container [ngTemplateOutlet]="tileToolbar" [ngTemplateOutletContext]="{ $implicit: o }">
