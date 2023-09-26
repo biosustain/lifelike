@@ -300,7 +300,9 @@ class ProjectsService(RDBMSBaseDao):
     def _get_folder_flatten_hierarchy(self, folder: Files) -> List[Files]:
         return (
             db.session.query(Files)
-            .filter(Files.path.startswith(folder.path))
+            .filter(
+                and_(Files.path.startswith(folder.path), Files.deletion_date.is_(None))
+            )
             .order_by(asc(Files.path))
             .all()
         )
