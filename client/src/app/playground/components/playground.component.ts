@@ -58,7 +58,6 @@ import {
 } from 'rxjs/operators';
 
 import { DynamicComponentRef, DynamicViewService } from 'app/shared/services/dynamic-view.service';
-import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { ExplainService } from 'app/shared/services/explain.service';
 import { debug } from 'app/shared/rxjs/debug';
 

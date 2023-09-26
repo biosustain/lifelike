@@ -13,7 +13,6 @@ import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 
 import { PromptComposer } from '../../../interface';
