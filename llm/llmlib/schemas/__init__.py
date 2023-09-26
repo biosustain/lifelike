@@ -13,10 +13,7 @@ class ServerRequestSchema(Schema):
 
 
 class DBRequestSchema(Schema):
-    database_type = Str(
-        validate=OneOf(['arango', 'neo4j']),
-        default='arango'
-    )
+    database_type = Str(validate=OneOf(['arango', 'neo4j']), default='arango')
     database_name = Str()
 
 
@@ -28,12 +25,14 @@ class GraphCompletionsRequestSchema(CompletionsRequestSchema, GraphRequestSchema
     pass
 
 
-class GraphChatCompletionsRequestSchema(ChatCompletionsRequestSchema, GraphRequestSchema):
+class GraphChatCompletionsRequestSchema(
+    ChatCompletionsRequestSchema, GraphRequestSchema
+):
     pass
 
 
 __all__ = [
     'OpenAiErrorResponseSchema',
     'GraphCompletionsRequestSchema',
-    'GraphChatCompletionsRequestSchema'
+    'GraphChatCompletionsRequestSchema',
 ]
