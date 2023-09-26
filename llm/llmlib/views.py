@@ -76,4 +76,3 @@ def completions(args):
 def chat(args):
     getattr(g, 'transaction_id', args['transaction_id'])
     return ChatOpenAI(**map_request_arguments(args))
-
