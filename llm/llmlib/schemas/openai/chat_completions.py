@@ -17,9 +17,7 @@ class MessageSchema(Schema):
 class FunctionSchema(Schema):
     name = fields.String(required=True)
     description = fields.String()
-    parameters = fields.Dict(
-        keys=fields.String(), values=fields.Raw(), required=True
-    )
+    parameters = fields.Dict(keys=fields.String(), values=fields.Raw(), required=True)
 
 
 class ChatCompletionsRequestSchema(CompletionsBaseRequestSchema):

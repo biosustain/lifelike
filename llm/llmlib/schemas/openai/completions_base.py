@@ -8,9 +8,7 @@ class CompletionsBaseRequestSchema(Schema):
     top_p = fields.Float()
     n = fields.Integer()
     stream = fields.Boolean()
-    logprobs = fields.Integer(
-        validate=validate.Range(min=0, max=5), allow_none=True
-    )
+    logprobs = fields.Integer(validate=validate.Range(min=0, max=5), allow_none=True)
     stop = fields.List(
         fields.String(required=True), validate=validate.Length(min=0, max=4)
     )
