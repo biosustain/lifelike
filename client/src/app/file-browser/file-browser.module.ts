@@ -4,6 +4,7 @@ import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { SharedModule } from 'app/shared/shared.module';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
+import { AppResizableColumnDirective } from 'app/shared/directives/app-resizable-column.directive';
 
 import { ObjectBrowserComponent } from './components/object-browser.component';
 import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
@@ -46,6 +47,8 @@ import { ObjectUploadDialogComponent } from './components/dialog/object-upload-d
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 import { StarredBrowserComponent } from './components/starred-browser.component';
+import { ObjectTableComponent } from './components/object-table/object-table.component';
+import { AppCdkTableColgroupBackportComponent } from './components/object-table/cdk-table-colgroup-backport.component';
 
 @NgModule({
   declarations: [
@@ -82,6 +85,9 @@ import { StarredBrowserComponent } from './components/starred-browser.component'
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
     ObjectTileDeckComponent,
+    AppResizableColumnDirective,
+    ObjectTableComponent,
+    AppCdkTableColgroupBackportComponent,
   ],
   imports: [SharedModule],
   entryComponents: [

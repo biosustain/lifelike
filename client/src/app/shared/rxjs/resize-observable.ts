@@ -55,7 +55,7 @@ export function createResizeObservable(
     throttleTime(0, animationFrameScheduler, { leading: true, trailing: true }),
     // Only actual change
     distinctUntilChanged(isEqual),
-    debug('resize-observable', element),
+    // debug('resize-observable', element),
     // Do no resize if not displayed
     filter<DOMRect>(({ width, height }) => width !== 0 && height !== 0),
     share()
