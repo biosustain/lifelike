@@ -2,8 +2,7 @@ from abc import ABCMeta
 
 
 class Singleton(ABCMeta):
-    """Singleton metaclass.
-    """
+    """Singleton metaclass."""
 
     _instances = {}
 

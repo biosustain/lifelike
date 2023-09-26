@@ -11,6 +11,7 @@ class Neo4j(Graph, metaclass=Singleton):
     @lru_cache(maxsize=1)
     def graph(self, name: str = None):
         from langchain.graphs import Neo4jGraph
+
         host = config.get('NEO4J_HOST')
         scheme = config.get('NEO4J_SCHEME')
         port = config.get('NEO4J_PORT')
@@ -31,9 +32,8 @@ class Arango(Graph, metaclass=Singleton):
     def client(self):
         if self._client is None:
             from arango import ArangoClient
-            self._client = ArangoClient(
-                hosts=config.get('ARANGO_HOST')
-            )
+
+            self._client = ArangoClient(hosts=config.get('ARANGO_HOST'))
         return self._client
 
     @lru_cache(maxsize=1)
@@ -47,6 +47,7 @@ class Arango(Graph, metaclass=Singleton):
     @lru_cache(maxsize=1)
     def graph(self, name: str = None):
         from langchain.graphs import ArangoGraph
+
         return ArangoGraph(self.db(name))
 
     def __del__(self):
@@ -61,6 +62,7 @@ class RedisCache(ABC):
     def client(cls):
         if cls._client is None:
             from redis import Redis, BlockingConnectionPool
+
             cls._client = Redis(
                 connection_pool=BlockingConnectionPool.from_url(
                     config.get('CACHE_REDIS_URL')

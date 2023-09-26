@@ -51,5 +51,5 @@ class Base:
 
     # Optional for tracking the master branch for the build
     GITHUB_HASH = os.environ.get('GITHUB_HASH', '__VERSION__')
-    
+
     FORWARD_STACKTRACE = False

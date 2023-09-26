@@ -118,12 +118,14 @@ class ServerException(Exception, BaseServerException):
 @dataclass(repr=False, eq=False, frozen=True)
 class JWTTokenException(ServerException):
     """Signals JWT token issue"""
+
     code: HTTPStatus = HTTPStatus.UNAUTHORIZED
 
 
 @dataclass(repr=False, eq=False, frozen=True)
 class JWTAuthTokenException(JWTTokenException):
     """Signals the JWT auth token has an issue"""
+
     pass
 
 

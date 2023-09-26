@@ -8,6 +8,7 @@ from llmlib.utils import transaction_id
 
 class OpenAiErrorResponseSchema(Schema):
     """All errors are emitted with this schema."""
+
     title = "OpenAI Server Error"
     type = fields.Function(lambda obj: type(obj).__name__)
     message = fields.Function(lambda obj: obj.user_message)
@@ -26,6 +27,4 @@ class OpenAiErrorResponseSchema(Schema):
             )
 
 
-__all__ = [
-    'OpenAiErrorResponseSchema'
-]
+__all__ = ['OpenAiErrorResponseSchema']
