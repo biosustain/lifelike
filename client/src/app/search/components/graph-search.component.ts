@@ -1,32 +1,25 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subscription } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { filter, map, shareReplay, startWith, take, tap } from 'rxjs/operators';
 
 import { FTSQueryRecord, FTSResult } from 'app/interfaces';
-import { LegendService } from 'app/shared/services/legend.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
-import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ModuleAwareComponent, ModuleProperties } from 'app/shared/modules';
 import { fTSQueryRecordLoadingMock } from 'app/shared/mocks/loading/graph-search';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { ModuleAwareComponent } from 'app/shared/modules';
+import { BackgroundTask } from 'app/shared/rxjs/background-task';
+import { LegendService } from 'app/shared/services/legend.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { promiseOfOne } from 'app/shared/rxjs/to-promise';
 
+import { GraphSearchParameters } from '../graph-search';
 import { GraphSearchService } from '../services/graph-search.service';
 import {
   createGraphSearchParamsFromQuery,
   getGraphQueryParams,
   GraphQueryParameters,
 } from '../utils/search';
-import { GraphSearchParameters } from '../graph-search';
 
 @Component({
   selector: 'app-graph-search',
@@ -34,8 +27,6 @@ import { GraphSearchParameters } from '../graph-search';
 })
 export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareComponent {
   @ViewChild('body', { static: false }) body: ElementRef;
-
-  @Output() modulePropertiesChange = new EventEmitter<ModuleProperties>();
 
   readonly loadTask: BackgroundTask<GraphSearchParameters, FTSResult> = new BackgroundTask(
     (params) => {
@@ -50,15 +41,51 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
     }
   );
 
-  params: GraphSearchParameters | undefined;
-  collectionSize: number;
-  results: FTSQueryRecord[] = mockArrayOf(fTSQueryRecordLoadingMock);
+  @Output() readonly modulePropertiesChange = this.loadTask.values$.pipe(
+    map((value) => ({
+      title:
+        value.query != null && value.query.length
+          ? `Knowledge Graph: ${value.query}`
+          : 'Knowledge Graph',
+      fontAwesomeIcon: 'fas fa-chart-network',
+    }))
+  );
+  readonly params$: Observable<GraphSearchParameters> = this.route.queryParams.pipe(
+    filter((params) => params.q != null),
+    map((params) => createGraphSearchParamsFromQuery(params as GraphQueryParameters)),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  private readonly resultsList$ = this.loadTask.results$.pipe(
+    map(({ result }) => result),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
+  readonly results$: Observable<FTSQueryRecord[]> = this.resultsList$.pipe(
+    map(({ nodes }) => nodes),
+    tap(() => {
+      // On each update, scroll to the top of the page
+      if (this.body) {
+        this.body.nativeElement.scrollTop = 0;
+      }
+    }),
+    startWith(mockArrayOf(fTSQueryRecordLoadingMock)),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  readonly collectionSize$ = this.resultsList$.pipe(
+    map(({ total }) => total),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
 
-  legend: Map<string, string> = new Map();
+  readonly legend$: Observable<Map<string, string>> = this.legendService.getAnnotationLegend().pipe(
+    map(
+      (legend) =>
+        // Keys of the result dict are all lowercase, need to change the first character
+        // to uppercase to match Neo4j labels
+        new Map(Object.entries(legend).map(([label, { color }]) => [label, color]))
+    ),
+    startWith(new Map())
+  );
 
-  private valuesSubscription: Subscription;
-  routerParamSubscription: Subscription;
-  loadTaskSubscription: Subscription;
+  paramSubscription: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -68,62 +95,23 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
   ) {}
 
   ngOnInit() {
-    this.valuesSubscription = this.loadTask.values$.subscribe((value) => {
-      this.modulePropertiesChange.emit({
-        title:
-          value.query != null && value.query.length
-            ? `Knowledge Graph: ${value.query}`
-            : 'Knowledge Graph',
-        fontAwesomeIcon: 'fas fa-chart-network',
-      });
+    this.paramSubscription = this.params$.subscribe((params) => {
+      this.loadTask.update(params);
     });
-
-    this.loadTaskSubscription = this.loadTask.results$.subscribe(({ result }) => {
-      const { nodes, total } = result;
-      this.results = nodes;
-      this.collectionSize = total;
-      this.body.nativeElement.scrollTop = 0;
-    });
-
-    this.legendService.getAnnotationLegend().subscribe((legend) => {
-      Object.keys(legend).forEach((label) => {
-        // Keys of the result dict are all lowercase, need to change the first character
-        // to uppercase to match Neo4j labels
-        this.legend.set(label, legend[label].color);
-      });
-    });
-
-    this.routerParamSubscription = this.route.queryParams
-      .pipe(
-        tap((params) => {
-          if (params.q != null) {
-            this.params = createGraphSearchParamsFromQuery(params as GraphQueryParameters);
-            this.loadTask.update(this.params);
-          } else {
-            this.params = null;
-            this.results = [];
-            this.collectionSize = 0;
-          }
-          if (this.body) {
-            this.body.nativeElement.scrollTop = 0;
-          }
-        })
-      )
-      .subscribe();
   }
 
   ngOnDestroy() {
-    this.routerParamSubscription.unsubscribe();
-    this.loadTaskSubscription.unsubscribe();
-    this.valuesSubscription.unsubscribe();
+    this.paramSubscription?.unsubscribe();
   }
 
   refresh() {
-    this.loadTask.update(this.params);
+    return promiseOfOne(this.params$).then((params) => {
+      this.loadTask.update(params);
+    });
   }
 
   search(params: GraphSearchParameters) {
-    this.workspaceManager.navigate(['/search'], {
+    return this.workspaceManager.navigate(['/search'], {
       queryParams: {
         ...getGraphQueryParams(params),
         t: new Date().getTime(), // Hack so if the person press search without changing anything, we still refresh
@@ -132,9 +120,11 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
   }
 
   goToPage(page: number) {
-    this.search({
-      ...this.params,
-      page,
-    });
+    return promiseOfOne(this.params$).then((params) =>
+      this.search({
+        ...params,
+        page,
+      })
+    );
   }
 }
