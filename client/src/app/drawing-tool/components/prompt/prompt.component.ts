@@ -89,9 +89,7 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     map(([_, params]) => params),
     takeUntil(this.destroy$),
     switchMap(({ entities, temperature, context }) =>
-      this.explainService
-        .relationship(entities, context, { temperature })
-        .pipe(startWith(undefined), addStatus())
+      this.explainService.relationship(entities, context, { temperature }).pipe(addStatus())
     )
   );
 
