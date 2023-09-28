@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 
 @Component({
   selector: 'app-dialog-confirm-deletion-reqursive',

@@ -1,6 +1,6 @@
 import { ValueFn } from 'd3-selection';
 
-import { TruncatePipe } from 'app/shared/pipes';
+import { TruncatePipe } from 'app/shared/pipes/truncate.pipe';
 
 import { TypeContext } from '../interfaces';
 

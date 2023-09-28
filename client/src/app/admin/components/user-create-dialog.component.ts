@@ -3,8 +3,8 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
 import { UserCreationRequest } from 'app/interfaces';
 import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from 'app/shared/constants';
 

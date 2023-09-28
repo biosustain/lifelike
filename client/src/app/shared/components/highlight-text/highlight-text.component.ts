@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 
-import { HighlightTextService } from '../../services/highlight-text.service';
+import { HighlightTextService } from '../../modules/highlight-text/services/highlight-text.service';
 
 @Component({
   selector: 'app-highlight-text',

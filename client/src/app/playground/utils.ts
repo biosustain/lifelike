@@ -4,7 +4,7 @@ import { BehaviorSubject, EMPTY, Observable, ReplaySubject } from 'rxjs';
 import { catchError, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { isNull } from 'lodash-es';
 
-import { RequestWrapping } from './interfaces';
+import { RequestWrapping } from './interfaces/request';
 
 export function toRequest<Arguments extends Array<any>, Result extends object>(
   request: (...args: Arguments) => Observable<Result>

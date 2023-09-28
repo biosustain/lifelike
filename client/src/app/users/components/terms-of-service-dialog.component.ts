@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonDialogComponent } from 'app/shared/modules/dialog/components/common/common-dialog.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 
 @Component({
   selector: 'app-terms-of-service-dialog',

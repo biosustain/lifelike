@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgModule } from '@angular/core';
 
 import { uuidv4 } from '../utils';
 
+// TODO: not used?
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
 })
@@ -46,5 +47,18 @@ export class SessionStorageService implements Storage {
   set(value, key?) {
     const content = JSON.stringify(value);
     return this.setItem(content, key);
+  }
+}
+
+@NgModule({
+  providers: [SessionStorageService],
+})
+class NotUsedModule {
+  /**
+   * This module is not used anywhere.
+   * It is declared to make the compiler happy.
+   */
+  constructor() {
+    throw new Error('Not reachable');
   }
 }

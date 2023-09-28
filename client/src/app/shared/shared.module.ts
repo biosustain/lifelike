@@ -9,68 +9,101 @@ import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { CdkTreeModule } from '@angular/cdk/tree';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { EffectsModule } from '@ngrx/effects';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbAlertModule,
+  NgbPopoverModule,
+  NgbProgressbarModule,
+  NgbTooltipModule,
+  NgbTypeaheadModule,
+} from '@ng-bootstrap/ng-bootstrap';
 
 import { AngularSplitModule } from 'angular-split';
-import { MessageDialogComponent } from './components/dialog/message-dialog.component';
-import { ProgressDialogComponent } from './components/dialog/progress-dialog.component';
-import { CopyLinkDialogComponent } from './components/dialog/copy-link-dialog.component';
 import { SharedNgrxEffects } from './store/effects';
 import { SharedSearchService } from './services/shared-search.service';
-import { AccountsService } from './services/accounts.service';
-import { DataTransferDataService } from './services/data-transfer-data.service';
-import { SessionStorageService } from './services/session-storage.service';
+import {
+  DATA_TRANSFER_DATA_PROVIDER,
+  DataTransferDataService,
+} from './services/data-transfer-data.service';
 import { InternalSearchService } from './services/internal-search.service';
+import { GenericDataProvider } from './providers/data-transfer-data/generic-data.provider';
 import components from './components';
+import pipes from './pipes';
 import directives from './directives';
-import pipes, { TruncatePipe } from './pipes';
-import providers from './providers';
+import { UtilsModule } from './modules/utils/utils.module';
+import { PlaceholderModule } from './modules/placeholder/placeholder.module';
+import ModalModule from './modules/modal';
+import ControlsModule from './modules/controls';
+import AppModuleModule from './modules/app-module';
+import { LinkModule } from './modules/link/link.module';
+import LoadingIndicatorModule from './modules/loading-indicator';
+import TreeViewModule from './modules/tree-view';
+import { HighlightTextModule } from './modules/highlight-text/highlight-text.module';
+
+const modulesImportExport = [
+  CdkTreeModule,
+  CommonModule,
+  DragDropModule,
+  FlexLayoutModule,
+  FormsModule,
+  HttpClientModule,
+  NgbAlertModule,
+  NgbPopoverModule,
+  NgbProgressbarModule,
+  NgbTooltipModule,
+  NgbTypeaheadModule,
+  PlaceholderModule,
+  ReactiveFormsModule,
+  RouterModule,
+  ScrollingModule,
+  TextFieldModule,
+  UtilsModule,
+  ModalModule,
+  ControlsModule,
+  AppModuleModule,
+  LinkModule,
+  LoadingIndicatorModule,
+  TreeViewModule,
+  HighlightTextModule,
+];
 
 @NgModule({
-  entryComponents: [MessageDialogComponent, ProgressDialogComponent, CopyLinkDialogComponent],
   imports: [
-    MatTooltipModule,
-    CommonModule,
-    HttpClientModule,
-    FlexLayoutModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
     AngularSplitModule.forRoot(),
-    DragDropModule,
     EffectsModule.forFeature([SharedNgrxEffects]),
-    TextFieldModule,
-    NgbModule,
+    MatTooltipModule,
+    ...modulesImportExport,
   ],
-  declarations: [...directives, ...components, ...pipes],
+  declarations: [
+    // Directives
+    ...directives,
+    // Pipes
+    ...pipes,
+    // Components
+    ...components,
+  ],
   providers: [
-    TruncatePipe,
-    MatSnackBar,
+    DataTransferDataService,
+    GenericDataProvider,
+    InternalSearchService,
     SharedNgrxEffects,
     SharedSearchService,
-    SessionStorageService,
-    InternalSearchService,
-    AccountsService,
-    DataTransferDataService,
-    ...providers,
+    {
+      provide: DATA_TRANSFER_DATA_PROVIDER,
+      useClass: GenericDataProvider,
+      multi: true,
+    },
   ],
-  // exported modules are visible to modules that import this one
   exports: [
+    // Declarations to be ussed when importing shared module
     // Modules
-    CommonModule,
-    HttpClientModule,
-    FlexLayoutModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterModule,
     AngularSplitModule,
-    DragDropModule,
-    TextFieldModule,
-    NgbModule,
+    RouterModule,
+    ...modulesImportExport,
     // Directives
     ...directives,
     // Components

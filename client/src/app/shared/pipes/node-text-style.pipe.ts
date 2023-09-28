@@ -1,6 +1,7 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { NgModule, Pipe, PipeTransform } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 
+// TODO: not used?
 @Pipe({
   name: 'nodeTextStyle',
 })
@@ -14,5 +15,18 @@ export class NodeTextStylePipe implements PipeTransform {
       const titleCasePipe = new TitleCasePipe();
       return titleCasePipe.transform(value);
     }
+  }
+}
+
+@NgModule({
+  declarations: [NodeTextStylePipe],
+})
+class NotUsedModule {
+  /**
+   * This module is not used anywhere.
+   * It is declared to make the compiler happy.
+   */
+  constructor() {
+    throw new Error('Not reachable');
   }
 }

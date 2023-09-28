@@ -8,9 +8,12 @@ import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
 import { clone, first, values, chain } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { ResultMapping } from 'app/shared/schemas/common';

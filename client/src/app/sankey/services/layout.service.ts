@@ -3,66 +3,63 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { max, min, sum } from 'd3-array';
 import { assign as _assign, omit as _omit } from 'lodash-es';
 import {
-  merge as _merge,
-  mergeAll as _mergeAll,
-  isNil as _isNil,
   clone as _clone,
-  range as _range,
-  isEqual as _isEqual,
-  assignAll as _assignAll,
-  flatMap as _flatMap,
-  map as _map,
-  sortBy as _sortBy,
-  flow as _flow,
-  values as _values,
-  groupBy as _groupBy,
   every as _every,
+  flatMap as _flatMap,
+  flow as _flow,
+  groupBy as _groupBy,
+  isEqual as _isEqual,
+  isNil as _isNil,
+  map as _map,
+  merge as _merge,
+  range as _range,
+  sortBy as _sortBy,
+  values as _values,
 } from 'lodash/fp';
 import {
-  map,
-  tap,
-  switchMap,
-  shareReplay,
-  filter,
-  takeUntil,
   catchError,
-  first,
   distinctUntilChanged,
+  filter,
+  first,
+  map,
+  shareReplay,
+  switchMap,
+  takeUntil,
+  tap,
 } from 'rxjs/operators';
 import {
+  BehaviorSubject,
   combineLatest,
-  iif,
-  ReplaySubject,
-  Subject,
   EMPTY,
+  iif,
   Observable,
   of,
-  BehaviorSubject,
-  OperatorFunction,
+  ReplaySubject,
+  Subject,
 } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { TruncatePipe } from 'app/shared/pipes';
 import { SankeyState, TypeContext } from 'app/sankey/interfaces';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import { debug } from 'app/shared/rxjs/debug';
 import { ServiceOnInit } from 'app/shared/schemas/common';
-import { ExtendedMap, ExtendedArray } from 'app/shared/utils/types';
+import { ExtendedArray, ExtendedMap } from 'app/shared/utils/types';
+import { TruncatePipe } from 'app/shared/pipes/truncate.pipe';
 
 import { SankeyBaseState, SankeyNodeHeight } from '../base-views/interfaces';
 import { BaseControllerService } from './base-controller.service';
 import { normalizeGenerator, positiveNumber } from '../utils';
 import {
-  SankeyAbstractLayoutService,
+  Horizontal,
   LayoutData,
   ProcessedExtent,
-  Horizontal,
+  SankeyAbstractLayoutService,
   Vertical,
 } from '../abstract/sankey-layout.service';
 import { ErrorMessages } from '../constants/error';
 import { ValueGenerator } from '../interfaces/valueAccessors';
 import { EditService } from './edit.service';
-import { View, SankeyNode, SankeyDocument } from '../model/sankey-document';
+import { SankeyDocument, SankeyNode, View } from '../model/sankey-document';
 
 interface LayerPlaceholder {
   layer: number;

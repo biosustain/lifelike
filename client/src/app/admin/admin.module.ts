@@ -1,5 +1,12 @@
 import { NgModule } from '@angular/core';
 
+import {
+  NgbDatepickerModule,
+  NgbDropdownModule,
+  NgbNavModule,
+  NgbPaginationModule,
+} from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
 import { AccountService } from 'app/users/services/account.service';
 
@@ -16,15 +23,7 @@ import { DateTimePickerComponent } from './components/date-time-picker/date-time
 import { PeriodPickerComponent } from './components/period-picker/period-picker.component';
 import { ChatgptUsageGraphDirective } from './directives/chatgpt-usage-graph.directive';
 
-const components = [
-  AdminPanelComponent,
-  AdminSettingsComponent,
-  AnnotationTableComponent,
-  UserCreateDialogComponent,
-  UserBrowserComponent,
-  UserUpdateDialogComponent,
-  MissingRolesDialogComponent,
-];
+const exports = [AdminPanelComponent];
 
 @NgModule({
   entryComponents: [
@@ -32,15 +31,27 @@ const components = [
     UserUpdateDialogComponent,
     MissingRolesDialogComponent,
   ],
-  imports: [SharedModule],
+  imports: [
+    SharedModule,
+    NgbPaginationModule,
+    NgbNavModule,
+    NgbDropdownModule,
+    NgbDatepickerModule,
+  ],
   declarations: [
-    ...components,
     ChatgptUsageGraphDirective,
     DateTimePickerComponent,
     PeriodPickerComponent,
     ChatgptUsageComponent,
+    AdminSettingsComponent,
+    AnnotationTableComponent,
+    UserCreateDialogComponent,
+    UserBrowserComponent,
+    UserUpdateDialogComponent,
+    MissingRolesDialogComponent,
+    ...exports,
   ],
   providers: [AdminGuard, AccountService],
-  exports: components,
+  exports,
 })
 export class AdminModule {}

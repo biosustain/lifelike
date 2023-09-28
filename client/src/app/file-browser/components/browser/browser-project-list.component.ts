@@ -7,9 +7,9 @@ import { select } from '@ngrx/store';
 import { isNil } from 'lodash-es';
 
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { PaginatedRequestOptions } from 'app/shared/schemas/common';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus, PipeStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 import { AuthSelectors } from 'app/auth/store';
 import { projectImplLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';

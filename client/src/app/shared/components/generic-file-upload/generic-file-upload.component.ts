@@ -7,10 +7,13 @@ import {
   ViewChild,
   ElementRef,
   OnDestroy,
+  NgModule,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { Subject, Subscription } from 'rxjs';
 
+// TODO: not used?
 @Component({
   selector: 'app-generic-file-upload',
   templateUrl: './generic-file-upload.component.html',
@@ -52,5 +55,19 @@ export class GenericFileUploadComponent implements OnInit, OnDestroy {
       this.fileName = event.target.files[0].name;
       this.fileChanged.emit(event.target.files[0]);
     }
+  }
+}
+
+@NgModule({
+  declarations: [GenericFileUploadComponent],
+  imports: [CommonModule],
+})
+class NotUsedModule {
+  /**
+   * This module is not used anywhere in the codebase.
+   * It is only here to make the compiler happy.
+   */
+  constructor() {
+    throw new Error('Not reachable');
   }
 }

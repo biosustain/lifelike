@@ -15,7 +15,7 @@ import { isEmpty, once } from 'lodash-es';
 
 import { openModal } from 'app/shared/utils/modals';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 
 import { AnnotationEditDialogComponent } from './annotation-edit-dialog.component';
 import { Rect } from '../annotation-type';

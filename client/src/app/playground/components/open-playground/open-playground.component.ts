@@ -18,10 +18,6 @@ import { openModal } from 'app/shared/utils/modals';
 import { DynamicViewService } from 'app/shared/services/dynamic-view.service';
 
 import { environment } from '../../../../environments/environment';
-import {
-  DrawingToolPromptFormComponent,
-  DrawingToolPromptFormParams,
-} from '../form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
 
 export interface OpenPlaygroundParams<PromptParams = Record<string, any>, C = any> {
   temperature?: number;

@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { escapeRegExp } from 'lodash-es';
 import { combineLatest, defer, of, Subscription } from 'rxjs';
 
-import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
+import { EnrichmentTableViewerComponent } from 'app/enrichment-table/components/enrichment-table-viewer.component';
 import { ENRICHMENT_TABLE_MIMETYPE } from 'app/file-types/providers/enrichment-table.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';

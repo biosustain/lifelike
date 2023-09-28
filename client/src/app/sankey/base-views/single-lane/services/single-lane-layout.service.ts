@@ -3,11 +3,11 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { first, last } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { TruncatePipe } from 'app/shared/pipes';
 import { DirectedTraversal } from 'app/sankey/utils/directed-traversal';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
-import { LayoutService, LayersContext } from 'app/sankey/services/layout.service';
+import { LayersContext, LayoutService } from 'app/sankey/services/layout.service';
 import { ServiceOnInit } from 'app/shared/schemas/common';
+import { TruncatePipe } from 'app/shared/pipes/truncate.pipe';
 
 import { SingleLaneBaseControllerService } from './single-lane-base-controller.service';
 import { Base } from '../interfaces';

@@ -8,7 +8,7 @@ import { tap } from 'rxjs/operators';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { PaginatedRequestOptions, StandardRequestOptions } from 'app/shared/schemas/common';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';

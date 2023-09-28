@@ -6,7 +6,7 @@ import { map, tap } from 'rxjs/operators';
 
 import { displaySnackbar } from './snackbar-actions';
 import { displayMessageDialog } from './message-dialog-actions';
-import { MessageDialog } from '../services/message-dialog.service';
+import { MessageDialog } from '../modules/dialog/services/message-dialog.service';
 
 @Injectable()
 export class SharedNgrxEffects {

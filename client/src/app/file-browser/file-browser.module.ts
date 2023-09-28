@@ -1,11 +1,14 @@
 import { NgModule } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 
+import { NgbAccordionModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { SharedModule } from 'app/shared/shared.module';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { AppResizableColumnDirective } from 'app/shared/directives/app-resizable-column.directive';
+import ObjectModule from 'app/shared/modules/object';
 
 import { ObjectBrowserComponent } from './components/object-browser.component';
 import { ObjectDeleteDialogComponent } from './components/dialog/object-delete-dialog.component';
@@ -48,10 +51,37 @@ import { ObjectUploadDialogComponent } from './components/dialog/object-upload-d
 import { ObjectDeleteReqursiveDialogComponent } from './components/dialog/object-delete-reqursive-dialog.component';
 import { BrowserPinnedListComponent } from './components/browser/browser-pinned-list.component';
 import { StarredBrowserComponent } from './components/starred-browser.component';
+import { PaginationComponent } from './components/pagination/pagination.component';
+import { OrganismComponent } from './components/organism/organism.component';
+import { UserSelectComponent } from './components/form/user-select/user-select.component';
+import { SelectInputComponent } from './components/form/select-input/select-input.component';
+import { AccountsService } from './services/accounts.service';
+import { MouseNavigableDirective } from './directives/mouse-navigable.directive';
 import { ObjectTableComponent } from './components/object-table/object-table.component';
 import { AppCdkTableColgroupBackportComponent } from './components/object-table/cdk-table-colgroup-backport.component';
 
+const exports = [
+  ObjectInfoComponent,
+  ObjectTypeLabelComponent,
+  ObjectSelectionDialogComponent,
+  ObjectListComponent,
+  ObjectTileDeckComponent,
+  ObjectEditDialogComponent,
+  ObjectVersionHistoryDialogComponent,
+  FileAnnotationHistoryDialogComponent,
+  ObjectAnnotationHistoryComponent,
+  ObjectReannotateResultsDialogComponent,
+];
+
 @NgModule({
+  imports: [
+    MatMenuModule,
+    SharedModule,
+    NgbAccordionModule,
+    NgbPaginationModule,
+    NgbNavModule,
+    ObjectModule,
+  ],
   declarations: [
     ObjectDeleteDialogComponent,
     ObjectDeletionResultDialogComponent,
@@ -66,22 +96,13 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
     CommunityBrowserComponent,
-    ObjectInfoComponent,
-    ObjectTypeLabelComponent,
-    ObjectSelectionDialogComponent,
     ObjectListComponent,
-    ObjectTileDeckComponent,
-    ObjectEditDialogComponent,
     ObjectVersionHistoryComponent,
-    ObjectVersionHistoryDialogComponent,
     ObjectPreviewComponent,
     ObjectPreviewOutletComponent,
     ObjectExportDialogComponent,
     DirectoryPreviewComponent,
     ProjectCollaboratorsDialogComponent,
-    FileAnnotationHistoryDialogComponent,
-    ObjectAnnotationHistoryComponent,
-    ObjectReannotateResultsDialogComponent,
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
     BrowserPinnedListComponent,
@@ -89,8 +110,15 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     AppResizableColumnDirective,
     ObjectTableComponent,
     AppCdkTableColgroupBackportComponent,
+    PaginationComponent,
+    OrganismComponent,
+    UserSelectComponent,
+    SelectInputComponent,
+    // Directives
+    MouseNavigableDirective,
+
+    ...exports,
   ],
-  imports: [MatMenuModule, SharedModule],
   entryComponents: [
     ObjectDeleteDialogComponent,
     ProjectEditDialogComponent,
@@ -108,19 +136,8 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     ObjectAnnotationHistoryComponent,
     ObjectReannotateResultsDialogComponent,
   ],
-  exports: [
-    ObjectInfoComponent,
-    ObjectTypeLabelComponent,
-    ObjectSelectionDialogComponent,
-    ObjectListComponent,
-    ObjectTileDeckComponent,
-    ObjectEditDialogComponent,
-    ObjectVersionHistoryDialogComponent,
-    FileAnnotationHistoryDialogComponent,
-    ObjectAnnotationHistoryComponent,
-    ObjectReannotateResultsDialogComponent,
-  ],
   providers: [
+    AccountsService,
     ProjectsService,
     FilesystemService,
     AnnotationsService,
@@ -135,5 +152,6 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
       multi: true,
     },
   ],
+  exports,
 })
 export class FileBrowserModule {}

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { MetaDataService } from 'app/shared/services/metadata.service';
 import { BuildInfo } from 'app/interfaces';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus, PipeStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 
 @Component({
   selector: 'app-dashboard',

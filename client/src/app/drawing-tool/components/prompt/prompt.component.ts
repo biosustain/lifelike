@@ -16,7 +16,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
   DrawingToolPromptFormComponent,
   DrawingToolPromptFormParams,
-} from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
+} from 'app/drawing-tool/modules/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
 import { OpenPlaygroundParams } from 'app/playground/components/open-playground/open-playground.component';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { ExplainService } from 'app/shared/services/explain.service';
@@ -24,8 +24,8 @@ import { DropdownController } from 'app/shared/utils/dropdown.controller.factory
 import { openModal } from 'app/shared/utils/modals';
 import { PlaygroundComponent } from 'app/playground/components/playground.component';
 import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
-import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { ChatGPTResponse } from 'app/enrichment-visualisation/services/enrichment-visualisation.service';
+import { addStatus, PipeStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { MapStoreService, setContext } from '../../services/map-store.service';

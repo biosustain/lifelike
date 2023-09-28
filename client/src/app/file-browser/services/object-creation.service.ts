@@ -51,8 +51,8 @@ import {
   omit,
 } from 'lodash-es';
 
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import {
   ErrorResponse,

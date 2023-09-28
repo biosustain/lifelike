@@ -1,9 +1,16 @@
 import { NgModule } from '@angular/core';
 import { MatTreeModule } from '@angular/material/tree';
 
+import {
+  NgbAccordionModule,
+  NgbDropdownModule,
+  NgbPaginationModule,
+} from '@ng-bootstrap/ng-bootstrap';
+
 import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { SharedModule } from 'app/shared/shared.module';
+import ObjectModule from 'app/shared/modules/object';
 
 import { AdvancedSearchDialogComponent } from './components/advanced-search-dialog.component';
 import { ContentSearchComponent } from './components/content-search.component';
@@ -18,30 +25,42 @@ import { SearchRecordRelationshipsComponent } from './components/search-record-r
 import { SynonymSearchComponent } from './components/synonym-search.component';
 import { ContentSearchService } from './services/content-search.service';
 import { GraphSearchService } from './services/graph-search.service';
+import { SelectComponent } from './components/form/select/select.component';
+import { ResultsSummaryComponent } from './components/results-summary/results-summary.component';
 
-const components = [
-  AdvancedSearchDialogComponent,
-  ContentSearchComponent,
-  ContentSearchFormComponent,
-  FileRecordsComponent,
-  GraphSearchComponent,
-  GraphSearchFormComponent,
-  HierarchySearchTreeComponent,
-  RejectedOptionsDialogComponent,
-  SearchRecordNodeComponent,
-  SearchRecordRelationshipsComponent,
-  SynonymSearchComponent,
-];
+const exports = [ContentSearchComponent, GraphSearchComponent];
 
 @NgModule({
-  imports: [SharedModule, DrawingToolModule, FileBrowserModule, MatTreeModule],
+  imports: [
+    SharedModule,
+    DrawingToolModule,
+    FileBrowserModule,
+    MatTreeModule,
+    NgbPaginationModule,
+    NgbAccordionModule,
+    NgbDropdownModule,
+    ObjectModule,
+  ],
+  declarations: [
+    AdvancedSearchDialogComponent,
+    ContentSearchFormComponent,
+    FileRecordsComponent,
+    GraphSearchFormComponent,
+    HierarchySearchTreeComponent,
+    RejectedOptionsDialogComponent,
+    SearchRecordNodeComponent,
+    SearchRecordRelationshipsComponent,
+    SynonymSearchComponent,
+    SelectComponent,
+    ResultsSummaryComponent,
+    ...exports,
+  ],
   entryComponents: [
     AdvancedSearchDialogComponent,
     RejectedOptionsDialogComponent,
     SynonymSearchComponent,
   ],
-  declarations: components,
   providers: [GraphSearchService, ContentSearchService],
-  exports: components,
+  exports,
 })
 export class SearchModule {}

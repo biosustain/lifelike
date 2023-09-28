@@ -1,16 +1,16 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { sum } from 'd3-array';
-import { first, last, clone } from 'lodash-es';
+import { clone, first, last } from 'lodash-es';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { TruncatePipe } from 'app/shared/pipes';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import {
-  LayoutService,
   groupByTraceGroupWithAccumulation,
   LayersContext,
+  LayoutService,
 } from 'app/sankey/services/layout.service';
+import { TruncatePipe } from 'app/shared/pipes/truncate.pipe';
 
 import { DirectedTraversal } from '../../../utils/directed-traversal';
 import { MultiLaneBaseControllerService } from './multi-lane-base-controller.service';

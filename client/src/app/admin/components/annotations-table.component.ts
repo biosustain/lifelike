@@ -13,7 +13,7 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import {
   PaginatedRequestOptions,
   ResultList,
@@ -21,7 +21,7 @@ import {
 } from 'app/shared/schemas/common';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
+import { getProgressStatus } from 'app/shared/modules/dialog/components/progress/progress-dialog.component';
 import { downloader } from 'app/shared/utils/dom';
 import { retryWhenOnline } from 'app/shared/rxjs/online-observable';
 import { globalAnnotationListItemLoadingMock } from 'app/shared/mocks/loading/annotation';

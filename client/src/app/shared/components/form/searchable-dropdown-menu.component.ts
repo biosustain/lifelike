@@ -10,9 +10,10 @@ import {
   HostBinding,
   EventEmitter,
   Output,
+  NgModule,
 } from '@angular/core';
 import { trigger, style, transition, animate, state } from '@angular/animations';
-import { KeyValue } from '@angular/common';
+import { CommonModule, KeyValue } from '@angular/common';
 
 import { BehaviorSubject, ReplaySubject, combineLatest } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -20,7 +21,9 @@ import { NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
 
 import { inText } from '../../utils';
 import { ExtendedMap } from '../../utils/types';
+import { SharedModule } from '../../shared.module';
 
+// TODO: not used?
 @Component({
   selector: 'app-searchable-dropdown-menu',
   styleUrls: ['./searchable-dropdown-menu.component.scss'],
@@ -102,5 +105,19 @@ export class SearchableDropdownMenuComponent<Id, Item> implements OnChanges {
 
   searchChangeCallback(event: Event) {
     this.search$.next((event?.target as any)?.value);
+  }
+}
+
+@NgModule({
+  declarations: [SearchableDropdownMenuComponent],
+  imports: [SharedModule],
+})
+class NotUsedModule {
+  /**
+   * This module is not used anywhere in the codebase.
+   * It is only here to make the compiler happy.
+   */
+  constructor() {
+    throw new Error('Not reachable');
   }
 }

@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -7,17 +6,21 @@ import { WorkspaceComponent } from './components/workspace.component';
 import { WorkspaceOutletComponent } from './components/workspace-outlet.component';
 import { WorkspacePaneComponent } from './components/workspace-pane.component';
 import { WorkspaceTabComponent } from './components/workspace-tab.component';
+import { DataTransferDataDirective } from './directives/data-transfer-data.directive';
+import { ContextMenuItemDirective } from './directives/context-menu-item.directive';
 
-const components = [
-  WorkspaceComponent,
-  WorkspaceOutletComponent,
-  WorkspacePaneComponent,
-  WorkspaceTabComponent,
-];
+const exports = [WorkspaceComponent];
 
 @NgModule({
-  declarations: [...components],
-  exports: [...components],
-  imports: [CommonModule, SharedModule],
+  imports: [SharedModule],
+  declarations: [
+    WorkspaceOutletComponent,
+    WorkspacePaneComponent,
+    WorkspaceTabComponent,
+    DataTransferDataDirective,
+    ContextMenuItemDirective,
+    ...exports,
+  ],
+  exports,
 })
 export class WorkspaceModule {}

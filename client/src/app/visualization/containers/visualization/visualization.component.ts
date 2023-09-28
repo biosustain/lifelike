@@ -28,8 +28,11 @@ import {
   getGraphQueryParams,
   GraphQueryParameters,
 } from 'app/search/utils/search';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { GraphSearchParameters } from 'app/search/graph-search';

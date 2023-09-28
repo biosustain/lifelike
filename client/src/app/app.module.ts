@@ -2,7 +2,6 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 
 import { ChartsModule } from 'ng2-charts';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AdminModule } from 'app/admin/admin.module';
@@ -25,8 +24,8 @@ import { FileNavigatorModule } from 'app/file-navigator/file-navigator.module';
 import { ShortestPathModule } from 'app/shortest-path/shortest-path.module';
 import { PdfViewerLibModule } from 'app/pdf-viewer/pdf-viewer-lib.module';
 import { GlobalErrorHandler } from 'app/shared/services/global-error-handler';
-import { EnrichmentTablesModule } from 'app/enrichment/enrichment-tables.module';
-import { EnrichmentVisualisationsModule } from 'app/enrichment/enrichment-visualisation.module';
+import { EnrichmentTablesModule } from 'app/enrichment-table/enrichment-tables.module';
+import { EnrichmentVisualisationsModule } from 'app/enrichment-visualisation/enrichment-visualisation.module';
 import { BiocViewerLibModule } from 'app/bioc-viewer/bioc-viewer-lib.module';
 import { TraceViewerLibModule } from 'app/trace-viewer/trace-viewer-lib.module';
 import { FileTypesModule } from 'app/file-types/file-types.module';
@@ -61,7 +60,6 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     DrawingToolModule,
     SankeyViewerLibModule,
     TraceViewerLibModule,
-    NgbModule,
     FileNavigatorModule,
     BiocViewerLibModule,
     EnrichmentVisualisationsModule,
@@ -81,7 +79,6 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
       useClass: GlobalErrorHandler,
     },
   ],
-  exports: [],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

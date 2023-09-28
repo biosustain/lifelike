@@ -43,7 +43,7 @@ import { WarningControllerService } from 'app/shared/services/warning-controller
 import { debug } from 'app/shared/rxjs/debug';
 import { $freezeInDev } from 'app/shared/rxjs/development';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { TrackingService } from 'app/shared/services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/constants/tracking';
 import { ModuleContext } from 'app/shared/services/module-context.service';

@@ -7,11 +7,11 @@ import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/o
 import {
   EnrichmentTableEditDialogComponent,
   EnrichmentTableEditDialogValue,
-} from 'app/enrichment/components/table/dialog/enrichment-table-edit-dialog.component';
-import { EnrichmentTablePreviewComponent } from 'app/enrichment/components/table/enrichment-table-preview.component';
-import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
-import { EnrichmentTable } from 'app/enrichment/models/enrichment-table';
-import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
+} from 'app/enrichment-table/components/dialog/enrichment-table-edit-dialog.component';
+import { EnrichmentTablePreviewComponent } from 'app/enrichment-table/components/enrichment-table-preview.component';
+import { EnrichmentDocument } from 'app/enrichment-table/models/enrichment-document';
+import { EnrichmentTable } from 'app/enrichment-table/models/enrichment-table';
+import { EnrichmentTableService } from 'app/enrichment-table/services/enrichment-table.service';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
   BulkObjectUpdateRequest,
@@ -33,7 +33,7 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import { SearchType } from 'app/search/shared';
 import { RankedItem } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
 

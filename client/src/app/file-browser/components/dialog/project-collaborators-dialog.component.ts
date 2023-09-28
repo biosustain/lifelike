@@ -6,16 +6,19 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { uniqueId } from 'lodash-es';
 import { finalize, tap } from 'rxjs/operators';
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { ModelList } from 'app/shared/utils/models';
 import { nonEmptyList } from 'app/shared/utils/forms/validators';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { AppUser } from 'app/interfaces';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 import { collaboratorLoadingMock } from 'app/shared/mocks/loading/user';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 

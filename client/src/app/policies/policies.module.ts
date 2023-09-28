@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -10,17 +9,17 @@ import { PolicyHostDirective } from './directives/policy-host.directive';
 import { PrivacyPolicyComponent } from './components/privacy-policy.component';
 import { TermsAndConditionsComponent } from './components/terms-and-conditions.component';
 
-const components = [
+const exports = [
   CookiePolicyComponent,
   CopyrightInfringementPolicyComponent,
-  PolicyViewerComponent,
+
   PrivacyPolicyComponent,
   TermsAndConditionsComponent,
 ];
-const directives = [PolicyHostDirective];
 
 @NgModule({
-  declarations: [...components, ...directives],
-  imports: [CommonModule, SharedModule],
+  imports: [SharedModule],
+  declarations: [PolicyViewerComponent, PolicyHostDirective, ...exports],
+  exports,
 })
 export class PoliciesModule {}

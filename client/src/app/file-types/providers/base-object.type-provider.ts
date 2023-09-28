@@ -18,7 +18,7 @@ import { AnnotationsService } from 'app/file-browser/services/annotations.servic
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';

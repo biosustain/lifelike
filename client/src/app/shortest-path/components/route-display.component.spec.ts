@@ -3,10 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { configureTestSuite } from 'ng-bullet';
 import { MockComponents } from 'ng-mocks';
 
-import { PlotlySankeyDiagramComponent } from 'app/shared/components/plotly-sankey-diagram/plotly-sankey-diagram.component';
 import { VisJsNetworkComponent } from 'app/shared/components/vis-js-network/vis-js-network.component';
 
 import { RouteDisplayComponent } from './route-display.component';
+import { PlotlySankeyDiagramComponent } from './plotly-sankey-diagram/plotly-sankey-diagram.component';
 
 describe('RouteDisplayComponent', () => {
   let component: RouteDisplayComponent;

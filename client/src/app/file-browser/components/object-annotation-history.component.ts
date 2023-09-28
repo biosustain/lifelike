@@ -3,7 +3,7 @@ import { Component, Input } from '@angular/core';
 import { from, Observable, Subscription } from 'rxjs';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus, PipeStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 import {
   fileAnnotationChangeDataLoadingMock,
   fileAnnotationHistoryResponseLoadingMock,

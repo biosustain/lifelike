@@ -14,9 +14,9 @@ import { flow as _flow, mapValues as _mapValues, pickBy as _pickBy, has as _has 
 import { OrganismAutocomplete } from 'app/interfaces';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
 import { MAX_DESCRIPTION_LENGTH } from 'app/shared/constants';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { filenameValidator } from 'app/shared/utils/forms/validators';
 
 import { FilesystemObject } from '../../models/filesystem-object';

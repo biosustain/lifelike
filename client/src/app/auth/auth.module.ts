@@ -19,7 +19,7 @@ import { authConfig } from './auth-config';
 import { authModuleConfig } from './auth-module-config';
 import { environment } from '../../environments/environment';
 
-const components = [LoginComponent, ResetPasswordDialogComponent];
+const exports = [LoginComponent];
 
 // We need a factory since localStorage is not available at AOT build time
 export function storageFactory(): OAuthStorage {
@@ -33,9 +33,9 @@ export function storageFactory(): OAuthStorage {
     StoreModule.forFeature('auth', reducer),
     SharedModule,
   ],
-  declarations: components,
+  declarations: [ResetPasswordDialogComponent, ...exports],
   providers: [LifelikeAuthGuard, AuthenticationService, LifelikeOAuthService, LoginGuard],
-  exports: components,
+  exports,
   entryComponents: [ResetPasswordDialogComponent],
 })
 export class LifelikeAuthModule {

@@ -61,11 +61,11 @@ import { DynamicComponentRef, DynamicViewService } from 'app/shared/services/dyn
 import { ExplainService } from 'app/shared/services/explain.service';
 import { debug } from 'app/shared/rxjs/debug';
 
-import { ChatCompletionsFormComponent } from './form/chat-completions-form/chat-completions-form.component';
-import { CompletionsFormComponent } from './form/completions-form/completions-form.component';
-import { CompletionForm } from './form/interfaces';
-import { ChatGPT } from '../ChatGPT';
-import { PromptComposer } from '../interface';
+import { ChatCompletionsFormComponent } from '../modules/chat-completions-form/chat-completions-form.component';
+import { CompletionsFormComponent } from '../modules/completions-form/completions-form.component';
+import { CompletionForm } from '../interfaces/form';
+import { ChatGPT } from '../services/ChatGPT';
+import { PromptComposer } from '../interfaces/prompt';
 
 interface Result {
   choices: any[];

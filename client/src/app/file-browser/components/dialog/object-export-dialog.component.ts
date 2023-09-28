@@ -6,8 +6,8 @@ import { mergeMap } from 'rxjs/operators';
 
 import { Exporter } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { MimeTypes } from 'app/shared/constants';
 
 import { FilesystemObject } from '../../models/filesystem-object';

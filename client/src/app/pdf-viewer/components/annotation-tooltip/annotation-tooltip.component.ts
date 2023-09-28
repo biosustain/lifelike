@@ -7,7 +7,7 @@ import { SEARCH_LINKS } from 'app/shared/constants/links';
 import { DatabaseLink, EntityType } from 'app/shared/schemas/annotation-types';
 import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
 import { Annotation } from '../../annotation-type';
 import { PDFAnnotationService } from '../../services/pdf-annotation.service';

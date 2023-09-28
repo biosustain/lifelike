@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { EffectsModule } from '@ngrx/effects';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -15,21 +16,23 @@ import { ChangePasswordDialogComponent } from './components/change-password-dial
 import { AccountService } from './services/account.service';
 import { KeycloakAccountService } from './services/keycloak-account.service';
 
-const components = [
-  UserProfileComponent,
-  UserSecurityComponent,
+const exports = [
   UserSettingsComponent,
-  TermsOfServiceTextComponent,
   TermsOfServiceDialogComponent,
   ChangePasswordDialogComponent,
   TermsOfServiceComponent,
 ];
 
 @NgModule({
-  imports: [EffectsModule.forFeature([UserEffects]), SharedModule],
-  declarations: components,
+  imports: [EffectsModule.forFeature([UserEffects]), SharedModule, NgbNavModule],
+  declarations: [
+    UserProfileComponent,
+    UserSecurityComponent,
+    TermsOfServiceTextComponent,
+    ...exports,
+  ],
   providers: [AccountService, KeycloakAccountService],
   entryComponents: [TermsOfServiceDialogComponent, ChangePasswordDialogComponent],
-  exports: components,
+  exports,
 })
 export class UserModule {}

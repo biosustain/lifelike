@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
-import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
+import { ChatGPTResponse } from 'app/enrichment-visualisation/services/enrichment-visualisation.service';
 
 interface ExplainRelationshipOptions {
   temperature?: number;

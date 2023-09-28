@@ -6,7 +6,7 @@ import { Platform } from '@angular/cdk/platform';
 
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
-import { MessageArguments, MessageDialog } from './message-dialog.service';
+import { MessageArguments, MessageDialog } from '../modules/dialog/services/message-dialog.service';
 import { isPromise } from '../utils';
 
 interface StatusMessages {

@@ -1,4 +1,7 @@
 import { NgModule } from '@angular/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 import { SearchModule } from 'app/search/search.module';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
@@ -16,23 +19,24 @@ import { VisualizationSettingsComponent } from './components/visualization-setti
 import { VisualizationComponent } from './containers/visualization/visualization.component';
 import { SidenavTypeViewComponent } from './components/sidenav-type-view/sidenav-type-view.component';
 import { VisualizerDataProvider } from './providers/visualizer-object-data.provider';
+import { HighlightSnippetComponent } from './components/highlight-snippet/highlight-snippet.component';
 
-const components = [
-  ContextMenuComponent,
-  SidenavClusterViewComponent,
-  SidenavEdgeViewComponent,
-  SidenavNodeViewComponent,
-  SidenavTypeViewComponent,
-  SnippetDisplayComponent,
-  VisualizationComponent,
-  VisualizationCanvasComponent,
-  VisualizationQuickbarComponent,
-  VisualizationSettingsComponent,
-];
+const exports = [VisualizationComponent, HighlightSnippetComponent];
 
 @NgModule({
-  imports: [SearchModule, SharedModule],
-  declarations: components,
+  imports: [SearchModule, SharedModule, MatSlideToggleModule, MatExpansionModule, MatToolbarModule],
+  declarations: [
+    SidenavEdgeViewComponent,
+    SnippetDisplayComponent,
+    VisualizationQuickbarComponent,
+    SidenavNodeViewComponent,
+    VisualizationSettingsComponent,
+    VisualizationCanvasComponent,
+    SidenavTypeViewComponent,
+    ContextMenuComponent,
+    SidenavClusterViewComponent,
+    ...exports,
+  ],
   providers: [
     VisualizationService,
     {
@@ -41,7 +45,7 @@ const components = [
       multi: true,
     },
   ],
-  exports: components,
+  exports,
   // Need to add the cluster dialog because it is dynamically loaded by type in the VisualizationComponent
 })
 export class VisualizationModule {}

@@ -9,7 +9,7 @@ import { FilesystemObjectData } from 'app/file-browser/schema';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { FlatNode, TreeNode } from 'app/shared/schemas/common';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 
 import { ContentSearchOptions } from '../content-search';
 import { SearchType } from '../shared';

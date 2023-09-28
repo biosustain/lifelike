@@ -2,8 +2,8 @@ import { Component, Input } from '@angular/core';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
+import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 import { ResultMapping } from 'app/shared/schemas/common';
 
 import { FilesystemObject } from '../../models/filesystem-object';

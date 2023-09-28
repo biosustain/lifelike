@@ -7,7 +7,7 @@ import { finalize, map, tap } from 'rxjs/operators';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { openDownloadForBlob } from 'app/shared/utils/files';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 

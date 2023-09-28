@@ -8,10 +8,13 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { AccountService } from 'app/users/services/account.service';
 import { BuildInfo } from 'app/interfaces';

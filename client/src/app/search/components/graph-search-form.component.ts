@@ -3,7 +3,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { OrganismAutocomplete } from 'app/interfaces';
 import { KG_VIZ_DOMAINS, KG_VIZ_FILTER_TYPES } from 'app/shared/constants';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 
 import { GraphSearchParameters } from '../graph-search';

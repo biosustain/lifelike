@@ -12,7 +12,7 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import * as SnackbarActions from 'app/shared/store/snackbar-actions';
 import { TermsOfServiceDialogComponent } from 'app/users/components/terms-of-service-dialog.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { TERMS_OF_SERVICE } from 'app/users/components/terms-of-service-text.component';
 import { ChangePasswordDialogComponent } from 'app/users/components/change-password-dialog.component';
 import { AccountService } from 'app/users/services/account.service';

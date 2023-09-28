@@ -10,7 +10,7 @@ import { AccountService } from 'app/users/services/account.service';
 import { AppUser, PrivateAppUser, UserUpdateData } from 'app/interfaces';
 import { ResultList } from 'app/shared/schemas/common';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { AuthActions, AuthSelectors } from 'app/auth/store';

@@ -16,11 +16,13 @@ import {
   OnInit,
   Output,
   OnDestroy,
+  NgModule,
 } from '@angular/core';
 
 import { fromEvent, Subscription } from 'rxjs';
 import { map, debounceTime } from 'rxjs/operators';
 
+// TODO: not used?
 @Directive({
   selector: '[appVisDebounce]',
 })
@@ -44,5 +46,18 @@ export class DebounceInputDirective implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.inputStreamSub.unsubscribe();
+  }
+}
+
+@NgModule({
+  declarations: [DebounceInputDirective],
+})
+class NotUsedModule {
+  /**
+   * This module is not used anywhere.
+   * It is declared to make the compiler happy.
+   */
+  constructor() {
+    throw new Error('Not reachable');
   }
 }

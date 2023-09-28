@@ -2,10 +2,10 @@ import { Component, Input } from '@angular/core';
 
 import { NgbActiveModal, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { AnnotationMethods, NLPANNOTATIONMODELS } from 'app/interfaces/annotation';
 import { ENTITY_TYPE_MAP } from 'app/shared/constants/annotation-types';
 import { extractDescriptionFromFile } from 'app/shared/utils/files';

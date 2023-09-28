@@ -17,7 +17,7 @@ import { filter, map } from 'rxjs/operators';
 import { GraphEntity, GraphEntityType } from 'app/drawing-tool/services/interfaces';
 import { ExplainService } from 'app/shared/services/explain.service';
 import { CanvasGraphView } from 'app/graph-viewer/renderers/canvas/canvas-graph-view';
-import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 
 import { InfoPanel } from '../../../models/info-panel';
 import { getTermsFromGraphEntityArray } from '../../../utils/terms';

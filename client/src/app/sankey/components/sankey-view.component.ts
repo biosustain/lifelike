@@ -62,7 +62,7 @@ import { isNotEmpty } from 'app/shared/utils';
 import { debug } from 'app/shared/rxjs/debug';
 import { ExtendedMap } from 'app/shared/utils/types';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';

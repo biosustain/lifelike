@@ -3,9 +3,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
 import { Hyperlink, Source } from 'app/drawing-tool/services/interfaces';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { potentiallyInternalUrl } from 'app/shared/utils/forms/validators';
 import { toValidLink } from 'app/shared/utils/browser';
 

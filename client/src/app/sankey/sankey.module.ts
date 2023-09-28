@@ -1,26 +1,15 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
-import { MatTreeModule } from '@angular/material/tree';
-import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { TruncatePipe } from 'app/shared/pipes/truncate.pipe';
+import ControlsModule from 'app/shared/modules/controls';
 
 import { SankeyViewComponent } from './components/sankey-view.component';
 import { SankeyDirective } from './directives/sankey.directive';
@@ -34,12 +23,26 @@ import { SankeyConfirmComponent } from './components/confirm.component';
 import { SankeySearchControlModule } from './components/search-control/sankey-search-control.module';
 import { StructureOverviewComponent } from './components/structure-overview/structure-overview.component';
 import { NetworktraceViewDropdownContentComponent } from './components/networktrace-view-dropdown-content';
-import { SankeyAbstractComponent } from './abstract/sankey.component';
 import { ValidationReportComponent } from './components/validation-report/validation-report.component';
+import { SearchableTreeComponent } from './components/form/searchable-tree/searchable-tree.component';
+import { ConstrainToViewportDirective } from './directives/constrain-to-viewport.directive';
+import { RotateDirective } from './directives/rotate.directive';
+
+const exports = [SankeyViewComponent];
 
 @NgModule({
+  imports: [
+    BrowserAnimationsModule,
+    MatSnackBarModule,
+    SharedModule,
+    FileBrowserModule,
+    SankeySearchPanelModule,
+    SankeySearchControlModule,
+    NgbDropdownModule,
+    NgbAccordionModule,
+    ControlsModule,
+  ],
   declarations: [
-    SankeyViewComponent,
     SankeyDirective,
     SankeyDetailsPanelDirective,
     SankeyAdvancedPanelDirective,
@@ -50,31 +53,12 @@ import { ValidationReportComponent } from './components/validation-report/valida
     SankeyAdvancedPanelComponent,
     StructureOverviewComponent,
     NetworktraceViewDropdownContentComponent,
+    SearchableTreeComponent,
+    ConstrainToViewportDirective,
+    RotateDirective,
+    ...exports,
   ],
-  imports: [
-    CommonModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    MatFormFieldModule,
-    MatCheckboxModule,
-    MatSidenavModule,
-    MatDialogModule,
-    MatChipsModule,
-    MatSelectModule,
-    MatInputModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    MatRadioModule,
-    SharedModule,
-    FileBrowserModule,
-    RouterModule.forRoot([]),
-    SankeySearchPanelModule,
-    SankeySearchControlModule,
-    MatTreeModule,
-    MatIconModule,
-    NgbDropdownModule,
-  ],
-  exports: [SankeyViewComponent],
-  providers: [ClipboardService],
+  providers: [TruncatePipe, ClipboardService],
+  exports,
 })
 export class SankeyViewerLibModule {}

@@ -9,7 +9,7 @@ import { ObjectNavigatorComponent } from './components/object-navigator.componen
 import { AssociatedMapsComponent } from './components/associated-maps.component';
 
 @NgModule({
+  imports: [SharedModule, WordCloudModule, FileBrowserModule],
   declarations: [ObjectNavigatorComponent, AssociatedMapsComponent],
-  imports: [CommonModule, SharedModule, WordCloudModule, FileBrowserModule],
 })
 export class FileNavigatorModule {}

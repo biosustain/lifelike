@@ -24,7 +24,7 @@ import {
   StatusSchema,
   WarningResponse,
 } from 'app/shared/schemas/common';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { TrackingService } from 'app/shared/services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from 'app/shared/constants/tracking';

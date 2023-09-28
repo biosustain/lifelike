@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { ChecklistFlatTreeComponent } from 'app/shared/components/checklist-flat-tree/checklist-flat-tree.component';
+import { ChecklistFlatTreeComponent } from 'app/search/components/checklist-flat-tree/checklist-flat-tree.component';
 import { FlatNode } from 'app/shared/schemas/common';
 
 @Component({

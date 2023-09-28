@@ -1,11 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
+import { NgbDropdownModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { PlaygroundModule } from 'app/playground/playground.module';
+import { DrawingToolPromptFormComponent } from 'app/drawing-tool/modules/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
 
 import { MapEditorComponent } from './components/map-editor/map-editor.component';
 import { PaletteComponent } from './components/map-editor/palette.component';
@@ -25,17 +28,29 @@ import { ImageEntityDataProvider } from './providers/image-entity-data.provider'
 import { GraphActionsService } from './services/graph-actions.service';
 import { ImageUploadDataProvider } from './providers/image-upload-data.provider';
 import { GraphViewDirective } from './directives/graph-view.directive';
-import { LinksPanelComponent } from './components/links-panel.component';
 import { DrawingToolPromptComponent } from './components/prompt/prompt.component';
+import { ColorChooserComponent } from './components/form/color-chooser/color-chooser.component';
+import { FriendlyDateStrPipe } from './pipes/friendly-date-str.pipe';
+import { QuickSearchComponent } from './components/quick-search/quick-search.component';
+import DrawingToolPromptFormModule from './modules/drawing-tool-prompt-form';
+
+const exports = [MapComponent];
 
 @NgModule({
+  imports: [
+    SharedModule,
+    FileBrowserModule,
+    PlaygroundModule,
+    NgbNavModule,
+    NgbDropdownModule,
+    DrawingToolPromptFormModule,
+  ],
   declarations: [
-    LinksPanelComponent,
     DrawingToolPromptComponent,
+    ColorChooserComponent,
     MapEditorComponent,
     PaletteComponent,
     InfoPanelComponent,
-    MapComponent,
     MapViewComponent,
     NodeFormComponent,
     EdgeFormComponent,
@@ -45,17 +60,21 @@ import { DrawingToolPromptComponent } from './components/prompt/prompt.component
     InfoViewPanelComponent,
     LinkEditDialogComponent,
     GraphViewDirective,
+    FriendlyDateStrPipe,
+    QuickSearchComponent,
+    ...exports,
   ],
   entryComponents: [
     ConfirmDialogComponent,
     MapRestoreDialogComponent,
     MapComponent,
-    LinksPanelComponent,
     InfoViewPanelComponent,
     LinkEditDialogComponent,
+    DrawingToolPromptFormComponent,
   ],
-  imports: [SharedModule, FileBrowserModule, PlaygroundModule],
   providers: [
+    MapImageProviderService,
+    GraphActionsService,
     {
       provide: DATA_TRANSFER_DATA_PROVIDER,
       useClass: GraphEntityDataProvider,
@@ -71,9 +90,7 @@ import { DrawingToolPromptComponent } from './components/prompt/prompt.component
       useClass: ImageUploadDataProvider,
       multi: true,
     },
-    MapImageProviderService,
-    GraphActionsService,
   ],
-  exports: [RouterModule, MapComponent],
+  exports,
 })
 export class DrawingToolModule {}

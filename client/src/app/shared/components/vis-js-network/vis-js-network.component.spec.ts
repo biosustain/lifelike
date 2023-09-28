@@ -6,7 +6,7 @@ import { MockComponents } from 'ng-mocks';
 
 import { CollapsibleWindowComponent } from '../collapsible-window/collapsible-window.component';
 import { LegendComponent } from '../legend/legend.component';
-import { SearchControlComponent } from '../search-control/search-control.component';
+import { SearchControlComponent } from '../../modules/controls/components/search-control/search-control.component';
 import { VisJsNetworkComponent } from './vis-js-network.component';
 
 describe('VisJsNetworkComponent', () => {

@@ -16,7 +16,7 @@ import { IdType } from 'vis-network';
 
 import { VisNode } from 'app/interfaces/neo4j.interface';
 import { AssociatedType, Direction, GroupRequest } from 'app/interfaces/visualization.interface';
-import { TooltipComponent } from 'app/shared/components/tooltip/tooltip.component';
+import { TooltipComponent } from 'app/visualization/components/tooltip/tooltip.component';
 import { TooltipDetails } from 'app/shared/services/tooltip-control-service';
 
 import { ContextMenuControlService } from '../../services/context-menu-control.service';

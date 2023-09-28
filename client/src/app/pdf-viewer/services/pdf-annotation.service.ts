@@ -31,13 +31,13 @@ import {
   CustomAnnotationCreateRequest,
   CustomAnnotationDeleteRequest,
 } from 'app/file-browser/schema';
-import { ConfirmDialogComponent } from 'app/shared/components/dialog/confirm-dialog.component';
+import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 import { ErrorResponse } from 'app/shared/schemas/common';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { EntityType } from 'app/shared/schemas/annotation-types';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 
 import { AnnotationExcludeDialogComponent } from '../components/annotation-exclude-dialog.component';
 import { AnnotationHighlightResult } from '../pdf-viewer-lib.component';

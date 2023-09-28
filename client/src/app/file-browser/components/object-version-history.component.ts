@@ -13,7 +13,7 @@ import {
 } from 'rxjs/operators';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { ObjectVersionHistory } from '../models/object-version';

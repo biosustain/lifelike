@@ -23,8 +23,10 @@ import { BrowserComponent } from 'app/file-browser/components/browser/browser.co
 import { ContentSearchComponent } from 'app/search/components/content-search.component';
 import { ObjectNavigatorComponent } from 'app/file-navigator/components/object-navigator.component';
 import { ShortestPathComponent } from 'app/shortest-path/containers/shortest-path.component';
-import { EnrichmentTableViewerComponent } from 'app/enrichment/components/table/enrichment-table-viewer.component';
-import { EnrichmentVisualisationViewerComponent } from 'app/enrichment/components/visualisation/enrichment-visualisation-viewer.component';
+import { EnrichmentTableViewerComponent } from 'app/enrichment-table/components/enrichment-table-viewer.component';
+import {
+  EnrichmentVisualisationViewerComponent
+} from 'app/enrichment-visualisation/components/viewer/enrichment-visualisation-viewer.component';
 import { BiocViewComponent } from 'app/bioc-viewer/components/bioc-view.component';
 import { ObjectViewerComponent } from 'app/file-browser/components/object-viewer.component';
 import { SankeyViewComponent } from 'app/sankey/components/sankey-view.component';

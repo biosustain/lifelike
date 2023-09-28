@@ -1,22 +1,12 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatButtonModule } from '@angular/material/button';
-import { MatRadioModule } from '@angular/material/radio';
 import { RouterModule } from '@angular/router';
+
+import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
-import { SANKEY_ADVANCED, SANKEY_GRAPH, SANKEY_DETAILS } from 'app/sankey/constants/DI';
+import { SANKEY_ADVANCED, SANKEY_DETAILS, SANKEY_GRAPH } from 'app/sankey/constants/DI';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 import { SankeySingleLaneAdvancedPanelComponent } from './components/advanced-panel/advanced-panel.component';
@@ -44,20 +34,9 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
     { provide: SANKEY_DETAILS, useValue: SankeySingleLaneDetailsPanelComponent },
   ],
   imports: [
-    CommonModule,
-    FormsModule,
-    MatFormFieldModule,
-    MatCheckboxModule,
-    MatSidenavModule,
-    MatDialogModule,
-    MatChipsModule,
-    MatSelectModule,
-    MatInputModule,
-    FlexLayoutModule,
-    MatButtonModule,
-    MatRadioModule,
     SharedModule,
     FileBrowserModule,
+    NgbAccordionModule,
     RouterModule.forChild([]),
     SankeySingleLaneDetailsPanelModule,
   ],

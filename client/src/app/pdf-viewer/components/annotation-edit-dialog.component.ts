@@ -17,8 +17,8 @@ import {
 
 import { EntityType } from 'app/shared/schemas/annotation-types';
 import { DatabaseType, ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/constants/annotation-types';
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 import { SEARCH_LINKS } from 'app/shared/constants/links';
 import { AnnotationType } from 'app/shared/constants';
 import { Hyperlink } from 'app/drawing-tool/services/interfaces';

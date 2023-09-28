@@ -18,14 +18,14 @@ import jQueryType from 'jquery';
 
 import { EntityType } from 'app/shared/schemas/annotation-types';
 import { ENTITY_TYPES } from 'app/shared/constants/annotation-types';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { BiocFile } from 'app/interfaces/bioc-files.interface';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { mapBlobToBuffer, mapBufferToJsons } from 'app/shared/utils/files';
-import { SearchControlComponent } from 'app/shared/components/search-control/search-control.component';
+import { SearchControlComponent } from 'app/shared/modules/controls/components/search-control/search-control.component';
 import { BiocAnnotationLocation, Location } from 'app/pdf-viewer/annotation-type';
 import { SEARCH_LINKS } from 'app/shared/constants/links';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';

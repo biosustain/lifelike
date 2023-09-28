@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
-import { FormComponent } from 'app/shared/components/base/form.component';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
+import { FormComponent } from 'app/search/components/base/form.component';
 import { SearchableRequestOptions } from 'app/shared/schemas/common';
 
 import { ContentSearchOptions } from '../content-search';

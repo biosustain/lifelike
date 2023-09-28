@@ -5,9 +5,12 @@ import { isEmpty } from 'lodash-es';
 import { first, map, switchMap } from 'rxjs/operators';
 import { iif, of, defer } from 'rxjs';
 
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { CommonDialogComponent } from 'app/shared/components/dialog/common-dialog.component';
+import { CommonDialogComponent } from 'app/shared/modules/dialog/components/common/common-dialog.component';
 
 import { FilesystemObject, ProjectImpl } from '../../models/filesystem-object';
 import { ObjectSelectService } from '../../services/object-select.service';

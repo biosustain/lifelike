@@ -14,7 +14,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 
 import { ObjectListComponent } from './object-list.component';
 import { FilesystemObjectActions } from '../services/filesystem-object-actions';

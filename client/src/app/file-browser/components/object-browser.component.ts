@@ -15,10 +15,13 @@ import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/workspace/services/workspace-manager';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
-import { addStatus } from 'app/shared/pipes/add-status.pipe';
+import { addStatus } from 'app/shared/modules/utils/pipes/add-status.pipe';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 

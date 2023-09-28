@@ -12,7 +12,6 @@ import { ModuleAwareComponent } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { uuidv4 } from 'app/shared/utils';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
-import { TruncatePipe } from 'app/shared/pipes';
 import { WarningControllerService } from 'app/shared/services/warning-controller.service';
 import Graph from 'app/shared/schemas/graph-type/graph-type';
 import { ModuleContext } from 'app/shared/services/module-context.service';
@@ -25,7 +24,7 @@ import { TraceNode } from './interfaces';
   selector: 'app-sankey-viewer',
   templateUrl: './trace-view.component.html',
   styleUrls: ['./trace-view.component.scss'],
-  providers: [TruncatePipe, WarningControllerService, ModuleContext],
+  providers: [WarningControllerService, ModuleContext],
 })
 export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
   readonly destroyed = new Subject();

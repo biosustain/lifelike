@@ -42,7 +42,10 @@ import {
 } from 'app/interfaces/visualization.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { SNIPPET_PAGE_LIMIT } from 'app/shared/constants';
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { uuidv4 } from 'app/shared/utils';
 import { ContextMenuControlService } from 'app/visualization/services/context-menu-control.service';
 import { VisualizationService } from 'app/visualization/services/visualization.service';

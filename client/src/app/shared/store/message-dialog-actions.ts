@@ -1,6 +1,6 @@
 import { createAction, props, union } from '@ngrx/store';
 
-import { MessageArguments } from '../services/message-dialog.service';
+import { MessageArguments } from '../modules/dialog/services/message-dialog.service';
 
 export const displayMessageDialog = createAction(
   '[Importer] Display Message Dialog',

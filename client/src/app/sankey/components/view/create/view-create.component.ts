@@ -3,9 +3,9 @@ import { FormGroup, FormControl, Validators, ValidationErrors } from '@angular/f
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { CommonFormDialogComponent } from 'app/shared/components/dialog/common-form-dialog.component';
+import { CommonFormDialogComponent } from 'app/shared/modules/dialog/components/common/common-form-dialog.component';
 import { ObjectEditDialogValue } from 'app/file-browser/components/dialog/object-edit-dialog.component';
-import { MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
 
 @Component({
   selector: 'app-sankey-view-confirm',

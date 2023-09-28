@@ -6,15 +6,15 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { BehaviorSubject, throwError, zip, of, EMPTY } from 'rxjs';
 import { concatMap, mergeMap, catchError, delay } from 'rxjs/operators';
 
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { StorageService } from 'app/shared/services/storage.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 // TODO: Deprecate after LL-2840
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
-import { EnrichmentTableService } from 'app/enrichment/services/enrichment-table.service';
-import { EnrichmentDocument } from 'app/enrichment/models/enrichment-document';
-import { getProgressStatus } from 'app/shared/components/dialog/progress-dialog.component';
+import { EnrichmentTableService } from 'app/enrichment-table/services/enrichment-table.service';
+import { EnrichmentDocument } from 'app/enrichment-table/models/enrichment-document';
+import { getProgressStatus } from 'app/shared/modules/dialog/components/progress/progress-dialog.component';
 
 @Component({
   selector: 'app-admin-settings-view',
