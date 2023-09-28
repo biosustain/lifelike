@@ -522,7 +522,7 @@ def get_associated_type_snippet_count_query() -> str:
                         RETURN DISTINCT [
                             obj.from_id,
                             obj.to_id,
-                            obj.association.description,
+                            obj.association,
                             snippet.eid
                         ]
             )
