@@ -105,15 +105,36 @@
 }
 
 .module-body-browser-split {
+  .module-body-split-main {
+    max-width: 1000px;
+  }
+
   .module-body-split-sidebar {
     border-left: 1px solid $border-color;
     background: $light;
+    min-width: 400px;
   }
 }
 
 .module-body-preview-split {
+  .module-body-split-main {
+    flex-grow: 1;
+
+    @include module-breakpoint-up(md) {
+      flex-basis: 500px;
+      min-width: 500px;
+      flex-grow: 0;
+    }
+  }
+
   .module-body-split-sidebar {
     border-left: 1px solid $border-color;
+    display: none;
+
+    @include module-breakpoint-up(md) {
+      display: block;
+      flex-grow: 1;
+    }
   }
 }
 
