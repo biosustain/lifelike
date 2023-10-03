@@ -65,11 +65,6 @@ export class OrganismAutocompleteComponent implements OnChanges {
 
   constructor(private search: SharedSearchService) {}
 
-  setInputText(text: string) {
-    this.inputText = text;
-    this.inputTextChange.next(this.inputText);
-  }
-
   ngOnChanges({ inputText, organismTaxId }: SimpleChanges): void {
     if (organismTaxId) {
       this.search.getOrganismFromTaxId(organismTaxId.currentValue).subscribe((response) => {
@@ -81,19 +76,20 @@ export class OrganismAutocompleteComponent implements OnChanges {
       });
     }
     if (inputText) {
-      this.setInputText(inputText.currentValue);
+      this.inputText = inputText.currentValue;
+      this.inputTextChange.next(this.inputText);
     }
   }
 
   selectOrganism(organism: OrganismAutocomplete) {
     this.isOrganismSelected = true;
-    this.setInputText(organism.organism_name);
+    this.inputText = organism.organism_name;
     this.organismPicked.emit(organism);
   }
 
   clear() {
     this.isOrganismSelected = false;
-    this.setInputText(''); // Clear the result list
+    this.inputText = ''; // Clear the result list
     this.organismPicked.emit(null);
   }
 }
