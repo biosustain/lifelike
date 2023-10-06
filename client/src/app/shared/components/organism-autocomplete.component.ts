@@ -7,6 +7,7 @@ import {
   debounceTime,
   distinctUntilChanged,
   map,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs/operators';
@@ -31,6 +32,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
   @Output() inputTextChange = new Subject<string>();
 
   readonly searcher$: Observable<OrganismAutocomplete[]> = this.inputTextChange.pipe(
+    startWith(''),
     distinctUntilChanged(),
     debounceTime(300),
     tap(() => {
