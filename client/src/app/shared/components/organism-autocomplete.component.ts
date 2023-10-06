@@ -1,14 +1,13 @@
-import { Component, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { isEmpty, isNil } from 'lodash-es';
-import { BehaviorSubject, iif, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { iif, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import {
-  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
+  startWith,
   switchMap,
-  tap,
 } from 'rxjs/operators';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
@@ -33,6 +32,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
   @Output() readonly inputTextChange = new Subject<string>();
 
   readonly search$: Observable<PipeStatus<OrganismAutocomplete[]>> = this.inputTextChange.pipe(
+    startWith(''),
     distinctUntilChanged(),
     debounceTime(300),
     switchMap((q) =>
