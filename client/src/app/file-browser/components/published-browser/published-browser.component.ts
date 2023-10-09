@@ -85,7 +85,12 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
         },
         userHashId
       )
-    );
+    ).then((result) => {
+      if (result) {
+        this.refresh()
+      }
+      return result;
+    });
   }
 
   ngOnInit() {
