@@ -120,6 +120,48 @@ export class FilesystemService {
     };
   }
 
+  publish(
+    request: ObjectCreateRequest,
+    userHashId: string
+  ): HttpObservableResponse<SingleResult<FilesystemObject>> {
+    const progress$ = this.http
+      .post<SingleResult<FilesystemObjectData>>(
+        `/api/user/${userHashId}/published`,
+        objectToMixedFormData(request),
+        {
+          observe: 'events',
+          reportProgress: true,
+          responseType: 'json',
+        }
+      )
+      .pipe(
+        map((event) =>
+          event.type === HttpEventType.Response
+            ? ({
+                ...event,
+                body: {
+                  ...event.body,
+                  result: new FilesystemObject().update(event.body.result),
+                },
+              } as HttpResponse<SingleResult<FilesystemObject>>)
+            : event
+        ),
+        // Wait for connect before emitting
+        publish()
+      ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>;
+    return {
+      // Progress subscribe is not returning values until we subscribe to body$
+      progress$,
+      body$: progress$.pipe(
+        // Send connect upon subscribe
+        refCount(),
+        filter(({ type }) => type === HttpEventType.Response),
+        // Cast to any cause typesript does not understand above filter syntax
+        map((response) => (response as any).body as SingleResult<FilesystemObject>)
+      ),
+    };
+  }
+
   /**
    * Access file metadata and record it as file opening action
    * @param hashId - file hash id
@@ -431,6 +473,20 @@ export class FilesystemService {
         return list;
       })
     );
+  }
+
+  getPublished(userHashId: string) {
+    return this.http
+      .get<ResultList<FilesystemObjectData>>(`/api/user/${userHashId}/published`)
+      .pipe(
+        map((data) => {
+          const list = new FilesystemObjectList();
+          list.results.replace(
+            data.results?.map((itemData) => new FilesystemObject().update(itemData)) ?? []
+          );
+          return list;
+        })
+      );
   }
 
   updateStarred(hashId: string, starred: boolean) {

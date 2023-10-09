@@ -1,90 +1,58 @@
-import { HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
+import { HttpEventType } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import {
-  defer,
-  from,
-  iif,
-  Observable,
-  of,
-  throwError,
-  Subject,
-  concat,
-  ConnectableObservable,
-  EMPTY,
-} from 'rxjs';
+import { concat, EMPTY, from, Observable, of, Subject } from 'rxjs';
 import {
   bufferWhen,
   catchError,
-  filter,
+  concatMap,
+  endWith,
+  finalize,
   map,
   mergeMap,
   reduce,
-  concatMap,
-  tap,
-  switchMap,
-  startWith,
-  endWith,
-  publish,
-  refCount,
   scan,
   shareReplay,
-  finalize,
+  startWith,
+  switchMap,
+  tap,
 } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   assign,
   entries,
-  find,
   forEach,
   groupBy,
   isEqual,
+  omit,
   partition,
   some,
   unionBy,
   zip,
-  fromPairs,
-  mapValues,
-  startsWith,
-  omit,
 } from 'lodash-es';
 
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import {
-  ErrorResponse,
-  InformationResponse,
-  ResultMapping,
-  SingleResult,
-  StatusSchema,
-  WarningResponse,
-} from 'app/shared/schemas/common';
-import { Progress, ProgressArguments, ProgressMode } from 'app/interfaces/common-dialog.interface';
-import { isNotEmpty } from 'app/shared/utils';
+import { ErrorResponse, ResultMapping, SingleResult } from 'app/shared/schemas/common';
+import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { idle } from 'app/shared/rxjs/idle-observable';
-import { objectToMixedFormData } from 'app/shared/utils/forms';
 import GraphNS from 'app/shared/providers/graph-type/interfaces';
 
 import {
+  AnnotationGenerationResultData,
+  CreationResult,
+  HttpObservableResponse,
   ObjectCreateRequest,
   PDFAnnotationGenerationRequest,
-  AnnotationGenerationResultData,
-  FilesystemObjectData,
-  HttpObservableResponse,
+  Task,
 } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { AnnotationsService } from './annotations.service';
 import { FilesystemService } from './filesystem.service';
-import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
-import File = GraphNS.File;
-
-interface CreationResult extends StatusSchema {
-  result?: FilesystemObject;
-}
 
 type AnnotationResult = AnnotationGenerationResultData & {
   error: ErrorResponse;
@@ -94,11 +62,6 @@ type AnnotationResult = AnnotationGenerationResultData & {
 interface CreationAnnotationResult {
   creation: CreationResult | null;
   annotation: AnnotationResult | null;
-}
-
-interface Task<Result> {
-  body$: Observable<Result>;
-  progress$: Observable<ProgressArguments>;
 }
 
 interface PutTask {
