@@ -443,8 +443,15 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     }
   }
 
+  get isPublication() {
+    return /^!publish@/.exec(this.project?.name);
+  }
+
   get effectiveName(): string {
     if (this.isProjectRoot) {
+      if (this.isPublication) {
+        return `publications of ${this.user?.username}`;
+      }
       return this.project.name;
     } else {
       return this.filename;

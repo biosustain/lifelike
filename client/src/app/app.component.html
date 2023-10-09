@@ -81,6 +81,15 @@
       >
         <i class="fas fa-star"></i>
       </a>
+      <a
+        routerLink="/published"
+        placement="right"
+        ngbTooltip="Published"
+        #tooltipRef="ngbTooltip"
+        [appAutoCloseTooltipOutOfView]="tooltipRef"
+      >
+        <i class="fas fa-books"></i>
+      </a>
       <div class="button-divider"></div>
       <!-- Hiding this for now, we'll re-enable it once we have a view for imported data -->
       <!-- <a routerLink="/kg-import" placement="right" ngbTooltip="Knowledge Graph Import"

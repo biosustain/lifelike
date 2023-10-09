@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { InjectionToken, NgModule } from '@angular/core';
+import { Router, RouterModule, Routes } from '@angular/router';
 
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
@@ -35,6 +35,12 @@ import { CopyrightInfringementPolicyComponent } from 'app/policies/components/co
 import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
 import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
 import { StarredBrowserComponent } from 'app/file-browser/components/starred-browser.component';
+import { PublishedBrowserComponent } from 'app/file-browser/components/published-browser/published-browser.component';
+import { UserRedirectGuard } from 'app/auth/guards/user-redirect.service';
+import { Store } from '@ngrx/store';
+import { State } from './auth/store/state';
+
+const PUBLISH_REDIRECT = new InjectionToken('PUBLISH_REDIRECT');
 
 const routes: Routes = [
   {
@@ -231,6 +237,40 @@ const routes: Routes = [
     },
   },
   {
+    path: 'published',
+    canActivate: [LifelikeAuthGuard, PUBLISH_REDIRECT],
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: 'published/:hash_id',
+    canActivate: [LifelikeAuthGuard, PUBLISH_REDIRECT],
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: ':user_hash_id/published',
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: ':user_hash_id/published/:hash_id',
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
     path: 'files/:hash_id',
     component: ObjectViewerComponent,
     canActivate: [LifelikeAuthGuard],
@@ -388,5 +428,15 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
+  providers: [
+    {
+      provide: PUBLISH_REDIRECT,
+      useFactory: (store: Store<State>, router: Router) =>
+        new UserRedirectGuard(store, router, ({ user, active }) =>
+          router.createUrlTree([user.hashId, 'published'].concat(active.params.hash_id ?? []))
+        ),
+      deps: [Store, Router],
+    },
+  ],
 })
 export class AppRoutingModule {}
