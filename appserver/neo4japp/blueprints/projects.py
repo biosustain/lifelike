@@ -370,7 +370,6 @@ class ProjectListView(ProjectBaseView):
 
         project_root_and_descendants = (
             FilesystemBaseView.get_nondeleted_recycled_descendants(
-                self,
                 and_(
                     Files.id == project.root_id,
                     Files.recycling_date.is_(None),

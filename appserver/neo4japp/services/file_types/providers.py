@@ -1,16 +1,22 @@
 import io
-import json
 import os
 import re
 import tempfile
+import json
 import textwrap
-import typing
 import zipfile
 from base64 import b64encode
+from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
-from typing import Optional, List
+from typing import Optional, List, Dict, Set, Tuple, Iterator
+from itertools import chain
+from more_itertools import flatten
+from sqlalchemy import and_
 
+from neo4japp.database import get_file_type_service, db
+from neo4japp.services.filesystem import Filesystem
+from neo4japp.utils import find_index
 import bioc
 import graphviz
 import numpy as np
@@ -20,7 +26,7 @@ from PIL import Image, ImageColor
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from PyPDF4.generic import DictionaryObject
 from bioc.biocjson import fromJSON as biocFromJSON, toJSON as biocToJSON
-from flask import current_app
+from flask import current_app, g
 from graphviz import escape
 from jsonlines import Reader as BioCJsonIterReader, Writer as BioCJsonIterWriter
 from lxml import etree
@@ -73,6 +79,10 @@ from neo4japp.constants import (
     NODE_LINE_HEIGHT,
     MAX_NODE_HEIGHT,
     NODE_INSET,
+    SUPPORTED_MAP_MERGING_FORMATS,
+    MAPS_RE,
+    RELATIVE_FILE_PATH_RE,
+    EXTENSION_MIME_TYPES,
 )
 from neo4japp.exceptions import (
     HandledException,
@@ -80,9 +90,9 @@ from neo4japp.exceptions import (
     ContentValidationWarning,
     ServerWarning,
 )
-from neo4japp.exceptions.exceptions import FileUploadError
+from neo4japp.exceptions.exceptions import FileUploadError, RecordNotFound
 from neo4japp.info import ContentValidationInfo
-from neo4japp.models import Files
+from neo4japp.models import Files, FileContent
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
 from neo4japp.schemas.formats.graph import (
@@ -92,23 +102,14 @@ from neo4japp.schemas.formats.graph import (
 )
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.service import BaseFileTypeProvider, Certanity
-from neo4japp.utils import EventLog, extract_text, compose_lines
+from neo4japp.utils import EventLog, extract_text, compose_lines, UserEventLog
 from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 # This file implements handlers for every file type that we have in Lifelike so file-related
 # code can use these handlers to figure out how to handle different file types
 from neo4japp.utils.globals import config
 from neo4japp.utils.globals import warn, inform
-
-extension_mime_types = {
-    '.pdf': 'application/pdf',
-    '.llmap': 'vnd.lifelike.document/map',
-    '.svg': 'image/svg+xml',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    # TODO: Use a mime type library?
-}
+from neo4japp.services.file_types.data_exchange import DataExchange
 
 
 def is_valid_doi(doi):
@@ -284,6 +285,137 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
+    def generate_linked_export(self, file: Files, format: str) -> FileExport:
+        return self.generate_export(file, format)
+
+    def generate_export(self, target_file: Files, format: str) -> FileExport:
+        # To prevent leaking changes to the database, we use a savepoint
+        savepoint = db.session.begin_nested()
+
+        try:
+            files = set(self.get_related_files(target_file, recursive=set()))
+
+            # Flattern inbetween folders to preserve file hierarhy in export
+            # (generate_export() exports only files in the list)
+            def add_parent(file: Files):
+                if file.parent and file.parent not in files:
+                    files.add(file.parent)
+                    add_parent(file.parent)
+
+            for target_file in files.copy():
+                add_parent(target_file)
+
+            # Check read permissions
+            def has_read_permission(file: Files):
+                current_user = g.current_user
+                if file.calculated_privileges[current_user.id].readable:
+                    return True
+
+                warn(
+                    ServerWarning(
+                        title='Skipped non-readable file',
+                        message=f'User {current_user.username} has sufficient permissions to read "{file.path}".',
+                    )
+                )
+
+            files = list(filter(has_read_permission, files))
+
+            # Rename project root folder to project name
+            for file in files:
+                if file.filename == '/':
+                    file.filename = file.project.name
+
+            return DataExchange.generate_export(target_file.filename, files, format)
+        finally:
+            savepoint.rollback()
+
+    def get_related_files(
+        self,
+        file: Files,
+        recursive: Set[str],
+    ) -> Iterator[Files]:
+        if file.hash_id in recursive:
+            return iter([])
+
+        related_files = Filesystem.get_nondeleted_recycled_files(
+            and_(
+                Files.parent_id == file.id,
+                Files.recycling_date.is_(None),
+            ),
+            lazy_load_content=True,
+        )
+        if recursive is not None:
+            recursive.add(file.hash_id)
+            file_type_service = get_file_type_service()
+
+            return file_type_service.get_related_files(related_files, recursive)
+        else:
+            return iter(related_files)
+
+
+class DumpTypeProvider(BaseFileTypeProvider):
+    MIME_TYPE = 'dump'
+    SHORTHAND = 'dump'
+    mime_types = (MIME_TYPE,)
+
+    def detect_mime_type(
+        self, buffer: FileContentBuffer, extension: str = None
+    ) -> List[Tuple[Certanity, str]]:
+        return [(Certanity.match, self.MIME_TYPE)] if extension == '.zip' else []
+
+    # def detect_provider(
+    #     self, mime_type: str
+    # ) -> List[Tuple[Certanity, 'BaseFileTypeProvider']]:
+    #     if mime_type in self.mime_types:
+    #         return [(Certanity.match, self)]
+
+    def can_create(self) -> bool:
+        return True
+
+    def validate_content(self, buffer: FileContentBuffer, log_status_messages=True):
+        with buffer as bufferView:
+            with zipfile.ZipFile(bufferView, 'r') as zip_file:
+                zip_file.testzip()
+
+    def load(self, buffer: FileContentBuffer, file: Files):
+        if not file.path:
+            file.path = '<placeholder>'
+
+        # Create import load
+        file_import = DataExchange.generate_import(
+            FileExport(
+                content=buffer, mime_type='application/zip', filename=file.filename
+            )
+        )
+
+        # Upload contents to db
+        for import_file in file_import.files:
+            if import_file.content:  # Directories don't have content
+                content_buffer = import_file.content.raw_file
+                del import_file.content
+                import_file.content_id = FileContent().get_or_create(content_buffer)
+
+        # Add imported files to db
+        for import_file in file_import.files:
+            # If there is no parent, set the parent to the file which is import target
+            if not import_file.parent:
+                import_file.parent = file
+
+            # Set user refs
+            current_user = g.current_user
+            import_file.user = current_user
+            import_file.creator = current_user
+            import_file.modifier = current_user
+
+            db.session.add(import_file)
+
+        # Delete already imported content
+        with buffer as bufferView:
+            bufferView.truncate(0)
+
+        # Correct mime type
+        file.mime_type = FILE_MIME_TYPE_DIRECTORY
+
 
 @dataclass(repr=False, frozen=True)
 class TextExtractionNotAllowedWarning(ServerWarning):
@@ -300,7 +432,7 @@ class PDFTypeProvider(BaseFileTypeProvider):
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension=None
-    ) -> List[typing.Tuple[Certanity, str]]:
+    ) -> List[Tuple[Certanity, str]]:
         with buffer as bufferView:
             return (
                 [(Certanity.match, self.MIME_TYPE)]
@@ -403,7 +535,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension=None
-    ) -> List[typing.Tuple[Certanity, str]]:
+    ) -> List[Tuple[Certanity, str]]:
         with buffer as bufferView:
             try:
                 # If it is xml file and bioc
@@ -1085,7 +1217,7 @@ class MapTypeProvider(BaseFileTypeProvider):
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension=None
-    ) -> List[typing.Tuple[Certanity, str]]:
+    ) -> List[Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's a map?
             self.validate_content(buffer, log_status_messages=False)
@@ -1344,9 +1476,96 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         return FileExport(
             content=content,
-            mime_type=extension_mime_types[ext],
+            mime_type=EXTENSION_MIME_TYPES[ext],
             filename=f"{file.filename}{ext}",
         )
+
+    def generate_linked_export(self, file: Files, format: str) -> FileExport:
+        if format in SUPPORTED_MAP_MERGING_FORMATS:
+            link_to_page_map: Dict[str, int] = dict()
+            files = self.get_all_linked_maps(
+                file, {file.hash_id}, [file], link_to_page_map
+            )
+            self.merge(files, format, link_to_page_map)
+
+    @contextmanager
+    def open_graph_json(self, file: Files, mode='r'):
+        with FileContentBuffer(file.content.raw_file) as bufferView:
+            zip_file = zipfile.ZipFile(bufferView, mode)
+            try:
+                yield json.loads(zip_file.read('graph.json'))
+            except KeyError as e:
+                raise ValidationError('Graph file is corrupted') from e
+
+    @staticmethod
+    def iterate_map_links(json_graph: dict) -> Iterator[dict]:
+        for node in chain(
+            json_graph['nodes'],
+            flatten(
+                map(
+                    lambda group: group.get('members', []),
+                    json_graph.get('groups', []),
+                )
+            ),
+        ):
+            data = node['data']
+            for link in data.get('sources', []) + data.get('hyperlinks', []):
+                yield link
+
+    def get_all_linked_maps(
+        self,
+        file: Files,
+        map_hash_set: Set[str],
+        files: List[Files],
+        link_to_page_map: Dict[str, int],
+    ) -> List[Files]:
+        current_user = g.current_user
+        with self.open_graph_json(file) as json_graph:
+            for link in self.iterate_map_links(json_graph):
+                url = link.get('url', "").lstrip()
+                match = MAPS_RE.match(url)
+                if match:
+                    map_hash = match.group('hash_id')
+                    # Fetch linked maps and check permissions, before we start to export them
+                    if map_hash not in map_hash_set:
+                        try:
+                            map_hash_set.add(map_hash)
+                            child_file = Filesystem.get_nondeleted_recycled_file(
+                                Files.hash_id == map_hash, lazy_load_content=True
+                            )
+                            Filesystem.check_file_permissions(
+                                [child_file],
+                                current_user,
+                                ['readable'],
+                                permit_recycled=True,
+                            )
+                            files.append(child_file)
+
+                            files = self.get_all_linked_maps(
+                                child_file, map_hash_set, files, link_to_page_map
+                            )
+
+                        except RecordNotFound as e:
+                            message = (
+                                f'Map file: {map_hash} requested for linked '
+                                f'export does not exist.'
+                            )
+                            current_app.logger.info(
+                                message,
+                                extra=UserEventLog(
+                                    username=current_user.username,
+                                    event_type=LogEventType.FILESYSTEM.value,
+                                ).to_dict(),
+                            )
+                            warn(ServerWarning(message=message), cause=e)
+                    destination_page = find_index(
+                        lambda f: f.hash_id == map_hash, files
+                    )
+                    if destination_page is not None:
+                        link_to_page_map[
+                            (config.get('DOMAIN') or '') + url
+                        ] = destination_page
+            return files
 
     def merge(self, files: List[Files], requested_format: str, links=None):
         """Export, merge and prepare as FileExport the list of files
@@ -1374,7 +1593,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         content = merger(files, links)
         return FileExport(
             content=content,
-            mime_type=extension_mime_types[ext],
+            mime_type=EXTENSION_MIME_TYPES[ext],
             filename=f"{files[0].filename}{ext}",
         )
 
@@ -1529,6 +1748,7 @@ class MapTypeProvider(BaseFileTypeProvider):
         with file_content as bufferView:
             try:
                 zip_file = zipfile.ZipFile(bufferView)
+                zip_file.testzip()
             except zipfile.BadZipfile as e:
                 raise ValidationError(
                     'Previous content of the map is corrupted!'
@@ -1569,7 +1789,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 )
 
             # IMPORTANT: Use zipfile.ZipInfo to avoid including timestamp info in the zip metadata!
-            # If the timestamp is included, otherwise identical zips will have different checksums.
+            # If the timestamp is included, otherwise identical zips will have different checksums.
             # This is true for the two `writestr` calls above as well.
             new_zip.writestr(zipfile.ZipInfo('graph.json'), new_graph)
             new_zip.close()
@@ -1592,6 +1812,50 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         return self.update_map(params, FileContentBuffer(previous_content))
 
+    def get_related_files(self, file: Files, recursive: Set[str]):
+        if file.hash_id in recursive:
+            return iter([])
+        related_files_hashes = set()
+        with self.open_graph_json(file) as json_graph:
+            for link in self.iterate_map_links(json_graph):
+                url = link.get('url', "").lstrip()
+                match = RELATIVE_FILE_PATH_RE.match(url)
+                if match:
+                    related_files_hashes.add(match.group('hash_id'))
+
+        if recursive:
+            recursive.add(file.hash_id)
+            related_files_new_hashes = related_files_hashes - recursive
+            related_files = Filesystem.get_nondeleted_recycled_files(
+                Files.hash_id.in_(related_files_new_hashes), lazy_load_content=True
+            )
+            file_type_service = get_file_type_service()
+
+            return file_type_service.get_related_files(related_files, recursive)
+
+        return related_files_hashes
+
+    def relink_file(self, file: Files, files_hash_map: Dict[str, str]) -> None:
+        def relink(json_graph):
+            for link in self.iterate_map_links(json_graph):
+                url = link.get('url', "").lstrip()
+                match = RELATIVE_FILE_PATH_RE.match(url)
+                if match:
+                    hash_id = match.group('hash_id')
+                    if hash_id in files_hash_map:
+                        link['url'] = link['url'].replace(
+                            hash_id, files_hash_map[hash_id]
+                        )
+                    else:
+                        warn(
+                            ServerWarning(
+                                message=f'Cannot relink file: {hash_id} does not exist in mapping.',
+                            )
+                        )
+            return json_graph
+
+        file.content.raw_file = self.update_map({}, file.content.raw_file, relink)
+
 
 class GraphTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_GRAPH
@@ -1601,7 +1865,7 @@ class GraphTypeProvider(BaseFileTypeProvider):
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension=None
-    ) -> List[typing.Tuple[Certanity, str]]:
+    ) -> List[Tuple[Certanity, str]]:
         certanity = None
         if extension in self.EXTENSIONS:
             certanity = Certanity.assumed
@@ -1666,7 +1930,7 @@ class EnrichmentTableTypeProvider(BaseFileTypeProvider):
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension=None
-    ) -> List[typing.Tuple[Certanity, str]]:
+    ) -> List[Tuple[Certanity, str]]:
         try:
             # If the data validates, I guess it's an enrichment table?
             # The enrichment table schema is very simple though so this is very simplistic
