@@ -49,6 +49,8 @@ import { BrowserPinnedListComponent } from './components/browser/browser-pinned-
 import { StarredBrowserComponent } from './components/starred-browser.component';
 import { ObjectTableComponent } from './components/object-table/object-table.component';
 import { AppCdkTableColgroupBackportComponent } from './components/object-table/cdk-table-colgroup-backport.component';
+import { PublishedBrowserComponent } from './components/published-browser/published-browser.component';
+import { PublishService } from './services/publish.service';
 
 @NgModule({
   declarations: [
@@ -61,6 +63,7 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     BrowserCommunityListComponent,
     BrowserRecentListComponent,
     StarredBrowserComponent,
+    PublishedBrowserComponent,
     BrowserProjectListComponent,
     ProjectTitleAcronymPipe,
     ProjectEditDialogComponent,
@@ -126,6 +129,7 @@ import { AppCdkTableColgroupBackportComponent } from './components/object-table/
     FilesystemObjectActions,
     ProjectActions,
     ObjectCreationService,
+    PublishService,
     ObjectTypeService,
     AbstractObjectTypeProviderHelper,
     {
