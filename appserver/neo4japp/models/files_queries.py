@@ -470,6 +470,17 @@ class FileHierarchy:
                     commentable=commentable,
                 )
 
+                # Needs to be this way cause we only support extending privileges in hierarchy
+                # (no support for reducing privileges)
+                from ..services.publish import Publish
+
+                if Publish.is_publish_project(row[self.project_key]):
+                    privileges = FilePrivileges(
+                        readable=True,
+                        writable=False,
+                        commentable=False,
+                    )
+
                 file.calculated_privileges[user_id] = privileges
 
             parent_file = file
