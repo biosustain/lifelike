@@ -416,6 +416,9 @@ ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_PATH'))
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
+RELATIVE_FILE_PATH_RE = re.compile(
+    '^ *(/projects/[^/]+)?/(enrichment-(table|visualisation)|sankey(-many-to-many)?|folders|files|bioc|maps|file-navigator|pdf-viewer|dt/map(/edit)?)/(?P<hash_id>[^/?#\n]*)[^\n]*$'
+)
 
 # Start SVG map export data constants
 IMAGES_RE = LocalProxy(lambda: re.compile(f"{config.get('ASSETS_PATH')}.*.png"))
@@ -469,3 +472,16 @@ SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
 
 MAX_CONTEXT_PARAM_LENGTH = 20
 MAX_CONTEXT_PARAMS = 20
+EXTENSION_MIME_TYPES = {
+    '.pdf': 'application/pdf',
+    '.map.zip': 'vnd.***ARANGO_DB_NAME***.document/map',
+    '.graph.json': 'vnd.***ARANGO_DB_NAME***.document/graph',
+    '.bioc': 'vnd.***ARANGO_DB_NAME***.document/bioc',
+    '.enrichment.json': 'vnd.***ARANGO_DB_NAME***.document/enrichment-table',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.zip': 'application/zip',
+    # TODO: Use a mime type library?
+}

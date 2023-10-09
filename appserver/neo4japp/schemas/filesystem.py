@@ -2,7 +2,7 @@ import marshmallow.validate
 import marshmallow_dataclass
 from marshmallow import fields, validates_schema, ValidationError
 
-from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH
+from neo4japp.constants import MAX_FILE_DESCRIPTION_LENGTH, FILE_MIME_TYPE_DIRECTORY
 from neo4japp.models import Files, Projects
 from neo4japp.models.files import FilePrivileges, FileLock
 from neo4japp.models.projects import ProjectPrivileges
@@ -21,7 +21,6 @@ from neo4japp.schemas.common import (
     InformationSchema,
 )
 from neo4japp.schemas.fields import SortField, FileUploadField, NiceFilenameString
-from neo4japp.services.file_types.providers import DirectoryTypeProvider
 
 
 # ========================================
@@ -325,7 +324,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
         for key in ['content_hash_id', 'content_url', 'content_value']:
             if data.get(key) is not None:
                 provided_content_sources.append(key)
-        if mime_type == DirectoryTypeProvider.MIME_TYPE:
+        if mime_type == FILE_MIME_TYPE_DIRECTORY:
             if len(provided_content_sources) != 0:
                 raise ValidationError("Directories cannot have any content.")
         else:

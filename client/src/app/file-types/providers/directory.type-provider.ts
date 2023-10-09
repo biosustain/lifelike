@@ -15,6 +15,7 @@ import {
   AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
+  Exporter,
   PreviewOptions,
 } from './base-object.type-provider';
 
@@ -72,5 +73,20 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
         },
       },
     ];
+  }
+
+  getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    return super.getExporters(object).pipe(
+      map((exporters) => [
+        ...exporters,
+        {
+          name: 'Zip',
+          export: () =>
+            this.filesystemService
+              .generateExport(object.hashId, { format: 'zip', exportLinked: true })
+              .pipe(map((blob) => new File([blob], object.filename + '.zip'))),
+        },
+      ])
+    );
   }
 }
