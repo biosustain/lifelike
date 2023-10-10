@@ -31,8 +31,11 @@ export interface DrawingToolPromptFormParams {
   templateUrl: './drawing-tool-prompt-from.component.html',
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
-  TEMPLATE = `
-What is the relationship between [entities], [context]?
+  PSEUDOCODE = `
+if all inputs are provided or there is more than one entity:
+  What is the relationship between [entities], [context]?
+otherwise:
+  What is [entity or context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
