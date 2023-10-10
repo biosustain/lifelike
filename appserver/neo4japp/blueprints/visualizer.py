@@ -3,6 +3,7 @@ from http import HTTPStatus
 from flask import Blueprint, request, jsonify
 from flask_apispec import use_kwargs
 
+from neo4japp.blueprints.auth import login_optional
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.data_transfer_objects.visualization import (
     ExpandNodeRequest,
@@ -104,6 +105,7 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
 
 
 @bp.route('/get-annotation-legend', methods=['GET'])
+@login_optional
 @jsonify_with_class()
 def get_annotation_legend():
     return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=HTTPStatus.OK)

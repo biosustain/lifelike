@@ -45,7 +45,7 @@ export class ChatgptUsageService {
     return this.http.get<ChatGPTUsageResponse>(
       this.prefix + (userId ? `/${userId}` : ''),
       // @ts-ignore
-      { params }
+      { params, withCredentials: true }
     );
   }
 }

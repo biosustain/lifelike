@@ -48,7 +48,7 @@ class ProjectSchema(CamelCaseSchema):
 
     def get_privileges(self, obj: Projects):
         privilege_user_id = self.get_user_privilege_filter()
-        if privilege_user_id is not None and obj.calculated_privileges:
+        if obj.calculated_privileges:
             return ProjectPrivilegesSchema(context=self.context).dump(
                 obj.calculated_privileges[privilege_user_id]
             )
@@ -196,7 +196,7 @@ class FileSchema(StarredFileSchema):
 
     def get_privileges(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
-        if privilege_user_id is not None and obj.calculated_privileges:
+        if obj.calculated_privileges:
             return FilePrivilegesSchema(context=self.context).dump(
                 obj.calculated_privileges[privilege_user_id]
             )
