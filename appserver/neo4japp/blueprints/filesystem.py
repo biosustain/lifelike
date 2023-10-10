@@ -74,8 +74,10 @@ from neo4japp.utils import (
     UserEventLog,
 )
 from neo4japp.utils.file_content_buffer import FileContentBuffer
+from .auth import login_optional
 from .utils import get_missing_hash_ids
 from ..services.filesystem import Filesystem
+from ..utils.globals import get_current_user
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -581,11 +583,11 @@ class FileListView(FilesystemBaseView):
 
 
 class FileSearchView(FilesystemBaseView):
+    @login_optional
     @use_args(FileSearchRequestSchema)
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: dict):
-        current_user = g.current_user
-
+        current_user_id = get_current_user('id')
         if params['type'] == 'public':
             # First we query for public files without getting parent directory
             # or project information
@@ -614,7 +616,7 @@ class FileSearchView(FilesystemBaseView):
                 Files.hash_id == hash_id, lazy_load_content=True
             )
             Filesystem.check_file_permissions(
-                [file], current_user, ['readable'], permit_recycled=True
+                [file], get_current_user(), ['readable'], permit_recycled=True
             )
 
             # TODO: Sort?
@@ -642,7 +644,7 @@ class FileSearchView(FilesystemBaseView):
             files = [
                 file
                 for file in files
-                if file.calculated_privileges[current_user.id].readable
+                if file.calculated_privileges[current_user_id].readable
             ]
             # Ensure directories appear at the top of the list
             files.sort(key=lambda f: not (f.mime_type == FILE_MIME_TYPE_DIRECTORY))
@@ -653,7 +655,7 @@ class FileSearchView(FilesystemBaseView):
         return jsonify(
             FileListSchema(
                 context={
-                    'user_privilege_filter': g.current_user.id,
+                    'user_privilege_filter': current_user_id,
                 },
                 exclude=('results.children',),
             ).dump(
@@ -666,10 +668,12 @@ class FileSearchView(FilesystemBaseView):
 
 
 class FileDetailView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch a single file."""
-        current_user = g.current_user
-        return Filesystem.get_file_response(hash_id, current_user)
+        current_user = get_current_user()
+        params = dict(user=current_user) if current_user else dict()
+        return Filesystem.get_file_response(hash_id, **params)
 
     @use_args(
         lambda request: FileUpdateRequestSchema(partial=True),
@@ -711,15 +715,14 @@ class FileDetailView(FilesystemBaseView):
 
 
 class FileContentView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch a single file's content."""
-        current_user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
-            [file], current_user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         # Lazy loaded
@@ -1149,14 +1152,13 @@ class FileLockListView(FileLockBaseView):
 class FileAnnotationHistoryView(FilesystemBaseView):
     """Implements lookup of a file's annotation history."""
 
+    @login_optional
     @use_args(PaginatedRequestSchema)
     def get(self, pagination: Dict, hash_id: str):
         """Get the annotation of a file."""
-        user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(Files.hash_id == hash_id)
         Filesystem.check_file_permissions(
-            [file], user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         query = (

@@ -98,6 +98,39 @@ def request_navigator_log():
 login_required_dummy_view = auth.login_required(lambda: None)
 
 
+def login_optional_dummy_view():
+    try:
+        _auth = auth.get_auth()
+
+        # Flask normally handles OPTIONS requests on its own, but in the
+        # case it is configured to forward those to the application, we
+        # need to ignore authentication headers and let the request through
+        # to avoid unwanted interactions with CORS.
+        if request.method != 'OPTIONS' and _auth:  # pragma: no cover
+            password = auth.get_auth_password(_auth)
+
+            auth.authenticate(_auth, password)
+    except Exception:
+        # We intentionally want to swallow errors here to allow the
+        # application to handle unauthorized access in a custom manner
+        # e.g. through a @login_optional decorated view.
+        pass
+
+
+def route_has_flag(flag: str):
+    view = app.view_functions[request.endpoint]
+
+    if getattr(view, flag, False):
+        return True
+    view_class = getattr(view, 'view_class', None)
+    if view_class:
+        if getattr(view_class, flag, False):
+            return True
+        method = getattr(view_class, request.method.lower(), None)
+        if method and getattr(method, flag, False):
+            return True
+
+
 @app.before_request
 def default_login_required():
     # exclude 404 errors and static routes
@@ -105,10 +138,11 @@ def default_login_required():
     if not request.endpoint or request.endpoint.rsplit('.', 1)[-1] == 'static':
         return
 
-    view = app.view_functions[request.endpoint]
-
-    if getattr(view, 'login_exempt', False):
+    if route_has_flag('login_exempt'):
         return
+
+    if route_has_flag('login_optional'):
+        return login_optional_dummy_view()
 
     return login_required_dummy_view()
 

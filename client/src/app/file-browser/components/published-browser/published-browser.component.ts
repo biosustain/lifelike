@@ -7,7 +7,7 @@ import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { promiseOfOne } from 'app/shared/rxjs/to-promise';
-import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, iif, Observable, of, Subject, Subscription } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
@@ -16,6 +16,7 @@ import { FilesystemService } from '../../services/filesystem.service';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectsService } from '../../services/projects.service';
 import { PublishService } from '../../services/publish.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-published-browser',
@@ -53,7 +54,8 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
     private readonly projectService: ProjectsService,
     protected readonly projectActions: ProjectActions,
     protected readonly publishService: PublishService,
-    private readonly store: Store<State>
+    private readonly store: Store<State>,
+    private readonly activeRoute: ActivatedRoute,
   ) {}
 
   readonly isAdmin$ = this.store.pipe(
@@ -61,10 +63,18 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
     map((roles) => roles.includes('admin'))
   );
 
-  readonly userHashId$ = this.store.pipe(
-    select(AuthSelectors.selectAuthUser),
-    map((user) => user.hashId),
-    shareReplay({ bufferSize: 1, refCount: true })
+  readonly userHashId$ = this.activeRoute.params.pipe(
+    switchMap(params =>
+      iif(
+        () => params.user_hash_id !== undefined,
+        of(params.user_hash_id),
+        this.store.pipe(
+          select(AuthSelectors.selectAuthUser),
+          map((user) => user.hashId),
+        ),
+      ),
+    ),
+    shareReplay({bufferSize: 1, refCount: true}),
   );
 
   private readonly destroy$ = new Subject();

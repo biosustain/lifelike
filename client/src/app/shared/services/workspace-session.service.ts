@@ -1,8 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
 import { forEachRight } from 'lodash-es';
+import { select, Store } from '@ngrx/store';
+import { switchMap } from 'rxjs/operators';
+
+import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthSelectors } from 'app/auth/store';
 
 import { Pane } from '../workspace-manager';
+import { SessionStorageService } from './session-storage.service';
 
 const LOCAL_STORAGE_KEY = '***ARANGO_DB_NAME***_workspace_session';
 
@@ -36,7 +42,22 @@ export interface WorkspaceSessionLoader {
 @Injectable({
   providedIn: '***ARANGO_USERNAME***',
 })
-export class WorkspaceSessionService {
+export class WorkspaceSessionService implements OnDestroy {
+  constructor(private readonly store: Store<State>) {}
+
+  private readonly loggedIn$ = this.store.pipe(
+      select(AuthSelectors.selectAuthLoginState)
+  );
+  private readonly storageUpdateSubscription = this.loggedIn$.subscribe((loggedIn) => {
+    this.storage = loggedIn ? localStorage : sessionStorage;
+  });
+
+  private storage: Storage = sessionStorage;
+
+  ngOnDestroy(): void {
+    this.storageUpdateSubscription?.unsubscribe();
+  }
+
   save(panes: Pane[]) {
     const data: SessionData = {
       panes: panes.map((pane) => {
@@ -54,11 +75,11 @@ export class WorkspaceSessionService {
         };
       }),
     };
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+    this.storage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
   }
 
   load(loader: WorkspaceSessionLoader): boolean {
-    const rawData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const rawData = this.storage.getItem(LOCAL_STORAGE_KEY);
     if (rawData) {
       const data: SessionData = JSON.parse(rawData);
       for (const pane of data.panes) {
