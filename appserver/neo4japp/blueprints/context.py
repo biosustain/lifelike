@@ -14,18 +14,20 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context')
     options = params.get('options', {})
+    all_entities = entities + [context] if context else entities
+    if len(all_entities) < 1:
+        raise ValueError('At least one entity must be provided.')
+    prompt = (
+        f'What is the relationship between {", ".join(all_entities)}?'
+    ) if len(all_entities) > 1 else (
+        f'What is {all_entities[0]}?'
+    )
     create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
             dict(
                 role="user",
-                content=(
-                    'What is the relationship between '
-                    + ', '.join(entities)
-                    + (f', {context}' if context else '')
-                    + '?'
-                    # + '\nPlease provide URL sources for your answer.'
-                ),
+                content=prompt,
             )
         ],
         temperature=options.get('temperature', 0),
