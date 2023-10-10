@@ -1,6 +1,9 @@
 <div class="d-flex w-100 h-100">
   <!-- Left menu -->
-  <div class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0">
+  <div
+    class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0"
+    *ngIf="{loggedIn: loggedIn$ | async} as status"
+  >
     <!-- Top buttons -->
     <div class="d-flex flex-column">
       <!-- If a file is in standalone mode, workbench button opens it as tab -->
@@ -22,7 +25,7 @@
       </ng-container>
       <ng-template #goToWorkbench>
         <a
-          routerLink="/workspaces/local"
+          [routerLink]="workspaceUrl$ | async"
           placement="right"
           ngbTooltip="Workbench"
           #tooltipRef="ngbTooltip"
@@ -43,6 +46,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fa fa-folder"></i>
       </a>
@@ -56,6 +60,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fas fa-chart-network"></i>
       </a>
@@ -69,6 +74,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fa fa-search"></i>
       </a>
@@ -78,6 +84,7 @@
         ngbTooltip="Starred Content"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fas fa-star"></i>
       </a>
@@ -87,6 +94,7 @@
         ngbTooltip="Published"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fas fa-books"></i>
       </a>
@@ -103,6 +111,7 @@
         ngbTooltip="Pathway Browser Prototype"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fas fa-drafting-compass"></i>
       </a>
@@ -112,6 +121,7 @@
         ngbTooltip="Knowledge Graph Statistics"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
+        [ngClass]="{'btn disabled': !status.loggedIn}"
       >
         <i class="fas fa-chart-bar"></i>
       </a>
@@ -163,7 +173,7 @@
         </div>
       </div>
 
-      <ng-container *ngIf="loggedIn$ | async; else loggedOut">
+      <ng-container *ngIf="status.loggedIn; else loggedOut">
         <div ngbDropdown placement="top-left" container="body">
           <a
             id="account-dropdown"
