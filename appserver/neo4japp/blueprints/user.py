@@ -6,23 +6,24 @@ from marshmallow import ValidationError
 from sqlalchemy import and_
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import login_exempt
+from neo4japp.blueprints.auth import login_optional
 from neo4japp.database import db
 from neo4japp.models import Projects, Files
 from neo4japp.schemas.filesystem import (
     PublishSchema,
     MultipleFileResponseSchema,
-    PublishedFileListSchema,
+    FileListSchema,
 )
 from neo4japp.services.filesystem import Filesystem
 from neo4japp.services.publish import Publish
 from neo4japp.utils import find
+from neo4japp.utils.globals import get_current_user
 
 bp = Blueprint('user', __name__, url_prefix='/user')
 
 
 class PublishedView(MethodView):
-    @login_exempt
+    @login_optional
     def get(self, user_hash_id: str):
         project_root_id = (
             db.session.query(Projects.root_id)
@@ -34,9 +35,9 @@ class PublishedView(MethodView):
         )
 
         return jsonify(
-            PublishedFileListSchema(
+            FileListSchema(
                 context={
-                    'user_privilege_filter': g.current_user.id,
+                    'user_privilege_filter': get_current_user('id')
                 },
             ).dump(
                 {

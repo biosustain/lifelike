@@ -2,12 +2,11 @@ import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import {
-  KnowledgeMapGraph,
   Source,
   UniversalEntityData,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
+import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
@@ -54,7 +53,7 @@ export class ProjectImpl implements ObservableObject {
 
   set starred(value) {
     if (this.root) {
-      this.root.update({ starred: value });
+      this.root.update({starred: value});
     }
   }
 
@@ -64,11 +63,22 @@ export class ProjectImpl implements ObservableObject {
 
   set public(value) {
     if (this.root) {
-      this.root.update({ public: value });
+      this.root.update({public: value});
     }
   }
 
+  get isPublication() {
+    return /^!publish@/.exec(this.name);
+  }
+
   get effectiveName(): string {
+    if (this.isPublication) {
+      const username = this.root?.user?.username;
+      if (username) {
+        return `Publications of ${username}`;
+      }
+      return `Publications`;
+    }
     return this.name || this.hashId;
   }
 
@@ -168,7 +178,7 @@ export class ProjectImpl implements ObservableObject {
           uri: this.getURL().toAbsolute(),
         },
       ],
-      { action: 'append' }
+      {action: 'append'},
     );
   }
 }
@@ -443,16 +453,9 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
     }
   }
 
-  get isPublication() {
-    return /^!publish@/.exec(this.project?.name);
-  }
-
   get effectiveName(): string {
     if (this.isProjectRoot) {
-      if (this.isPublication) {
-        return `publications of ${this.user?.username}`;
-      }
-      return this.project.name;
+      return this.project.effectiveName;
     } else {
       return this.filename;
     }
@@ -472,7 +475,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
       isEmpty(normalizedFilter)
         ? null
         : (item: FilesystemObject) =>
-            FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
+          FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter),
     );
   }
 
@@ -501,7 +504,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   getURL(forEditing = true, meta?: Meta): AppURL {
     const url = new AppURL().update({
       pathSegments: this.getCommands(forEditing).map((item) =>
-        encodeURIComponent(item.replace(/^\//, ''))
+        encodeURIComponent(item.replace(/^\//, '')),
       ),
       fragment: this.isProjectRoot ? 'project' : '',
     });
@@ -600,7 +603,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
           uri: this.getURL(false).toAbsolute(),
         },
       ],
-      { action: 'append' }
+      {action: 'append'},
     );
   }
 
@@ -650,7 +653,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
         'path',
         'trueFilename',
         'starred',
-      ])
+      ]),
     );
 
     if (has(data, 'modifiedDate')) {
@@ -686,7 +689,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
               child.project = this.project;
             }
             return child.update(itemData);
-          })
+          }),
         );
       } else {
         this.children.replace([]);
