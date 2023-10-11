@@ -1,5 +1,4 @@
 import io
-import os
 import re
 import tempfile
 import json
@@ -9,6 +8,7 @@ from base64 import b64encode
 from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
+from os import path
 from typing import Optional, List, Dict, Set, Tuple, Iterator
 from itertools import chain
 from more_itertools import flatten
@@ -91,7 +91,7 @@ from neo4japp.exceptions import (
     ServerWarning,
 )
 from neo4japp.exceptions.exceptions import FileUploadError, RecordNotFound
-from neo4japp.info import ContentValidationInfo
+from neo4japp.info import ContentValidationInfo, ServerInfo
 from neo4japp.models import Files, FileContent
 from neo4japp.schemas.formats.drawing_tool import validate_map
 from neo4japp.schemas.formats.enrichment_tables import validate_enrichment_table
@@ -285,48 +285,52 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
-    def generate_linked_export(self, file: Files, format: str) -> FileExport:
-        return self.generate_export(file, format)
+    def generate_linked_export(self, file: Files, format_: str) -> FileExport:
+        return self.generate_export(file, format_)
 
-    def generate_export(self, target_file: Files, format: str) -> FileExport:
+    def generate_export(self, target_file: Files, format_: str) -> FileExport:
         # To prevent leaking changes to the database, we use a savepoint
         savepoint = db.session.begin_nested()
 
         try:
-            files = set(self.get_related_files(target_file, recursive=set()))
+            related_files = set(self.get_related_files(target_file, recursive=set()))
 
             # Flattern inbetween folders to preserve file hierarhy in export
             # (generate_export() exports only files in the list)
-            def add_parent(file: Files):
-                if file.parent and file.parent not in files:
-                    files.add(file.parent)
-                    add_parent(file.parent)
+            common_path_len = len(
+                path.commonpath([path.dirname(f.path) for f in related_files]) if len(related_files) else ''
+            )
 
-            for target_file in files.copy():
-                add_parent(target_file)
+            def add_parent(_related_file: Files):
+                if _related_file.parent and len(_related_file.parent.path) > common_path_len:
+                    related_files.add(_related_file.parent)
+                    add_parent(_related_file.parent)
+
+            for related_file in related_files.copy():
+                add_parent(related_file)
 
             # Check read permissions
-            def has_read_permission(file: Files):
+            def has_read_permission(_related_file: Files):
                 current_user = g.current_user
-                if file.calculated_privileges[current_user.id].readable:
+                if _related_file.calculated_privileges[current_user.id].readable:
                     return True
 
                 warn(
                     ServerWarning(
                         title='Skipped non-readable file',
                         message=f'User {current_user.username} has sufficient permissions'
-                                f' to read "{file.path}".',
+                                f' to read "{_related_file.path}".',
                     )
                 )
 
-            permited_files = list(filter(has_read_permission, files))  # type: ignore
+            permited_files = list(filter(has_read_permission, related_files))  # type: ignore
 
             # Rename project root folder to project name
             for file in permited_files:
                 if file.filename == '/':
                     file.filename = file.project.name
 
-            return DataExchange.generate_export(target_file.filename, permited_files, format)
+            return DataExchange.generate_export(target_file.filename, permited_files, format_)
         finally:
             savepoint.rollback()
 
@@ -344,6 +348,16 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
                 Files.recycling_date.is_(None),
             ),
             lazy_load_content=True,
+        )
+        inform(
+            ServerInfo(
+                title='Found related files',
+                message=f'{file.path} has {len(related_files)} related files',
+                additional_msgs=(
+                    f'Related files:',
+                    *map(lambda f: '\t+ ' + f.path, related_files),
+                )
+            )
         )
         if recursive is not None:
             recursive.add(file.hash_id)
@@ -379,9 +393,6 @@ class DumpTypeProvider(BaseFileTypeProvider):
                 zip_file.testzip()
 
     def load(self, buffer: FileContentBuffer, file: Files):
-        if not file.path:
-            file.path = '<placeholder>'
-
         # Create import load
         file_import = DataExchange.generate_import(
             FileExport(
@@ -546,7 +557,7 @@ class BiocTypeProvider(BaseFileTypeProvider):
                 return []
 
     def handles(self, file: Files) -> bool:
-        ext = os.path.splitext(file.filename)[1].lower()
+        ext = path.splitext(file.filename)[1].lower()
         return super().handles(file) and ext in self.ALLOWED_TYPES
 
     def can_create(self) -> bool:
@@ -1020,10 +1031,10 @@ def create_icon_node(node: dict, params: dict, folder: tempfile.TemporaryDirecto
 
     fill_color = style.get("fillColor") or default_icon_color
     if label not in custom_icons.keys():
-        image_filename = os.path.sep.join([folder.name, f'{label}_{fill_color}.png'])
+        image_filename = path.sep.join([folder.name, f'{label}_{fill_color}.png'])
         icon_params['image'] = image_filename
         # If a file with such color x label combination was not created, create it
-        if not os.path.exists(image_filename):
+        if not path.exists(image_filename):
             # NOTE: If this turns out to be too time-consuming, switch to PNGs should be considered,
             # as those require much less modification.
             original_image: Image = Image.open(f'{ASSETS_PATH}{label}.png', 'r')
@@ -1399,7 +1410,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 ),
                             )
                         )
-                        file_path = os.path.sep.join([folder.name, image_name])
+                        file_path = path.sep.join([folder.name, image_name])
                         im.save(file_path)
                     # Note: Add placeholder images instead?
                     except KeyError as e:
@@ -1776,7 +1787,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             files_to_copy = [
                 hash_id
                 for hash_id in zip_file.namelist()
-                if os.path.basename(hash_id).split('.')[0] not in images_to_delete
+                if path.basename(hash_id).split('.')[0] not in images_to_delete
             ]
             for filename in files_to_copy:
                 new_zip.writestr(zipfile.ZipInfo(filename), zip_file.read(filename))
@@ -1836,9 +1847,27 @@ class MapTypeProvider(BaseFileTypeProvider):
             related_files = Filesystem.get_nondeleted_recycled_files(
                 Files.hash_id.in_(related_files_new_hashes), lazy_load_content=True
             )
+            inform(
+                ServerInfo(
+                    title='Found related files',
+                    message=f'{file.path} has {len(related_files)} related files',
+                    additional_msgs=(
+                        f'New related files:',
+                        *map(lambda f: '\t+ ' + f.path, related_files),
+                        f'and {len(related_files_hashes) - len(related_files_new_hashes)} already included files:',
+                    )
+                )
+            )
             file_type_service = get_file_type_service()
 
             return file_type_service.get_related_files(related_files, recursive)
+        else:
+            inform(
+                ServerInfo(
+                    title='Found related files',
+                    message=f'{file.path} has {len(related_files_hashes)} related files'
+                )
+            )
 
         return related_files_hashes
 
