@@ -30,7 +30,7 @@ _IDENTITY_FORMATER_VAR = TypeVar('_IDENTITY_FORMATER_VAR')
 
 class IdentityFormatter(
     Generic[_IDENTITY_FORMATER_VAR],
-    Formatter[_IDENTITY_FORMATER_VAR, _IDENTITY_FORMATER_VAR]
+    Formatter[_IDENTITY_FORMATER_VAR, _IDENTITY_FORMATER_VAR],
 ):
     @classmethod
     def dumps(cls, obj: _IDENTITY_FORMATER_VAR) -> _IDENTITY_FORMATER_VAR:
@@ -54,10 +54,7 @@ class DateTimeExtraFormatter(Formatter[datetime, str]):
 _JSONBFormatterVar = TypeVar('_JSONBFormatterVar')
 
 
-class JSONBFormatter(
-    Generic[_JSONBFormatterVar],
-    Formatter[_JSONBFormatterVar, bytes]
-):
+class JSONBFormatter(Generic[_JSONBFormatterVar], Formatter[_JSONBFormatterVar, bytes]):
     @classmethod
     def dumps(cls, obj: _JSONBFormatterVar) -> bytes:
         return bytes(json.dumps(obj), BYTE_ENCODING)
@@ -76,6 +73,7 @@ class _ZipInfoKwargsBase(TypedDict):
     """
     TypedDict for required ZipInfo constructor kwargs.
     """
+
     filename: str
 
 
@@ -85,7 +83,10 @@ class _ZipInfoKwargs(_ZipInfoKwargsBase, total=False):
     Required kwargs are defined in _ZipInfoKwargsBase.
     Optional kwargs are defined here.
     """
+
     date_time: tuple[int, int, int, int, int, int]
+
+
 # endregion
 
 
@@ -108,19 +109,20 @@ class _ZipFileFormatterLoad(Generic[_ZIP_FILE_FORMATER_CONTENT]):
 
 @dataclass
 class ZipFileFormatter(Generic[_ZIP_FILE_FORMATER_CONTENT]):
-
-    content_formatter: Type[Formatter[_ZIP_FILE_FORMATER_CONTENT, bytes]] = IdentityFormatter
+    content_formatter: Type[
+        Formatter[_ZIP_FILE_FORMATER_CONTENT, bytes]
+    ] = IdentityFormatter
 
     def dump(
-            self,
-            zip_file: ZipFile,
-            filename: str,
-            content: Any,
-            *,
-            date_time: datetime,
-            compress_type=None,
-            compresslevel=None,
-            **kwargs,
+        self,
+        zip_file: ZipFile,
+        filename: str,
+        content: Any,
+        *,
+        date_time: datetime,
+        compress_type=None,
+        compresslevel=None,
+        **kwargs,
     ) -> None:
         zip_info_kwargs: _ZipInfoKwargs = dict(filename=filename)
         if date_time:
@@ -138,8 +140,7 @@ class ZipFileFormatter(Generic[_ZIP_FILE_FORMATER_CONTENT]):
         )
 
     def load(
-            self,
-            zip_file: ZipFile, info: ZipInfo
+        self, zip_file: ZipFile, info: ZipInfo
     ) -> _ZipFileFormatterLoad[_ZIP_FILE_FORMATER_CONTENT]:
         return _ZipFileFormatterLoad[_ZIP_FILE_FORMATER_CONTENT](
             filename=info.filename,
