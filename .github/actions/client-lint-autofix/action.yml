@@ -38,5 +38,3 @@ runs:
         git config --global user.email "{{ github.event.inputs.git_email }}"
         git commit -am "${{ github.event.inputs.commit_message }}"
         git push
-
-

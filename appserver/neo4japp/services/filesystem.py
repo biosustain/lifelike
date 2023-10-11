@@ -1,4 +1,5 @@
 import os
+import typing
 import urllib
 from collections import defaultdict
 from pathlib import Path
@@ -31,6 +32,7 @@ from neo4japp.exceptions import (
     UnsupportedMediaTypeError,
     ServerException,
     HandledException,
+    ServerWarning,
 )
 from neo4japp.models import (
     Projects,
@@ -508,7 +510,7 @@ class Filesystem:
                     + 'Please limit file uploads to less than 315MB.',
                 ) from e
 
-            return buffer, url
+            return typing.cast(FileContentBuffer, buffer), url
 
         # Fetch from upload
         elif buffer is not None:
@@ -654,7 +656,7 @@ class Filesystem:
                 try:
                     # Get the DOI only if content could be validated
                     file.doi = provider.extract_doi(buffer)
-                except Warning as w:
+                except ServerWarning as w:
                     warn(w)
 
             # Save the file content if there's any

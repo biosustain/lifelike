@@ -417,7 +417,7 @@ SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
 RELATIVE_FILE_PATH_RE = re.compile(
-    '^ *(/projects/[^/]+)?/(enrichment-(table|visualisation)|sankey(-many-to-many)?|folders|files|bioc|maps|file-navigator|pdf-viewer|dt/map(/edit)?)/(?P<hash_id>[^/?#\n]*)[^\n]*$'
+    '^ *(/projects/[^/]+)?/(enrichment-(table|visualisation)|sankey(-many-to-many)?|folders|files|bioc|maps|file-navigator|pdf-viewer|dt/map(/edit)?)/(?P<hash_id>[^/?#\n]*)[^\n]*$'  # noqa
 )
 
 # Start SVG map export data constants
