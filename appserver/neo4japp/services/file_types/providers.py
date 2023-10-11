@@ -298,7 +298,9 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             # Flattern inbetween folders to preserve file hierarhy in export
             # (generate_export() exports only files in the list)
             common_path_len = len(
-                path.commonpath([path.dirname(f.path) for f in related_files]) if len(related_files) else ''
+                path.commonpath([
+                    path.dirname(f.path) for f in related_files
+                ]) if len(related_files) else ''
             )
 
             def add_parent(_related_file: Files):
@@ -1854,7 +1856,8 @@ class MapTypeProvider(BaseFileTypeProvider):
                     additional_msgs=(
                         f'New related files:',
                         *map(lambda f: '\t+ ' + f.path, related_files),
-                        f'and {len(related_files_hashes) - len(related_files_new_hashes)} already included files:',
+                        f'and {len(related_files_hashes) - len(related_files_new_hashes)}'
+                        f' already included files:',
                     )
                 )
             )

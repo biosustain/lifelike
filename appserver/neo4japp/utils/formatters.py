@@ -137,7 +137,10 @@ class ZipFileFormatter(Generic[_ZIP_FILE_FORMATER_CONTENT]):
             compresslevel=compresslevel,
         )
 
-    def load(self, zip_file: ZipFile, info: ZipInfo) -> _ZipFileFormatterLoad[_ZIP_FILE_FORMATER_CONTENT]:
+    def load(
+            self,
+            zip_file: ZipFile, info: ZipInfo
+    ) -> _ZipFileFormatterLoad[_ZIP_FILE_FORMATER_CONTENT]:
         return _ZipFileFormatterLoad[_ZIP_FILE_FORMATER_CONTENT](
             filename=info.filename,
             content=self.content_formatter.loads(zip_file.read(info)),
