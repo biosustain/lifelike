@@ -105,7 +105,7 @@ class FileAnnotationsView(FilesystemBaseView):
         """Fetch annotations for a file.."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -153,7 +153,7 @@ class EnrichmentAnnotationsView(FilesystemBaseView):
         """Fetch annotations for enrichment table."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -174,7 +174,7 @@ class FileCustomAnnotationsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -201,7 +201,7 @@ class FileCustomAnnotationsDetailView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -228,7 +228,7 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -244,7 +244,7 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -307,7 +307,7 @@ class FileAnnotationCountsView(FilesystemBaseView):
     def post(self, hash_id: str):
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
@@ -362,7 +362,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
         sort = args['sort']
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
