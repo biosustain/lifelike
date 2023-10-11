@@ -78,7 +78,8 @@ class _ImportRef:
     metadata: Optional[dict] = None
     file: Files = field(
         default_factory=lambda: Files(
-            hash_id=generate_hash_id(), path='<placeholder>'
+            # Pregenerate hashes so we can use it for linking
+            hash_id=generate_hash_id()
         )
     )
     ***ARANGO_USERNAME***: bool = False
