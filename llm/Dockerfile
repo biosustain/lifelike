@@ -34,6 +34,24 @@ COPY --chown=$UID:$GID Pipfile.lock .
 
 ENV FLASK_APP=llm
 
+FROM build as dev
+
+# Copy files first so pipenv can link to editable package
+COPY --chown=$UID:$GID . .
+
+# Install dev dependencies
+# (NOTE: cannot run after `pipenv install` - https://github.com/pypa/pipenv/issues/4435)
+RUN pipenv install --dev --deploy --system
+
+COPY --chown=$UID:$GID . .
+
+USER $_USER
+
+# Jupyter Notebook
+EXPOSE 8888
+
+FROM build as prod
+
 RUN pipenv install --deploy --system
 
 COPY --chown=$UID:$GID . .
@@ -41,15 +59,3 @@ COPY --chown=$UID:$GID . .
 USER $_USER
 
 CMD [ "bin/startup.sh" ]
-
-FROM build as dev
-
-# Install dev dependencies
-RUN pipenv install --deploy --system --dev
-
-# Jupyter Notebook
-EXPOSE 8888
-
-FROM build as prod
-
-# Just so it is default one
