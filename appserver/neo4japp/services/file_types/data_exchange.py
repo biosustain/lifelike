@@ -220,7 +220,10 @@ class ZipDataExchange(DataExchangeProtocol):
                         )
 
     @classmethod
-    def _imports_consistency_check(cls, import_path_map: Dict[str, _ImportRef]) -> Dict[str, _ComposedImportRef]:
+    def _imports_consistency_check(
+        cls,
+        import_path_map: Dict[str, _ImportRef]
+    ) -> Dict[str, _ComposedImportRef]:
         for zip_path, import_ref in import_path_map.copy().items():
             if import_ref.metadata is None:
                 warn(
@@ -258,11 +261,11 @@ class ZipDataExchange(DataExchangeProtocol):
                 parent_id = import_ref.metadata.get('parent_id')
                 parent_import_ref = import_id_map.get(parent_id)
                 assert (
-                        parent_import_ref is not import_ref
+                    parent_import_ref is not import_ref
                 ), "File cannot be its own parent."
                 if parent_import_ref:
                     assert (
-                            parent_import_ref.file.mime_type == FILE_MIME_TYPE_DIRECTORY
+                        parent_import_ref.file.mime_type == FILE_MIME_TYPE_DIRECTORY
                     ), "Parent must be a directory."
                     import_ref.file.parent = parent_import_ref.file
                 else:
