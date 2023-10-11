@@ -1,25 +1,18 @@
-import json
 import re
+import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime
 from os import path
 from typing import (
     List,
     IO,
-    TypeVar,
-    Generic,
     Dict,
-    Union,
-    NamedTuple,
-    Any,
-    Type,
     Callable,
+    Optional,
 )
-from zipfile import ZipFile, ZipInfo
+from zipfile import ZipFile
 
 from neo4japp.constants import (
-    BYTE_ENCODING,
     EXTENSION_MIME_TYPES,
     FILE_MIME_TYPE_DIRECTORY,
 )
@@ -31,6 +24,7 @@ from neo4japp.services.file_types.exports import FileExport, ExportFormatError
 from neo4japp.services.file_types.imports import FileImport, ImportFormatError
 from neo4japp.utils import find
 from neo4japp.utils.file_content_buffer import FileContentBuffer
+from neo4japp.utils.formatters import DateTimeExtraFormatter, JSONBFormatter, ZipFileFormatter
 from neo4japp.utils.globals import warn
 
 
@@ -38,101 +32,19 @@ class DataExchangeProtocol(ABC):
     FORMAT: str
     EXTENSION: str
 
-    @staticmethod
-    @abstractmethod
-    def generate_export(filename: str, files: List[Files]) -> FileExport:
-        ...
-
-    @staticmethod
-    @abstractmethod
-    def generate_import(self, export: FileExport) -> FileImport:
-        ...
-
-
-FormatterLoads = TypeVar('FormatterLoads')
-FormatterDumps = TypeVar('FormatterDumps')
-
-
-class Formatter(ABC, Generic[FormatterLoads, FormatterDumps]):
     @classmethod
     @abstractmethod
-    def dumps(cls, obj: FormatterLoads) -> FormatterDumps:
+    def generate_export(cls, filename: str, files: List[Files]) -> FileExport:
         ...
 
     @classmethod
     @abstractmethod
-    def loads(cls, s: FormatterDumps) -> FormatterLoads:
+    def generate_import(cls, export: FileExport) -> FileImport:
         ...
 
 
-class IdentityFormatter(Formatter[Any, Any]):
-    @classmethod
-    def dumps(cls, obj: Any) -> Any:
-        return obj
-
-    @classmethod
-    def loads(cls, s: Any) -> Any:
-        return s
-
-
-class DateTimeExtraFormatter(Formatter[datetime, str]):
-    @classmethod
-    def dumps(cls, obj: datetime) -> str:
-        return obj.isoformat()
-
-    @classmethod
-    def loads(cls, s: str) -> datetime:
-        return datetime.fromisoformat(s)
-
-
-class JSONBFormatter(Formatter[dict, bytes]):
-    @classmethod
-    def dumps(cls, obj: dict) -> bytes:
-        return bytes(json.dumps(obj), BYTE_ENCODING)
-
-    @classmethod
-    def loads(cls, s: bytes) -> dict:
-        return json.loads(s.decode(BYTE_ENCODING))
-
-
-@dataclass
-class ZipFileFormatter:
-    LOAD = NamedTuple('ZipFileLoad', [('filename', str), ('content', Any)])
-    content_formatter: Type[Formatter[Any, Union[bytes, str]]] = IdentityFormatter
-
-    def dump(
-        self,
-        zip_file: ZipFile,
-        filename: str,
-        content: Any,
-        *,
-        date_time: datetime,
-        compress_type=None,
-        compresslevel=None,
-        **kwargs,
-    ) -> None:
-        info = ZipInfo(
-            filename=filename,
-            date_time=date_time.timetuple()[:6] if date_time else None,
-        )
-        for key, value in kwargs.items():
-            setattr(info, key, value)
-
-        zip_file.writestr(
-            info,
-            self.content_formatter.dumps(content),
-            compress_type=compress_type,
-            compresslevel=compresslevel,
-        )
-
-    def load(self, zip_file: ZipFile, info: ZipInfo) -> LOAD:
-        return self.LOAD(
-            filename=info.filename,
-            content=self.content_formatter.loads(zip_file.read(info)),
-        )
-
-
-class ZipFileModelExtras(JSONBFormatter):
+# region ZipDataExchange
+class _FilesDictToJSONB(JSONBFormatter[dict]):
     _DATETIME_FIELDS = {
         'creation_date',
         'annotations_date',
@@ -159,6 +71,25 @@ class ZipFileModelExtras(JSONBFormatter):
             if value:
                 obj[key] = DateTimeExtraFormatter.loads(value)
         return obj
+
+
+@dataclass
+class _ImportRef:
+    metadata: Optional[dict] = None
+    file: Files = field(
+        default_factory=lambda: Files(
+            hash_id=generate_hash_id(), path='<placeholder>'
+        )
+    )
+    root: bool = False
+    path: Optional[str] = None
+
+
+class _ComposedImportRef:
+    metadata: dict
+    file: Files
+    root: bool
+    path: str
 
 
 class ZipDataExchange(DataExchangeProtocol):
@@ -206,20 +137,9 @@ class ZipDataExchange(DataExchangeProtocol):
         # and relink the files
     }
 
-    @dataclass
-    class _ImportRef:
-        metadata: dict = None
-        file: Files = field(
-            default_factory=lambda: Files(
-                hash_id=generate_hash_id(), path='<placeholder>'
-            )
-        )
-        root: bool = False
-        path: str = None
-
-    _zip_file_model_formatter = ZipFileFormatter()
-    _zip_file_model_metadata_formatter = ZipFileFormatter(
-        content_formatter=ZipFileModelExtras
+    _zip_file_model_formatter = ZipFileFormatter[bytes]()
+    _zip_file_model_metadata_formatter = ZipFileFormatter[dict](
+        content_formatter=_FilesDictToJSONB
     )
 
     @classmethod
@@ -263,9 +183,9 @@ class ZipDataExchange(DataExchangeProtocol):
 
     @classmethod
     def _load_zip_imports(
-        cls, buffer: IO[bytes], import_ref_getter: Callable[[str], _ImportRef]
+            cls, buffer: IO[bytes], import_ref_getter: Callable[[str], _ImportRef]
     ) -> None:
-        with ZipFile(buffer, 'r') as zip_file:
+        with ZipFile(buffer) as zip_file:  # only reading
             for info in zip_file.infolist():
                 if info.is_dir():
                     continue
@@ -280,11 +200,11 @@ class ZipDataExchange(DataExchangeProtocol):
                         import_ref.root = dirname == ''
                         import_ref.path = info.filename
 
-                        file_ref = cls._zip_file_model_metadata_formatter.load(
+                        metadata_file_ref = cls._zip_file_model_metadata_formatter.load(
                             zip_file, info
                         )
                         assert import_ref.metadata is None, "Metadata already set."
-                        import_ref.metadata = file_ref.content
+                        import_ref.metadata = metadata_file_ref.content
                         # Apply metadata import fields
                         for column, value in import_ref.metadata.items():
                             if column in cls._IMPORT_FIELDS:
@@ -299,7 +219,7 @@ class ZipDataExchange(DataExchangeProtocol):
                         )
 
     @classmethod
-    def _imports_consistency_check(cls, import_path_map: Dict[str, _ImportRef]) -> None:
+    def _imports_consistency_check(cls, import_path_map: Dict[str, _ImportRef]) -> Dict[str, _ComposedImportRef]:
         for zip_path, import_ref in import_path_map.copy().items():
             if import_ref.metadata is None:
                 warn(
@@ -311,8 +231,8 @@ class ZipDataExchange(DataExchangeProtocol):
                 )
                 del import_path_map[zip_path]
             if (
-                import_ref.file.mime_type != FILE_MIME_TYPE_DIRECTORY
-                and import_ref.file.content is None
+                    import_ref.file.mime_type != FILE_MIME_TYPE_DIRECTORY
+                    and import_ref.file.content is None
             ):
                 warn(
                     ServerWarning(
@@ -323,8 +243,11 @@ class ZipDataExchange(DataExchangeProtocol):
                 )
                 del import_path_map[zip_path]
 
+        # cast to _ComposedImportRef since we checked that the _ImportRef is properly initialized
+        return typing.cast(Dict[str, _ComposedImportRef], import_path_map)
+
     @classmethod
-    def _imports_rebuild_hierarhy(cls, import_path_map: Dict[str, _ImportRef]) -> None:
+    def _imports_rebuild_hierarhy(cls, import_path_map: Dict[str, _ComposedImportRef]) -> None:
         import_id_map = {
             import_ref.metadata['id']: import_ref
             for import_ref in import_path_map.values()
@@ -334,11 +257,11 @@ class ZipDataExchange(DataExchangeProtocol):
                 parent_id = import_ref.metadata.get('parent_id')
                 parent_import_ref = import_id_map.get(parent_id)
                 assert (
-                    parent_import_ref is not import_ref
+                        parent_import_ref is not import_ref
                 ), "File cannot be its own parent."
                 if parent_import_ref:
                     assert (
-                        parent_import_ref.file.mime_type == FILE_MIME_TYPE_DIRECTORY
+                            parent_import_ref.file.mime_type == FILE_MIME_TYPE_DIRECTORY
                     ), "Parent must be a directory."
                     import_ref.file.parent = parent_import_ref.file
                 else:
@@ -348,13 +271,14 @@ class ZipDataExchange(DataExchangeProtocol):
                             message=f"Could not find the parent of file {import_ref.path}.",
                             additional_msgs=(
                                 'The file will be added to import root.',
-                                'This might lead to naming conflict results, in case of which import will fail.',
+                                'This might lead to naming conflict results,'
+                                ' in case of which import will fail.',
                             ),
                         )
                     )
 
     @classmethod
-    def _imports_relink_files(cls, import_path_map: Dict[str, _ImportRef]) -> None:
+    def _imports_relink_files(cls, import_path_map: Dict[str, _ComposedImportRef]) -> None:
         files_hash_id_map = {
             import_ref.metadata['hash_id']: import_ref.file.hash_id
             for import_ref in import_path_map.values()
@@ -364,23 +288,23 @@ class ZipDataExchange(DataExchangeProtocol):
 
     @classmethod
     def _import(cls, buffer: IO[bytes]) -> List[Files]:
-        import_path_map: Dict[str, cls._ImportRef] = dict()
+        import_path_map: Dict[str, _ImportRef] = dict()
 
-        def get_import_ref(zip_path_: str) -> cls._ImportRef:
+        def get_import_ref(zip_path_: str) -> _ImportRef:
             if zip_path_ not in import_path_map:
-                import_path_map[zip_path_] = cls._ImportRef()
+                import_path_map[zip_path_] = _ImportRef()
             return import_path_map[zip_path_]
 
         cls._load_zip_imports(buffer, get_import_ref)
 
         # Consistency check
-        cls._imports_consistency_check(import_path_map)
+        composed_import_path_map = cls._imports_consistency_check(import_path_map)
 
         # Rebuild file hierarchy
-        cls._imports_rebuild_hierarhy(import_path_map)
+        cls._imports_rebuild_hierarhy(composed_import_path_map)
 
         # Relink files
-        cls._imports_relink_files(import_path_map)
+        cls._imports_relink_files(composed_import_path_map)
 
         return list(import_ref.file for import_ref in import_path_map.values())
 
@@ -415,6 +339,9 @@ class ZipDataExchange(DataExchangeProtocol):
             mime_type=cls.MIME_TYPE,
             filename=f"{filename}{cls.EXTENSION}",
         )
+
+
+# endregion
 
 
 class DataExchange:

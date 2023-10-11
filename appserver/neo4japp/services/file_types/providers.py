@@ -314,18 +314,19 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
                 warn(
                     ServerWarning(
                         title='Skipped non-readable file',
-                        message=f'User {current_user.username} has sufficient permissions to read "{file.path}".',
+                        message=f'User {current_user.username} has sufficient permissions'
+                                f' to read "{file.path}".',
                     )
                 )
 
-            files = list(filter(has_read_permission, files))
+            permited_files = list(filter(has_read_permission, files))  # type: ignore
 
             # Rename project root folder to project name
-            for file in files:
+            for file in permited_files:
                 if file.filename == '/':
                     file.filename = file.project.name
 
-            return DataExchange.generate_export(target_file.filename, files, format)
+            return DataExchange.generate_export(target_file.filename, permited_files, format)
         finally:
             savepoint.rollback()
 
@@ -1486,7 +1487,11 @@ class MapTypeProvider(BaseFileTypeProvider):
             files = self.get_all_linked_maps(
                 file, {file.hash_id}, [file], link_to_page_map
             )
-            self.merge(files, format, link_to_page_map)
+            return self.merge(files, format, link_to_page_map)
+        else:
+            raise ExportFormatError(
+                "Unknown or invalid export format for the requested file."
+            )
 
     @contextmanager
     def open_graph_json(self, file: Files, mode='r'):
@@ -1567,7 +1572,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                         ] = destination_page
             return files
 
-    def merge(self, files: List[Files], requested_format: str, links=None):
+    def merge(
+        self, files: List[Files], requested_format: str, links=None
+    ) -> FileExport:
         """Export, merge and prepare as FileExport the list of files
         :param files: List of Files objects. The first entry is always the main map,
         :param requested_format: export format

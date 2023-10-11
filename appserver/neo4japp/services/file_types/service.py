@@ -129,7 +129,8 @@ class BaseFileTypeProvider:
 
     def load(self, buffer: FileContentBuffer, file: Files) -> None:
         """
-        Hook to load the contents - we might want to use the contents directly instead of saving it to the database.
+        Hook to load the contents - we might want to use the contents directly
+         instead of saving it to the database.
         Example use case would be to load dump files directly into the database.
 
         :param buffer: the file's contents
