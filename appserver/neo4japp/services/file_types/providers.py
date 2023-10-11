@@ -298,13 +298,16 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
             # Flattern inbetween folders to preserve file hierarhy in export
             # (generate_export() exports only files in the list)
             common_path_len = len(
-                path.commonpath([
-                    path.dirname(f.path) for f in related_files
-                ]) if len(related_files) else ''
+                path.commonpath([path.dirname(f.path) for f in related_files])
+                if len(related_files)
+                else ''
             )
 
             def add_parent(_related_file: Files):
-                if _related_file.parent and len(_related_file.parent.path) > common_path_len:
+                if (
+                    _related_file.parent
+                    and len(_related_file.parent.path) > common_path_len
+                ):
                     related_files.add(_related_file.parent)
                     add_parent(_related_file.parent)
 
@@ -321,7 +324,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
                     ServerWarning(
                         title='Skipped non-readable file',
                         message=f'User {current_user.username} has sufficient permissions'
-                                f' to read "{_related_file.path}".',
+                        f' to read "{_related_file.path}".',
                     )
                 )
 
@@ -332,7 +335,9 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
                 if file.filename == '/':
                     file.filename = file.project.name
 
-            return DataExchange.generate_export(target_file.filename, permited_files, format_)
+            return DataExchange.generate_export(
+                target_file.filename, permited_files, format_
+            )
         finally:
             savepoint.rollback()
 
@@ -358,7 +363,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
                 additional_msgs=(
                     f'Related files:',
                     *map(lambda f: '\t+ ' + f.path, related_files),
-                )
+                ),
             )
         )
         if recursive is not None:
@@ -1858,7 +1863,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                         *map(lambda f: '\t+ ' + f.path, related_files),
                         f'and {len(related_files_hashes) - len(related_files_new_hashes)}'
                         f' already included files:',
-                    )
+                    ),
                 )
             )
             file_type_service = get_file_type_service()
@@ -1868,7 +1873,7 @@ class MapTypeProvider(BaseFileTypeProvider):
             inform(
                 ServerInfo(
                     title='Found related files',
-                    message=f'{file.path} has {len(related_files_hashes)} related files'
+                    message=f'{file.path} has {len(related_files_hashes)} related files',
                 )
             )
 
