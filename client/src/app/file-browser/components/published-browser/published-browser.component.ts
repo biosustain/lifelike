@@ -1,14 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+
 import { select, Store } from '@ngrx/store';
+import { BehaviorSubject, iif, Observable, of, Subject, Subscription } from 'rxjs';
+import { map, shareReplay, switchMap } from 'rxjs/operators';
+
 import { AuthSelectors } from 'app/auth/store';
 import { State } from 'app/root-store';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
-
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { promiseOfOne } from 'app/shared/rxjs/to-promise';
-import { BehaviorSubject, iif, Observable, of, Subject, Subscription } from 'rxjs';
-import { map, shareReplay, switchMap } from 'rxjs/operators';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
@@ -16,7 +18,6 @@ import { FilesystemService } from '../../services/filesystem.service';
 import { ProjectActions } from '../../services/project-actions';
 import { ProjectsService } from '../../services/projects.service';
 import { PublishService } from '../../services/publish.service';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-published-browser',

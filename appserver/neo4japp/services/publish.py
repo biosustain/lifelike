@@ -21,7 +21,10 @@ class Publish:
         publish_project = Projects.get_or_create(
             name=cls.get_publish_project_name(user_hash_id),
             creator=creator or g.current_user,
-            description='Project containing user published files (publically available on the lifelike website)',
+            description=(
+                'Project containing user published files '
+                '(publically available on the lifelike website)'
+            ),
             role='project-write',  # only write - this is system managed
         )
         file = Filesystem.create_file(

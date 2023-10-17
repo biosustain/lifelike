@@ -21,8 +21,11 @@ import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { filter, map, shareReplay, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Subject, merge, Observable, iif, of, defer } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
+import { select, Store } from '@ngrx/store';
 
 import { timeoutPromise } from 'app/shared/utils/promise';
+import { AuthSelectors } from 'app/auth/store';
+import { State } from 'app/root-store';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import {
@@ -35,9 +38,6 @@ import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
 import { ErrorHandler } from './services/error-handler.service';
 import { UserError } from './exceptions';
 import { makeid } from './utils/identifiers';
-import { select, Store } from '@ngrx/store';
-import { AuthSelectors } from '../auth/store';
-import { State } from '../root-store';
 import { SessionStorageService } from './services/session-storage.service';
 
 export interface TabDefaults {
