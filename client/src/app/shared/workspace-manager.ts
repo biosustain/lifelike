@@ -492,7 +492,7 @@ export class PaneManager {
 })
 export class WorkspaceManager {
   paneManager: PaneManager;
-  readonly workspaceUrl$ : BehaviorSubject<string> = new BehaviorSubject<string>('/workspaces');
+  readonly workspaceUrl$: BehaviorSubject<string> = new BehaviorSubject<string>('/workspaces');
   tabCreationTargetPane: Pane | undefined;
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
@@ -505,21 +505,21 @@ export class WorkspaceManager {
     private readonly tracking: TrackingService,
     private readonly errorHandler: ErrorHandler,
     private readonly store: Store<State>,
-    private readonly sessionStorage: SessionStorageService,
+    private readonly sessionStorage: SessionStorageService
   ) {
-    store.pipe(
-      select(AuthSelectors.selectAuthLoginState),
-      switchMap(loggedIn =>
-        iif(
-          () => loggedIn,
-          of('local'),
-          defer(() =>
-            of(this.sessionStorage.getSetItem('space_id', makeid())),
-          ),
+    store
+      .pipe(
+        select(AuthSelectors.selectAuthLoginState),
+        switchMap((loggedIn) =>
+          iif(
+            () => loggedIn,
+            of('local'),
+            defer(() => of(this.sessionStorage.getSetItem('space_id', makeid())))
+          )
         ),
-      ),
-      map((spaceId) => `/workspaces/${spaceId}`),
-    ).subscribe(this.workspaceUrl$);
+        map((spaceId) => `/workspaces/${spaceId}`)
+      )
+      .subscribe(this.workspaceUrl$);
     this.paneManager = new PaneManager(injector);
     this.hookRouter();
     this.emitEvents();
