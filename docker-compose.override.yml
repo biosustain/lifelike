@@ -98,13 +98,14 @@ services:
     build:
       context: ./llm
       target: dev
+    entrypoint: flask run --host=0.0.0.0
     ports:
       - "5020:5000"
     env_file:
       - azure-secrets.env
     environment:
       # Flask
-      - FLASK_APP=app
+      - FLASK_APP=llmlib
       - FLASK_APP_CONFIG=Development
       - FLASK_DEBUG=1
       - FLASK_ENV=development

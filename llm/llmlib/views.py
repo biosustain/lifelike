@@ -4,11 +4,12 @@ from flask import g
 from langchain import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.graphs import Neo4jGraph, ArangoGraph
+from llmlib.schemas import GraphQARequestSchema
 from webargs.flaskparser import use_args
-from app import app
-from llmlib.database import Arango, Neo4j
-from llmlib.interfaces import GraphRef
-from schemas import GraphCompletionsRequestSchema, GraphChatCompletionsRequestSchema
+from .app import app
+from .database import Arango, Neo4j
+from .interfaces import GraphRef
+from .schemas import GraphCompletionsRequestSchema, GraphChatCompletionsRequestSchema
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -30,7 +31,7 @@ def map_graph_ref(graph: GraphRef) -> Union[ArangoGraph, Neo4jGraph]:
     else:
         raise Exception('Invalid database type!')
     database_name = graph.get('database_name')
-    return database.graph(database_name) if database_name else database.graph()
+    return database().graph(database_name) if database_name else database().graph()
 
 
 def map_request_arguments(args):
@@ -76,3 +77,12 @@ def completions(args):
 def chat(args):
     getattr(g, 'transaction_id', args['transaction_id'])
     return ChatOpenAI(**map_request_arguments(args))
+
+
+@app.route('/graph', methods=['POST'])
+@use_args(GraphQARequestSchema)
+def graph(args):
+    getattr(g, 'transaction_id', args['transaction_id'])
+    from llmlib.v0 import graph_qa_v0
+
+    return graph_qa_v0(args['query'], **map_request_arguments(args))
