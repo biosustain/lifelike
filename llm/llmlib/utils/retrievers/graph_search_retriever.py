@@ -1,3 +1,5 @@
+import logging
+from functools import partial
 from typing import Optional, Self, List, Any
 
 from langchain import LLMChain, PromptTemplate, BasePromptTemplate
@@ -46,12 +48,12 @@ class GraphSearchRetriever(BaseRetriever):
 
     @classmethod
     def from_llm(
-            cls,
-            vectorstore: VectorStore,
-            llm: BaseChatModel,
-            graph_search: GraphSearchAPIWrapper,
-            prompt: Optional[BasePromptTemplate] = None,
-            **kwargs: Any,
+        cls,
+        vectorstore: VectorStore,
+        llm: BaseChatModel,
+        graph_search: GraphSearchAPIWrapper,
+        prompt: Optional[BasePromptTemplate] = None,
+        **kwargs: Any,
     ) -> Self:
         """Initialize from LLM using the default template."""
         if not prompt:
@@ -86,7 +88,7 @@ class GraphSearchRetriever(BaseRetriever):
         )
 
     def _get_relevant_documents(
-            self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
         """Get relevant documents from the graph."""
 

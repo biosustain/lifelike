@@ -167,5 +167,7 @@ class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
 
         return self.graph.query(
             self.relationships_query,
-            dict(**self.relationships_query_params, term_match=term_match_id),
+            dict(
+            **self.relationships_query_params, term_match=term_match_id
+            ),
         )

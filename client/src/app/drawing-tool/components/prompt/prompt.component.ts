@@ -118,6 +118,19 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
         ),
         startWith(undefined),
       ),
+    )
+  );
+
+  readonly graphExplanation$: Observable<PipeStatus<ChatGPTResponse>> = this.params$.pipe(
+    switchMap(params =>
+      this.explain$.pipe(
+        map(() => params),
+        takeUntil(this.destroy$),
+        switchMap(({entities, temperature, context}) =>
+          this.explainService.relationshipGraph(entities, context, {temperature}).pipe(addStatus()),
+        ),
+        startWith(undefined),
+      ),
     ),
   );
 
