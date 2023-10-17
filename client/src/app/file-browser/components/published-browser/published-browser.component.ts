@@ -56,7 +56,7 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
     protected readonly projectActions: ProjectActions,
     protected readonly publishService: PublishService,
     private readonly store: Store<State>,
-    private readonly activeRoute: ActivatedRoute,
+    private readonly activeRoute: ActivatedRoute
   ) {}
 
   readonly isAdmin$ = this.store.pipe(
@@ -65,17 +65,17 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
   );
 
   readonly userHashId$ = this.activeRoute.params.pipe(
-    switchMap(params =>
+    switchMap((params) =>
       iif(
         () => params.user_hash_id !== undefined,
         of(params.user_hash_id),
         this.store.pipe(
           select(AuthSelectors.selectAuthUser),
-          map((user) => user.hashId),
-        ),
-      ),
+          map((user) => user.hashId)
+        )
+      )
     ),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   private readonly destroy$ = new Subject();
@@ -86,22 +86,24 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
    */
   openPublishDialog(): Promise<FilesystemObject> {
     const object = new FilesystemObject();
-    return promiseOfOne(this.userHashId$).then((userHashId) =>
-      this.publishService.openPublishDialog(
-        object,
-        {
-          title: 'Publish',
-          promptUpload: true,
-          promptParent: false,
-        },
-        userHashId
+    return promiseOfOne(this.userHashId$)
+      .then((userHashId) =>
+        this.publishService.openPublishDialog(
+          object,
+          {
+            title: 'Publish',
+            promptUpload: true,
+            promptParent: false,
+          },
+          userHashId
+        )
       )
-    ).then((result) => {
-      if (result) {
-        this.refresh()
-      }
-      return result;
-    });
+      .then((result) => {
+        if (result) {
+          this.refresh();
+        }
+        return result;
+      });
   }
 
   ngOnInit() {
