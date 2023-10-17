@@ -36,9 +36,7 @@ class PublishedView(MethodView):
 
         return jsonify(
             FileListSchema(
-                context={
-                    'user_privilege_filter': get_current_user('id')
-                },
+                context={'user_privilege_filter': get_current_user('id')},
             ).dump(
                 {
                     'total': len(published_files),
@@ -81,12 +79,18 @@ class PublishedView(MethodView):
         # Apply
         # ========================================
         for file in files:
-            if file.calculated_project.root_id == file.id:
+            if file.calculated_project is None:
                 raise ValidationError(
-                    f"You cannot delete the root directory "
-                    f"for a project (the folder for the project "
-                    f"'{file.calculated_project.name}' was specified)."
+                    f"The file '{file.name}' is not in a project "
+                    f"and cannot be deleted."
                 )
+            else:
+                if file.calculated_project.root_id == file.id:
+                    raise ValidationError(
+                        f"You cannot delete the root directory "
+                        f"for a project (the folder for the project "
+                        f"'{file.calculated_project.name}' was specified)."
+                    )
 
             if not file.recycled:
                 file.recycling_date = datetime.now()
