@@ -1,0 +1,7 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(obj, ('model_name', 'client', 'openai_api_key')) %}
+    <dt>client</dt>
+    <dd>{{ obj.client|escape }}&nbsp;</dd>
+    <dt>model name</dt>
+    <dd>{{ obj.model_name|escape }}&nbsp;</dd>
+{% endcall %}
