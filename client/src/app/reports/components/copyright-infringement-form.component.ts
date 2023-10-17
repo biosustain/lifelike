@@ -8,9 +8,9 @@ import { catchError, exhaust, map } from 'rxjs/operators';
 
 import { CopyrightInfringementRequest } from 'app/interfaces/reports.interface';
 import { COUNTRY_NAME_LIST } from 'app/shared/constants';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ReportsService } from '../services/reports.service';
-import { WorkspaceManager } from '../../shared/workspace-manager';
 
 @Component({
   selector: 'app-copyright-infringement-form',
