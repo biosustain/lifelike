@@ -16,10 +16,10 @@ import {
 } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
+import { ProgressArguments } from 'app/interfaces/common-dialog.interface';
 
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
 import { FilesystemObject } from './models/filesystem-object';
-import { ProgressArguments } from '../interfaces/common-dialog.interface';
 
 // ========================================
 // Projects
