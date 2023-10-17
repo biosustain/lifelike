@@ -8,7 +8,7 @@ from .openai.completions import CompletionsRequestSchema
 
 
 class ServerRequestSchema(Schema):
-    user_id = Str(required=True)
+    user = Str(required=True)
     transaction_id = Str(required=True)
 
 
@@ -17,7 +17,7 @@ class DBRequestSchema(Schema):
     database_name = Str()
 
 
-class GraphRequestSchema(Schema):
+class GraphRequestSchema(ServerRequestSchema):
     graph = Nested(DBRequestSchema())
 
 
@@ -29,6 +29,10 @@ class GraphChatCompletionsRequestSchema(
     ChatCompletionsRequestSchema, GraphRequestSchema
 ):
     pass
+
+
+class GraphQARequestSchema(GraphRequestSchema):
+    query = Str(required=True)
 
 
 __all__ = [

@@ -1,0 +1,9 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(model, not_default_keys) %}
+    {% for key, value in dict(model)|items %}
+        {% if key in not_default_keys %}
+            <dt>{{ key|replace('_',' ') }}</dt>
+            <dd>{{ value|format_object }}</dd>
+        {% endif %}
+    {% endfor %}
+{% endcall %}

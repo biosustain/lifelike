@@ -108,6 +108,19 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     )
   );
 
+  readonly graphExplanation$: Observable<PipeStatus<ChatGPTResponse>> = this.params$.pipe(
+    switchMap(params =>
+      this.explain$.pipe(
+        map(() => params),
+        takeUntil(this.destroy$),
+        switchMap(({entities, temperature, context}) =>
+          this.explainService.relationshipGraph(entities, context, {temperature}).pipe(addStatus()),
+        ),
+        startWith(undefined),
+      ),
+    ),
+  );
+
   readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =
     combineLatest([this.params$, this.contexts$]).pipe(
       map(([{ temperature, entities, context }, contexts]) => ({

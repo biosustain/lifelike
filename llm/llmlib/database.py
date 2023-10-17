@@ -10,14 +10,14 @@ from llmlib.utils.singleton import Singleton
 class Neo4j(Graph, metaclass=Singleton):
     @lru_cache(maxsize=1)
     def graph(self, name: str = None):
-        from langchain.graphs import Neo4jGraph
+        from llmlib.utils.lazy_neo4j_graph import LazyNeo4jGraph
 
         host = config.get('NEO4J_HOST')
         scheme = config.get('NEO4J_SCHEME')
         port = config.get('NEO4J_PORT')
         url = f'{scheme}://{host}:{port}'
         username, password = config.get('NEO4J_AUTH', 'neo4j/password').split('/')
-        return Neo4jGraph(
+        return LazyNeo4jGraph(
             url=url,
             username=username,
             password=password,

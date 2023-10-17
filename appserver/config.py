@@ -78,6 +78,9 @@ class Base:
     SE_HOST = os.environ.get('SE_HOST', 'statistical-enrichment')
     SE_PORT = os.environ.get('SE_PORT', '5010')
 
+    LLM_HOST = os.environ.get('LLM_HOST', 'llm')
+    LLM_PORT = os.environ.get('LLM_PORT', '5000')
+
     NLP_SERVICE_ENDPOINT = os.environ.get(
         'NLP_SERVICE_ENDPOINT', 'https://nlp-api.***ARANGO_DB_NAME***.bio/v1/predict'
     )
