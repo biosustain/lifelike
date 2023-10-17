@@ -84,7 +84,7 @@ export class WordCloudComponent implements OnInit, OnDestroy {
     this.loadTask = new BackgroundTask(({ hashId, sortingId }) =>
       combineLatest([
         this.legendService.getAnnotationLegend(),
-        this.annotationsService.getSortedAnnotations(hashId, sortingId)
+        this.annotationsService.getSortedAnnotations(hashId, sortingId),
       ])
     );
 
