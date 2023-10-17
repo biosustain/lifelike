@@ -7,41 +7,6 @@ from ..exceptions.exceptions import OpenAiServerException, ServerException
 from .redis_cache import RedisCache
 
 
-def map_openai_exception(e: OpenAIError):
-    exception_type = type(e)
-    if exception_type == openai.error.AuthenticationError:
-        return ServerException(
-            message="OpenAI API Key is invalid. Please contact the administrator."
-        )
-    return OpenAiServerException()
-
-
-"""Function call wrapper which maps OpenAI exceptions to our own exception format"""
-# noinspection PyTypeChecker
-openai_exception_wrapper = wrap_exceptions(map_openai_exception, OpenAIError)  # type: ignore
-
-EXCEPTION_TEST_CASES = [
-    openai.error.InvalidRequestError(
-        "Could not determine which URL to request: %s instance "
-        "has invalid ID: %r, %s. ID should be of type `str` (or"
-        " `unicode`)",
-        "id",
-    ),
-    openai.error.InvalidAPIType("Unsupported API type %s"),
-    openai.error.InvalidRequestError(
-        "Must provide an 'engine' or 'model' parameter to create a %s",
-        "engine",
-    ),
-    openai.error.APIError(
-        "Deployment operations are only available for the Azure API type."
-    ),
-    openai.error.InvalidAPIType(
-        "This operation is not supported by the Azure OpenAI API yet."
-    ),
-    openai.error.AuthenticationError(),
-]
-
-
 class ChatGPT:
     """Wrapper for OpenAI's Chat API"""
 
@@ -81,12 +46,10 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
-        @openai_exception_wrapper
         def create(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
         @staticmethod
-        @openai_exception_wrapper
         def create_stream(*args, **kwargs):
             return openai.Completion.create(*args, **kwargs)
 
@@ -118,12 +81,10 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
-        @openai_exception_wrapper
         def create(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
         @staticmethod
-        @openai_exception_wrapper
         def create_stream(*args, **kwargs):
             return openai.ChatCompletion.create(*args, **kwargs)
 
@@ -132,7 +93,6 @@ class ChatGPT:
 
         @staticmethod
         @cached(cache=cache)
-        @openai_exception_wrapper
         def list(*args, **kwargs):
             return openai.Model.list(*args, **kwargs)['data']
 

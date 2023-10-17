@@ -1,0 +1,9 @@
+{% if l %}
+    <ul>
+        {% for value in l %}
+            <li>{{ value|format_object }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    []
+{% endif %}

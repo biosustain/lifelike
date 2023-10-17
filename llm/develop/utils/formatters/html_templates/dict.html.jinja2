@@ -1,0 +1,12 @@
+{% if obj %}
+<dl>
+    {% for key, value in obj|items %}
+        {% if key not in omit %}
+            <dt>{{ key|replace('_',' ') }}</dt>
+            <dd>{{ value|format_object }}&nbsp;</dd>
+        {% endif %}
+    {% endfor %}
+</dl>
+{% else %}
+{{ obj }}
+{% endif %}
