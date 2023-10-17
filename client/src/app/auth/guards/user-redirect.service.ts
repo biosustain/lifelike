@@ -10,7 +10,6 @@ import { wrapIntoObservable } from 'app/shared/rxjs/wrapIntoObservable';
 import { State } from '../store/state';
 import { AuthSelectors } from '../store';
 
-@Injectable()
 export class UserRedirectGuard implements CanActivate {
   activatedRoute: ActivatedRouteSnapshot;
   redirectUrl: string;
