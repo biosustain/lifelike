@@ -5,6 +5,8 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { RootStoreModule } from 'app/root-store';
+import { LifelikeAuthModule } from 'app/auth/auth.module';
+import { AppModule } from 'app/app.module';
 
 import { PdfViewerLibComponent } from './pdf-viewer-lib.component';
 import { PdfViewerLibModule } from './pdf-viewer-lib.module';
@@ -21,6 +23,7 @@ describe('PdfViewerLibComponent', () => {
         SharedModule,
         MatSnackBarModule,
         RootStoreModule,
+        AppModule,
       ],
       providers: [PDFAnnotationService, PDFSearchService],
     }).compileComponents();
