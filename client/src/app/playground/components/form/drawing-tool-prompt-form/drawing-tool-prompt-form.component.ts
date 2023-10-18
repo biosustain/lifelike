@@ -35,7 +35,7 @@ export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer
 if there is only one entity and no context:
   What is [entity]?
 else if there is only one entity and a context:
-  What is [entity] in context of [context]?
+  What is [entity] in the context of [context]?
 otherwise
   What is the relationship between [entities], [context]?
   `;
@@ -56,7 +56,7 @@ otherwise
   parseEntitiesToPropmpt(entities: string[], context: string) {
     const entitiesLength = entities.length;
     if (entitiesLength === 1) {
-      return 'What is ' + entities[0] + (context ? ` in context of ${context}` : '') + '?';
+      return 'What is ' + entities[0] + (context ? ` in the context of ${context}` : '') + '?';
     }
 
     return (
