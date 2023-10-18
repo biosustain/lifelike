@@ -71,6 +71,7 @@ class FileHashIdSchema(CamelCaseSchema):
 
 class ProjectRootSchema(FileHashIdSchema, StarredFileSchema):
     public = fields.Boolean()
+    mime_type = fields.String()
 
 
 ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
