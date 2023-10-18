@@ -32,10 +32,12 @@ export interface DrawingToolPromptFormParams {
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
   PSEUDOCODE = `
-if all inputs are provided or there is more than one entity:
+if there is only one entity and no context:
+  What is [entity]?
+else if there is only one entity and a context:
+  What is [entity] in context of [context]?
+otherwise
   What is the relationship between [entities], [context]?
-otherwise:
-  What is [entity or context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
@@ -52,6 +54,16 @@ otherwise:
   }
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
+    const entitiesLength = entities.length;
+    if (entitiesLength === 1) {
+      return (
+        'What is ' +
+        entities[0] +
+        (context ? ` in context of ${context}` : '') +
+        '?'
+      );
+    }
+
     return (
       'What is the relationship between ' +
       entities.join(', ') +
