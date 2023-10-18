@@ -56,12 +56,7 @@ otherwise
   parseEntitiesToPropmpt(entities: string[], context: string) {
     const entitiesLength = entities.length;
     if (entitiesLength === 1) {
-      return (
-        'What is ' +
-        entities[0] +
-        (context ? ` in context of ${context}` : '') +
-        '?'
-      );
+      return 'What is ' + entities[0] + (context ? ` in context of ${context}` : '') + '?';
     }
 
     return (
