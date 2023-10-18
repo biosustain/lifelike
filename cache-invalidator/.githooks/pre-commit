@@ -1,30 +1,30 @@
 #!/bin/sh
 
 # Path from shell to folder containing this file
-__dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # Runs linting on only files that are staged
 staged_files=$(getStaged cache-invalidator '\.(py)$')
 
-# shellcheck disable=SC2236
-if [[ -n $staged_files ]];
-then
-  (
-    echo "> 🌽 Running flake8..."
-    echo ${staged_files} | \
-      xargs docker run --rm \
-      -v $(pwd)/cache-invalidator:/apps \
-      alpine/flake8:6.0.0
-  ) && (
-    echo "> 🥧 Running mypy..."
-    echo ${staged_files} | xargs docker exec cache-invalidator mypy
-  ) && (
-    echo "> 🐍 Running pycodestyle..."
-    echo ${staged_files} | \
-      xargs docker run --rm \
-      -v $(pwd)/cache-invalidator:/data \
-      cytopia/pycodestyle:2
-  )
+if [[ -n $staged_files ]]; then
+    (
+        echo "> 🌽 Running flake8..."
+        echo ${staged_files} | xargs \
+            docker run --rm \
+            -v $(pwd)/cache-invalidator:/apps \
+            alpine/flake8:6.0.0
+    ) && (
+        echo "> 🥧 Running mypy..."
+        echo ${staged_files} | xargs \
+            $DOCKER_COMPOSE_RUN --no-deps \
+            -T cache-invalidator mypy
+    ) && (
+        echo "> 🐍 Running pycodestyle..."
+        echo ${staged_files} | xargs \
+            docker run --rm \
+            -v $(pwd)/cache-invalidator:/data \
+            cytopia/pycodestyle:2
+    )
 else
-  echo "> Skipping..."
+    echo "> Skipping..."
 fi

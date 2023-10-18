@@ -82,7 +82,3 @@ pyyaml = "==6.0.1"
 
 [requires]
 python_version = "3.9"
-
-[scripts]
-lint = "bash -c 'docker exec appserver mypy . && docker exec appserver pycodestyle . && docker exec appserver flake8 .'"
-test = "bash -c 'docker exec appserver pytest tests'"

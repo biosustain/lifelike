@@ -2,7 +2,7 @@
 # Template of script is used for running git hook and recusing to services hooks.
 
 # Path from shell to folder containing this file
-__dir__="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+__dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 # load utility functions
 source $__dir__/utils.sh
@@ -16,15 +16,14 @@ recurseHook pre-commit
 staged_docker_compose_files=$(getStaged . '^docker-compose\..*\.(yml)$')
 
 # shellcheck disable=SC2236
-if [[ -n $staged_docker_compose_files ]];
-then
-  (
-    echo "> Running docker compose file validation..."
-    echo ${staged_docker_compose_files} | xargs -n1 -I{} docker compose -f "{}" config -q
-    checkExitCode $?
-  )
+if [[ -n $staged_docker_compose_files ]]; then
+    (
+        echo "> Running docker compose file validation..."
+        echo ${staged_docker_compose_files} | xargs -n1 -I{} docker compose -f "{}" config -q
+        checkExitCode $?
+    )
 else
-  echo "> Skipping..."
+    echo "> Skipping..."
 fi
 
 # exit with no error if no error has been found

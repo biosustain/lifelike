@@ -9,7 +9,7 @@
 ```bash
 ./deployment/kibana.sh -a None
 # or
-docker compose -f docker-compose.dev.yml exec appserver python neo4japp/services/annotations/index_annotations.py -a
+docker compose -f docker-compose.dev.yml run --rm appserver python neo4japp/services/annotations/index_annotations.py -a
 ```
 
 Then go to `localhost:5601/app/kibana`.

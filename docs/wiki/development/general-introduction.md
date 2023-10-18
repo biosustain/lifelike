@@ -67,7 +67,7 @@ There are containers for the Python app server (`appserver`), the Angular app (`
 On initial start, the databases will empty, so you will need to seed them using the following command:
 
 ```sh
-docker compose -f docker-compose.dev.yml run --name seed --rm appserver flask seed fixtures/seed.json
+docker compose -f docker-compose.dev.yml run --name seed --rm --no-deps appserver flask seed fixtures/seed.json
 ```
 
 However, **boot up takes some time** and if you get an error about tables not existing, please try again in a few minutes. If you've waited a while and the error won't go away, something may have failed and the database schema may not have been installed (it gets installed and updated as part of the app server's startup). If that's the case, try inspecting the containers (described below) to identify the cause.
