@@ -57,7 +57,7 @@ services:
     command: rq worker -c rq_config --with-scheduler
 
   llm:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-llmlib:${GITHUB_HASH}
+    image: ***ARANGO_DB_NAME***.azurecr.io/kg-llm:${GITHUB_HASH}
     environment:
       <<: [*neo4j, *redis, *arango]
 
