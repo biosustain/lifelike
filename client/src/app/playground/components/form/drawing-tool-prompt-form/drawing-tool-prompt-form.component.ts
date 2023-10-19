@@ -32,10 +32,14 @@ export interface DrawingToolPromptFormParams {
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
   PSEUDOCODE = `
-if all inputs are provided or there is more than one entity:
-  What is the relationship between [entities], [context]?
-otherwise:
-  What is [entity or context]?
+if there is only one entity and no context:
+  What is [entity]?
+else if there is only one entity and a context:
+  What is [entity] in the context of [context]?
+if there is more than one entity and no context:
+  What is the relationship between [entities]?
+if there is more than one entity and context:
+  What is the relationship between [entities] in the context of [context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
@@ -52,13 +56,16 @@ otherwise:
   }
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
-    return (
-      'What is the relationship between ' +
-      entities.join(', ') +
-      (context ? `, ${context}` : '') +
-      '?'
-      // + '\nPlease provide URL sources for your answer.'
-    );
+    const entitiesLength = entities.length;
+    let queryCore: string;
+    if (entitiesLength === 1) {
+      queryCore = 'What is ' + entities[0];
+    } else {
+      queryCore = `What is the relationship between ${entities.join(', ')}`;
+    }
+    const contextQuery =  (context ? ` in the context of ${context}` : '');
+
+    return queryCore + contextQuery + '?';
   }
 
   emitPrompt() {
