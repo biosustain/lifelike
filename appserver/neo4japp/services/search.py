@@ -370,7 +370,7 @@ class SearchService(GraphBaseDao):
             for record in tx.run(
                 """
                 MATCH (t:Taxonomy {eid: $tax_id})
-                RETURN t.eid AS tax_id, t.name AS organism_name
+                RETURN t.eid AS tax_id, t.name AS organism_name, t.name AS synonym
                 """,
                 tax_id=tax_id,
             ).data()
