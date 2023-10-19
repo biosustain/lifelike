@@ -1,4 +1,12 @@
-import { Component, Injector, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Injector,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Optional,
+  SimpleChanges,
+} from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subject } from 'rxjs';
@@ -82,15 +90,19 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   /**
    * This subject is used to trigger the explanation generation and its value changes output visibility.
    */
-  readonly explain$ = new ReplaySubject<boolean>(1);
+  readonly explain$ = new Subject<boolean>();
 
-  readonly explanation$: Observable<PipeStatus<ChatGPTResponse>> = this.explain$.pipe(
-    withLatestFrom(this.params$),
-    map(([_, params]) => params),
-    takeUntil(this.destroy$),
-    switchMap(({ entities, temperature, context }) =>
-      this.explainService.relationship(entities, context, { temperature }).pipe(addStatus())
-    )
+  readonly explanation$: Observable<PipeStatus<ChatGPTResponse>|undefined> = this.params$.pipe(
+    switchMap(params =>
+      this.explain$.pipe(
+        map(() => params),
+        takeUntil(this.destroy$),
+        switchMap(({entities, temperature, context}) =>
+          this.explainService.relationship(entities, context, {temperature}).pipe(addStatus()),
+        ),
+        startWith(undefined),
+      ),
+    ),
   );
 
   readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =
