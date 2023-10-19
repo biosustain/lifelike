@@ -37,7 +37,7 @@ import { getTermsFromNode } from '../../../utils/terms';
   templateUrl: './node-form.component.html',
 })
 export class NodeFormComponent extends EntityForm implements OnChanges, OnDestroy {
-  protected readonly TABS: string[] = ['properties', 'search', 'style'];
+  protected readonly TABS: string[] = ['properties', 'explanation', 'search', 'style'];
   @ViewChild('option') selectedOption: ElementRef;
 
   nodeTypeChoices = annotationTypes;
