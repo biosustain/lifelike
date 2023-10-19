@@ -56,11 +56,6 @@ services:
     <<: *appserver
     command: rq worker -c rq_config --with-scheduler
 
-  llm:
-    image: ***ARANGO_DB_NAME***.azurecr.io/kg-llm:${GITHUB_HASH}
-    environment:
-      <<: [*neo4j, *redis, *arango]
-
   postgres:
     image: postgres:13
     restart: on-failure
