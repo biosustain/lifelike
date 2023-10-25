@@ -1,19 +1,18 @@
-import logging
 from typing import List, Any, Dict, TypedDict
 
-import jinja2
 import yaml
-from langchain.graphs import Neo4jGraph
 from langchain.schema import Document
+from llmlib.utils.lazy_neo4j_graph import LazyNeo4jGraph
 from llmlib.utils.search.graph_search_api_wrapper import GraphSearchAPIWrapper
 
 RANKED_RELATED_NODES_MAPPING_QUERY = """
 UNWIND $terms AS term
 MATCH (s:Synonym {lowercase_name: toLower(term)})<-[:HAS_SYNONYM]-(n)
 WHERE n.eid IS NOT NULL
-WITH apoc.text.levenshteinSimilarity(term, n.name) as similarity, s, n
+WITH apoc.text.levenshteinSimilarity(term, n.name) as similarity, s, n, term
 ORDER BY similarity DESC
-WITH DISTINCT s.name as term, collect({node: n, similarity: similarity})[0..$top_k_matches] as matches
+WHERE similarity > 0.5
+WITH DISTINCT term, collect({node: n, node_id: id(n), similarity: similarity})[0..$top_k_matches] as matches
 RETURN term, matches
 """
 
@@ -21,9 +20,12 @@ RELATED_SHORTEST_PATH_QUERY = """
 UNWIND apoc.coll.combinations($term_match, 2) AS termPair
 UNWIND termPair[0]['matches'] as matchA
 UNWIND termPair[1]['matches'] as matchB
-WITH matchA, matchB
-ORDER BY matchA['similarity'] * matchB['similarity'] DESC
-MATCH path=shortestPath(({eid: matchA['eid']})-[*1..10]-({eid: matchB['eid']}))
+WITH matchA, matchB, matchA['similarity'] * matchB['similarity'] AS similarity
+ORDER BY similarity DESC
+WHERE similarity > 0.5
+MATCH (a), (b)
+WHERE id(a) = matchA['id'] AND id(b) = matchB['id']
+MATCH path=shortestPath((a)-[:CONSUMED_BY|PRODUCES|CATALYZES|REGULATES|HAS_TXONOMY|IS|HAS_KO|ENCODES|GO_LINK*1..20]-(b))
 RETURN path LIMIT $top_k
 """
 
@@ -34,6 +36,7 @@ class Node(TypedDict):
 
 class NodeMatch(TypedDict):
     node: Node
+    node_id: int
     similarity: float
 
 
@@ -65,7 +68,7 @@ def relationship_template(obj):
     return yaml.dump(
         {
             'relationship': {
-                'path': '-'.join(
+                'path': ' - '.join(
                     map(
                         lambda n: n.get('eid', '') if isinstance(n, dict) else n,
                         obj['path'],
@@ -89,7 +92,7 @@ def relationship_template(obj):
 
 
 class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
-    graph: Neo4jGraph
+    graph: LazyNeo4jGraph
 
     class Config:
         arbitrary_types_allowed = True
@@ -118,18 +121,20 @@ class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
         )
 
     def get_related_nodes(self, terms: List[str]) -> List[TermMatches]:
-        return self.graph.query(
+        mapping = self.graph.query(
             self.related_nodes_query,
             dict(**self.related_nodes_query_params, terms=terms),
         )
+        assert len(mapping) <= len(terms)
+        return mapping
 
     def get_relationships(self, term_match: List[TermMatches]) -> List[dict]:
-        term_match_eid = [
+        term_match_id = [
             {
                 'term': term_match['term'],
                 'matches': [
                     {
-                        'eid': match['node']['eid'],
+                        'id': match['node_id'],
                         'similarity': match['similarity'],
                     }
                     for match in term_match['matches']
@@ -137,7 +142,8 @@ class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
             }
             for term_match in term_match
         ]
+
         return self.graph.query(
             self.relationships_query,
-            dict(**self.relationships_query_params, term_match=term_match_eid),
+            dict(**self.relationships_query_params, term_match=term_match_id),
         )

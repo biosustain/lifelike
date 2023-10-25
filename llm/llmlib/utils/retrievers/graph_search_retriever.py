@@ -1,5 +1,3 @@
-import logging
-from functools import partial
 from typing import Optional, Self, List, Any
 
 from langchain import LLMChain, PromptTemplate, BasePromptTemplate
@@ -115,17 +113,21 @@ class GraphSearchRetriever(BaseRetriever):
         sub_header("Searching for related graph nodes")
         nodes = self.graph_search.get_related_nodes(terms)
         sub_text(f"Identified Nodes:\n{nodes}")
-        self._add_nodes_to_vectorstore(nodes)
+
+        docs = [
+            self.graph_search.node_to_document(node)
+            for node in nodes
+        ]
 
         if len(nodes) > 1:
             sub_header("Searching for related graph relationships\n")
             relationships = self.graph_search.get_relationships(nodes)
             sub_text(f"Identified Relationships:\n{relationships}\n")
-            self._add_relationships_to_vectorstore(relationships)
+            # self._add_relationships_to_vectorstore(relationships)
 
-        return list(
-            {  # Remove duplicates
-                doc.page_content: doc
-                for doc in self.vectorstore.similarity_search(query)
-            }.values()
-        )
+            docs += [
+                self.graph_search.relationship_to_document(relationship)
+                for relationship in relationships
+            ]
+
+        return docs
