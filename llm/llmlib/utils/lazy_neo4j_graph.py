@@ -23,7 +23,8 @@ class LazyNeo4jGraph(Neo4jGraph):
 
     @property
     def schema(self):
-        self.lazy_refresh_schema()
+        if self._schema is None:
+            self.lazy_refresh_schema()
         return self._schema
 
     @schema.setter
