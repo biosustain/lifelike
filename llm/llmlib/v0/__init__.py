@@ -1,5 +1,3 @@
-import logging
-
 from langchain import PromptTemplate
 from langchain.callbacks import StdOutCallbackHandler
 from langchain.chains import RetrievalQA
@@ -13,7 +11,6 @@ from langchain.prompts import (
 from langchain.vectorstores import Chroma
 from llmlib.utils.retrievers.graph_search_retriever import GraphSearchRetriever
 from llmlib.utils.search.cypher_search_api_wrapper import CypherSearchAPIWrapper
-
 
 core_terms_prompt_template = ChatPromptTemplate.from_messages(
     [
@@ -34,6 +31,20 @@ core_terms_prompt_template = ChatPromptTemplate.from_messages(
 embeddings = OpenAIEmbeddings()
 vectorstore = Chroma(embedding_function=embeddings, persist_directory="./chroma_db_oai")
 handler = StdOutCallbackHandler()
+qa_system_template = """Use the following pieces of context to answer the users question. Each piece of information repsesents uncorelated cases, responses based on different pieces shoul be places into separate paragraphs.
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+Work on the answear in two steps:
+1. Rephase pieces of context ussing natural language
+2. Based on repharsed text respond to the question
+----------------
+{context}
+----------------"""
+qa_prompt_template = ChatPromptTemplate.from_messages(
+    [
+        SystemMessagePromptTemplate.from_template(qa_system_template),
+        HumanMessagePromptTemplate.from_template("{question}"),
+    ]
+)
 
 
 def graph_qa_v0(query: str, graph, **kwargs):
@@ -53,6 +64,10 @@ def graph_qa_v0(query: str, graph, **kwargs):
         callbacks=[handler],
     )
     qa = RetrievalQA.from_chain_type(
-        llm=llm, retriever=retriever, verbose=True, callbacks=[handler]
+        llm=llm,
+        chain_type_kwargs=dict(prompt=qa_prompt_template),
+        retriever=retriever,
+        verbose=True,
+        callbacks=[handler],
     )
     return qa(query)
