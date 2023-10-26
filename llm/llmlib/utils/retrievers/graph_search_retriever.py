@@ -46,12 +46,12 @@ class GraphSearchRetriever(BaseRetriever):
 
     @classmethod
     def from_llm(
-        cls,
-        vectorstore: VectorStore,
-        llm: BaseChatModel,
-        graph_search: GraphSearchAPIWrapper,
-        prompt: Optional[BasePromptTemplate] = None,
-        **kwargs: Any,
+            cls,
+            vectorstore: VectorStore,
+            llm: BaseChatModel,
+            graph_search: GraphSearchAPIWrapper,
+            prompt: Optional[BasePromptTemplate] = None,
+            **kwargs: Any,
     ) -> Self:
         """Initialize from LLM using the default template."""
         if not prompt:
@@ -86,7 +86,7 @@ class GraphSearchRetriever(BaseRetriever):
         )
 
     def _get_relevant_documents(
-        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+            self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
         """Get relevant documents from the graph."""
 
@@ -114,20 +114,19 @@ class GraphSearchRetriever(BaseRetriever):
         nodes = self.graph_search.get_related_nodes(terms)
         sub_text(f"Identified Nodes:\n{nodes}")
 
-        docs = [
-            self.graph_search.node_to_document(node)
-            for node in nodes
-        ]
-
         if len(nodes) > 1:
             sub_header("Searching for related graph relationships\n")
             relationships = self.graph_search.get_relationships(nodes)
             sub_text(f"Identified Relationships:\n{relationships}\n")
             # self._add_relationships_to_vectorstore(relationships)
 
-            docs += [
-                self.graph_search.relationship_to_document(relationship)
-                for relationship in relationships
-            ]
+            if len(relationships) > 0:
+                return [
+                    self.graph_search.relationship_to_document(relationship)
+                    for relationship in relationships
+                ]
 
-        return docs
+        return [
+            self.graph_search.node_to_document(node)
+            for node in nodes
+        ]
