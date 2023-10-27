@@ -54,7 +54,7 @@ export class FilesystemObjectActions {
     protected readonly clipboard: ClipboardService
   ) {}
 
-  protected createProgressDialog(message: string, title = 'Working...') {
+  createProgressDialog(message: string, title = 'Working...') {
     const progressObservables = [
       new BehaviorSubject<Progress>(
         new Progress({
