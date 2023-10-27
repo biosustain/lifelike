@@ -179,7 +179,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     switchMap(([context, goTerm, geneName]) =>
       this.enrichmentService
         .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(startWith(null), addStatus())
+        .pipe(addStatus())
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );

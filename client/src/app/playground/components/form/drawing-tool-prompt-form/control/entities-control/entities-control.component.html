@@ -1,6 +1,6 @@
-<ng-container *ngFor="let control of control.controls; let i = index">
+<ng-container *ngFor="let entityControl of control.controls; let i = index">
   <div class="input-group input-border rounded mb-2 w-100 flex-shrink-0">
-    <input type="text" class="form-control border-0" [formControl]="control" />
+    <input type="text" class="form-control border-0" [formControl]="entityControl" />
     <div class="input-group-append">
       <button class="form-control border-0" type="button" (click)="control.removeAt(i)">
         <i class="fa fa-fw fa-times"></i>
