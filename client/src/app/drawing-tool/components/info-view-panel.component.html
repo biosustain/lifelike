@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss" />
+<link rel="stylesheet" href="map-editor/forms/entity-form.component.scss"/>
 <div class="d-flex flex-column h-100">
   <div class="module-body">
     <ng-container *ngIf="one as selected; else multiSelect">
@@ -101,9 +101,7 @@
       </div>
     </ng-template>
 
-    <ng-container *ngIf="!one || one.type !== 'node'">
-      <h4 class="mt-4">Explanation</h4>
-      <app-drawing-tool-prompt [entities]="entities$ | async"></app-drawing-tool-prompt>
-    </ng-container>
+    <h4 class="mt-4">Explanation</h4>
+    <app-drawing-tool-prompt [entities]="entities$ | async"></app-drawing-tool-prompt>
   </div>
 </div>

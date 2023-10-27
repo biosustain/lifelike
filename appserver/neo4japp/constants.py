@@ -470,7 +470,7 @@ SEED_FILE_KEY_FILES = 'neo4japp.models.Files'
 SEED_FILE_KEY_USER = 'neo4japp.models.AppUser'
 SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
 
-MAX_CONTEXT_PARAM_LENGTH = 20
+MAX_CONTEXT_PARAM_LENGTH = 250
 MAX_CONTEXT_PARAMS = 20
 EXTENSION_MIME_TYPES = {
     '.pdf': 'application/pdf',

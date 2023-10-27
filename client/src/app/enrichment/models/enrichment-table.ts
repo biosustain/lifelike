@@ -36,7 +36,7 @@ export class EnrichmentTable {
       let tableHeaderLine2Needed = true;
       const tableHeaderLine2: TableHeader[] = [
         {
-          name: `Count: ${result.genes.filter(({ imported }) => isNotEmpty(imported)).length}`,
+          name: `Count: ${document.importGenes.length}`,
           span: '1',
         },
         { name: '', span: '1' },
