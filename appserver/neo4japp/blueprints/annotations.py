@@ -92,6 +92,7 @@ from ..services.annotations.utils.graph_queries import (
     get_global_inclusions_count_query,
 )
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
+from ..services.filesystem import Filesystem
 from ..utils.http import make_cacheable_file_response
 from ..utils.logger import UserEventLog
 from ..utils.string import sub_whitespace
@@ -104,10 +105,10 @@ class FileAnnotationsView(FilesystemBaseView):
         """Fetch annotations for a file.."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['readable'], permit_recycled=True
         )
 
@@ -152,10 +153,10 @@ class EnrichmentAnnotationsView(FilesystemBaseView):
         """Fetch annotations for enrichment table."""
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['readable'], permit_recycled=True
         )
 
@@ -173,10 +174,10 @@ class FileCustomAnnotationsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['writable'], permit_recycled=True
         )
 
@@ -200,10 +201,10 @@ class FileCustomAnnotationsDetailView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['writable'], permit_recycled=True
         )
 
@@ -227,10 +228,10 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['writable'], permit_recycled=True
         )
 
@@ -243,10 +244,10 @@ class FileAnnotationExclusionsListView(FilesystemBaseView):
         current_user = g.current_user
         manual_annotation_service = get_manual_annotation_service()
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['writable'], permit_recycled=True
         )
 
@@ -306,10 +307,10 @@ class FileAnnotationCountsView(FilesystemBaseView):
     def post(self, hash_id: str):
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['readable'], permit_recycled=True
         )
         files = get_nondeleted_recycled_children_query(
@@ -361,10 +362,10 @@ class FileAnnotationSortedView(FilesystemBaseView):
         sort = args['sort']
         current_user = g.current_user
 
-        file = self.get_nondeleted_recycled_file(
+        file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             [file], current_user, ['readable'], permit_recycled=True
         )
 
@@ -372,7 +373,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
         writer = csv.writer(buffer, delimiter="\t", quotechar='"')
 
         if file.mime_type == 'vnd.lifelike.document/enrichment-table':
-            files = self.get_nondeleted_recycled_files(
+            files = Filesystem.get_nondeleted_recycled_files(
                 Files.id == file.id, lazy_load_content=True
             )
 
@@ -576,10 +577,10 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
         """Generate annotations for one or more files."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(
+        files = Filesystem.get_nondeleted_recycled_files(
             Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             files, current_user, ['writable'], permit_recycled=False
         )
 
@@ -853,10 +854,10 @@ class RefreshEnrichmentAnnotationsView(FilesystemBaseView):
         """Clear out the annotations."""
         current_user = g.current_user
 
-        files = self.get_nondeleted_recycled_files(
+        files = Filesystem.get_nondeleted_recycled_files(
             Files.hash_id.in_(targets['hash_ids']), lazy_load_content=True
         )
-        self.check_file_permissions(
+        Filesystem.check_file_permissions(
             files, current_user, ['writable'], permit_recycled=False
         )
 
