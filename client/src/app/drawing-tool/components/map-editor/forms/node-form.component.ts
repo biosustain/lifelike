@@ -1,6 +1,19 @@
-import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnDestroy,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 
 import { cloneDeep, startCase } from 'lodash-es';
+import { Observable, ReplaySubject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { flow as _flow, pick as _pick, some as _some, values as _values } from 'lodash/fp';
 
 import { annotationTypes, annotationTypesMap } from 'app/shared/annotation-styles';
 import { RecursivePartial } from 'app/shared/utils/types';
@@ -13,22 +26,36 @@ import {
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
 import { IMAGE_LABEL } from 'app/shared/constants';
+import { ExplainService } from 'app/shared/services/explain.service';
 
 import { EntityForm } from './entity-form';
+import { getTermsFromNode } from '../../../utils/terms';
 
 @Component({
   selector: 'app-node-form',
   styleUrls: ['./entity-form.component.scss'],
   templateUrl: './node-form.component.html',
 })
-export class NodeFormComponent extends EntityForm {
-  protected readonly TABS: string[] = ['properties', 'search', 'style'];
+export class NodeFormComponent extends EntityForm implements OnChanges, OnDestroy {
+  protected readonly TABS: string[] = ['properties', 'explanation', 'search', 'style'];
   @ViewChild('option') selectedOption: ElementRef;
 
   nodeTypeChoices = annotationTypes;
 
   originalNode: UniversalGraphNode;
   updatedNode: UniversalGraphNode;
+
+  readonly change$ = new ReplaySubject<SimpleChanges>(1);
+  readonly entities$: Observable<Iterable<string>> = this.change$.pipe(
+    map(_pick(['node'])),
+    filter(_flow(_values, _some(Boolean))),
+    map(
+      () =>
+        new Set<string>([
+          this.node?.label === 'note' ? this.node.data?.detail : getTermsFromNode(this.node),
+        ])
+    )
+  );
 
   @Output() save = new EventEmitter<{
     originalData: RecursivePartial<UniversalGraphNode>;
@@ -41,9 +68,19 @@ export class NodeFormComponent extends EntityForm {
 
   constructor(
     protected readonly workspaceManager: WorkspaceManager,
+    protected readonly explainService: ExplainService,
     protected readonly internalSearch: InternalSearchService
   ) {
     super(workspaceManager);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    this.change$.next(changes);
+    super.ngOnChanges(changes);
+  }
+
+  ngOnDestroy() {
+    this.change$.complete();
   }
 
   get nodeSubtypeChoices() {

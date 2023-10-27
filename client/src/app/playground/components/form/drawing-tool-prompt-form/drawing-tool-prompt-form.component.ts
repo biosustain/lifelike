@@ -31,8 +31,15 @@ export interface DrawingToolPromptFormParams {
   templateUrl: './drawing-tool-prompt-from.component.html',
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
-  TEMPLATE = `
-What is the relationship between [entities], [context]?
+  PSEUDOCODE = `
+if there is only one entity and no context:
+  What is [entity]?
+else if there is only one entity and a context:
+  What is [entity] in the context of [context]?
+if there is more than one entity and no context:
+  What is the relationship between [entities]?
+if there is more than one entity and context:
+  What is the relationship between [entities] in the context of [context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
@@ -49,13 +56,16 @@ What is the relationship between [entities], [context]?
   }
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
-    return (
-      'What is the relationship between ' +
-      entities.join(', ') +
-      (context ? `, ${context}` : '') +
-      '?'
-      // + '\nPlease provide URL sources for your answer.'
-    );
+    const entitiesLength = entities.length;
+    let queryCore: string;
+    if (entitiesLength === 1) {
+      queryCore = 'What is ' + entities[0];
+    } else {
+      queryCore = `What is the relationship between ${entities.join(', ')}`;
+    }
+    const contextQuery =  (context ? ` in the context of ${context}` : '');
+
+    return queryCore + contextQuery + '?';
   }
 
   emitPrompt() {
