@@ -113,11 +113,13 @@ class GraphSearchRetriever(BaseRetriever):
         sub_header("Searching for related graph nodes")
         nodes = self.graph_search.get_related_nodes(terms)
         sub_text(f"Identified Nodes:\n{nodes}")
+        run_manager.on_related_nodes(nodes)
 
         if len(nodes) > 1:
             sub_header("Searching for related graph relationships\n")
             relationships = self.graph_search.get_relationships(nodes)
             sub_text(f"Identified Relationships:\n{relationships}\n")
+            run_manager.on_related_relationships(relationships)
             # self._add_relationships_to_vectorstore(relationships)
 
             if len(relationships) > 0:
