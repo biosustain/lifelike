@@ -57,6 +57,7 @@ import { MapRestoreDialogComponent } from '../map-restore-dialog.component';
 import { InfoPanel } from '../../models/info-panel';
 import { LockService } from './lock.service';
 import { EventManagerService } from '../../services/event-manager.service';
+import { MapStoreService } from '../../services/map-store.service';
 
 @Component({
   selector: 'app-drawing-tool',
@@ -67,6 +68,7 @@ import { EventManagerService } from '../../services/event-manager.service';
     LockService,
     OpenFileProvider,
     EventManagerService, // defining here let's grab MapView elementRef in service
+    MapStoreService,
   ],
 })
 export class MapEditorComponent

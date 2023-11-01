@@ -4,16 +4,22 @@ import { map } from 'rxjs/operators';
 
 export interface DropdownController<T> {
   entities: ReadonlyArray<T>;
-  readonly currentIdx$?: BehaviorSubject<number>;
-  readonly current$: Observable<T>;
+  readonly currentIdx$?: Observable<number>;
+  readonly current$: Observable<T | null>;
+  select(entity?: T): void;
 }
 
-export const dropdownControllerFactory = <T>(entities: T[]): DropdownController<T> => {
+export const dropdownControllerFactory = <T>(
+  entities: T[],
+  initialValue?: T
+): DropdownController<T> => {
   entities = entities ?? [];
-  const currentIdx$ = new BehaviorSubject(-1);
+  const current$ = new BehaviorSubject(initialValue);
   return {
     entities,
-    currentIdx$,
-    current$: currentIdx$.pipe(map((idx) => entities[idx])),
+    current$,
+    select(entity: T) {
+      current$.next(entity);
+    },
   };
 };

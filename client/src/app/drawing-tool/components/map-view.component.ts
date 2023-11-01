@@ -27,6 +27,7 @@ import { MapComponent } from './map.component';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { EventManagerService } from '../services/event-manager.service';
+import { MapStoreService } from '../services/map-store.service';
 
 @Component({
   selector: 'app-map-view',
@@ -36,6 +37,7 @@ import { EventManagerService } from '../services/event-manager.service';
     ModuleContext,
     OpenFileProvider,
     EventManagerService, // defining here let's grab MapView elementRef in service
+    MapStoreService,
   ],
 })
 export class MapViewComponent<ExtraResult = void>

@@ -16,14 +16,14 @@
       </ng-container>
     </button>
     <div ngbDropdownMenu class="w-100">
-      <button ngbDropdownItem class="text-truncate" (click)="userController.currentIdx$.next(-1)">
+      <button ngbDropdownItem class="text-truncate" (click)="userController.select(undefined)">
         All
       </button>
       <button
         ngbDropdownItem
         class="text-truncate"
-        *ngFor="let user of userController.entities; let i = index"
-        (click)="userController.currentIdx$.next(i)"
+        *ngFor="let user of userController.entities"
+        (click)="userController.select(user)"
       >
         {{ user.username }}
       </button>
@@ -41,18 +41,14 @@
       </ng-container>
     </button>
     <div ngbDropdownMenu class="w-100">
-      <button
-        ngbDropdownItem
-        class="text-truncate"
-        (click)="intervalController.currentIdx$.next(-1)"
-      >
+      <button ngbDropdownItem class="text-truncate" (click)="intervalController.select(undefined)">
         none
       </button>
       <button
         ngbDropdownItem
         class="text-truncate"
-        *ngFor="let interval of intervalController.entities; let i = index"
-        (click)="intervalController.currentIdx$.next(i)"
+        *ngFor="let interval of intervalController.entities"
+        (click)="intervalController.select(undefined)"
       >
         {{ interval }}
       </button>
