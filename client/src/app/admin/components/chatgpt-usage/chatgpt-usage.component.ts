@@ -61,17 +61,17 @@ export class ChatgptUsageComponent {
 
   readonly intervalController: DropdownController<ChatGPTUsageInterval> = (() => {
     const entities = Object.values(ChatGPTUsageInterval);
-    const currentIdx$ = new BehaviorSubject(2);
+    const current$ = new BehaviorSubject<ChatGPTUsageInterval>(ChatGPTUsageInterval.day);
     return {
       entities,
-      currentIdx$,
-      current$: currentIdx$.pipe(map((idx) => entities[idx])),
+      current$,
+      select: (interval: ChatGPTUsageInterval) => current$.next(interval),
     };
   })();
 
   readonly userController$ = this.accountService.getUsers().pipe(
     map(({ results }) => results),
-    map(dropdownControllerFactory),
+    map((entities) => dropdownControllerFactory(entities)),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 

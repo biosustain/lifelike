@@ -53,7 +53,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
 
   readonly contextsController$: Observable<DropdownController<string>> =
     this.enrichmentService.contexts$.pipe(
-      map(dropdownControllerFactory),
+      map((entities) => dropdownControllerFactory(entities)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
@@ -70,9 +70,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   readonly goTermController$: Observable<DropdownController<string>> = this.goTerms$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.goTerm$
-        .pipe(map((goTerm) => entities.indexOf(goTerm)))
-        .subscribe(controller.currentIdx$);
+      this.enrichmentVisualisationSelectService.goTerm$.subscribe(controller.select);
       return controller;
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -97,9 +95,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   readonly geneNameController$: Observable<DropdownController<string>> = this.geneNames$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.geneName$
-        .pipe(map((geneName) => entities.indexOf(geneName)))
-        .subscribe(controller.currentIdx$);
+      this.enrichmentVisualisationSelectService.geneName$.subscribe(controller.select);
       return controller;
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -177,9 +173,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService
-        .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(addStatus())
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(addStatus())
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
