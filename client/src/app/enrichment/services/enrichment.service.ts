@@ -11,7 +11,7 @@ import { debug } from 'app/shared/rxjs/debug';
 const openEnrichmentFiles = new Map();
 
 @Injectable()
-export class EnrichmentService implements OnDestroy {
+export class EnrichmentService {
   constructor(protected readonly filesystemService: FilesystemService) {}
 
   getFileRef(hashId: string) {
@@ -60,12 +60,6 @@ export class EnrichmentService implements OnDestroy {
 
   update(hashId: string) {
     this.getFileRef(hashId)?.update.next();
-  }
-
-  ngOnDestroy() {
-    openEnrichmentFiles.forEach(
-      (file, hashId, fileMap) => file.ref.delete(this) && !file.ref.size && fileMap.delete(hashId)
-    );
   }
 
   save(
