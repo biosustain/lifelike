@@ -76,7 +76,7 @@ export class BaseEnrichmentDocument {
   setParameters(params) {
     // We set these all at the end to be thread/async-safe
     const parsedParams = this.parseParameters(params);
-    if (!_isEmpty(_pick(['importGenes', 'taxID', 'domains'], parsedParams))) {
+    if (!_isEmpty(_pick(['importGenes', 'taxID', 'domains', 'values'], parsedParams))) {
       this.markForRegeneration = true;
     }
     Object.assign(this, parsedParams);
