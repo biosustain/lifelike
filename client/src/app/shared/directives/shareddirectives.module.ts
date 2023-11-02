@@ -33,6 +33,7 @@ import {
   InteractiveInterfaceHasPlaceholderDirective,
   ShowPlaceholderDirective,
 } from './placeholder.directive';
+import { VisNetworkDirective } from './vis-network.directive';
 
 const directives = [
   HasPlaceholderDirective,
@@ -43,6 +44,7 @@ const directives = [
   DebounceInputDirective,
   LinkWithoutHrefDirective,
   LinkWithHrefDirective,
+  VisNetworkDirective,
   FormInputDirective,
   AutoFocusDirective,
   InnerXMLDirective,
@@ -67,7 +69,7 @@ const directives = [
 
 @NgModule({
   imports: [],
-  declarations: [...directives],
+  declarations: [...directives, VisNetworkDirective],
   exports: [...directives],
 })
 export class SharedDirectivesModule {}

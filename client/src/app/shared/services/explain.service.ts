@@ -36,6 +36,23 @@ export interface ChatGPTModel {
   ***ARANGO_USERNAME***: string;
 }
 
+export interface GraphChatGPTResponse {
+  graph: {
+    nodes: {
+      eid: string;
+      displayName: string;
+      type: string;
+      entityType: string;
+    }[],
+    edges: {
+      from: string;
+      to: string;
+      label: string;
+    }[],
+  },
+  response: ChatGPTResponse
+}
+
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class ExplainService {
   endpoint = '/api/explain/';
@@ -58,9 +75,9 @@ export class ExplainService {
     entities: Iterable<string>,
     context?: string,
     options: ExplainRelationshipOptions = {}
-  ): Observable<ChatGPTResponse> {
+  ): Observable<GraphChatGPTResponse> {
     return this.http
-      .post<ChatGPTResponse>(this.endpoint + 'relationship/graph', {
+      .post<GraphChatGPTResponse>(this.endpoint + 'relationship/graph', {
         entities: Array.from(entities),
         context,
         options,

@@ -2,6 +2,7 @@ import logging
 from functools import partial
 from typing import Optional, Self, List, Any
 
+from flask import g
 from langchain import LLMChain, PromptTemplate, BasePromptTemplate
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.chat_models.base import BaseChatModel
@@ -45,6 +46,7 @@ class GraphSearchRetriever(BaseRetriever):
         ..., description="Graph search API wrapper."
     )
     verbose: bool = False
+    relationships: List[Any] = []
 
     @classmethod
     def from_llm(
@@ -115,14 +117,12 @@ class GraphSearchRetriever(BaseRetriever):
         sub_header("Searching for related graph nodes")
         nodes = self.graph_search.get_related_nodes(terms)
         sub_text(f"Identified Nodes:\n{nodes}")
-        run_manager.on_related_nodes(nodes)
 
         if len(nodes) > 1:
             sub_header("Searching for related graph relationships\n")
             relationships = self.graph_search.get_relationships(nodes)
             sub_text(f"Identified Relationships:\n{relationships}\n")
-            run_manager.on_related_relationships(relationships)
-            # self._add_relationships_to_vectorstore(relationships)
+            self.relationships = relationships
 
             if len(relationships) > 0:
                 return [
