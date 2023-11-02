@@ -66,7 +66,8 @@
   *ngIf="{
     explain: explain$ | async,
     explanation: explanation$ | async,
-    graph_explanation: graphExplanation$ | async
+    graph_explanation: graphExplanation$ | async,
+    graph: graph$ | async
   } as state"
 >
   <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
@@ -113,8 +114,8 @@
           <span
             style="float: right"
             class="ml-2 mb-2"
-            *ngIf="state.graph_explanation?.value?.query_params"
-            (click)="openInfo(state.graph_explanation?.value?.query_params)"
+            *ngIf="state.graph_explanation?.value?.result?.query"
+            (click)="openInfo({query: state.graph_explanation?.value?.result?.query})"
           >
             <i class="fas fa-info-circle"></i>
           </span>
@@ -123,8 +124,15 @@
           <i class="fa fa-spinner fa-spin mr-1"></i>
         </ng-container>
         <ng-template #settled_graph>
-          {{ state.graph_explanation.value.result }}
+          {{ state.graph_explanation.value.result?.result }}
         </ng-template>
+        <app-vis-network
+          style="height: 200px; resize: vertical; overflow: hidden;"
+          class="mt-1"
+          *ngIf="state.graph"
+          [data]="state.graph"
+          [options]="networkConfig"
+        ></app-vis-network>
       </div>
     </div>
   </ng-container>
@@ -132,6 +140,12 @@
   <app-module-error
     class="d-block mt-4"
     *ngIf="state.explanation?.error as error"
+    [error]="error"
+  ></app-module-error>
+
+  <app-module-error
+    class="d-block mt-4"
+    *ngIf="state.graph_explanation?.error as error"
     [error]="error"
   ></app-module-error>
 </ng-container>
