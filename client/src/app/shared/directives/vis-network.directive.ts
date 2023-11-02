@@ -31,7 +31,6 @@ import {
 import { Observable, ReplaySubject } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
 
-
 @Directive({
   selector: 'app-vis-network[data][options],  [appVisNetwork][data][options]',
 })
@@ -63,17 +62,14 @@ export class VisNetworkDirective implements Network, OnChanges, AfterViewInit, O
    *
    * [See official vis-network documentation for details on methods and events.](https://visjs.github.io/vis-network/docs/network/)
    */
-  constructor(
-    private readonly element: ElementRef,
-    private readonly renderer: Renderer2,
-  ) {
+  constructor(private readonly element: ElementRef, private readonly renderer: Renderer2) {
     // Set display to block to allow setting width and height
     // TODO: This could be write to not overwrite diferent acceptable display values like inline-block
     this.renderer.setStyle(element.nativeElement, 'display', 'block');
   }
 
-  @Input() data!: Data
-  @Input() options!: Options
+  @Input() data!: Data;
+  @Input() options!: Options;
   private _network: Network; // current vis-network instance, used to implement all methods
   private _network$ = new ReplaySubject<Network>(1); // used to implement all events
   // tslint:disable-next-line:no-output-rename
@@ -94,62 +90,71 @@ export class VisNetworkDirective implements Network, OnChanges, AfterViewInit, O
    * WARNING: These proxies will run in angular zone, so they will trigger change detection.
    * If you want to avoid this, use VisNetworkDirective.on('eventName', callback) instead.
    */
-  @Output() readonly networkClick = this.networkEventToEventEmitter('click')
-  @Output() readonly networkDoubleClick = this.networkEventToEventEmitter('doubleClick')
-  @Output() readonly networkOnContext = this.networkEventToEventEmitter('oncontext')
-  @Output() readonly networkHold = this.networkEventToEventEmitter('hold')
-  @Output() readonly networkRelease = this.networkEventToEventEmitter('release')
-  @Output() readonly networkSelect = this.networkEventToEventEmitter('select')
-  @Output() readonly networkSelectNode = this.networkEventToEventEmitter('selectNode')
-  @Output() readonly networkSelectEdge = this.networkEventToEventEmitter('selectEdge')
-  @Output() readonly networkDeselectNode = this.networkEventToEventEmitter('deselectNode')
-  @Output() readonly networkDeselectEdge = this.networkEventToEventEmitter('deselectEdge')
-  @Output() readonly networkDragStart = this.networkEventToEventEmitter('dragStart')
-  @Output() readonly networkDragging = this.networkEventToEventEmitter('dragging')
-  @Output() readonly networkDragEnd = this.networkEventToEventEmitter('dragEnd')
-  @Output() readonly networkControlNodeDragging = this.networkEventToEventEmitter('controlNodeDragging')
-  @Output() readonly networkControlNodeDragEnd = this.networkEventToEventEmitter('controlNodeDragEnd')
-  @Output() readonly networkHoverNode = this.networkEventToEventEmitter('hoverNode')
-  @Output() readonly networkBlurNode = this.networkEventToEventEmitter('blurNode')
-  @Output() readonly networkHoverEdge = this.networkEventToEventEmitter('hoverEdge')
-  @Output() readonly networkBlurEdge = this.networkEventToEventEmitter('blurEdge')
-  @Output() readonly networkZoom = this.networkEventToEventEmitter('zoom')
-  @Output() readonly networkShowPopup = this.networkEventToEventEmitter('showPopup')
-  @Output() readonly networkHidePopup = this.networkEventToEventEmitter('hidePopup')
-  @Output() readonly networkStartStabilizing = this.networkEventToEventEmitter('startStabilizing')
-  @Output() readonly networkStabilizationProgress = this.networkEventToEventEmitter('stabilizationProgress')
-  @Output() readonly networkStabilizationIterationsDone = this.networkEventToEventEmitter('stabilizationIterationsDone')
-  @Output() readonly networkStabilized = this.networkEventToEventEmitter('stabilized')
-  @Output() readonly networkResize = this.networkEventToEventEmitter('resize')
-  @Output() readonly networkInitRedraw = this.networkEventToEventEmitter('initRedraw')
-  @Output() readonly networkBeforeDrawing = this.networkEventToEventEmitter('beforeDrawing')
-  @Output() readonly networkAfterDrawing = this.networkEventToEventEmitter('afterDrawing')
-  @Output() readonly networkAnimationFinished = this.networkEventToEventEmitter('animationFinished')
-  @Output() readonly networkConfigChange = this.networkEventToEventEmitter('configChange')
+  @Output() readonly networkClick = this.networkEventToEventEmitter('click');
+  @Output() readonly networkDoubleClick = this.networkEventToEventEmitter('doubleClick');
+  @Output() readonly networkOnContext = this.networkEventToEventEmitter('oncontext');
+  @Output() readonly networkHold = this.networkEventToEventEmitter('hold');
+  @Output() readonly networkRelease = this.networkEventToEventEmitter('release');
+  @Output() readonly networkSelect = this.networkEventToEventEmitter('select');
+  @Output() readonly networkSelectNode = this.networkEventToEventEmitter('selectNode');
+  @Output() readonly networkSelectEdge = this.networkEventToEventEmitter('selectEdge');
+  @Output() readonly networkDeselectNode = this.networkEventToEventEmitter('deselectNode');
+  @Output() readonly networkDeselectEdge = this.networkEventToEventEmitter('deselectEdge');
+  @Output() readonly networkDragStart = this.networkEventToEventEmitter('dragStart');
+  @Output() readonly networkDragging = this.networkEventToEventEmitter('dragging');
+  @Output() readonly networkDragEnd = this.networkEventToEventEmitter('dragEnd');
+  @Output() readonly networkControlNodeDragging =
+    this.networkEventToEventEmitter('controlNodeDragging');
+  @Output() readonly networkControlNodeDragEnd =
+    this.networkEventToEventEmitter('controlNodeDragEnd');
+  @Output() readonly networkHoverNode = this.networkEventToEventEmitter('hoverNode');
+  @Output() readonly networkBlurNode = this.networkEventToEventEmitter('blurNode');
+  @Output() readonly networkHoverEdge = this.networkEventToEventEmitter('hoverEdge');
+  @Output() readonly networkBlurEdge = this.networkEventToEventEmitter('blurEdge');
+  @Output() readonly networkZoom = this.networkEventToEventEmitter('zoom');
+  @Output() readonly networkShowPopup = this.networkEventToEventEmitter('showPopup');
+  @Output() readonly networkHidePopup = this.networkEventToEventEmitter('hidePopup');
+  @Output() readonly networkStartStabilizing = this.networkEventToEventEmitter('startStabilizing');
+  @Output() readonly networkStabilizationProgress =
+    this.networkEventToEventEmitter('stabilizationProgress');
+  @Output() readonly networkStabilizationIterationsDone = this.networkEventToEventEmitter(
+    'stabilizationIterationsDone'
+  );
+  @Output() readonly networkStabilized = this.networkEventToEventEmitter('stabilized');
+  @Output() readonly networkResize = this.networkEventToEventEmitter('resize');
+  @Output() readonly networkInitRedraw = this.networkEventToEventEmitter('initRedraw');
+  @Output() readonly networkBeforeDrawing = this.networkEventToEventEmitter('beforeDrawing');
+  @Output() readonly networkAfterDrawing = this.networkEventToEventEmitter('afterDrawing');
+  @Output() readonly networkAnimationFinished =
+    this.networkEventToEventEmitter('animationFinished');
+  @Output() readonly networkConfigChange = this.networkEventToEventEmitter('configChange');
 
   private networkEventToEventEmitter(eventName: NetworkEvents) {
     return this._network$.pipe(
-      switchMap((network) =>
-        new Observable<any>((subscriber) => {
-          const callback = (e: any) => subscriber.next(e);
-          network.on(eventName, callback);
+      switchMap(
+        (network) =>
+          new Observable<any>((subscriber) => {
+            const callback = (e: any) => subscriber.next(e);
+            network.on(eventName, callback);
 
-          return function unsubscribe() {
-            network.off(eventName, callback);
-          };
-        }),
+            return function unsubscribe() {
+              network.off(eventName, callback);
+            };
+          })
       ),
-      shareReplay({bufferSize: 1, refCount: true}),
-    )
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
   }
   // endregion
 
   // region Lifecycle
-  ngOnChanges({data, options}: SimpleChanges) {
-    if (data && !data.firstChange) { // initial value is set in ngAfterViewInit
+  ngOnChanges({ data, options }: SimpleChanges) {
+    if (data && !data.firstChange) {
+      // initial value is set in ngAfterViewInit
       this._network.setData(data.currentValue);
     }
-    if (options && !options.firstChange) { // initial value is set in ngAfterViewInit
+    if (options && !options.firstChange) {
+      // initial value is set in ngAfterViewInit
       this._network.setOptions(options.currentValue);
     }
   }
@@ -252,10 +257,15 @@ export class VisNetworkDirective implements Network, OnChanges, AfterViewInit, O
     return this._network.getConnectedEdges(nodeId);
   }
 
-  getConnectedNodes(nodeOrEdgeId: IdType, direction?: DirectionType): IdType[] | Array<{
-    fromId: IdType;
-    toId: IdType
-  }> {
+  getConnectedNodes(
+    nodeOrEdgeId: IdType,
+    direction?: DirectionType
+  ):
+    | IdType[]
+    | Array<{
+        fromId: IdType;
+        toId: IdType;
+      }> {
     return this._network.getConnectedNodes(nodeOrEdgeId, direction);
   }
 
@@ -359,10 +369,13 @@ export class VisNetworkDirective implements Network, OnChanges, AfterViewInit, O
     this._network.setOptions(options);
   }
 
-  setSelection(selection: {
-    nodes?: IdType[];
-    edges?: IdType[]
-  }, options?: SelectionOptions): void {
+  setSelection(
+    selection: {
+      nodes?: IdType[];
+      edges?: IdType[];
+    },
+    options?: SelectionOptions
+  ): void {
     this._network.setSelection(selection, options);
   }
 
