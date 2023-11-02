@@ -129,7 +129,7 @@
         <app-vis-network
           style="height: 200px; resize: vertical; overflow: hidden"
           class="mt-1"
-          *ngIf="state.graph"
+          *ngIf="state.graph?.nodes?.length"
           [data]="state.graph"
           [options]="networkConfig"
         ></app-vis-network>
