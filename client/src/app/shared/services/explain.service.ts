@@ -43,14 +43,14 @@ export interface GraphChatGPTResponse {
       displayName: string;
       type: string;
       entityType: string;
-    }[],
+    }[];
     edges: {
       from: string;
       to: string;
       label: string;
-    }[],
-  },
-  response: ChatGPTResponse
+    }[];
+  };
+  response: ChatGPTResponse;
 }
 
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
