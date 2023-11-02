@@ -2321,8 +2321,8 @@
 4915783,CD630_RS18120,CD630_RS18120,272563,Clostridioides difficile 630
 4915782,CD630_RS18115,CD630_RS18115,272563,Clostridioides difficile 630
 4915782,CD630_RS18115,CD630_34050,272563,Clostridioides difficile 630
-4915781,self,CD630_34040,272563,Clostridioides difficile 630
-4915781,self,self,272563,Clostridioides difficile 630
+4915781,cls,CD630_34040,272563,Clostridioides difficile 630
+4915781,cls,cls,272563,Clostridioides difficile 630
 4915780,CD630_RS18105,CD630_34030,272563,Clostridioides difficile 630
 4915780,CD630_RS18105,CD630_RS18105,272563,Clostridioides difficile 630
 4915779,murB,murB,272563,Clostridioides difficile 630
@@ -2933,8 +2933,8 @@
 4915463,groL,CD630_01940,272563,Clostridioides difficile 630
 4915462,CD630_RS01490,CD630_01930,272563,Clostridioides difficile 630
 4915462,CD630_RS01490,CD630_RS01490,272563,Clostridioides difficile 630
-4915461,self,CD630_01920,272563,Clostridioides difficile 630
-4915461,self,self,272563,Clostridioides difficile 630
+4915461,cls,CD630_01920,272563,Clostridioides difficile 630
+4915461,cls,cls,272563,Clostridioides difficile 630
 4915460,CD630_RS01480,CD630_RS01480,272563,Clostridioides difficile 630
 4915460,CD630_RS01480,CD630_01910,272563,Clostridioides difficile 630
 4915459,CD630_RS01475,CD630_01900,272563,Clostridioides difficile 630
@@ -17757,7 +17757,7 @@
 945822,ynfH,ynfH,511145,Escherichia coli str. K-12 substr. MG1655
 945822,ynfH,ECK1585,511145,Escherichia coli str. K-12 substr. MG1655
 945821,clsA,ECK1243,511145,Escherichia coli str. K-12 substr. MG1655
-945821,clsA,self,511145,Escherichia coli str. K-12 substr. MG1655
+945821,clsA,cls,511145,Escherichia coli str. K-12 substr. MG1655
 945821,clsA,nov,511145,Escherichia coli str. K-12 substr. MG1655
 945821,clsA,yciJ,511145,Escherichia coli str. K-12 substr. MG1655
 945821,clsA,clsA,511145,Escherichia coli str. K-12 substr. MG1655
@@ -30355,7 +30355,7 @@
 883136,PA2370,PA2370,208964,Pseudomonas aeruginosa PAO1
 883135,PA1404,PA1404,208964,Pseudomonas aeruginosa PAO1
 883133,PA5395,PA5395,208964,Pseudomonas aeruginosa PAO1
-883132,self,self,208964,Pseudomonas aeruginosa PAO1
+883132,cls,cls,208964,Pseudomonas aeruginosa PAO1
 883131,PA1753,PA1753,208964,Pseudomonas aeruginosa PAO1
 883130,alc,alc,208964,Pseudomonas aeruginosa PAO1
 883129,PA2089,PA2089,208964,Pseudomonas aeruginosa PAO1
