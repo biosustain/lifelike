@@ -106,6 +106,7 @@ services:
     build:
       context: ./llm
       target: dev
+    entrypoint: flask run --host 0.0.0.0
     ports:
       - "5020:5000"
     env_file:
