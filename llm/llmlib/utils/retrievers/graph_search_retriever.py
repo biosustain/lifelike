@@ -130,7 +130,4 @@ class GraphSearchRetriever(BaseRetriever):
                     for relationship in relationships
                 ]
 
-        return [
-            self.graph_search.node_to_document(node)
-            for node in nodes
-        ]
+        return [self.graph_search.node_to_document(node) for node in nodes]

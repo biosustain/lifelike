@@ -115,7 +115,7 @@
             style="float: right"
             class="ml-2 mb-2"
             *ngIf="state.graph_explanation?.value?.result?.query"
-            (click)="openInfo({query: state.graph_explanation?.value?.result?.query})"
+            (click)="openInfo({ query: state.graph_explanation?.value?.result?.query })"
           >
             <i class="fas fa-info-circle"></i>
           </span>
@@ -127,7 +127,7 @@
           {{ state.graph_explanation.value.result?.result }}
         </ng-template>
         <app-vis-network
-          style="height: 200px; resize: vertical; overflow: hidden;"
+          style="height: 200px; resize: vertical; overflow: hidden"
           class="mt-1"
           *ngIf="state.graph"
           [data]="state.graph"
