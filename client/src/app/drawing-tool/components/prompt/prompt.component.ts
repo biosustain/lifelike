@@ -93,18 +93,18 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     this.entitiesChange$.pipe(
       startWith(this.entities),
       distinctUntilChanged(),
-      shareReplay({bufferSize: 1, refCount: true}),
-    ),
+      shareReplay({ bufferSize: 1, refCount: true })
+    )
   );
 
   readonly tempertaure$: Subject<number> = new BehaviorSubject(0);
 
   private readonly contexts$: Observable<FilesystemObject['contexts']> =
     this.openFileProvider.object$.pipe(
-      map(({contexts}) => contexts),
+      map(({ contexts }) => contexts),
       startWith([]),
       distinctUntilChanged(),
-      shareReplay({bufferSize: 1, refCount: true}),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
 
   readonly contextsController$: Observable<DropdownController<string>> = this.contexts$.pipe(
@@ -127,8 +127,8 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     this.contextsController$.pipe(switchMap((controller) => controller.current$)),
   ]).pipe(
     takeUntil(this.destroy$),
-    map(([entities, temperature, context]) => ({entities, temperature, context})),
-    shareReplay({bufferSize: 1, refCount: true}),
+    map(([entities, temperature, context]) => ({ entities, temperature, context })),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   /**
@@ -137,7 +137,7 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   readonly explain$ = new Subject<boolean>();
 
   readonly explanation$: Observable<PipeStatus<ChatGPTResponse> | undefined> = this.params$.pipe(
-    switchMap(params =>
+    switchMap((params) =>
       this.explain$.pipe(
         map(() => params),
         takeUntil(this.destroy$),
@@ -150,36 +150,40 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
   );
 
   readonly graphExplanation$: Observable<PipeStatus<GraphChatGPTResponse>> = this.params$.pipe(
-    switchMap(params =>
+    switchMap((params) =>
       this.explain$.pipe(
         map(() => params),
         takeUntil(this.destroy$),
-        switchMap(({entities, temperature, context}) =>
-          this.explainService.relationshipGraph(entities, context, {temperature}).pipe(addStatus()),
+        switchMap(({ entities, temperature, context }) =>
+          this.explainService
+            .relationshipGraph(entities, context, { temperature })
+            .pipe(addStatus())
         ),
-        startWith(undefined),
-      ),
-    ),
+        startWith(undefined)
+      )
+    )
   );
 
   readonly graph$ = this.graphExplanation$.pipe(
-    map(explanation => explanation?.value?.graph),
-    map(graph =>
-      graph ? ({
-        edges: graph.edges,
-        nodes: graph.nodes.map(({eid, type, entityType, displayName}) => ({
-          id: eid,
-          label: displayName,
-          color: annotationTypesMap.get((type ?? entityType)?.toLowerCase())?.color,
-        })),
-      }) : undefined,
+    map((explanation) => explanation?.value?.graph),
+    map((graph) =>
+      graph
+        ? {
+            edges: graph.edges,
+            nodes: graph.nodes.map(({ eid, type, entityType, displayName }) => ({
+              id: eid,
+              label: displayName,
+              color: annotationTypesMap.get((type ?? entityType)?.toLowerCase())?.color,
+            })),
+          }
+        : undefined
     ),
-    shareReplay({bufferSize: 1, refCount: true}),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =
     combineLatest([this.params$, this.contexts$]).pipe(
-      map(([{temperature, entities, context}, contexts]) => ({
+      map(([{ temperature, entities, context }, contexts]) => ({
         promptFormParams: {
           formInput: {
             entities: Array.from(entities),
@@ -189,14 +193,14 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
         },
         promptForm: DrawingToolPromptFormComponent,
         temperature,
-      })),
+      }))
     );
 
   generateExplanation() {
     this.explain$.next(true);
   }
 
-  public ngOnChanges({entities}: SimpleChanges) {
+  public ngOnChanges({ entities }: SimpleChanges) {
     if (entities) {
       this.entitiesChange$.next(entities.currentValue);
     }

@@ -62,11 +62,13 @@ def paths_to_graph(paths: List[PathRow]):
             if isinstance(segment, dict):
                 nodes[segment["eid"]] = segment
             else:
-                edges.append({
-                    'from': path[index-1]["eid"],
-                    'to': path[index+1]["eid"],
-                    'label': segment,
-                })
+                edges.append(
+                    {
+                        'from': path[index - 1]["eid"],
+                        'to': path[index + 1]["eid"],
+                        'label': segment,
+                    }
+                )
 
     return dict(
         nodes=list(nodes.values()),

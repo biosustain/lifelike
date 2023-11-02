@@ -48,12 +48,12 @@ class GraphSearchRetriever(BaseRetriever):
 
     @classmethod
     def from_llm(
-            cls,
-            vectorstore: VectorStore,
-            llm: BaseChatModel,
-            graph_search: GraphSearchAPIWrapper,
-            prompt: Optional[BasePromptTemplate] = None,
-            **kwargs: Any,
+        cls,
+        vectorstore: VectorStore,
+        llm: BaseChatModel,
+        graph_search: GraphSearchAPIWrapper,
+        prompt: Optional[BasePromptTemplate] = None,
+        **kwargs: Any,
     ) -> Self:
         """Initialize from LLM using the default template."""
         if not prompt:
@@ -88,7 +88,7 @@ class GraphSearchRetriever(BaseRetriever):
         )
 
     def _get_relevant_documents(
-            self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
     ) -> List[Document]:
         """Get relevant documents from the graph."""
 
@@ -128,7 +128,4 @@ class GraphSearchRetriever(BaseRetriever):
                     for relationship in relationships
                 ]
 
-        return [
-            self.graph_search.node_to_document(node)
-            for node in nodes
-        ]
+        return [self.graph_search.node_to_document(node) for node in nodes]
