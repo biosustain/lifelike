@@ -30,9 +30,12 @@ class PublishedView(MethodView):
             .filter(Projects.name == Publish.get_publish_project_name(user_hash_id))
             .first()
         )
-        published_files = Filesystem.get_nondeleted_recycled_files(
-            Files.parent_id == project_***ARANGO_USERNAME***_id
-        )
+        if project_***ARANGO_USERNAME***_id is not None:
+            published_files = Filesystem.get_nondeleted_recycled_files(
+                Files.parent_id == project_***ARANGO_USERNAME***_id
+            )
+        else:
+            published_files = []
 
         return jsonify(
             FileListSchema(
