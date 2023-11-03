@@ -267,7 +267,7 @@ class KgService(HybridDBDao):
         return {
             result['node_id']: {
                 'result': result['node'],
-                'link': "http://regulondb.ccg.unam.mx/gene?"
+                'link': "https://regulondb.ccg.unam.mx/gene?"
                 + urlencode(
                     compact(
                         dict(
