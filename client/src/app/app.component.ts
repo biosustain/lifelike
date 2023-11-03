@@ -60,10 +60,8 @@ export class AppComponent {
     // Set the title of the document based on the route
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
-        const child = this.activatedRoute.firstChild;
-        titleService.setTitle(
-          child.snapshot.data.title ? `Lifelike: ${child.snapshot.data.title}` : 'Lifelike'
-        );
+        const title = this.activatedRoute.firstChild?.snapshot?.data?.title
+        titleService.setTitle(title ? `Lifelike: ${title}` : 'Lifelike');
         this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
 
         const url = toValidUrl(event.url);
