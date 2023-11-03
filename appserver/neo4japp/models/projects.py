@@ -162,15 +162,17 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
             project_service = get_projects_service()
 
             create_project_uncommitted_kwargs = {}
+            project_kwargs = {}
             for key, value in kwargs.items():
                 if key in ('role',):
                     create_project_uncommitted_kwargs[key] = value
-                    kwargs.pop(key)
+                else:
+                    project_kwargs[key] = value
 
             project = Projects()
             project.name = name
             project.creator = current_user
-            for key, value in kwargs.items():
+            for key, value in project_kwargs.items():
                 setattr(project, key, value)
 
             try:
