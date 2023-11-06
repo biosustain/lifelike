@@ -3,6 +3,7 @@
   app-cdk-table-colgroup-backport
   style="table-layout: fixed"
   [dataSource]="objects.view$"
+  [trackBy]="rowSnapshotIdentity"
   cdkDropList
   cdkDragListLockAxis="x"
   cdkDropListOrientation="horizontal"
