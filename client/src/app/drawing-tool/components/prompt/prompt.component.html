@@ -82,6 +82,13 @@
       <span
         style="float: right"
         class="ml-2 mb-2"
+        (click)="copyToClipboard(state.explanation.value.result)"
+      >
+        <i class="fas fa-copy"></i>
+      </span>
+      <span
+        style="float: right"
+        class="ml-2 mb-2"
         (click)="openInfo(state.explanation.value.query_params)"
       >
         <i class="fas fa-info-circle"></i>
