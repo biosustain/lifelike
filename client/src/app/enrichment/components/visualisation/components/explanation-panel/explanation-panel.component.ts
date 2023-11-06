@@ -38,6 +38,7 @@ import {
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -48,7 +49,8 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
     readonly injector: Injector,
-    readonly modalService: NgbModal
+    readonly modalService: NgbModal,
+    private readonly clipboard: ClipboardService,
   ) {}
 
   readonly contextsController$: Observable<DropdownController<string>> =
@@ -186,5 +188,9 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     const info = this.modalService.open(ChatgptResponseInfoModalComponent);
     info.componentInstance.queryParams = queryParams;
     return info.result;
+  }
+
+  copyToClipboard(text: string) {
+    return this.clipboard.copy(text);
   }
 }
