@@ -1,6 +1,6 @@
 # flake8: noqa
 """Tools for interacting with a Graph database."""
-from typing import Optional
+from typing import Optional, Any
 
 from langchain.pydantic_v1 import BaseModel, Extra, Field
 
@@ -13,7 +13,7 @@ from langchain.tools.base import BaseTool
 class BaseGraphDatabaseTool(BaseModel):
     """Base tool for interacting with a Graph database."""
 
-    db: GraphDatabase = Field(exclude=True)
+    db: Any = Field(exclude=True)
 
     # Override BaseTool.Config to appease mypy
     # See https://github.com/pydantic/pydantic/issues/4173

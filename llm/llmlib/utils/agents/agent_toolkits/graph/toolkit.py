@@ -7,7 +7,7 @@ from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool
 from llmlib.utils.search.graph_search_api_wrapper import GraphSearchAPIWrapper
 
-from llmlib.utils.tools.sql_database.tool import SearchNodes, ShortestPathGraphDatabaseTool
+from llmlib.utils.tools.graph_database.tool import SearchNodes, ShortestPathGraphDatabaseTool
 
 
 class GraphDatabaseToolkit(BaseToolkit):
