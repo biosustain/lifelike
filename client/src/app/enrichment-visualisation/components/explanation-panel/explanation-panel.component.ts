@@ -50,7 +50,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
     readonly injector: Injector,
     readonly modalService: NgbModal,
-    private readonly clipboard: ClipboardService,
+    private readonly clipboard: ClipboardService
   ) {}
 
   readonly contextsController$: Observable<DropdownController<string>> =

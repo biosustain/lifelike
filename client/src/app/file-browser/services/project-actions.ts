@@ -5,7 +5,10 @@ import { of, throwError, iif, defer, from } from 'rxjs';
 import { finalize, catchError, map, switchMap, tap, first, take } from 'rxjs/operators';
 import { Store, select } from '@ngrx/store';
 
-import { MessageArguments, MessageDialog } from 'app/shared/modules/dialog/services/message-dialog.service';
+import {
+  MessageArguments,
+  MessageDialog,
+} from 'app/shared/modules/dialog/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';

@@ -2,13 +2,7 @@ import { Component, Output, Input, OnChanges, SimpleChanges } from '@angular/cor
 
 import { isEmpty, isNil } from 'lodash-es';
 import { iif, Observable, of, ReplaySubject, Subject } from 'rxjs';
-import {
-  debounceTime,
-  distinctUntilChanged,
-  map,
-  startWith,
-  switchMap,
-} from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map, startWith, switchMap } from 'rxjs/operators';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
@@ -22,7 +16,6 @@ import { addStatus, PipeStatus } from '../pipes/add-status.pipe';
   styleUrls: ['./organism-autocomplete.component.scss'],
 })
 export class OrganismAutocompleteComponent implements OnChanges {
-
   constructor(private search: SharedSearchService) {}
   @Input() organismTaxId: string;
 
@@ -39,12 +32,8 @@ export class OrganismAutocompleteComponent implements OnChanges {
       iif(
         () => isEmpty(q),
         of([]),
-        this.search.getOrganisms(q, 10).pipe(
-          map((organisms: OrganismsResult) => organisms.nodes)
-        )
-      ).pipe(
-        addStatus(),
-      )
+        this.search.getOrganisms(q, 10).pipe(map((organisms: OrganismsResult) => organisms.nodes))
+      ).pipe(addStatus())
     )
   );
 
