@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 
 import { EffectsModule } from '@ngrx/effects';
-import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -24,7 +24,7 @@ const exports = [
 ];
 
 @NgModule({
-  imports: [EffectsModule.forFeature([UserEffects]), SharedModule, NgbNavModule],
+  imports: [EffectsModule.forFeature([UserEffects]), SharedModule, NgbModule],
   declarations: [
     UserProfileComponent,
     UserSecurityComponent,

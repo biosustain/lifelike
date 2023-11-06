@@ -1,14 +1,12 @@
 import { NgModule } from '@angular/core';
 
-import { NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModalModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { PlaygroundModule } from 'app/playground/playground.module';
 import { EnrichmentWordCloudModule } from 'app/enrichment-visualisation/modules/enrichment-word-cloud';
-import {
-  EnrichmentPromptFormComponent
-} from 'app/enrichment-visualisation/modules/enrichment-prompt-form/enrichment-prompt-form.component';
+import { EnrichmentPromptFormComponent } from 'app/enrichment-visualisation/modules/enrichment-prompt-form/enrichment-prompt-form.component';
 
 import { EnrichmentVisualisationExplanationPanelComponent } from './components/explanation-panel/explanation-panel.component';
 import { EnrichmentVisualisationViewerComponent } from './components/viewer/enrichment-visualisation-viewer.component';
@@ -31,9 +29,10 @@ const exports = [EnrichmentVisualisationViewerComponent];
     TableCompleteComponentModule,
     ClustergramModule,
     CloudViewerModule,
-    NgbNavModule,
-    NgbPaginationModule,
     EnrichmentPromptFormModule,
+    NgbDropdownModule,
+    NgbModalModule,
+    NgbNavModule,
   ],
   declarations: [EnrichmentVisualisationExplanationPanelComponent, GroupComponent, ...exports],
   entryComponents: [EnrichmentPromptFormComponent],

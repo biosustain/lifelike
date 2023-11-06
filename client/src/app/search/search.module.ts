@@ -1,12 +1,6 @@
 import { NgModule } from '@angular/core';
 import { MatTreeModule } from '@angular/material/tree';
 
-import {
-  NgbAccordionModule,
-  NgbDropdownModule,
-  NgbPaginationModule,
-} from '@ng-bootstrap/ng-bootstrap';
-
 import { DrawingToolModule } from 'app/drawing-tool/drawing-tool.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { SharedModule } from 'app/shared/shared.module';
@@ -31,16 +25,7 @@ import { ResultsSummaryComponent } from './components/results-summary/results-su
 const exports = [ContentSearchComponent, GraphSearchComponent];
 
 @NgModule({
-  imports: [
-    SharedModule,
-    DrawingToolModule,
-    FileBrowserModule,
-    MatTreeModule,
-    NgbPaginationModule,
-    NgbAccordionModule,
-    NgbDropdownModule,
-    ObjectModule,
-  ],
+  imports: [SharedModule, DrawingToolModule, FileBrowserModule, MatTreeModule, ObjectModule],
   declarations: [
     AdvancedSearchDialogComponent,
     ContentSearchFormComponent,

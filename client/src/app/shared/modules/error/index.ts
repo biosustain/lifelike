@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ErrorDetailsComponent } from './components/error-details/error-details.component';
 import TreeViewModule from '../tree-view';
@@ -8,7 +9,7 @@ import TreeViewModule from '../tree-view';
 const exports = [ErrorDetailsComponent];
 
 @NgModule({
-  imports: [NgbTooltipModule, TreeViewModule],
+  imports: [NgbModule, CommonModule, TreeViewModule],
   declarations: [...exports],
   exports,
 })

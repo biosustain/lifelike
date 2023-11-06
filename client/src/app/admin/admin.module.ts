@@ -1,11 +1,16 @@
 import { NgModule } from '@angular/core';
 
 import {
-  NgbDatepickerModule,
+  NgbAlert,
   NgbDropdownModule,
+  NgbInputDatepickerConfig,
+  NgbModalModule,
+  NgbModule,
   NgbNavModule,
   NgbPaginationModule,
+  NgbTooltipModule,
 } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDatepickerModule } from '@ng-bootstrap/ng-bootstrap/datepicker/datepicker.module';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { AccountService } from 'app/users/services/account.service';
@@ -33,10 +38,13 @@ const exports = [AdminPanelComponent];
   ],
   imports: [
     SharedModule,
-    NgbPaginationModule,
-    NgbNavModule,
     NgbDropdownModule,
+    NgbAlert,
     NgbDatepickerModule,
+    NgbNavModule,
+    NgbTooltipModule,
+    NgbPaginationModule,
+    NgbModalModule,
   ],
   declarations: [
     ChatgptUsageGraphDirective,

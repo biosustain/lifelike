@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ModuleErrorComponent } from './components/module-error/module-error.component';
 import { ModuleHeaderComponent } from './components/module-header/module-header.component';
@@ -9,9 +9,9 @@ import { ModuleMenuComponent } from './components/module-menu/module-menu.compon
 import { ModuleProgressComponent } from './components/module-progress/module-progress.component';
 import ErrorModule from '../error';
 import LoadingIndicatorModule from '../loading-indicator';
-import { UtilsModule } from '../utils/utils.module';
+import UtilsModule from '../utils';
 import ObjectModule from '../object';
-import { LinkModule } from '../link/link.module';
+import LinkModule from '../link';
 
 const exports = [
   ModuleErrorComponent,
@@ -27,7 +27,7 @@ const exports = [
     UtilsModule,
     ObjectModule,
     LinkModule,
-    NgbTooltipModule,
+    NgbModule,
     LoadingIndicatorModule,
   ],
   declarations: [...exports],

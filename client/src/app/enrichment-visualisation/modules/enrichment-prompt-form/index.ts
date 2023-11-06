@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 
+import { NgbDropdownModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
 
 import { AutoFillControlComponent } from './control/auto-fill-control/auto-fill-control.component';
@@ -8,7 +10,7 @@ import { EnrichmentPromptFormComponent } from './enrichment-prompt-form.componen
 const exports = [EnrichmentPromptFormComponent];
 
 @NgModule({
-  imports: [SharedModule],
+  imports: [SharedModule, NgbDropdownModule, NgbTypeaheadModule],
   declarations: [...exports, AutoFillControlComponent],
   exports,
 })

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbDropdownModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -17,8 +17,8 @@ export const exports = [
 ];
 
 @NgModule({
-  imports: [SharedModule, NgbAccordionModule],
-  exports: [...exports, SharedModule, NgbAccordionModule],
+  imports: [SharedModule, NgbDropdownModule, NgbAccordionModule],
+  exports: [...exports, SharedModule],
   declarations: [...exports],
 })
 export default class PlaygroundShared {}

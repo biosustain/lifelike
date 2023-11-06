@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
 
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { SharedModule } from 'app/shared/shared.module';
 
 import { SankeyNodeDetailsComponent } from '../../components/entity-details/node-details.component';
@@ -14,7 +12,7 @@ import { ButtonWithSelectableTextComponent } from '../../components/button-with-
     SankeyTraceDetailsComponent,
     ButtonWithSelectableTextComponent,
   ],
-  imports: [SharedModule, NgbAccordionModule],
+  imports: [SharedModule],
   exports: [
     SankeyNodeDetailsComponent,
     SankeyTraceDetailsComponent,

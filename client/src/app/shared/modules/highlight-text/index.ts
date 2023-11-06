@@ -1,16 +1,17 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { HIGHLIGHT_TEXT_TAG_HANDLER } from './services/highlight-text.service';
 import { XMLAnnotationComponent } from './components/xml-annotation/xml-annotation.component';
 import { XMLHighlightComponent } from './components/xml-highlight.component';
 import { XMLSnippetComponent } from './components/xml-snippet.component';
 import { InnerXMLDirective } from './directives/innerXML.directive';
-import { UtilsModule } from '../utils/utils.module';
+import UtilsModule from '../utils';
 
 @NgModule({
-  imports: [UtilsModule, NgbTooltipModule],
+  imports: [UtilsModule, CommonModule, NgbModule],
   declarations: [
     XMLAnnotationComponent,
     XMLHighlightComponent,
@@ -48,4 +49,4 @@ import { UtilsModule } from '../utils/utils.module';
   ],
   exports: [InnerXMLDirective],
 })
-export class HighlightTextModule {}
+export default class HighlightTextModule {}

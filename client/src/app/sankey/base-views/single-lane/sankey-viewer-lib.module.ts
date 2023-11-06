@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ViewBase } from 'app/sankey/interfaces';
@@ -36,7 +34,6 @@ import { SankeyLegendComponent } from './components/legend/sankey-legend.compone
   imports: [
     SharedModule,
     FileBrowserModule,
-    NgbAccordionModule,
     RouterModule.forChild([]),
     SankeySingleLaneDetailsPanelModule,
   ],

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { DynamicViewService } from 'app/shared/services/dynamic-view.service';
 
@@ -16,7 +16,14 @@ const exports = [OpenPlaygroundComponent];
 
 @NgModule({
   entryComponents: [PlaygroundComponent],
-  imports: [PlaygroundShared, NgbAccordionModule, ChatCompletionsFormModule, CompletionsFormModule],
+  imports: [
+    PlaygroundShared,
+    ChatCompletionsFormModule,
+    CompletionsFormModule,
+    NgbModalModule,
+    NgbDropdownModule,
+    NgbTooltipModule,
+  ],
   declarations: [PlaygroundComponent, ...exports],
   exports,
   providers: [PlaygroundService, DynamicViewService, ChatGPT],

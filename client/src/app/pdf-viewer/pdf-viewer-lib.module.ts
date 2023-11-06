@@ -5,7 +5,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { NgbCollapseModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbCollapseModule,
+  NgbDropdownModule,
+  NgbModalModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -36,9 +41,12 @@ const exports = [PdfViewComponent];
     BrowserAnimationsModule,
     MatSnackBarModule,
     SharedModule,
-    NgbCollapseModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
+    NgbTooltipModule,
+    NgbModalModule,
+    NgbCollapseModule,
+    NgbDropdownModule,
   ],
   entryComponents: [
     PdfViewComponent,

@@ -14,13 +14,7 @@ import { CdkTreeModule } from '@angular/cdk/tree';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { EffectsModule } from '@ngrx/effects';
-import {
-  NgbAlertModule,
-  NgbPopoverModule,
-  NgbProgressbarModule,
-  NgbTooltipModule,
-  NgbTypeaheadModule,
-} from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AngularSplitModule } from 'angular-split';
 import { SharedNgrxEffects } from './store/effects';
@@ -34,41 +28,39 @@ import { GenericDataProvider } from './providers/data-transfer-data/generic-data
 import components from './components';
 import pipes from './pipes';
 import directives from './directives';
-import { UtilsModule } from './modules/utils/utils.module';
-import { PlaceholderModule } from './modules/placeholder/placeholder.module';
+import UtilsModule from './modules/utils';
+import PlaceholderModule from './modules/placeholder';
 import ModalModule from './modules/modal';
 import ControlsModule from './modules/controls';
 import AppModuleModule from './modules/app-module';
-import { LinkModule } from './modules/link/link.module';
+import LinkModule from './modules/link';
 import LoadingIndicatorModule from './modules/loading-indicator';
 import TreeViewModule from './modules/tree-view';
-import { HighlightTextModule } from './modules/highlight-text/highlight-text.module';
+import HighlightTextModule from './modules/highlight-text';
 
 const modulesImportExport = [
+  // region Library modules
   CdkTreeModule,
   CommonModule,
   DragDropModule,
   FlexLayoutModule,
   FormsModule,
   HttpClientModule,
-  NgbAlertModule,
-  NgbPopoverModule,
-  NgbProgressbarModule,
-  NgbTooltipModule,
-  NgbTypeaheadModule,
-  PlaceholderModule,
+  NgbModule,
   ReactiveFormsModule,
   RouterModule,
   ScrollingModule,
   TextFieldModule,
-  UtilsModule,
-  ModalModule,
-  ControlsModule,
+  // endregion
   AppModuleModule,
+  ControlsModule,
+  HighlightTextModule,
   LinkModule,
   LoadingIndicatorModule,
+  ModalModule,
+  PlaceholderModule,
   TreeViewModule,
-  HighlightTextModule,
+  UtilsModule,
 ];
 
 @NgModule({

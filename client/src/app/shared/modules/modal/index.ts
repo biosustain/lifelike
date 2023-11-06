@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import ErrorModule from '../error';
 import { ModalBodyComponent } from './components/modal/modal-body.component';
@@ -8,7 +9,7 @@ import { ModalHeaderComponent } from './components/modal/modal-header.component'
 const exports = [ModalBodyComponent, ModalFooterComponent, ModalHeaderComponent];
 
 @NgModule({
-  imports: [ErrorModule],
+  imports: [CommonModule, ErrorModule],
   declarations: [...exports],
   exports,
 })

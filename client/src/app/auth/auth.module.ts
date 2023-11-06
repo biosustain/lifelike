@@ -2,6 +2,7 @@ import { APP_INITIALIZER, ModuleWithProviders, NgModule, Optional, SkipSelf } fr
 
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
+import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 
@@ -32,6 +33,7 @@ export function storageFactory(): OAuthStorage {
     EffectsModule.forFeature([AuthEffects]),
     StoreModule.forFeature('auth', reducer),
     SharedModule,
+    NgbModalModule,
   ],
   declarations: [ResetPasswordDialogComponent, ...exports],
   providers: [LifelikeAuthGuard, AuthenticationService, LifelikeOAuthService, LoginGuard],

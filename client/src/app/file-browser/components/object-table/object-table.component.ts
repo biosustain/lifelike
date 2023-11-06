@@ -42,9 +42,9 @@ import { createMutationObservable } from 'app/shared/rxjs/mutation-observable';
 import { FlexColumn, FlexColumnsLayout } from 'app/shared/utils/tables/flex-columns.layout';
 import { AppResizableColumnDirective } from 'app/shared/directives/app-resizable-column.directive';
 import { updateSubject } from 'app/shared/rxjs/update';
-import { WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
 import { CollectionModel } from 'app/shared/utils/collection-model';
-import { relativePosition } from 'app/shared/DOMutils';
+import { relativePosition } from 'app/shared/utils/dom';
+import { WorkspaceNavigationExtras } from 'app/workspace/services/workspace-manager';
 
 import { ObjectListService } from '../../services/object-list.service';
 import { FilesystemObject } from '../../models/filesystem-object';

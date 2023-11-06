@@ -1,10 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { NgbDropdownModule, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbButtonsModule,
+  NgbDropdownModule,
+  NgbModalModule,
+  NgbNav,
+  NgbNavModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
-import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 import { DATA_TRANSFER_DATA_PROVIDER } from 'app/shared/services/data-transfer-data.service';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { PlaygroundModule } from 'app/playground/playground.module';
@@ -41,9 +47,12 @@ const exports = [MapComponent];
     SharedModule,
     FileBrowserModule,
     PlaygroundModule,
-    NgbNavModule,
-    NgbDropdownModule,
     DrawingToolPromptFormModule,
+    NgbDropdownModule,
+    NgbModalModule,
+    NgbNavModule,
+    NgbTooltipModule,
+    NgbButtonsModule,
   ],
   declarations: [
     DrawingToolPromptComponent,
@@ -65,7 +74,6 @@ const exports = [MapComponent];
     ...exports,
   ],
   entryComponents: [
-    ConfirmDialogComponent,
     MapRestoreDialogComponent,
     MapComponent,
     InfoViewPanelComponent,

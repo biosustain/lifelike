@@ -9,11 +9,14 @@ import { finalize, map, tap } from 'rxjs/operators';
 
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
-import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { openDownloadForBlob } from 'app/shared/utils/files';
-import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
+import {
+  WorkspaceManager,
+  WorkspaceNavigationExtras,
+} from 'app/workspace/services/workspace-manager';
+import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';

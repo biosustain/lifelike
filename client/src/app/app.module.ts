@@ -2,6 +2,7 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { BrowserModule, Title } from '@angular/platform-browser';
 
 import { ChartsModule } from 'ng2-charts';
+import { NgbModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { RootStoreModule } from 'app/***ARANGO_USERNAME***-store';
 import { AdminModule } from 'app/admin/admin.module';
@@ -60,6 +61,7 @@ import { SankeyViewerLibModule } from 'app/sankey/sankey.module';
     DrawingToolModule,
     SankeyViewerLibModule,
     TraceViewerLibModule,
+    NgbTooltipModule,
     FileNavigatorModule,
     BiocViewerLibModule,
     EnrichmentVisualisationsModule,

@@ -7,9 +7,11 @@ import {
   LinkWithoutHrefDirective,
 } from './directives/link.directive';
 
+const exports = [LinkWithHrefDirective, LinkWithoutHrefDirective];
+
 @NgModule({
-  declarations: [AbstractLinkDirective, LinkWithHrefDirective, LinkWithoutHrefDirective],
   imports: [CommonModule],
-  exports: [AbstractLinkDirective, LinkWithHrefDirective, LinkWithoutHrefDirective],
+  declarations: [AbstractLinkDirective, ...exports],
+  exports,
 })
-export class LinkModule {}
+export default class LinkModule {}

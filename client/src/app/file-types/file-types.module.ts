@@ -1,6 +1,8 @@
 import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { TYPE_PROVIDER } from './providers/base-object.type-provider';
 import { BiocTypeProvider } from './providers/bioc.type-provider';
 import { DirectoryTypeProvider } from './providers/directory.type-provider';
@@ -12,7 +14,7 @@ import { GraphTypeProvider } from './providers/graph.type-provider.service';
 
 @NgModule({
   declarations: [],
-  imports: [CommonModule],
+  imports: [CommonModule, NgbModalModule],
   providers: [
     {
       provide: TYPE_PROVIDER,

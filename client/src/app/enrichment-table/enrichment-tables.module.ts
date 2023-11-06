@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 
-import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbModalModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
@@ -24,7 +24,7 @@ const exports = [EnrichmentTablePreviewComponent];
     GenericTableComponent,
     ...exports,
   ],
-  imports: [SharedModule, FileBrowserModule, NgbAccordionModule],
+  imports: [SharedModule, FileBrowserModule, NgbAccordionModule, NgbModalModule, NgbTooltipModule],
   entryComponents: [
     EnrichmentTableEditDialogComponent,
     EnrichmentTableOrderDialogComponent,

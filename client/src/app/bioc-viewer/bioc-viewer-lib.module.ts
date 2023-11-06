@@ -3,6 +3,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { NgbDropdownModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
@@ -20,6 +22,8 @@ const exports = [BiocViewComponent];
     SharedModule,
     FileBrowserModule,
     RouterModule.forRoot([]),
+    NgbTooltipModule,
+    NgbDropdownModule,
   ],
   declarations: [InfonsComponent, AnnotatedTextComponent, BiocTableViewComponent, ...exports],
   exports,

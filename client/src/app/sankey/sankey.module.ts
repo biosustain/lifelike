@@ -3,8 +3,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
-import { NgbAccordionModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-
 import { SharedModule } from 'app/shared/shared.module';
 import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
@@ -38,8 +36,6 @@ const exports = [SankeyViewComponent];
     FileBrowserModule,
     SankeySearchPanelModule,
     SankeySearchControlModule,
-    NgbDropdownModule,
-    NgbAccordionModule,
     ControlsModule,
   ],
   declarations: [

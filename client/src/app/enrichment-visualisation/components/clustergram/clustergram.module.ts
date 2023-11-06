@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { SharedModule } from 'app/shared/shared.module';
 
 import { ClustergramComponent } from './clustergram.component';
@@ -9,7 +11,7 @@ const components = [ClustergramComponent];
 
 @NgModule({
   declarations: components,
-  imports: [SharedModule, LinkModule],
+  imports: [SharedModule, LinkModule, NgbTooltipModule],
   exports: components,
 })
 export class ClustergramModule {}

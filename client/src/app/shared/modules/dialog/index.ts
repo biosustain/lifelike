@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
-import { NgbAlertModule, NgbProgressbarModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ProgressDialog } from './services/progress-dialog.service';
 import { ProgressDialogComponent } from './components/progress/progress-dialog.component';
@@ -15,13 +16,14 @@ import { MessageDialog } from './services/message-dialog.service';
 const exports = [ConfirmDialogComponent];
 
 @NgModule({
-  imports: [NgbAlertModule, NgbProgressbarModule, ModalModule, ErrorModule],
+  imports: [NgbModule, CommonModule, ModalModule, ErrorModule],
   declarations: [
     ResponseAlertComponent,
     ProgressDialogComponent,
     MessageDialogComponent,
     ...exports,
   ],
+  entryComponents: [...exports],
   providers: [ProgressDialog, MessageDialog],
   exports,
 })

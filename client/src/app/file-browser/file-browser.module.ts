@@ -1,7 +1,17 @@
 import { NgModule } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
+import { CdkTableModule } from '@angular/cdk/table';
 
-import { NgbAccordionModule, NgbNavModule, NgbPaginationModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbAccordionModule,
+  NgbDropdownModule,
+  NgbModalModule,
+  NgbNavModule,
+  NgbPaginationModule,
+  NgbPopover,
+  NgbPopoverModule,
+  NgbTooltipModule,
+} from '@ng-bootstrap/ng-bootstrap';
 
 import { AbstractObjectTypeProviderHelper } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
@@ -77,10 +87,15 @@ const exports = [
   imports: [
     MatMenuModule,
     SharedModule,
-    NgbAccordionModule,
-    NgbPaginationModule,
-    NgbNavModule,
     ObjectModule,
+    CdkTableModule,
+    NgbTooltipModule,
+    NgbDropdownModule,
+    NgbModalModule,
+    NgbAccordionModule,
+    NgbNavModule,
+    NgbPopoverModule,
+    NgbPaginationModule,
   ],
   declarations: [
     ObjectDeleteDialogComponent,

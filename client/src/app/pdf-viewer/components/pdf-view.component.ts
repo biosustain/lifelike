@@ -21,7 +21,6 @@ import { Progress } from 'app/interfaces/common-dialog.interface';
 import { EntityType } from 'app/shared/schemas/annotation-types';
 import { ENTITY_TYPE_MAP, ENTITY_TYPES } from 'app/shared/constants/annotation-types';
 import { ProgressDialog } from 'app/shared/modules/dialog/services/progress-dialog.service';
-import { ConfirmDialogComponent } from 'app/shared/modules/dialog/components/confirm/confirm-dialog.component';
 import { ModuleAwareComponent, ModuleProperties } from 'app/shared/schemas/modules';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
