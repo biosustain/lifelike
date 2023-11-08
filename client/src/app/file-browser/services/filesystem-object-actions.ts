@@ -70,14 +70,16 @@ export class FilesystemObjectActions {
   }
 
   export(
-    {exporter, exportLinked}: {
-    exporter: Exporter,
-    exportLinked: boolean
-  }, options?: {label: string}): Promise<boolean> {
-    const { label } = defaults(
-      options,
-      { label: 'Export object' }
-    );
+    {
+      exporter,
+      exportLinked,
+    }: {
+      exporter: Exporter;
+      exportLinked: boolean;
+    },
+    options?: { label: string }
+  ): Promise<boolean> {
+    const { label } = defaults(options, { label: 'Export object' });
     const progressDialogRef = this.createProgressDialog('Generating export...');
     try {
       return exporter
@@ -89,7 +91,7 @@ export class FilesystemObjectActions {
             openDownloadForBlob(file, file.name);
             return true;
           }),
-          this.errorHandler.create({label}),
+          this.errorHandler.create({ label })
         )
         .toPromise();
     } catch (e) {
@@ -98,7 +100,8 @@ export class FilesystemObjectActions {
     }
   }
 
-  exportDismissFactory = (target: FilesystemObject, overwrites: Partial<MessageArguments> = {}) =>
+  exportDismissFactory =
+    (target: FilesystemObject, overwrites: Partial<MessageArguments> = {}) =>
     (error: boolean): Observable<boolean> => {
       if (error) {
         this.messageDialog.display({
@@ -123,21 +126,17 @@ export class FilesystemObjectActions {
       target?: FilesystemObject;
       accept?: (value: ObjectExportDialogValue) => Promise<boolean>;
       dismiss?: (error: boolean) => Observable<boolean>;
-    } = {},
+    } = {}
   ): Promise<boolean> {
     const dialogRef = this.modalService.open(ObjectExportDialogComponent);
     Object.assign(
       dialogRef.componentInstance,
-      defaults(
-        inputs,
-        {
-          title: `Export ${getObjectLabel(target)}`,
-          target,
-          accept: (value: ObjectExportDialogValue) =>
-              this.export(value, {label: 'Export object'}),
-          dismiss: this.exportDismissFactory(target, {}),
-        },
-      ),
+      defaults(inputs, {
+        title: `Export ${getObjectLabel(target)}`,
+        target,
+        accept: (value: ObjectExportDialogValue) => this.export(value, { label: 'Export object' }),
+        dismiss: this.exportDismissFactory(target, {}),
+      })
     );
     return from(dialogRef.result.catch(() => false)).toPromise();
   }
