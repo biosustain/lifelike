@@ -5,11 +5,13 @@
 </ng-container>
 <ng-container *ngIf="project.privileges.administrable">
   <div class="dropdown-divider"></div>
-  <ng-container *ngIf="exporters$ | addStatus | async as exporters">
-    <ng-template [ngIf]="exporters.value && exporters.value.length">
-      <button ngbDropdownItem (click)="openExportDialog(project)">Export...</button>
+  <app-exporters-ref [object]="project.***ARANGO_USERNAME***">
+    <ng-template let-action>
+      <button ngbDropdownItem (click)="action()">
+        <ng-content></ng-content>
+      </button>
     </ng-template>
-  </ng-container>
+  </app-exporters-ref>
   <button ngbDropdownItem (click)="openShareDialog(project)">
     Copy{{ nameEntity ? ' project' : '' }} link...
   </button>
