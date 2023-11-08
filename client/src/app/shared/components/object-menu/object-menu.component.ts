@@ -43,23 +43,6 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
   @Output() objectRestore = new EventEmitter<ObjectVersion>();
   @Output() objectUpdate = new EventEmitter<FilesystemObject>();
   private readonly object$: Subject<FilesystemObject> = new ReplaySubject(1);
-  readonly typeProvider$: Observable<ObjectTypeProvider> = this.object$.pipe(
-    switchMap((object) =>
-      iif(
-        () => Boolean(object),
-        defer(() => this.objectTypeService.get(object).pipe(shareReplay())),
-        defer(() => this.objectTypeService.getDefault())
-      )
-    )
-  );
-  readonly exporters$: Observable<Exporter[]> = combineLatest([
-    this.object$,
-    this.typeProvider$,
-  ]).pipe(
-    this.errorHandler.create({ label: 'Get exporters' }),
-    mergeMap(([object, typeProvider]) => typeProvider.getExporters(object)),
-    shareReplay()
-  );
 
   constructor(
     readonly router: Router,
@@ -69,9 +52,7 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
     protected readonly objectTypeService: ObjectTypeService
-  ) {
-    this.typeProvider$ = objectTypeService.getDefault();
-  }
+  ) {}
 
   ngOnChanges({ object }: SimpleChanges) {
     if (object && !object.firstChange) {
@@ -152,10 +133,6 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
       },
       () => {}
     );
-  }
-
-  openExportDialog(target: FilesystemObject) {
-    return this.actions.openExportDialog(target);
   }
 
   openShareDialog(target: FilesystemObject) {
