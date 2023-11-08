@@ -28,76 +28,61 @@ export class ExportersRefComponent implements OnChanges {
   constructor(
     protected readonly errorHandler: ErrorHandler,
     protected readonly actions: FilesystemObjectActions,
-    protected readonly objectTypeService: ObjectTypeService,
-  ) {
-
-  }
+    protected readonly objectTypeService: ObjectTypeService
+  ) {}
 
   @ContentChild(TemplateRef) buttonTemplate: TemplateRef<any>;
 
   @Input() object: FilesystemObject;
   private readonly object$: Subject<FilesystemObject> = new ReplaySubject(1);
   private readonly exporters$: Observable<Exporter[]> = this.object$.pipe(
-    this.errorHandler.create({label: 'Get exporters'}),
+    this.errorHandler.create({ label: 'Get exporters' }),
     switchMap((object) =>
       iif(
         () => Boolean(object),
         defer(() => this.objectTypeService.get(object).pipe(shareReplay())),
-        defer(() => this.objectTypeService.getDefault()),
-      ).pipe(
-        mergeMap(typeProvider => typeProvider.getExporters(object)),
-      ),
+        defer(() => this.objectTypeService.getDefault())
+      ).pipe(mergeMap((typeProvider) => typeProvider.getExporters(object)))
     ),
-    shareReplay({refCount: true, bufferSize: 1}),
+    shareReplay({ refCount: true, bufferSize: 1 })
   );
 
   private readonly patritionedExporters$: Observable<Exporter[][]> = this.exporters$.pipe(
-    map((exporters) => partition(this.isPrePublishExporter, exporters)),
+    map((exporters) => partition(this.isPrePublishExporter, exporters))
   );
 
   readonly notPrePublishExporters$: Observable<Exporter[]> = this.patritionedExporters$.pipe(
-    map(([_, notPrePublish]) => notPrePublish),
+    map(([_, notPrePublish]) => notPrePublish)
   );
 
   readonly prePublishExporters$: Observable<Exporter[]> = this.patritionedExporters$.pipe(
-    map(([prePublish, _]) => prePublish),
+    map(([prePublish, _]) => prePublish)
   );
 
   isPrePublishExporter(exporter: Exporter) {
-    return exporter.name === 'Zip'
+    return exporter.name === 'Zip';
   }
 
-  ngOnChanges({object}: SimpleChanges) {
+  ngOnChanges({ object }: SimpleChanges) {
     if (object) {
       this.object$.next(object.currentValue);
     }
   }
 
   openExportDialogFactory(exporters: Exporter[]) {
-    return () => this.actions.openExportDialog(
-      this.object,
-      {exporters},
-    );
+    return () => this.actions.openExportDialog(this.object, { exporters });
   }
 
   openPrePublishDialogFactory(prePublishExporters: Exporter[]) {
-    return () => this.actions.openExportDialog(
-      this.object,
-      {
+    return () =>
+      this.actions.openExportDialog(this.object, {
         exporters: prePublishExporters,
         accept: (value: ObjectExportDialogValue) =>
-          this.actions.export(
-            value,
-            {label: 'Pre-publish object'},
-          ),
-        dismiss: this.actions.exportDismissFactory(
-          this.object,
-          {
-            title: 'No Pre-publish Formats',
-            message: `No pre-publish formats are supported for ${getObjectLabel(this.object)}.`,
-          },
-        ),
-      },
-    );
+          this.actions.export(value, { label: 'Pre-publish object' }),
+        dismiss: this.actions.exportDismissFactory(this.object, {
+          title: 'No Pre-publish Formats',
+          message: `No pre-publish formats are supported for ${getObjectLabel(this.object)}.`,
+        }),
+      });
   }
 }

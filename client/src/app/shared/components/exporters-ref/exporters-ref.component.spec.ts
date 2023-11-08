@@ -8,9 +8,8 @@ describe('ExportersRefComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ ExportersRefComponent ]
-    })
-    .compileComponents();
+      declarations: [ExportersRefComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
