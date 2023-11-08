@@ -99,7 +99,7 @@ export class FilesystemObjectActions {
   }
 
   exportDismissFactory = (target: FilesystemObject, overwrites: Partial<MessageArguments> = {}) =>
-    (error: any): Observable<any> => {
+    (error: boolean): Observable<boolean> => {
       if (error) {
         this.messageDialog.display({
           title: 'No Export Formats',
@@ -122,7 +122,7 @@ export class FilesystemObjectActions {
       title?: string;
       target?: FilesystemObject;
       accept?: (value: ObjectExportDialogValue) => Promise<boolean>;
-      dismiss?: (error: boolean) => Promise<boolean>;
+      dismiss?: (error: boolean) => Observable<boolean>;
     } = {},
   ): Promise<boolean> {
     const dialogRef = this.modalService.open(ObjectExportDialogComponent);
