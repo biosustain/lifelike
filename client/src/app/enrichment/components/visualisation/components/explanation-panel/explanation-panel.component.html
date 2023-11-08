@@ -13,14 +13,14 @@
     <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+    <button ngbDropdownItem class="text-truncate" (click)="controller.select(undefined)">
       Empty
     </button>
     <button
       ngbDropdownItem
       class="text-truncate"
-      *ngFor="let context of controller.entities; let i = index"
-      (click)="controller.currentIdx$.next(i)"
+      *ngFor="let context of controller.entities"
+      (click)="controller.select(context)"
     >
       {{ context }}
     </button>
@@ -41,14 +41,14 @@
     <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+    <button ngbDropdownItem class="text-truncate" (click)="controller.select(undefined)">
       Empty
     </button>
     <button
       ngbDropdownItem
       class="text-truncate"
-      *ngFor="let entity of controller.entities; let i = index"
-      (click)="controller.currentIdx$.next(i)"
+      *ngFor="let entity of controller.entities"
+      (click)="controller.select(entity)"
     >
       {{ entity }}
     </button>
@@ -69,14 +69,14 @@
     <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
   </button>
   <div ngbDropdownMenu class="w-100">
-    <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+    <button ngbDropdownItem class="text-truncate" (click)="controller.select(undefined)">
       Empty
     </button>
     <button
       ngbDropdownItem
       class="text-truncate"
       *ngFor="let entity of controller.entities; let i = index"
-      (click)="controller.currentIdx$.next(i)"
+      (click)="controller.select(entity)"
     >
       {{ entity }}
     </button>
@@ -93,7 +93,7 @@
   } as state"
 >
   <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
-    <ng-container *ngIf="state.explain && state.explanation?.loading; else settled">
+    <ng-container *ngIf="state.explanation?.loading; else settled">
       <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation
     </ng-container>
     <ng-template #settled>
@@ -102,6 +102,13 @@
   </button>
   <div class="mt-2 card" style="white-space: pre-line" *ngIf="state.explanation?.value">
     <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+      <span
+        style="float: right"
+        class="ml-2 mb-2"
+        (click)="copyToClipboard(state.explanation.value.result)"
+      >
+        <i class="fas fa-copy"></i>
+      </span>
       <span
         style="float: right"
         class="ml-2 mb-2"

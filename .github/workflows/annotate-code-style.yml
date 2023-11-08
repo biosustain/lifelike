@@ -19,6 +19,11 @@ on:
         required: false
         default: "true"
         type: boolean
+      clientLintAutoFix:
+        description: "Client (TSLint) Auto Fix"
+        required: false
+        default: "false"
+        type: boolean
 # This feature would be nice to have yet it is not supported yet by `lint-action`.
 # See
 # - https://github.com/wearerequired/lint-action/issues/559
@@ -75,3 +80,8 @@ jobs:
               repo: context.repo.repo,
               body: "Code style issues has been found - [AUTOFIX](${{ env.AUTOFIX_URL }})"
             })
+
+      - name: Client linting autofix
+        if: github.event.inputs.autoFix && github.event.inputs.tslintAutoFix
+        working-directory: client
+        uses: ./.github/actions/client-lint-autofix

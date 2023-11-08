@@ -35,6 +35,7 @@ from neo4japp.services.search import (
     get_synonyms_count,
     visualizer_search,
 )
+from neo4japp.services.filesystem import Filesystem
 from neo4japp.utils.globals import config
 from neo4japp.utils.jsonify import jsonify_with_class
 from neo4japp.utils.logger import EventLog, UserEventLog
@@ -225,7 +226,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             None, accessible_only=True
         )
         # Gets the full list of folders accessible by the current user.
-        accessible_folders = self.get_nondeleted_recycled_files(
+        accessible_folders = Filesystem.get_nondeleted_recycled_files(
             Files.hash_id.in_(folders), attr_excl=EXCLUDE_FIELDS
         )
         accessible_folder_hash_ids = [folder.hash_id for folder in accessible_folders]
@@ -275,7 +276,7 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
         file_ids = [doc['fields']['id'][0] for doc in elastic_result['hits']]
         file_map = {
             file.id: file
-            for file in self.get_nondeleted_recycled_files(
+            for file in Filesystem.get_nondeleted_recycled_files(
                 Files.id.in_(file_ids),
                 attr_excl=['enrichment_annotations', 'annotations'],
             )

@@ -38,6 +38,7 @@ import {
   EnrichWithGOTermsResult,
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -48,12 +49,13 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly enrichmentService: EnrichmentVisualisationService,
     readonly enrichmentVisualisationSelectService: EnrichmentVisualisationSelectService,
     readonly injector: Injector,
-    readonly modalService: NgbModal
+    readonly modalService: NgbModal,
+    private readonly clipboard: ClipboardService,
   ) {}
 
   readonly contextsController$: Observable<DropdownController<string>> =
     this.enrichmentService.contexts$.pipe(
-      map(dropdownControllerFactory),
+      map((entities) => dropdownControllerFactory(entities)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
 
@@ -70,9 +72,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   readonly goTermController$: Observable<DropdownController<string>> = this.goTerms$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.goTerm$
-        .pipe(map((goTerm) => entities.indexOf(goTerm)))
-        .subscribe(controller.currentIdx$);
+      this.enrichmentVisualisationSelectService.goTerm$.subscribe(controller.select);
       return controller;
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -97,9 +97,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
   readonly geneNameController$: Observable<DropdownController<string>> = this.geneNames$.pipe(
     map((entities) => {
       const controller = dropdownControllerFactory(entities);
-      this.enrichmentVisualisationSelectService.geneName$
-        .pipe(map((geneName) => entities.indexOf(geneName)))
-        .subscribe(controller.currentIdx$);
+      this.enrichmentVisualisationSelectService.geneName$.subscribe(controller.select);
       return controller;
     }),
     shareReplay({ bufferSize: 1, refCount: true })
@@ -177,9 +175,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     throttle(() => idle(), { leading: true, trailing: true }),
     distinctUntilChanged(isEqual),
     switchMap(([context, goTerm, geneName]) =>
-      this.enrichmentService
-        .enrichTermWithContext(goTerm, context, geneName)
-        .pipe(startWith(null), addStatus())
+      this.enrichmentService.enrichTermWithContext(goTerm, context, geneName).pipe(addStatus())
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
@@ -192,5 +188,9 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     const info = this.modalService.open(ChatgptResponseInfoModalComponent);
     info.componentInstance.queryParams = queryParams;
     return info.result;
+  }
+
+  copyToClipboard(text: string) {
+    return this.clipboard.copy(text);
   }
 }

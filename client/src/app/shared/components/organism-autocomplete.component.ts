@@ -1,20 +1,20 @@
-import { Component, EventEmitter, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Output, Input, OnChanges, SimpleChanges } from '@angular/core';
 
 import { isEmpty, isNil } from 'lodash-es';
-import { iif, Observable, of, Subject } from 'rxjs';
+import { iif, Observable, of, ReplaySubject, Subject } from 'rxjs';
 import {
-  catchError,
   debounceTime,
   distinctUntilChanged,
   map,
+  startWith,
   switchMap,
-  tap,
 } from 'rxjs/operators';
 
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
 
 import { ORGANISM_AUTOCOMPLETE_DEFAULTS } from '../constants';
+import { addStatus, PipeStatus } from '../pipes/add-status.pipe';
 
 @Component({
   selector: 'app-organism-autocomplete',
@@ -22,48 +22,33 @@ import { ORGANISM_AUTOCOMPLETE_DEFAULTS } from '../constants';
   styleUrls: ['./organism-autocomplete.component.scss'],
 })
 export class OrganismAutocompleteComponent implements OnChanges {
+
+  constructor(private search: SharedSearchService) {}
   @Input() organismTaxId: string;
 
-  @Output() organismPicked = new EventEmitter<OrganismAutocomplete | null>();
+  @Output() organismPicked = new ReplaySubject(1);
 
   @Input() inputText = '';
-  // TODO: All observables should be readonly
-  @Output() inputTextChange = new Subject<string>();
+  @Output() readonly inputTextChange = new Subject<string>();
 
-  readonly searcher$: Observable<OrganismAutocomplete[]> = this.inputTextChange.pipe(
+  readonly search$: Observable<PipeStatus<OrganismAutocomplete[]>> = this.inputTextChange.pipe(
+    startWith(''),
     distinctUntilChanged(),
     debounceTime(300),
-    tap(() => {
-      this.isFetching = true;
-      this.isOrganismSelected = false;
-      this.organismPicked.emit(null);
-    }),
     switchMap((q) =>
       iif(
         () => isEmpty(q),
         of([]),
         this.search.getOrganisms(q, 10).pipe(
-          catchError(() => {
-            this.fetchFailed = true;
-            return of([]);
-          }),
-          map((organisms: OrganismsResult) => {
-            this.fetchFailed = false;
-            return organisms.nodes;
-          })
+          map((organisms: OrganismsResult) => organisms.nodes)
         )
+      ).pipe(
+        addStatus(),
       )
-    ),
-    tap(() => (this.isFetching = false))
+    )
   );
 
-  fetchFailed = false;
-  isFetching = false;
-  isOrganismSelected = false;
-
   organismShortlist: OrganismAutocomplete[] = ORGANISM_AUTOCOMPLETE_DEFAULTS;
-
-  constructor(private search: SharedSearchService) {}
 
   setInputText(text: string) {
     this.inputText = text;
@@ -76,7 +61,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
         // If response is null that means there was no match found
         if (!isNil(response)) {
           this.inputText = response.organism_name;
-          this.isOrganismSelected = true;
+          this.organismPicked.next(response);
         }
       });
     }
@@ -86,14 +71,12 @@ export class OrganismAutocompleteComponent implements OnChanges {
   }
 
   selectOrganism(organism: OrganismAutocomplete) {
-    this.isOrganismSelected = true;
     this.setInputText(organism.organism_name);
-    this.organismPicked.emit(organism);
+    this.organismPicked.next(organism);
   }
 
   clear() {
-    this.isOrganismSelected = false;
-    this.setInputText(''); // Clear the result list
-    this.organismPicked.emit(null);
+    this.setInputText('');
+    this.organismPicked.next(null);
   }
 }

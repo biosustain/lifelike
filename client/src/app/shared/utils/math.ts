@@ -18,3 +18,11 @@ export function medianBy<T>(arr: T[], fn: (e: T) => number): number {
     return sortedArray[Math.floor(middleIndex)];
   }
 }
+
+/**
+ * Returns the value of `n` modulo `m` (always positive)
+ * Differs from js build in operator '%' which returns division reminder (can be negative)
+ * @param n - number
+ * @param m - number
+ */
+export const mod = (n: number, m: number) => ((n % m) + m) % m;

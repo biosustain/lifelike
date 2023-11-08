@@ -1,7 +1,9 @@
 from enum import IntEnum, unique
-from typing import Dict, List, Optional, Tuple
+from itertools import chain
+from typing import Dict, List, Optional, Tuple, Union, Iterator, Set
 
 import magic
+from more_itertools import flatten
 
 from neo4japp.models.files import Files
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
@@ -64,7 +66,7 @@ class BaseFileTypeProvider:
         return [(Certanity.match, self)] if mime_type.lower() in self.mime_types else []
 
     def convert(self, buffer):
-        raise NotImplementedError
+        raise buffer
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
@@ -125,6 +127,16 @@ class BaseFileTypeProvider:
         # contents to look for the DOI
         return None
 
+    def load(self, buffer: FileContentBuffer, file: Files) -> None:
+        """
+        Hook to load the contents - we might want to use the contents directly
+         instead of saving it to the database.
+        Example use case would be to load dump files directly into the database.
+
+        :param buffer: the file's contents
+        :param file: the file construct
+        """
+
     def to_indexable_content(self, buffer: FileContentBuffer) -> FileContentBuffer:
         """
         Return a new buffer that is suited for indexing by Elasticsearch. For
@@ -166,6 +178,19 @@ class BaseFileTypeProvider:
         """
         raise ExportFormatError()
 
+    def generate_linked_export(self, file: Files, format: str) -> FileExport:
+        """
+        Generate an export for this file of the provided format. If the format is not
+        supported, then an exception should be raised. The file.content field of the
+        provided file is available and may (or may not) have been eager loaded.
+
+        :param file: the file
+        :param format: the format
+        :return: an export
+        :raises ExportFormatError: raised if the export is not supported
+        """
+        raise ExportFormatError()
+
     def prepare_content(self, buffer: FileContentBuffer, params: dict, file: Files):
         """
         Create a content to store from request data. Return unmodified if the content does not
@@ -178,6 +203,20 @@ class BaseFileTypeProvider:
         Do something after a file content update.
 
         :param file: the file
+        """
+
+    def get_related_files(
+        self, file: Files, recursive: Set[str]
+    ) -> Iterator[Union[Files, str]]:
+        """
+        Return a list of files linked to the given file.
+        """
+        recursive.add(file.hash_id)
+        return iter([])
+
+    def relink_file(self, file: Files, files_hash_map) -> None:
+        """
+        Relink the file refs based on provided map.
         """
 
 
@@ -297,3 +336,15 @@ class FileTypeService:
         for provider in self.providers:
             d[provider.mime_types[0]] = provider.SHORTHAND
         return d
+
+    def relink_file(self, file: Files, files_hash_map) -> None:
+        """
+        Relink the file refs based on provided map.
+        """
+        self.get(file.mime_type).relink_file(file, files_hash_map)
+
+    def get_related_files(self, files: List[Files], recursive: Set[str]):
+        def get_related_files(f: Files):
+            return self.get(f.mime_type).get_related_files(f, recursive)
+
+        return chain(files, *map(get_related_files, files))

@@ -1,12 +1,28 @@
+from typing import List, Optional
+
 from flask import Blueprint
 from webargs.flaskparser import use_args
 
 from neo4japp.schemas.context import ContextRelationshipRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import current_username
-from neo4japp.utils.string import compose_lines, indent_lines
 
 bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
+
+
+def compose_query(entities: List[str], context: Optional[str]):
+    entities_len = len(entities)
+    if entities_len < 1:
+        raise ValueError('At least one entity must be provided.')
+
+    if entities_len == 1:
+        query_core = f'What is {entities[0]}'
+    else:
+        query_core = f'What is the relationship between {", ".join(entities)}'
+
+    context_query = f' in the context of {context}' if context else''
+
+    return query_core + context_query + '?'
 
 
 @bp.route('/relationship', methods=['POST'])
@@ -15,25 +31,12 @@ def relationship(params):
     entities = params.get('entities', [])
     context = params.get('context')
     options = params.get('options', {})
-    escaped_terms = (ChatGPT.escape(term) for term in entities + [context] if term)
     create_params = dict(
         model="gpt-3.5-turbo",
         messages=[
             dict(
                 role="user",
-                content=(
-                    f'Given list of terms delimited by {ChatGPT.DELIMITER},'
-                    f' explain what is the relationship between them?\n'
-                    f'List of terms: {ChatGPT.DELIMITER}'
-                    f'''{
-                        compose_lines(
-                            *indent_lines(
-                                *escaped_terms
-                            )
-                        )
-                    }'''
-                    f'{ChatGPT.DELIMITER}'
-                ),
+                content=compose_query(entities, context),
             )
         ],
         temperature=options.get('temperature', 0),

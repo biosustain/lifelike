@@ -147,6 +147,7 @@ def get_file_type_service():
         PDFTypeProvider,
         BiocTypeProvider,
         DirectoryTypeProvider,
+        DumpTypeProvider,
         MapTypeProvider,
         GraphTypeProvider,
     )
@@ -154,6 +155,7 @@ def get_file_type_service():
     service = FileTypeService()
     service.register(GenericFileTypeProvider())
     service.register(DirectoryTypeProvider())
+    service.register(DumpTypeProvider())
     service.register(PDFTypeProvider())
     service.register(BiocTypeProvider())
     service.register(MapTypeProvider())

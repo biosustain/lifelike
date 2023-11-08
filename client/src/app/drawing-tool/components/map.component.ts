@@ -6,6 +6,7 @@ import {
   NgZone,
   OnChanges,
   OnDestroy,
+  Optional,
   Output,
   SimpleChanges,
   ViewChild,
@@ -50,12 +51,13 @@ import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GraphViewDirective } from '../directives/graph-view.directive';
+import { MapStoreService } from '../services/map-store.service';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  providers: [OpenFileProvider],
+  providers: [OpenFileProvider, MapStoreService],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;
@@ -120,14 +122,16 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
     readonly mapImageProviderService: MapImageProviderService,
     readonly objectTypeService: ObjectTypeService,
     readonly graphActionsService: GraphActionsService,
-    readonly openFileProvider: OpenFileProvider
+    @Optional() readonly openFileProvider: OpenFileProvider // Not provided in preview
   ) {
     const isInEditMode = this.isInEditMode.bind(this);
 
     this.loadSubscription = this.loadTask.results$.subscribe(
       ({ result: [mapFile, mapBlob, backupBlob], value }) => {
         this.map = mapFile;
-        this.openFileProvider.object = mapFile;
+        if (this.openFileProvider) {
+          this.openFileProvider.object = mapFile;
+        }
 
         if (mapFile.new && mapFile.privileges.writable && !isInEditMode()) {
           this.workspaceManager.navigate([

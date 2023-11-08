@@ -1,9 +1,9 @@
 <ng-container *ngIf="loadTask.status$ | async as status">
-  <div class="module" appContainerBreakpoints>
+  <div class="module" appContainerBreakpoints [appShowPlaceholders]="status.placeholdersShown">
     <div class="module-header">
       <div class="module-title-bar">
         <h1 class="module-title">
-          <ng-container *ngIf="params; else noQuery">
+          <ng-container *ngIf="params$ | async as params; else noQuery">
             Knowledge Graph Results for "{{ params.query }}"
           </ng-container>
           <ng-template #noQuery>Knowledge Graph</ng-template>
@@ -11,69 +11,75 @@
       </div>
 
       <div class="module-toolbar mt-2">
-        <app-graph-search-form class="w-100" [params]="params" (search)="search($event)">
+        <app-graph-search-form class="w-100" [params]="params$ | async" (search)="search($event)">
         </app-graph-search-form>
       </div>
     </div>
 
     <div class="module-body flex-fill overflow-auto" #body>
-      <ng-container *ngIf="params; else noQueryResults">
+      <ng-container *ngIf="params$ | async as params; else noQueryResults">
         <app-background-task-progress
           [status]="status"
           (refresh)="refresh()"
           childClass="mb-2"
         ></app-background-task-progress>
 
-        <ng-container *ngIf="status.placeholdersShown || (status.resultsShown && results.length)">
-          <div class="text-muted mb-3" [appShowPlaceholders]="status.placeholdersShown">
-            <app-results-summary
-              [page]="params.page"
-              [pageSize]="params.limit"
-              [collectionSize]="collectionSize"
-              [resultCountLimited]="true"
-              [resultLimit]="1000"
-              appHasPlaceholder
-            ></app-results-summary>
-          </div>
-
-          <div class="search-results" [appShowPlaceholders]="status.placeholdersShown">
-            <div
-              class="search-results-item"
-              *ngFor="let n of results; let i = index"
-              [ngSwitch]="n.node.label"
-            >
-              <app-search-record-relationships
-                [node]="n"
-                *ngSwitchCase="'Snippet'"
-                [params]="params"
+        <ng-container *ngIf="results$ | async as results">
+          <ng-container *ngIf="status.placeholdersShown || (status.resultsShown && results.length)">
+            <div class="text-muted mb-3">
+              <app-results-summary
+                [page]="params.page"
+                [pageSize]="params.limit"
+                *ngIf="collectionSize$ | async as collectionSize"
+                [collectionSize]="collectionSize"
+                [resultCountLimited]="true"
+                [resultLimit]="1000"
                 appHasPlaceholder
-              >
-              </app-search-record-relationships>
-              <app-search-record-node
-                [node]="n"
-                [legend]="legend"
-                [params]="params"
-                *ngSwitchDefault
-                appHasPlaceholder
-              >
-              </app-search-record-node>
+              ></app-results-summary>
             </div>
-          </div>
 
-          <div class="mt-4">
-            <ngb-pagination
-              [page]="params.page"
-              [pageSize]="params.limit"
-              [collectionSize]="collectionSize > 1000 ? 1000 : collectionSize"
-              *ngIf="collectionSize !== undefined"
-              (pageChange)="goToPage($event)"
-            ></ngb-pagination>
+            <div class="search-results">
+              <div
+                class="search-results-item"
+                *ngFor="let n of results; let i = index"
+                [ngSwitch]="n.node.label"
+              >
+                <app-search-record-relationships
+                  [node]="n"
+                  *ngSwitchCase="'Snippet'"
+                  [params]="params"
+                  appHasPlaceholder
+                >
+                </app-search-record-relationships>
+                <app-search-record-node
+                  [node]="n"
+                  [legend]="legend$ | async"
+                  [params]="params"
+                  *ngSwitchDefault
+                  appHasPlaceholder
+                >
+                </app-search-record-node>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <ngb-pagination
+                [page]="params.page"
+                [pageSize]="params.limit"
+                *ngIf="collectionSize$ | async as collectionSize"
+                [collectionSize]="collectionSize > 1000 ? 1000 : collectionSize"
+                (pageChange)="goToPage($event)"
+              ></ngb-pagination>
+            </div>
+          </ng-container>
+
+          <div
+            *ngIf="status.emptyResultsShown && results.length == 0"
+            class="text-center my-4 px-4"
+          >
+            No records match your current filters.
           </div>
         </ng-container>
-
-        <div *ngIf="status.emptyResultsShown && results.length == 0" class="text-center my-4 px-4">
-          No records match your current filters.
-        </div>
       </ng-container>
       <ng-template #noQueryResults>
         <div class="text-center my-4 px-4">Search for records above.</div>

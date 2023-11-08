@@ -370,7 +370,6 @@ class ProjectListView(ProjectBaseView):
 
         project_***ARANGO_USERNAME***_and_descendants = (
             FilesystemBaseView.get_nondeleted_recycled_descendants(
-                self,
                 and_(
                     Files.id == project.***ARANGO_USERNAME***_id,
                     Files.recycling_date.is_(None),

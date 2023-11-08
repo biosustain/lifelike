@@ -19,7 +19,7 @@ import { fromEventCapture } from 'app/shared/rxjs/from-event-capture';
 @Injectable()
 export class EventManagerService implements OnDestroy {
   constructor(
-    // ElementRef can be only injecvted to service declared in component providers
+    // ElementRef can be only injected to service declared in component providers
     private readonly elementRef: ElementRef // drawing tool element
   ) {}
   private readonly destroy$ = new Subject();

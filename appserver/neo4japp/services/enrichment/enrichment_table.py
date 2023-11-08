@@ -290,7 +290,7 @@ def get_regulon_genes(arango_client: ArangoClient, ncbi_gene_ids: List[int]):
     return {
         result['doc_id']: {
             'result': result['node'],
-            'link': "http://regulondb.ccg.unam.mx/gene?"
+            'link': "https://regulondb.ccg.unam.mx/gene?"
             + urlencode(
                 compact(
                     dict(

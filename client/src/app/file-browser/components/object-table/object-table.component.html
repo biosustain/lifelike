@@ -1,0 +1,361 @@
+<table
+  class="table module-body-table table-selectable position-relative"
+  app-cdk-table-colgroup-backport
+  style="table-layout: fixed"
+  [dataSource]="objects.view$"
+  [trackBy]="rowSnapshotIdentity"
+  cdkDropList
+  cdkDragListLockAxis="x"
+  cdkDropListOrientation="horizontal"
+  (cdkDropListDropped)="reorder($event)"
+>
+  <colgroup>
+    <!-- First and last column has additional width of 12px  -->
+    <col
+      *ngFor="let column of flexColumnsLayout$ | async; let first = first; let last = last"
+      [style.width.px]="column.width + (first || last ? 12 : 0)"
+    />
+  </colgroup>
+
+  <!-- Checkbox -->
+  <ng-container [cdkColumnDef]="columnEnum.checkbox">
+    <th cdk-header-cell *cdkHeaderCellDef class="text-truncate" cdkDrag cdkDragBoundary="table">
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Selection</span>
+      </ng-template>
+      <ng-container *ngIf="objects?.multipleSelection">
+        <div class="custom-control custom-checkbox">
+          <input
+            type="checkbox"
+            appUid
+            #checkbox="uid"
+            class="custom-control-input"
+            [checked]="objects.isAllSelected()"
+            (change)="objects.toggleAll()"
+          />
+          <label class="custom-control-label" [for]="checkbox.uid"></label>
+        </div>
+      </ng-container>
+    </th>
+    <td cdk-cell *cdkCellDef="let object" class="align-middle text-nowrap overflow-hidden">
+      <div class="custom-control custom-checkbox overflow-hidden">
+        <input
+          type="checkbox"
+          appUid
+          #checkbox="uid"
+          class="custom-control-input"
+          (change)="objects.toggle(object); $event.stopPropagation()"
+          [checked]="objects.isSelected(object)"
+        />
+        <label class="custom-control-label d-block" [for]="checkbox.uid"></label>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- "Starred" -->
+  <ng-container [cdkColumnDef]="columnEnum.star">
+    <th cdk-header-cell *cdkHeaderCellDef cdkDrag cdkDragBoundary="table">
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Starred</span>
+      </ng-template>
+    </th>
+    <td cdk-cell *cdkCellDef="let object" style="vertical-align: middle">
+      <div
+        class="d-flex align-items-center"
+        container="body"
+        (click)="controler.toggleStarred(object, objects); $event.stopPropagation()"
+      >
+        <div class="d-inline-block mr-1">
+          <i [class]="'fas fa-star ' + (object.starred ? 'text-warning' : 'text-secondary')"></i>
+        </div>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Name -->
+  <ng-container [cdkColumnDef]="columnEnum.name">
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      class="text-truncate"
+      cdkDrag
+      cdkDragBoundary="table"
+      [appResizableColumn]="columnEnum.name"
+    >
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Name</span>
+      </ng-template>
+      <span cdkDragHandle>Name</span>
+    </th>
+    <td cdk-cell *cdkCellDef="let object" class="align-middle text-nowrap overflow-hidden">
+      <div
+        class="d-flex align-items-center"
+        popoverTitle="Description"
+        container="body"
+        triggers="mouseenter:mouseleave"
+        placement="right"
+        [popoverClass]="'tooltip-newlines'"
+        [ngbPopover]="object.description | truncate : MAX_TOOLTIP_LENGTH"
+        [disablePopover]="object.description == null || object.description.length === 0"
+      >
+        <div class="d-inline-block mr-1">
+          <i [class]="'fa-fw text-icon ' + object.fontAwesomeIcon"></i>
+        </div>
+
+        <div class="d-inline-block text-truncate">
+          <a
+            [appLink]="object.getCommands(forEditing)"
+            [handleClick]="false"
+            (click)="controler.openObject(object, appLinks); $event.preventDefault()"
+            appHasPlaceholder
+          >
+            <ng-container *ngIf="!object.isDirectory; else dirLabel">{{
+              object.effectiveName
+            }}</ng-container>
+            <ng-template #dirLabel>
+              <strong>{{ object.effectiveName }}</strong>
+            </ng-template>
+          </a>
+        </div>
+
+        <div
+          *ngIf="object.public"
+          class="d-inline-block ml-1"
+          ngbTooltip="This item is public and can be viewed by any logged-in user."
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+          container="body"
+        >
+          <i class="fa fa-fw text-icon fa-globe"></i>
+        </div>
+
+        <div *ngIf="object.pinned" class="d-inline-block ml-1">
+          <i class="fa fa-fw text-icon fa-thumbtack"></i>
+        </div>
+
+        <div
+          *ngIf="!object.privileges.writable && !object.privileges.commentable"
+          class="d-inline-block ml-1"
+          ngbTooltip="You do not have permission to edit this item."
+          container="body"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
+          <i class="fa fa-fw text-icon fa-lock"></i>
+        </div>
+
+        <div
+          *ngIf="!object.privileges.writable && object.privileges.commentable"
+          class="d-inline-block ml-1"
+          ngbTooltip="You can make comments on this item, but you cannot edit it."
+          container="body"
+          #tooltipRef="ngbTooltip"
+          [appAutoCloseTooltipOutOfView]="tooltipRef"
+        >
+          <i class="fa fa-fw text-icon fa-comment"></i>
+        </div>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Annotated -->
+  <ng-container [cdkColumnDef]="columnEnum.annotation">
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      class="text-truncate"
+      cdkDrag
+      cdkDragBoundary="table"
+      [appResizableColumn]="columnEnum.annotation"
+    >
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Annotated</span>
+      </ng-template>
+      <span cdkDragHandle>Annotated</span>
+    </th>
+    <td
+      cdk-cell
+      *cdkCellDef="let object"
+      class="align-middle text-nowrap overflow-hidden text-truncate"
+    >
+      <div
+        *ngIf="object.isAnnotatable"
+        class="text-truncate"
+        container="body"
+        triggers="mouseenter:mouseleave"
+        placement="right"
+        popoverTitle="Annotation Status"
+        [ngbPopover]="object.annotationsTooltipContent"
+        [disablePopover]="!object.annotationsTooltipContent"
+      >
+        <span appHasPlaceholder>
+          <ng-container
+            *ngIf="object.annotationsTooltipContent && object.annotationsTooltipContent.length"
+          >
+            <i class="fas fa-exclamation-triangle fa-fw mr-1"></i>
+          </ng-container>
+          {{ (object.annotationsDate | date : 'short') || 'No annotations' }}
+        </span>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Size -->
+  <ng-container [cdkColumnDef]="columnEnum.size">
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      class="text-truncate"
+      cdkDrag
+      cdkDragBoundary="table"
+      [appResizableColumn]="columnEnum.size"
+    >
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Size</span>
+      </ng-template>
+      <span cdkDragHandle>Size</span>
+    </th>
+    <td
+      cdk-cell
+      *cdkCellDef="let object"
+      class="align-middle text-nowrap overflow-hidden text-truncate"
+    >
+      <span *ngIf="object.size" class="text-truncate" appHasPlaceholder>
+        {{ object.size }}
+      </span>
+    </td>
+  </ng-container>
+
+  <!-- Created -->
+  <ng-container [cdkColumnDef]="columnEnum.modified">
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      cdkDrag
+      cdkDragBoundary="table"
+      class="text-truncate"
+      [appResizableColumn]="columnEnum.modified"
+    >
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Modified</span>
+      </ng-template>
+      <span cdkDragHandle>Modified</span>
+    </th>
+    <td
+      cdk-cell
+      *cdkCellDef="let object"
+      class="align-middle text-nowrap overflow-hidden text-truncate"
+    >
+      <span appHasPlaceholder>{{ object.updatedTimestamp | date : 'shortDate' }}</span>
+    </td>
+  </ng-container>
+
+  <!-- Author -->
+  <ng-container [cdkColumnDef]="columnEnum.author">
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      class="text-truncate"
+      cdkDrag
+      cdkDragBoundary="table"
+      [appResizableColumn]="columnEnum.author"
+    >
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Author</span>
+      </ng-template>
+      <span cdkDragHandle>Author</span>
+    </th>
+    <td
+      cdk-cell
+      *cdkCellDef="let object"
+      class="align-middle text-nowrap overflow-hidden text-truncate"
+    >
+      <app-user [user]="object.user" class="text-nowrap"></app-user>
+    </td>
+  </ng-container>
+
+  <!-- Dropdown -->
+  <ng-container [cdkColumnDef]="columnEnum.controls">
+    <th cdk-header-cell *cdkHeaderCellDef cdkDrag cdkDragBoundary="table">
+      <ng-template cdkDragPreview>
+        <span class="drag-preview">Controls</span>
+      </ng-template>
+    </th>
+    <td cdk-cell *cdkCellDef="let object">
+      <button
+        class="btn btn-sm text-nowrap"
+        [matMenuTriggerFor]="fileObjectMenu"
+        (click)="$event.stopPropagation()"
+        appHasPlaceholder
+      >
+        <i class="fas fa-cog fa-fw"></i>
+        <i class="fas fa-caret-down fa-fw"></i>
+      </button>
+      <mat-menu #fileObjectMenu="matMenu" xPosition="after" yPosition="below">
+        <app-object-menu
+          [object]="object"
+          [forEditing]="forEditing"
+          [showDelete]="true"
+          (objectOpen)="controler.openObject($event, appLinks)"
+          (objectUpdate)="controler.updateView(objects)"
+          (refreshRequest)="controler.refreshRequest.emit($event)"
+        >
+        </app-object-menu>
+      </mat-menu>
+    </td>
+  </ng-container>
+
+  <!-- Context Menu -->
+  <ng-container [cdkColumnDef]="'context-menu-fake-column'">
+    <!-- Context menu is rendered in invisible header row so we can position it manualy under mouse click -->
+    <ng-template #columnSelection>
+      <button
+        class="dropdown-item"
+        *ngFor="let column of columns$ | async"
+        (click)="hideToggleColumn(column.id)"
+      >
+        <i class="fas fa-fw" [class.fa-check]="!column.hidden"></i> {{ column.id }}
+      </button>
+    </ng-template>
+    <th
+      cdk-header-cell
+      *cdkHeaderCellDef
+      [ngbPopover]="columnSelection"
+      popoverClass="column-visibility-popover"
+      #columnSelectionPopover="ngbPopover"
+      triggers="manual"
+      placement="bottom"
+      autoClose="outside"
+      class="m-0 p-0"
+    ></th>
+  </ng-container>
+
+  <ng-container *ngIf="displayedColumnsIds$ | async as displayedColumns">
+    <tr
+      cdk-header-row
+      *cdkHeaderRowDef="displayedColumns"
+      #headerRow
+      (contextmenu)="openHeaderContextMenu($event); $event.preventDefault()"
+    ></tr>
+    <tr
+      cdk-header-row
+      *cdkHeaderRowDef="['context-menu-fake-column']"
+      #contextMenuContainer
+      class="position-absolute d-block"
+      style="height: 0"
+    >
+      <!-- This row is ussed just to position popover right (under pointer upon click) -->
+    </tr>
+    <tr
+      cdk-row
+      *cdkRowDef="let object; columns: displayedColumns"
+      tabindex="0"
+      [class.active]="objects.isSelected(object)"
+      [appFSObjectTarget]="object?.isDirectory ? object : null"
+      (refreshRequest)="controler.refreshRequest.emit()"
+      draggable="true"
+      (dragstart)="controler.objectDragStart($event, object, objects)"
+      (click)="objects.toggle(object)"
+    ></tr>
+  </ng-container>
+</table>

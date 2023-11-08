@@ -13,11 +13,9 @@ import { Observable } from 'rxjs';
 import { distinctUntilChanged, map, shareReplay, startWith } from 'rxjs/operators';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { FormArrayWithFactory } from 'app/shared/utils/forms/with-factory';
 
 import { PromptComposer } from '../../../interface';
-import { ChatGPT } from '../../../ChatGPT';
 
 export interface DrawingToolPromptFormParams {
   formInput: {
@@ -33,12 +31,15 @@ export interface DrawingToolPromptFormParams {
   templateUrl: './drawing-tool-prompt-from.component.html',
 })
 export class DrawingToolPromptFormComponent implements OnChanges, PromptComposer, OnInit {
-  TEMPLATE = `
-Given list of terms delimited by ${ChatGPT.DELIMITER}, explain what is the relationship between them?
-List of terms: ${ChatGPT.DELIMITER}
-  ...[entities],
-  [context]
-${ChatGPT.DELIMITER}
+  PSEUDOCODE = `
+if there is only one entity and no context:
+  What is [entity]?
+else if there is only one entity and a context:
+  What is [entity] in the context of [context]?
+if there is more than one entity and no context:
+  What is the relationship between [entities]?
+if there is more than one entity and context:
+  What is the relationship between [entities] in the context of [context]?
   `;
   readonly form = new FormGroup({
     context: new FormControl(''),
@@ -55,13 +56,16 @@ ${ChatGPT.DELIMITER}
   }
 
   parseEntitiesToPropmpt(entities: string[], context: string) {
-    return (
-      `Given list of terms delimited by ${ChatGPT.DELIMITER}, ` +
-      `explain what is the relationship between them?\n` +
-      `List of terms: ${ChatGPT.DELIMITER}\n` +
-      `\t${entities.join(`\n\t`)}\n` +
-      `${ChatGPT.DELIMITER}`
-    );
+    const entitiesLength = entities.length;
+    let queryCore: string;
+    if (entitiesLength === 1) {
+      queryCore = 'What is ' + entities[0];
+    } else {
+      queryCore = `What is the relationship between ${entities.join(', ')}`;
+    }
+    const contextQuery =  (context ? ` in the context of ${context}` : '');
+
+    return queryCore + contextQuery + '?';
   }
 
   emitPrompt() {
