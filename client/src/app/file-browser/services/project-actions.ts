@@ -55,47 +55,6 @@ export class ProjectActions {
     map((roles) => roles.includes('admin'))
   );
 
-  /**
-   * Open the dialog to export an object.
-   * @param target the object to export
-   */
-  openExportDialog(target: ProjectImpl): Promise<boolean> {
-    const dialogRef = this.modalService.open(ObjectExportDialogComponent);
-    dialogRef.componentInstance.title = `Export ${target.effectiveName}`;
-    dialogRef.componentInstance.target = target.root;
-    dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
-      const progressDialogRef = this.actions.createProgressDialog('Generating export...');
-      try {
-        return value.exporter
-          .export(value.exportLinked)
-          .pipe(
-            take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
-            finalize(() => progressDialogRef.close()),
-            map((file: File) => {
-              openDownloadForBlob(file, target.effectiveName + '.zip');
-              return true;
-            }),
-            this.errorHandler.create({ label: 'Export object' })
-          )
-          .toPromise();
-      } catch (e) {
-        progressDialogRef.close();
-        throw e;
-      }
-    };
-    dialogRef.componentInstance.dismiss = (error) => {
-      if (error) {
-        this.messageDialog.display({
-          title: 'No Export Formats',
-          message: `No export formats are supported for ${target.effectiveName}.`,
-          type: MessageType.Warning,
-        } as MessageArguments);
-      }
-      return of(false);
-    };
-    return from(dialogRef.result.catch(() => false)).toPromise();
-  }
-
   addSimpleProgressDialog(message: string, title = 'Working...') {
     const progressDialogRef = this.progressDialog.display({
       title,

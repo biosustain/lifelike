@@ -21,23 +21,11 @@ import { ErrorHandler } from '../../services/error-handler.service';
     },
   ],
 })
-export class ProjectMenuComponent implements OnChanges {
+export class ProjectMenuComponent {
   encodeURIComponent = encodeURIComponent;
 
   @Input() project: ProjectImpl;
   @Input() nameEntity = false;
-  private readonly project$: Subject<ProjectImpl> = new ReplaySubject(1);
-  readonly exporters$: Observable<Exporter[]> = this.project$.pipe(
-    this.errorHandler.create({ label: 'Get exporters' }),
-    mergeMap((project) => this.directoryTypeProvider.getExporters(project.root)),
-    shareReplay()
-  );
-
-  ngOnChanges({ project }: SimpleChanges) {
-    if (project) {
-      this.project$.next(project.currentValue);
-    }
-  }
 
   constructor(
     protected readonly projectActions: ProjectActions,
@@ -66,9 +54,5 @@ export class ProjectMenuComponent implements OnChanges {
 
   updateStarred(project: ProjectImpl, starred: boolean) {
     return this.projectActions.updateStarred(project, starred);
-  }
-
-  openExportDialog(target: ProjectImpl) {
-    return this.projectActions.openExportDialog(target);
   }
 }
