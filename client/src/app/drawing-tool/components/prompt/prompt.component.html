@@ -114,6 +114,13 @@
           <span
             style="float: right"
             class="ml-2 mb-2"
+            (click)="copyToClipboard(state.explanation.value.result)"
+          >
+            <i class="fas fa-copy"></i>
+          </span>
+          <span
+            style="float: right"
+            class="ml-2 mb-2"
             *ngIf="state.graph_explanation?.value?.result?.query"
             (click)="openInfo({ query: state.graph_explanation?.value?.result?.query })"
           >
@@ -124,7 +131,7 @@
           <i class="fa fa-spinner fa-spin mr-1"></i>
         </ng-container>
         <ng-template #settled_graph>
-          {{ state.graph_explanation.value.result?.result }}
+          {{ state.graph_explanation.value?.result?.result }}
         </ng-template>
         <app-vis-network
           style="height: 200px; resize: vertical; overflow: hidden"
