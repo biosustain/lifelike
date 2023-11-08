@@ -63,6 +63,8 @@ jobs:
             path: ./filebeat
           - image: metricbeat
             path: ./metricbeat
+          - image: kg-llm
+            path: ./llm
 
     steps:
       - uses: actions/checkout@v3
