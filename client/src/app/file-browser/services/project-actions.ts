@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { of, throwError, iif, defer, from } from 'rxjs';
+import { of, throwError, iif, defer } from 'rxjs';
 import { finalize, catchError, map, switchMap, tap, first, take } from 'rxjs/operators';
 import { Store, select } from '@ngrx/store';
 
-import { MessageArguments, MessageDialog } from 'app/shared/services/message-dialog.service';
+import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -29,11 +29,6 @@ import { ProjectCollaboratorsDialogComponent } from '../components/dialog/projec
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { ObjectDeleteReqursiveDialogComponent } from '../components/dialog/object-delete-reqursive-dialog.component';
 import { FilesystemService } from './filesystem.service';
-import {
-  ObjectExportDialogComponent,
-  ObjectExportDialogValue,
-} from '../components/dialog/object-export-dialog.component';
-import { getObjectLabel } from '../utils/objects';
 import { FilesystemObjectActions } from './filesystem-object-actions';
 
 @Injectable()
