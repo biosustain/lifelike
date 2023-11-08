@@ -1,0 +1,20 @@
+name: Azure Staging Deployment
+
+on:
+  workflow_dispatch:
+  push:
+    tags: [staging-az]
+    branches: [staging-az/**]
+
+jobs:
+  call-deployment-az:
+    uses: ./.github/workflows/deployment-az.yml
+    with:
+      environment_name: staging-az
+      client_config: production
+    secrets:
+      VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
+      SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
+      CONTAINER_REGISTRY_USERNAME: ${{ secrets.AZURE_CR_USERNAME }}
+      CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AZURE_CR_PASSWORD }}
+      INFRA_PAT: ${{ secrets.INFRA_PAT }}
