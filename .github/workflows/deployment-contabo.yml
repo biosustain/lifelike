@@ -26,8 +26,6 @@ on:
         required: true
       SSH_KEY:
         required: true
-      GCP_CREDENTIALS:
-        required: true
       INFRA_PAT:
         required: true
 
