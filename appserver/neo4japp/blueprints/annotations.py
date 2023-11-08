@@ -838,7 +838,9 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                     # TODO: would lo_location_offset == prev_ending_index ever happen?
                     # if yes, need to handle it
                     texts.append(
-                        html.escape(original_text[prev_ending_index + 1 : lo_location_offset])
+                        html.escape(
+                            original_text[prev_ending_index + 1 : lo_location_offset]
+                        )
                     )
                     prev_ending_index = hi_location_offset
                     texts.append(text)
