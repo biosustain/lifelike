@@ -43,8 +43,7 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     private readonly modalService: NgbModal,
     private readonly clipboard: ClipboardService,
     private readonly mapStore: MapStoreService
-  ) {
-  }
+  ) {}
 
   networkConfig = {
     interaction: {
