@@ -59,12 +59,12 @@ jobs:
             path: ./cache-invalidator
           - image: kg-statistical-enrichment
             path: ./statistical-enrichment
+          - image: kg-llm
+            path: ./llm
           - image: filebeat
             path: ./filebeat
           - image: metricbeat
             path: ./metricbeat
-          - image: kg-llm
-            path: ./llm
 
     steps:
       - uses: actions/checkout@v3
