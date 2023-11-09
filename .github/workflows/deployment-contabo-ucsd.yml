@@ -7,11 +7,11 @@ on:
     branches: [ucsd/**]
 
 jobs:
-  call-deployment-gcp:
+  call-deployment-contabo:
     uses: ./.github/workflows/deployment-contabo.yml
     with:
       environment_name: ucsd
-      client_config: production
+      client_config: staging
     secrets:
       VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT }}
       SSH_KEY: ${{ secrets.ANSIBLE_PRIVATE_SSH_KEY }}
