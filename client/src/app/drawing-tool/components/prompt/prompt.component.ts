@@ -27,9 +27,9 @@ import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt
 import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { MapStoreService, setContext } from '../../services/map-store.service';
-import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 @Component({
   selector: 'app-drawing-tool-prompt',
