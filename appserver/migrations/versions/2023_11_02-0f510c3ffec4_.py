@@ -114,7 +114,7 @@ def data_upgrades():
                 updated_raw_file = updated_raw_file.getvalue()
                 new_hash = hashlib.sha256(updated_raw_file).digest()
 
-                existing_file_content, = session.execute(
+                existing_file_content = session.execute(
                     sa.select(
                         [t_files_content.c.id]
                     )
@@ -126,8 +126,8 @@ def data_upgrades():
                 # If the checksum already exists in the FileContent table, don't update the old
                 # row. Instead, update the File row with the existing FileContent id.
                 if existing_file_content is not None:
-                    print(f'\tUsing new content id for Files#{file_id}: {existing_file_content}')
-                    content_id = existing_file_content
+                    print(f'\tUsing new content id for Files#{file_id}: {existing_file_content[0]}')
+                    content_id = existing_file_content[0]
                 else:
                     print(f'\tUpdating FilesContent#{content_id}')
                     session.execute(
