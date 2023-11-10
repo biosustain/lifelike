@@ -6,6 +6,7 @@ import {
   distinctUntilChanged,
   map,
   mergeMap,
+  shareReplay,
   startWith,
   switchMap,
   takeUntil,
@@ -26,11 +27,14 @@ import { FilesystemObject } from '../../models/filesystem-object';
   selector: 'app-object-export-dialog',
   templateUrl: './object-export-dialog.component.html',
 })
-export class ObjectExportDialogComponent extends CommonFormDialogComponent<ObjectExportDialogValue> implements OnInit {
+export class ObjectExportDialogComponent
+  extends CommonFormDialogComponent<ObjectExportDialogValue>
+  implements OnInit
+{
   constructor(
     modal: NgbActiveModal,
     messageDialog: MessageDialog,
-    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly objectTypeService: ObjectTypeService
   ) {
     super(modal, messageDialog);
   }
@@ -41,7 +45,7 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
 
   @Input() set exporters(exporters: Exporter[]) {
     this.inputExporters$.next(exporters);
-  };
+  }
 
   @Input() title = 'Export';
 
@@ -49,27 +53,26 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
   private readonly exporters$ = this.inputExporters$.asObservable().pipe(
     startWith(null),
     distinctUntilChanged(),
-    switchMap(exporters =>
+    switchMap((exporters) =>
       iif(
         () => isNotEmpty(exporters),
         of(exporters),
         this.inputTarget$.pipe(
-          switchMap(target =>
+          switchMap((target) =>
             this.objectTypeService
               .get(target)
-              .pipe(
-                mergeMap((typeProvider) => typeProvider.getExporters(target)),
-              ),
-          ),
-        ),
-      ),
+              .pipe(mergeMap((typeProvider) => typeProvider.getExporters(target)))
+          )
+        )
+      )
     ),
+    shareReplay({ refCount: true, bufferSize: 1 })
   );
 
   private readonly inputTarget$ = new ReplaySubject<FilesystemObject>(1);
-  private readonly target$ = this.inputTarget$.asObservable().pipe(
-    distinctUntilChanged(),
-  );
+  private readonly target$ = this.inputTarget$
+    .asObservable()
+    .pipe(distinctUntilChanged(), shareReplay({ refCount: true, bufferSize: 1 }));
   private readonly destroy$ = new Subject();
 
   private readonly linkedExporters = ['PDF', 'PNG', 'SVG'];
@@ -79,39 +82,38 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
     exportLinked: new FormControl(false),
   });
 
-
   private readonly currentExporter$ = combineLatest([
     this.exporters$,
     defer(() => {
       const exporterControl = this.form.get('exporter');
-      return exporterControl.valueChanges.pipe(
-        startWith(exporterControl.value),
-      );
+      return exporterControl.valueChanges.pipe(startWith(exporterControl.value));
     }),
   ]).pipe(
     map(([exporters, currentExporterIdx]) => exporters[currentExporterIdx]),
-    distinctUntilChanged(),
+    distinctUntilChanged()
   );
 
-  private isMapExport$ = this.target$.pipe(
-    map(target => target.mimeType === MimeTypes.Map),
-  );
+  private isMapExport$ = this.target$.pipe(map((target) => target.mimeType === MimeTypes.Map));
 
-  private readonly islinkedExportSupported$ = this.isMapExport$.pipe(
-    switchMap(isMapExport =>
-      iif(
-        () => isMapExport,
-        this.currentExporter$.pipe(
-          map(currentExporter => this.linkedExporters.includes(currentExporter.name)),
-        ),
-      ),
+  private state$ = this.isMapExport$.pipe(
+    switchMap((isMapExport) =>
+      this.currentExporter$.pipe(
+        map((currentExporter) => ({
+          exporter: currentExporter,
+          isLinkedSupported: isMapExport && this.linkedExporters.includes(currentExporter.name),
+        }))
+      )
     ),
+    shareReplay({ refCount: true, bufferSize: 1 })
+  );
+
+  readonly islinkedExportDisabled$ = this.state$.pipe(
+    map((state) => !state.isLinkedSupported),
+    shareReplay({ refCount: true, bufferSize: 1 })
   );
 
   ngOnInit() {
-    this.exporters$.pipe(
-      takeUntil(this.destroy$),
-    ).subscribe(exporters => {
+    this.exporters$.pipe(takeUntil(this.destroy$)).subscribe((exporters) => {
       if (exporters) {
         this.form.patchValue({
           exporter: 0,
@@ -124,15 +126,12 @@ export class ObjectExportDialogComponent extends CommonFormDialogComponent<Objec
 
   getValue(): Promise<ObjectExportDialogValue> {
     return promiseOfOne(
-      combineLatest([
-        this.currentExporter$,
-        this.islinkedExportSupported$,
-      ]).pipe(
-        map(([exporter, isLinkedExportSupported]) => ({
+      this.state$.pipe(
+        map(({ exporter, isLinkedSupported }) => ({
           exporter,
-          exportLinked: isLinkedExportSupported && this.form.get('exportLinked').value,
-        })),
-      ),
+          exportLinked: isLinkedSupported && this.form.get('exportLinked').value,
+        }))
+      )
     );
   }
 }

@@ -285,62 +285,6 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
-    def generate_linked_export(self, file: Files, format_: str) -> FileExport:
-        return self.generate_export(file, format_)
-
-    def generate_export(self, target_file: Files, format_: str) -> FileExport:
-        # To prevent leaking changes to the database, we use a savepoint
-        savepoint = db.session.begin_nested()
-
-        try:
-            related_files = set(self.get_related_files(target_file, recursive=set()))
-
-            # Flattern inbetween folders to preserve file hierarhy in export
-            # (generate_export() exports only files in the list)
-            common_path_len = len(
-                path.commonpath([path.dirname(f.path) for f in related_files])
-                if len(related_files)
-                else ''
-            )
-
-            def add_parent(_related_file: Files):
-                if (
-                    _related_file.parent
-                    and len(_related_file.parent.path) > common_path_len
-                ):
-                    related_files.add(_related_file.parent)
-                    add_parent(_related_file.parent)
-
-            for related_file in related_files.copy():
-                add_parent(related_file)
-
-            # Check read permissions
-            def has_read_permission(_related_file: Files):
-                current_user = g.current_user
-                if _related_file.calculated_privileges[current_user.id].readable:
-                    return True
-
-                warn(
-                    ServerWarning(
-                        title='Skipped non-readable file',
-                        message=f'User {current_user.username} has sufficient permissions'
-                        f' to read "{_related_file.path}".',
-                    )
-                )
-
-            permited_files = list(filter(has_read_permission, related_files))  # type: ignore
-
-            # Rename project ***ARANGO_USERNAME*** folder to project name
-            for file in permited_files:
-                if file.filename == '/':
-                    file.filename = file.project.name
-
-            return DataExchange.generate_export(
-                target_file.filename, permited_files, format_
-            )
-        finally:
-            savepoint.rollback()
-
     def get_related_files(
         self,
         file: Files,
@@ -1499,17 +1443,15 @@ class MapTypeProvider(BaseFileTypeProvider):
             filename=f"{file.filename}{ext}",
         )
 
-    def generate_linked_export(self, file: Files, format: str) -> FileExport:
-        if format in SUPPORTED_MAP_MERGING_FORMATS:
+    def generate_linked_export(self, file: Files, format_: str) -> FileExport:
+        if format_ in SUPPORTED_MAP_MERGING_FORMATS:
             link_to_page_map: Dict[str, int] = dict()
             files = self.get_all_linked_maps(
                 file, {file.hash_id}, [file], link_to_page_map
             )
-            return self.merge(files, format, link_to_page_map)
+            return self.merge(files, format_, link_to_page_map)
         else:
-            raise ExportFormatError(
-                "Unknown or invalid export format for the requested file."
-            )
+            return super().generate_linked_export(file, format_)
 
     @contextmanager
     def open_graph_json(self, file: Files, mode='r'):
@@ -1848,7 +1790,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if match:
                     related_files_hashes.add(match.group('hash_id'))
 
-        if recursive:
+        if recursive is not None:
             recursive.add(file.hash_id)
             related_files_new_hashes = related_files_hashes - recursive
             related_files = Filesystem.get_nondeleted_recycled_files(

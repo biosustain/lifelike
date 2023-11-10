@@ -6,7 +6,6 @@ from marshmallow import ValidationError
 from sqlalchemy import and_
 from webargs.flaskparser import use_args
 
-from neo4japp.blueprints.auth import login_optional
 from neo4japp.database import db
 from neo4japp.models import Projects, Files
 from neo4japp.schemas.filesystem import (
@@ -23,7 +22,6 @@ bp = Blueprint('user', __name__, url_prefix='/user')
 
 
 class PublishedView(MethodView):
-    @login_optional
     def get(self, user_hash_id: str):
         project_***ARANGO_USERNAME***_id = (
             db.session.query(Projects.***ARANGO_USERNAME***_id)
