@@ -20,6 +20,11 @@ import { getObjectLabel } from 'app/file-browser/utils/objects';
 
 import { ErrorHandler } from '../../services/error-handler.service';
 
+interface ButtonTemplateContext {
+  $implicit: () => void;
+  label: string;
+}
+
 @Component({
   selector: 'app-exporters-ref',
   templateUrl: './exporters-ref.component.html',
@@ -31,7 +36,7 @@ export class ExportersRefComponent implements OnChanges {
     protected readonly objectTypeService: ObjectTypeService
   ) {}
 
-  @ContentChild(TemplateRef) buttonTemplate: TemplateRef<any>;
+  @ContentChild(TemplateRef) buttonTemplate: TemplateRef<ButtonTemplateContext>;
 
   @Input() object: FilesystemObject;
   private readonly object$: Subject<FilesystemObject> = new ReplaySubject(1);
@@ -76,6 +81,7 @@ export class ExportersRefComponent implements OnChanges {
   openPrePublishDialogFactory(prePublishExporters: Exporter[]) {
     return () =>
       this.actions.openExportDialog(this.object, {
+        title: `Pre-publish  ${getObjectLabel(this.object)}`,
         exporters: prePublishExporters,
         accept: (value: ObjectExportDialogValue) =>
           this.actions.export(value, { label: 'Pre-publish object' }),

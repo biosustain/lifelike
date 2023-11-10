@@ -5,23 +5,14 @@ import { map } from 'rxjs/operators';
 
 import {
   AbstractObjectTypeProvider,
-  AbstractObjectTypeProviderHelper,
   Exporter,
 } from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SearchType } from 'app/search/shared';
-import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { MimeTypes } from 'app/shared/constants';
 
 @Injectable()
 export class PdfTypeProvider extends AbstractObjectTypeProvider {
-  constructor(
-    abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-    protected readonly filesystemService: FilesystemService
-  ) {
-    super(abstractObjectTypeProviderHelper);
-  }
-
   handles(object: FilesystemObject): boolean {
     return object.mimeType === 'application/pdf';
   }

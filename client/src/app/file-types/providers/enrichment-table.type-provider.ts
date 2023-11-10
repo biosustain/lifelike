@@ -3,6 +3,7 @@ import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, from, Observable, of } from 'rxjs';
 import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 
 import {
   EnrichmentTableEditDialogComponent,
@@ -36,6 +37,7 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
+import { State } from 'app/root-store';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.lifelike.document/enrichment-table';
 
@@ -45,9 +47,10 @@ const BIOC_ID_COLUMN_INDEX = 2;
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
+    protected readonly filesystemService: FilesystemService,
+    store: Store<State>,
     protected readonly modalService: NgbModal,
     protected readonly progressDialog: ProgressDialog,
-    protected readonly filesystemService: FilesystemService,
     protected readonly annotationsService: AnnotationsService,
     protected readonly errorHandler: ErrorHandler,
     protected readonly objectCreationService: ObjectCreationService,
@@ -56,7 +59,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     protected readonly injector: Injector,
     protected readonly worksheetService: EnrichmentTableService
   ) {
-    super(abstractObjectTypeProviderHelper);
+    super(abstractObjectTypeProviderHelper, filesystemService, store);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -315,64 +318,67 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([
-      {
-        name: 'CSV',
-        export: () =>
-          this.filesystemService.getContent(object.hashId).pipe(
-            mergeMap((blob) =>
-              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
-            ),
-            mergeMap((document) =>
-              new EnrichmentTable({
-                usePlainText: true,
+    return super.getExporters(object).pipe(
+      map((inheritedExporters) => [
+        {
+          name: 'CSV',
+          export: () =>
+            this.filesystemService.getContent(object.hashId).pipe(
+              mergeMap((blob) =>
+                new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
+              ),
+              mergeMap((document) =>
+                new EnrichmentTable({
+                  usePlainText: true,
+                })
+                  .load(document)
+                  .pipe(tap((table) => this.addBioCycIdColumn(document, table)))
+              ),
+              mergeMap((table) =>
+                new TableCSVExporter().generate(table.tableHeader, table.tableCells)
+              ),
+              map((blob) => {
+                return new File([blob], object.filename + '.csv');
               })
-                .load(document)
-                .pipe(tap((table) => this.addBioCycIdColumn(document, table)))
             ),
-            mergeMap((table) =>
-              new TableCSVExporter().generate(table.tableHeader, table.tableCells)
-            ),
-            map((blob) => {
-              return new File([blob], object.filename + '.csv');
-            })
-          ),
-      },
-      {
-        name: 'Genes for Graph Analysis CSV',
-        export: () =>
-          this.filesystemService.getContent(object.hashId).pipe(
-            mergeMap((blob) =>
-              new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
-            ),
-            mergeMap((document) =>
-              new EnrichmentTable({
-                usePlainText: true,
-              })
-                .load(document)
-                .pipe(
-                  tap((table) => this.addBioCycIdColumn(document, table)),
-                  tap((table) => this.prepareTableForRadiateAnalysis(table))
-                )
-            ),
-            mergeMap((table) =>
-              new TableCSVExporter().generate(table.tableHeader, table.tableCells)
-            ),
-            map((blob) => {
-              return new File([blob], object.filename + '_for_graph_analysis.csv');
-            })
-          ),
-      },
-      {
-        name: 'Lifelike Enrichment Table File',
-        export: () => {
-          return this.filesystemService.getContent(object.hashId).pipe(
-            map((blob) => {
-              return new File([blob], object.filename + '.llenrichmenttable.json');
-            })
-          );
         },
-      },
-    ]);
+        {
+          name: 'Genes for Graph Analysis CSV',
+          export: () =>
+            this.filesystemService.getContent(object.hashId).pipe(
+              mergeMap((blob) =>
+                new EnrichmentDocument(this.worksheetViewerService).loadResult(blob, object.hashId)
+              ),
+              mergeMap((document) =>
+                new EnrichmentTable({
+                  usePlainText: true,
+                })
+                  .load(document)
+                  .pipe(
+                    tap((table) => this.addBioCycIdColumn(document, table)),
+                    tap((table) => this.prepareTableForRadiateAnalysis(table))
+                  )
+              ),
+              mergeMap((table) =>
+                new TableCSVExporter().generate(table.tableHeader, table.tableCells)
+              ),
+              map((blob) => {
+                return new File([blob], object.filename + '_for_graph_analysis.csv');
+              })
+            ),
+        },
+        {
+          name: 'Lifelike Enrichment Table File',
+          export: () => {
+            return this.filesystemService.getContent(object.hashId).pipe(
+              map((blob) => {
+                return new File([blob], object.filename + '.llenrichmenttable.json');
+              })
+            );
+          },
+        },
+        ...inheritedExporters,
+      ])
+    );
   }
 }

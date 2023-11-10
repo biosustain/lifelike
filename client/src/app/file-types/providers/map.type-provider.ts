@@ -1,8 +1,9 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
-import { from, Observable, of } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import JSZip from 'jszip';
+import { Store } from '@ngrx/store';
 
 import { MapComponent } from 'app/drawing-tool/components/map.component';
 import { KnowledgeMapGraph } from 'app/drawing-tool/services/interfaces';
@@ -22,18 +23,20 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
+import { State } from 'app/root-store';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
+    store: Store<State>,
     protected readonly injector: Injector,
     protected readonly objectCreationService: ObjectCreationService,
     protected readonly componentFactoryResolver: ComponentFactoryResolver,
     protected readonly mapImageProviderService: MapImageProviderService
   ) {
-    super(abstractObjectTypeProviderHelper);
+    super(abstractObjectTypeProviderHelper, filesystemService, store);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -123,52 +126,49 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([
-      ...['pdf', 'png', 'svg'].map((format) => ({
-        name: format.toUpperCase(),
-        export: (exportLinked) => {
-          return this.filesystemService
-            .generateExport(object.hashId, { format, exportLinked })
-            .pipe(
+    return super.getExporters(object).pipe(
+      map((inheritedExporters) => [
+        ...['pdf', 'png', 'svg'].map((format) => ({
+          name: format.toUpperCase(),
+          export: (exportLinked) => {
+            return this.filesystemService.generateExport(object.hashId, { format, exportLinked });
+          },
+        })),
+        {
+          name: 'Lifelike Map File',
+          export: () => {
+            return this.filesystemService.getContent(object.hashId).pipe(
               map((blob) => {
-                return new File([blob], object.filename + '.' + format);
+                return new File([blob], object.filename + '.map');
               })
             );
+          },
         },
-      })),
-      {
-        name: 'Lifelike Map File',
-        export: () => {
-          return this.filesystemService.getContent(object.hashId).pipe(
-            map((blob) => {
-              return new File([blob], object.filename + '.map');
-            })
-          );
-        },
-      },
-      ...['Gene', 'Chemical'].map((type) => ({
-        name: `${type} List`,
-        export: () => {
-          return this.filesystemService.getMapContent(object.hashId).pipe(
-            mapBlobToBuffer(),
-            mapBufferToJson<KnowledgeMapGraph>(),
-            map((graph) => {
-              const blob = new Blob(
-                [
-                  graph.nodes
-                    .filter((node) => node.label === type.toLowerCase())
-                    .map((node) => node.display_name)
-                    .join('\r\n'),
-                ],
-                {
-                  type: 'text/plain',
-                }
-              );
-              return new File([blob], object.filename + ` (${type}s).txt`);
-            })
-          );
-        },
-      })),
-    ]);
+        ...['Gene', 'Chemical'].map((type) => ({
+          name: `${type} List`,
+          export: () => {
+            return this.filesystemService.getMapContent(object.hashId).pipe(
+              mapBlobToBuffer(),
+              mapBufferToJson<KnowledgeMapGraph>(),
+              map((graph) => {
+                const blob = new Blob(
+                  [
+                    graph.nodes
+                      .filter((node) => node.label === type.toLowerCase())
+                      .map((node) => node.display_name)
+                      .join('\r\n'),
+                  ],
+                  {
+                    type: 'text/plain',
+                  }
+                );
+                return new File([blob], object.filename + ` (${type}s).txt`);
+              })
+            );
+          },
+        })),
+        ...inheritedExporters,
+      ])
+    );
   }
 }
