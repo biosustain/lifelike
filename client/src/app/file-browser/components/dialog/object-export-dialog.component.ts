@@ -50,7 +50,7 @@ export class ObjectExportDialogComponent
   @Input() title = 'Export';
 
   private readonly inputExporters$ = new ReplaySubject(1);
-  private readonly exporters$ = this.inputExporters$.asObservable().pipe(
+  readonly exporters$ = this.inputExporters$.asObservable().pipe(
     startWith(null),
     distinctUntilChanged(),
     switchMap((exporters) =>
