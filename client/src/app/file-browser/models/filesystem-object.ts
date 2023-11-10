@@ -30,6 +30,7 @@ import {
 } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { createDragImage } from '../utils/drag';
+import { PublishService } from '../services/publish.service';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements ObservableObject {
@@ -53,7 +54,7 @@ export class ProjectImpl implements ObservableObject {
 
   set starred(value) {
     if (this.***ARANGO_USERNAME***) {
-      this.***ARANGO_USERNAME***.update({starred: value});
+      this.***ARANGO_USERNAME***.update({ starred: value });
     }
   }
 
@@ -63,7 +64,7 @@ export class ProjectImpl implements ObservableObject {
 
   set public(value) {
     if (this.***ARANGO_USERNAME***) {
-      this.***ARANGO_USERNAME***.update({public: value});
+      this.***ARANGO_USERNAME***.update({ public: value });
     }
   }
 
@@ -178,7 +179,7 @@ export class ProjectImpl implements ObservableObject {
           uri: this.getURL().toAbsolute(),
         },
       ],
-      {action: 'append'},
+      { action: 'append' }
     );
   }
 }
@@ -475,16 +476,18 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
       isEmpty(normalizedFilter)
         ? null
         : (item: FilesystemObject) =>
-          FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter),
+            FilesystemObject.normalizeFilename(item.filename).includes(normalizedFilter)
     );
   }
 
   getCommands(forEditing = true): any[] {
     // TODO: Move this method to ObjectTypeProvider
-    const projectName = encodeURIComponent(this.project ? this.project.name : 'default');
+    const projectName = encodeURIComponent(
+      this.project?.effectiveName?.replace(/\s/g, '_') ?? 'default'
+    );
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return ['/projects', projectName, 'folders', this.hashId];
+        return ['/folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
       case MimeTypes.Pdf:
@@ -504,7 +507,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
   getURL(forEditing = true, meta?: Meta): AppURL {
     const url = new AppURL().update({
       pathSegments: this.getCommands(forEditing).map((item) =>
-        encodeURIComponent(item.replace(/^\//, '')),
+        encodeURIComponent(item.replace(/^\//, ''))
       ),
       fragment: this.isProjectRoot ? 'project' : '',
     });
@@ -517,7 +520,9 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
             color: annotationTypesMap.get(meta.type.toLowerCase()).color,
           }).toString();
         }
+        break;
     }
+    url.searchParams.set('filename', this.effectiveName.replace(/\s/g, '_'));
     return url;
   }
 
@@ -603,7 +608,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
           uri: this.getURL(false).toAbsolute(),
         },
       ],
-      {action: 'append'},
+      { action: 'append' }
     );
   }
 
@@ -653,7 +658,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
         'path',
         'trueFilename',
         'starred',
-      ]),
+      ])
     );
 
     if (has(data, 'modifiedDate')) {
@@ -689,7 +694,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
               child.project = this.project;
             }
             return child.update(itemData);
-          }),
+          })
         );
       } else {
         this.children.replace([]);
