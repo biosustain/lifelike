@@ -29,18 +29,13 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
+    store: Store<State>,
     protected readonly injector: Injector,
     protected readonly objectCreationService: ObjectCreationService,
-    protected readonly componentFactoryResolver: ComponentFactoryResolver,
-    private readonly store: Store<State>
+    protected readonly componentFactoryResolver: ComponentFactoryResolver
   ) {
-    super(abstractObjectTypeProviderHelper);
+    super(abstractObjectTypeProviderHelper, filesystemService, store);
   }
-
-  isAdmin$ = this.store.pipe(
-    select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
-  );
 
   handles(object: FilesystemObject): boolean {
     return object.mimeType === MimeTypes.Directory;
@@ -82,28 +77,5 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
         },
       },
     ];
-  }
-
-  getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return super.getExporters(object).pipe(
-      switchMap((exporters) =>
-        this.isAdmin$.pipe(
-          map((isAdmin) =>
-            isAdmin
-              ? [
-                  ...exporters,
-                  {
-                    name: 'Zip',
-                    export: () =>
-                      this.filesystemService
-                        .generateExport(object.hashId, { format: 'zip', exportLinked: true })
-                        .pipe(map((blob) => new File([blob], object.filename + '.zip'))),
-                  },
-                ]
-              : exporters
-          )
-        )
-      )
-    );
   }
 }

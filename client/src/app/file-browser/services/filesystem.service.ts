@@ -6,6 +6,7 @@ import {
   HttpErrorResponse,
   HttpEvent,
   HttpEventType,
+  HttpHeaders,
   HttpResponse,
 } from '@angular/common/http';
 
@@ -48,6 +49,9 @@ import { FilesystemObjectList } from '../models/filesystem-object-list';
 import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ObjectLock } from '../models/object-lock';
 import { RecentFilesService } from './recent-files.service';
+
+const getFilenameFromHeaders = (headers: HttpHeaders): string | null =>
+  headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1];
 
 /**
  * Endpoints to manage with the filesystem exposed to the user.
@@ -227,10 +231,18 @@ export class FilesystemService {
       .pipe(map((data) => from(data.result)));
   }
 
-  generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
-    return this.http.post(`/api/filesystem/objects/${encodeURIComponent(hashId)}/export`, request, {
-      responseType: 'blob',
-    });
+  generateExport(hashId: string, request: ObjectExportRequest): Observable<File> {
+    return this.http
+      .post(`/api/filesystem/objects/${encodeURIComponent(hashId)}/export`, request, {
+        observe: 'response',
+        responseType: 'blob',
+      })
+      .pipe(
+        map(
+          (response: HttpResponse<Blob>) =>
+            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.zip')
+        )
+      );
   }
 
   save(

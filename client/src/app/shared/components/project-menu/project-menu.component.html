@@ -6,9 +6,9 @@
 <ng-container *ngIf="project.privileges.administrable">
   <div class="dropdown-divider"></div>
   <app-exporters-ref [object]="project.root">
-    <ng-template let-action>
+    <ng-template let-action let-label="label">
       <button ngbDropdownItem (click)="action()">
-        <ng-content></ng-content>
+        {{ label }}
       </button>
     </ng-template>
   </app-exporters-ref>

@@ -55,9 +55,8 @@
 
 <ng-container>
   <app-exporters-ref [object]="object">
-    <ng-template let-action let-content="content">
-      {{ content }}
-      <button ngbDropdownItem (click)="action()">{{ content }}</button>
+    <ng-template let-action let-label="label">
+      <button ngbDropdownItem (click)="action()">{{ label }}</button>
     </ng-template>
   </app-exporters-ref>
   <button ngbDropdownItem (click)="openShareDialog(object)">
