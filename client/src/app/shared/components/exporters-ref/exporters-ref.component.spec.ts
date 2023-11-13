@@ -3,6 +3,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
+import { FileBrowserModule } from '../../../file-browser/file-browser.module';
 
 import { ExportersRefComponent } from './exporters-ref.component';
 import { ErrorHandler } from '../../services/error-handler.service';
@@ -14,8 +15,8 @@ describe('ExportersRefComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ExportersRefComponent],
-      imports: [HttpClientModule],
-      providers: [ErrorHandler, FilesystemObjectActions, ObjectTypeService],
+      imports: [HttpClientModule, FileBrowserModule],
+      providers: [ErrorHandler, ObjectTypeService],
     }).compileComponents();
   }));
 
