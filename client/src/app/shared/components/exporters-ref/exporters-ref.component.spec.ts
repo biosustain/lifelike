@@ -1,3 +1,4 @@
+import { HttpClientModule } from '@angular/common/http';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
@@ -13,6 +14,7 @@ describe('ExportersRefComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ExportersRefComponent],
+      imports: [HttpClientModule],
       providers: [ErrorHandler, FilesystemObjectActions, ObjectTypeService],
     }).compileComponents();
   }));
