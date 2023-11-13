@@ -8,7 +8,7 @@ import { SharedSearchService } from 'app/shared/services/shared-search.service';
 import { OrganismAutocomplete, OrganismsResult } from 'app/interfaces';
 
 import { ORGANISM_AUTOCOMPLETE_DEFAULTS } from '../../constants';
-import { addStatus, PipeStatus } from '../pipes/add-status.pipe';
+import { addStatus, PipeStatus } from '../../modules/utils/pipes/add-status.pipe';
 
 @Component({
   selector: 'app-organism-autocomplete',
