@@ -13,11 +13,7 @@ describe('ExportersRefComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ExportersRefComponent],
-      providers: [
-        ErrorHandler,
-        FilesystemObjectActions,
-        ObjectTypeService,
-      ],
+      providers: [ErrorHandler, FilesystemObjectActions, ObjectTypeService],
     }).compileComponents();
   }));
 
