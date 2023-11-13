@@ -1,15 +1,15 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { combineLatest, defer, iif, Observable, ReplaySubject, Subject } from 'rxjs';
-import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
+import { mergeMap, shareReplay } from 'rxjs/operators';
 
-import { FilesystemObject, ProjectImpl } from 'app/file-browser/models/filesystem-object';
+import { ProjectImpl } from 'app/file-browser/models/filesystem-object';
 import { ProjectActions } from 'app/file-browser/services/project-actions';
-import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
+import { Exporter } from 'app/file-types/providers/base-object.type-provider';
 import { DirectoryTypeProvider } from 'app/file-types/providers/directory.type-provider';
 
-import { ErrorHandler } from '../../services/error-handler.service';
+import { ErrorHandler } from '../../../../services/error-handler.service';
 
 @Component({
   selector: 'app-project-menu',
@@ -23,6 +23,13 @@ import { ErrorHandler } from '../../services/error-handler.service';
 })
 export class ProjectMenuComponent implements OnChanges {
   encodeURIComponent = encodeURIComponent;
+
+  constructor(
+    protected readonly projectActions: ProjectActions,
+    protected readonly errorHandler: ErrorHandler,
+    protected readonly snackBar: MatSnackBar,
+    protected readonly directoryTypeProvider: DirectoryTypeProvider
+  ) {}
 
   @Input() project: ProjectImpl;
   @Input() nameEntity = false;
@@ -39,13 +46,6 @@ export class ProjectMenuComponent implements OnChanges {
     }
   }
 
-  constructor(
-    protected readonly projectActions: ProjectActions,
-    protected readonly errorHandler: ErrorHandler,
-    protected readonly snackBar: MatSnackBar,
-    protected readonly directoryTypeProvider: DirectoryTypeProvider
-  ) {}
-
   openEditDialog(project: ProjectImpl) {
     this.projectActions.openEditDialog(project);
   }
@@ -54,10 +54,10 @@ export class ProjectMenuComponent implements OnChanges {
     this.projectActions.openCollaboratorsDialog(project);
   }
 
-  openDeleteDialog(project: ProjectImpl) {
-    return this.projectActions
-      .openDeleteDialog(project)
-      .then(() => this.snackBar.open(`Deleted ${project.name}.`, 'Close', { duration: 5000 }));
+  async openDeleteDialog(project: ProjectImpl) {
+      await this.projectActions
+                .openDeleteDialog(project);
+      return this.snackBar.open(`Deleted ${ project.name }.`, 'Close', { duration: 5000 });
   }
 
   openShareDialog(project: ProjectImpl) {
