@@ -14,7 +14,6 @@ ipycytoscape = "*"
 ipywidgets = "*"
 networkx = "*"
 adbnx-adapter = "*"
-chromadb = "*"
 llmlib = {file = ".", editable = true}
 tiktoken = "*"
 
@@ -30,6 +29,7 @@ cachetools = "==5.3.1"
 webargs = "*"
 notebook = ">=7.0"
 timeflake = "*"
+chromadb = "*"
 
 [requires]
 python_version = "3.11"
