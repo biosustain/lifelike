@@ -136,8 +136,8 @@ class AnnotationUUIDListSchema(ResultListSchema):
 
 
 class GlobalAnnotationListItemSchema(CamelCaseSchema):
-    global_id = fields.Integer()
-    synonym_id = fields.Integer(required=False, missing=lambda: None)
+    global_id = fields.String()
+    synonym_id = fields.String(required=False, missing=lambda: None)
     file_uuid = fields.String()
     creator = fields.String()
     file_deleted = fields.Boolean()
@@ -303,4 +303,4 @@ class FileAnnotationHistoryResponseSchema(ResultListSchema):
 
 
 class GlobalAnnotationsDeleteSchema(Schema):
-    pids = fields.List(fields.Tuple((fields.Integer(), fields.Integer())))
+    pids = fields.List(fields.Tuple((fields.String(), fields.String())))

@@ -1,8 +1,6 @@
-from http import HTTPStatus
-
-from arango.database import StandardDatabase
 import json
-import pytest
+
+from http import HTTPStatus
 
 from neo4japp.models import Files, AppUser
 
@@ -15,14 +13,10 @@ def test_user_can_get_gene_annotations_from_pdf(
     client,
     test_user_with_pdf: Files,
     fix_admin_user: AppUser,
-    test_arango_db: StandardDatabase,
+    test_arango_db,
     mock_get_combined_annotations_result,
     mock_get_organisms_from_gene_ids_result,
 ):
-    # Create the necessary collections in arango before calling the API. These are empty of course.
-    test_arango_db.create_collection('ncbi')
-    test_arango_db.create_collection('has_taxonomy', edge=True)
-
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_headers(login_resp['accessToken']['token'])
     file_id = test_user_with_pdf.hash_id
@@ -43,6 +37,7 @@ def test_user_can_get_all_annotations_from_pdf(
     client,
     test_user_with_pdf: Files,
     fix_admin_user: AppUser,
+    test_arango_db,
     mock_get_combined_annotations_result,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -67,6 +62,7 @@ def test_user_can_get_global_inclusions(
     client,
     fix_project,
     fix_admin_user,
+    test_arango_db,
     mock_global_compound_inclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -86,6 +82,7 @@ def test_user_can_get_global_exclusions(
     client,
     fix_project,
     fix_admin_user,
+    test_arango_db,
     mock_global_gene_exclusion,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -101,11 +98,11 @@ def test_user_can_get_global_exclusions(
     assert response.get_data() is not None
 
 
-@pytest.mark.skip('Skipping for now to get code merged')
 def test_user_can_get_global_list(
     client,
     fix_project,
     fix_admin_user,
+    test_arango_db,
     mock_global_list,
 ):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
@@ -114,23 +111,18 @@ def test_user_can_get_global_list(
     response = client.get(
         f'/annotations/global-list',
         headers=headers,
-        content_type='application/json',
+        content_type='multipart/form-data',
+        data={
+            'globalAnnotationType': 'exclusion',
+        },
     )
 
     assert response.status_code == HTTPStatus.OK
 
     data = json.loads(response.get_data().decode('utf-8'))
-    assert data['total'] == 2
-    assert len(data['results']) == 2
+    assert data['total'] == 1
+    assert len(data['results']) == 1
 
-    if data['results'][0]['type'] == 'inclusion':
-        inclusion = data['results'][0]
-        exclusion = data['results'][1]
-    else:
-        inclusion = data['results'][1]
-        exclusion = data['results'][0]
-
-    assert inclusion['text'] == 'compound-(12345)'
-    assert inclusion['entityType'] == 'Compound'
+    exclusion = data['results'][0]
     assert exclusion['text'] == 'fake-gene'
     assert exclusion['entityType'] == 'Gene'

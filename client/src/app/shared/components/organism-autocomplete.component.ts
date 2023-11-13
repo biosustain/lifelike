@@ -56,7 +56,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
   }
 
   ngOnChanges({ inputText, organismTaxId }: SimpleChanges): void {
-    if (organismTaxId) {
+    if (organismTaxId && organismTaxId.currentValue) {
       this.search.getOrganismFromTaxId(organismTaxId.currentValue).subscribe((response) => {
         // If response is null that means there was no match found
         if (!isNil(response)) {
@@ -65,7 +65,7 @@ export class OrganismAutocompleteComponent implements OnChanges {
         }
       });
     }
-    if (inputText) {
+    if (inputText && inputText.currentValue) {
       this.setInputText(inputText.currentValue);
     }
   }

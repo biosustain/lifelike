@@ -4,7 +4,7 @@ from typing import Optional, Type
 from flask import jsonify, request
 
 from neo4japp.schemas.common import SuccessResponse
-from neo4japp.utils import CamelDictMixin, camel_to_snake_dict
+from neo4japp.utils.string import camel_to_snake_dict, CamelDictMixin
 
 
 def jsonify_with_class(

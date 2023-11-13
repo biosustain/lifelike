@@ -1,60 +1,58 @@
+from flask import Blueprint, jsonify
+from flask.views import MethodView
+from flask_apispec import use_kwargs
 from http import HTTPStatus
 
-from flask import Blueprint, request, jsonify
-from flask_apispec import use_kwargs
-
 from neo4japp.constants import ANNOTATION_STYLES_DICT
+from neo4japp.database import get_or_create_arango_client
 from neo4japp.data_transfer_objects.visualization import (
     ExpandNodeRequest,
     GetSnippetsForEdgeRequest,
     GetSnippetsForClusterRequest,
     ReferenceTableDataRequest,
 )
-from neo4japp.database import get_visualizer_service
 from neo4japp.exceptions import InvalidArgument
 from neo4japp.request_schemas.visualizer import (
     GetSnippetsForNodePairRequest,
     AssociatedTypeSnippetCountRequest,
 )
+from neo4japp.services.visualizer import (
+    expand_node_as_clusters,
+    get_associated_type_snippet_count,
+    get_document_for_visualizer,
+    get_reference_table_data,
+    get_snippets_for_edge,
+    get_snippets_for_cluster,
+    get_snippets_for_node_pair,
+)
 from neo4japp.schemas.common import SuccessResponse
 from neo4japp.utils.jsonify import jsonify_with_class
+from neo4japp.utils.string import camel_to_snake_dict
 
 bp = Blueprint('visualizer-api', __name__, url_prefix='/visualizer')
 
 
-@bp.route('/batch', methods=['GET'])
+@bp.route('/get-annotation-legend', methods=['GET'])
 @jsonify_with_class()
-def get_batch():
-    """Uses a home-brew query language
-    to get a batch of nodes and their
-    relationship
-    TODO: Document query language
-    """
-    visualizer_service = get_visualizer_service()
-    data_query = request.args.get('data', '')
-    try:
-        decoded_query = bytearray.fromhex(data_query).decode()
-    except ValueError:
-        return SuccessResponse(result='No results found', status_code=HTTPStatus.OK)
-    result = visualizer_service.query_batch(decoded_query)
-    # This response might contain warnings to avoid breaking changes the status code remains 200
-    return SuccessResponse(result=result, status_code=HTTPStatus.OK)
+def get_annotation_legend():
+    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=200)
 
 
 @bp.route('/expand', methods=['POST'])
 @jsonify_with_class(ExpandNodeRequest)
-def expand_graph_node(req: ExpandNodeRequest):
-    visualizer = get_visualizer_service()
-    node = visualizer.expand_graph(req.node_id, req.filter_labels)
-    return SuccessResponse(result=node, status_code=HTTPStatus.OK)
+def expand_graph_node_as_clusters(req: ExpandNodeRequest):
+    arango_client = get_or_create_arango_client()
+    clusters = expand_node_as_clusters(arango_client, req.node_id, req.filter_labels)
+    return SuccessResponse(result=clusters, status_code=200)
 
 
-@bp.route('/get-reference-table-data', methods=['POST'])
+@bp.route('/get-reference-table', methods=['POST'])
 @jsonify_with_class(ReferenceTableDataRequest)
-def get_reference_table_data(req: ReferenceTableDataRequest):
-    visualizer = get_visualizer_service()
-    reference_table_data = visualizer.get_reference_table_data(
-        req.node_edge_pairs,
+def get_ref_table(req: ReferenceTableDataRequest):
+    arango_client = get_or_create_arango_client()
+    reference_table_data = get_reference_table_data(
+        arango_client,
+        [camel_to_snake_dict(pair.to_dict()) for pair in req.node_edge_pairs],
     )
     return SuccessResponse(reference_table_data, status_code=HTTPStatus.OK)
 
@@ -62,8 +60,6 @@ def get_reference_table_data(req: ReferenceTableDataRequest):
 @bp.route('/get-snippets-for-edge', methods=['POST'])
 @jsonify_with_class(GetSnippetsForEdgeRequest)
 def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
-    visualizer = get_visualizer_service()
-
     # TODO: In the future would be better to refactor this request to use Marshmallow and handle
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
@@ -73,19 +69,14 @@ def get_edge_snippet_data(req: GetSnippetsForEdgeRequest):
             code=HTTPStatus.BAD_REQUEST,
         )
 
-    edge_snippets_result = visualizer.get_snippets_for_edge(
-        page=req.page,
-        limit=req.limit,
-        edge=req.edge,
-    )
-    return SuccessResponse(edge_snippets_result, status_code=HTTPStatus.OK)
+    arango_client = get_or_create_arango_client()
+    result = get_snippets_for_edge(arango_client, req.edge, req.page, req.limit)
+    return SuccessResponse(result, status_code=200)
 
 
 @bp.route('/get-snippets-for-cluster', methods=['POST'])
 @jsonify_with_class(GetSnippetsForClusterRequest)
 def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
-    visualizer = get_visualizer_service()
-
     # TODO: In the future would be better to refactor this request to use Marshmallow and handle
     # the validation in the schema, but in the interest of time favoring this approach for now.
     if not (0 <= req.limit and req.limit <= 1000):
@@ -95,43 +86,45 @@ def get_cluster_snippet_data(req: GetSnippetsForClusterRequest):
             code=HTTPStatus.BAD_REQUEST,
         )
 
-    cluster_snippets_result = visualizer.get_snippets_for_cluster(
-        page=req.page,
-        limit=req.limit,
-        edges=req.edges,
-    )
-    return SuccessResponse(cluster_snippets_result, status_code=HTTPStatus.OK)
-
-
-@bp.route('/get-annotation-legend', methods=['GET'])
-@jsonify_with_class()
-def get_annotation_legend():
-    return SuccessResponse(result=ANNOTATION_STYLES_DICT, status_code=HTTPStatus.OK)
+    arango_client = get_or_create_arango_client()
+    result = get_snippets_for_cluster(arango_client, req.edges, req.page, req.limit)
+    return SuccessResponse(result, status_code=HTTPStatus.OK)
 
 
 @bp.route('/get-associated-type-snippet-count', methods=['POST'])
 @use_kwargs(AssociatedTypeSnippetCountRequest)
-def get_associated_type_snippet_count(source_node, associated_nodes):
-    visualizer = get_visualizer_service()
-
-    associated_types_result = visualizer.get_associated_type_snippet_count(
-        source_node,
-        associated_nodes,
+def get_assoc_type_snippet_count(source_node, associated_nodes):
+    arango_client = get_or_create_arango_client()
+    result = get_associated_type_snippet_count(
+        arango_client, source_node, associated_nodes
     )
     return jsonify(
         {
-            'result': associated_types_result.to_dict(),
+            'result': result.to_dict(),
         }
     )
 
 
 @bp.route('/get-snippets-for-node-pair', methods=['POST'])
 @use_kwargs(GetSnippetsForNodePairRequest)
-def get_snippets_for_node_pair(node_1_id, node_2_id, page, limit):
-    visualizer = get_visualizer_service()
-
-    node_pair_snippet_result = visualizer.get_snippets_for_node_pair(
-        node_1_id, node_2_id, page, limit
+def get_snippets_for_pair(node_1_id, node_2_id, page, limit):
+    arango_client = get_or_create_arango_client()
+    result = get_snippets_for_node_pair(
+        arango_client, node_1_id, node_2_id, page, limit
     )
 
-    return jsonify({'result': node_pair_snippet_result.to_dict()})
+    return jsonify({'result': result.to_dict()})
+
+
+class GetDocumentView(MethodView):
+    def get(self, collection: str, key: str):
+        arango_client = get_or_create_arango_client()
+        doc_id = f'{collection}/{key}'
+        result = get_document_for_visualizer(arango_client, doc_id)
+        return jsonify({'nodes': [result], 'edges': []})
+
+
+bp.add_url_rule(
+    '/document/<string:collection>/<string:key>',
+    view_func=GetDocumentView.as_view('fetch_document'),
+)

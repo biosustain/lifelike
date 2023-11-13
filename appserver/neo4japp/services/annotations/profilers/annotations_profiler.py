@@ -15,7 +15,6 @@ from neo4japp.services.annotations.constants import DEFAULT_ANNOTATION_CONFIGS
 from neo4japp.services.annotations.pipeline import Pipeline
 from neo4japp.services.annotations.initializer import (
     get_annotation_db_service,
-    get_annotation_graph_service,
     get_recognition_service,
     get_annotation_tokenizer,
     get_annotation_service,
@@ -95,7 +94,6 @@ def main():
             pipeline = Pipeline(
                 {
                     'adbs': get_annotation_db_service,
-                    'ags': get_annotation_graph_service,
                     'aers': get_recognition_service,
                     'tkner': get_annotation_tokenizer,
                     'as': get_annotation_service,

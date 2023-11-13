@@ -1,118 +1,166 @@
-import json
+from arango import ArangoClient
 from flask import current_app
 from functools import partial
+import json
+import pandas as pd
 from typing import List
 
-import pandas as pd
+from ..arangodb import execute_arango_query, get_db
 from .enrich_methods import fisher
 from ..rcache import redis_cached, redis_server
 
 
-class EnrichmentVisualisationService:
-    def __init__(self, graph):
-        self.graph = graph
+def enrich_go(arango_client: ArangoClient, gene_names: List[str], analysis, organism):
+    if analysis == 'fisher':
+        GO_terms = redis_server.get(f"GO_for_{organism.id}")
+        if GO_terms is not None:
+            df = pd.read_json(GO_terms)
+            go_count = len(df)
+            mask = ~df.geneNames.map(set(gene_names).isdisjoint)
+            go = df[mask]
+        else:
+            go = redis_cached(
+                f"get_go_terms_{organism}_{','.join(gene_names)}_x",
+                partial(get_go_terms, arango_client, organism.id, gene_names),
+                load=json.loads,
+                dump=json.dumps,
+            )
+            go_count = redis_cached(
+                f"go_term_count_{organism.id}",
+                partial(get_go_term_count, arango_client, organism.id),
+                load=json.loads,
+                dump=json.dumps,
+            )
+        return fisher(gene_names, go, go_count)
+    raise NotImplementedError
 
-    def enrich_go(self, gene_names: List[str], analysis, organism):
-        if analysis == 'fisher':
-            GO_terms = redis_server.get(f"GO_for_{organism.id}")
-            if GO_terms is not None:
-                df = pd.read_json(GO_terms)
-                go_count = len(df)
-                mask = ~df.geneNames.map(set(gene_names).isdisjoint)
-                go = df[mask]
-            else:
-                go = self.get_go_terms(organism, gene_names)
-                go_count = self.get_go_term_count(organism)
-            return fisher(gene_names, go, go_count)
-        raise NotImplementedError
 
-    def query_go_term(self, organism_id, gene_names):
-        r = self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    UNWIND $gene_names AS geneName
-                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId}) 
-                    WHERE g.name=geneName
-                    CALL {
-                        // Make simple run by relations we has from GO db
-                        WITH g
-                        MATCH (g)-[:GO_LINK]-(go:db_GO)
-                        WITH DISTINCT go
-                        // GO db 'GO_LINK's has tax_id property so we can filter in this way
-                        MATCH (go)-[:GO_LINK {tax_id:$taxId}]-(go_gene:Gene)
-                        RETURN go, go_gene
-                    UNION
-                        // Fetch GO relations defined in BioCyc
-                        WITH g
-                        MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
-                        WITH DISTINCT go 
-                        // BioCyc db 'GO_LINK's does not have tax_id property so we need to filter in this way
-                        MATCH (go)-[:GO_LINK]-(:Protein)-[:ENCODES]-(:db_BioCyc)-[:IS]-(go_gene:Gene {tax_id:$taxId})
-                        RETURN go, go_gene
+def get_go_terms(arango_client: ArangoClient, tax_id, gene_names: List[str]):
+    result = execute_arango_query(
+        db=get_db(arango_client),
+        query=go_term_query(),
+        gene_names=gene_names,
+        tax_id=tax_id,
+    )
+    if not result:
+        current_app.logger.warning(
+            f'Could not find related GO terms for organism id: {tax_id}'
+        )
+    return result
+
+
+def get_go_term_count(arango_client: ArangoClient, tax_id):
+    result = execute_arango_query(
+        db=get_db(arango_client), query=go_term_count_query(), tax_id=tax_id
+    )
+    if not result:
+        current_app.logger.warning(
+            f'Could not find related GO terms for organism id: {tax_id}'
+        )
+        return None
+    return result[0]
+
+
+def go_term_query():
+    return """
+    LET original_master_genes = (
+        FOR organism IN taxonomy
+            FILTER organism.eid == @tax_id
+            FOR master_gene IN INBOUND organism has_taxonomy
+                FILTER "Gene" IN master_gene.labels
+                FILTER master_gene.name IN @gene_names
+                RETURN master_gene
+    )
+    LET organism_genes = (
+        FOR organism IN taxonomy
+            FILTER organism.eid == @tax_id
+            FOR gene IN INBOUND organism has_taxonomy
+                RETURN gene
+    )
+    FOR original_gene IN original_master_genes
+        LET results = UNION(
+            (
+                FOR go_term IN OUTBOUND original_gene go_link
+                    LET linked_gene_names = (
+                        FOR gene IN organism_genes
+                            FOR link IN go_link
+                                FILTER link._from == gene._id
+                                FILTER link._to == go_term._id
+                                RETURN gene.name
+                    )
+                    RETURN DISTINCT {
+                        "goId": go_term.eid,
+                        "goTerm": go_term.name,
+                        "goLabel": go_term.labels,
+                        "geneNames": linked_gene_names
                     }
-                    WITH 
-                        DISTINCT go, 
-                        collect(DISTINCT go_gene) AS go_genes
-                    RETURN
-                        go.eid AS goId,
-                        go.name AS goTerm,
-                        // Return all but 'db_GO' labels 
-                        [lbl IN labels(go) WHERE lbl <> 'db_GO'] AS goLabel,
-                        [g IN go_genes |g.name] AS geneNames
-                    """,
-                    taxId=organism_id,
-                    gene_names=gene_names,
-                ).data()
+            ),
+            (
+                LET biocyc_go_terms = (
+                    FOR biocyc_gene IN INBOUND original_gene is
+                        FOR protein IN OUTBOUND biocyc_gene encodes
+                            FOR go_term IN OUTBOUND protein go_link
+                                RETURN DISTINCT go_term
+                )
+                LET gene_names_and_linked_protein_ids = (
+                    FOR gene IN organism_genes
+                        FOR biocyc_gene IN INBOUND gene is
+                            FOR protein IN OUTBOUND biocyc_gene encodes
+                                RETURN {"geneName": gene.name, "protein_id": protein._id}
+                )
+                FOR go_term IN biocyc_go_terms
+                    LET linked_gene_names = (
+                        FOR pair IN gene_names_and_linked_protein_ids
+                            FOR link IN go_link
+                                FILTER link._from == pair.protein_id
+                                FILTER link._to == go_term._id
+                                RETURN pair.geneName
+                    )
+                    RETURN DISTINCT {
+                        "goId": go_term.eid,
+                        "goTerm": go_term.name,
+                        "goLabel": go_term.labels,
+                        "geneNames": linked_gene_names
+                    }
             )
         )
-        if not r:
-            current_app.logger.warning(
-                f'Could not find related GO terms for organism id: {organism_id}'
-            )
-        return r
+        FOR result IN results
+            COLLECT id = result.goId, term = result.goTerm, label = result.goLabel INTO genes = result.geneNames
+            RETURN DISTINCT {
+                "goId": id,
+                "goTerm": term,
+                "goLabel": label,
+                "geneNames": UNIQUE(FLATTEN(genes))
+            }
+    """
 
-    def get_go_terms(self, organism, gene_names):
-        cache_id = f"get_go_terms_{organism}_{','.join(gene_names)}"
-        return redis_cached(
-            cache_id,
-            partial(self.query_go_term, organism.id, gene_names),
-            load=json.loads,
-            dump=json.dumps,
-        )
 
-    def query_go_term_count(self, organism_id):
-        r = self.graph.read_transaction(
-            lambda tx: list(
-                tx.run(
-                    """
-                    MATCH (g:Gene)-[:HAS_TAXONOMY]-(t:Taxonomy {eid:$taxId})
-                    CALL {
-                        WITH g
-                        MATCH (g)-[:GO_LINK]-(go:db_GO)
-                        RETURN go
-                    UNION
-                        WITH g
-                        MATCH (g)-[:IS]-(:db_BioCyc)-[:ENCODES]-(:Protein)-[:GO_LINK]-(go:db_GO)
-                        RETURN go
-                    }
-                    return count(distinct go) as go_count
-                    """,
-                    taxId=organism_id,
+def go_term_count_query():
+    return """
+    LET linked_gene_names = (
+        FOR organism IN taxonomy
+            FILTER organism.eid == @tax_id
+            FOR linked_gene IN INBOUND organism has_taxonomy
+                FILTER "Gene" IN linked_gene.labels
+                RETURN linked_gene
+    )
+
+    LET go_terms = (
+        FOR gene IN linked_gene_names
+            LET results = UNION(
+                (
+                    FOR go_term IN OUTBOUND gene go_link
+                        RETURN DISTINCT go_term
+                ),
+                (
+                    FOR biocyc_gene IN INBOUND gene is
+                        FOR protein IN OUTBOUND biocyc_gene encodes
+                            FOR go_term IN OUTBOUND protein go_link
+                                RETURN DISTINCT go_term
                 )
             )
-        )
-        if not r:
-            current_app.logger.warning(
-                f'Could not find related GO terms for organism id: {organism_id}'
-            )
-        return r[0]['go_count']
-
-    def get_go_term_count(self, organism):
-        cache_id = f"go_term_count_{organism}"
-        return redis_cached(
-            cache_id,
-            partial(self.query_go_term_count, organism.id),
-            load=json.loads,
-            dump=json.dumps,
-        )
+            FOR result IN results
+                RETURN DISTINCT result
+    )
+    RETURN COUNT(go_terms)
+    """

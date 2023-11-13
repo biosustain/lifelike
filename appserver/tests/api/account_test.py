@@ -1,8 +1,9 @@
 import json
-from http import HTTPStatus
-from types import SimpleNamespace
-
 import pytest
+import re
+import responses
+
+from types import SimpleNamespace
 
 from neo4japp.models import AppUser
 from tests.helpers.api import generate_jwt_headers
@@ -56,9 +57,21 @@ def mocked_lmdb_open(monkeypatch):
     monkeypatch.setattr('lmdb.open', lmdb_open)
 
 
-def test_admin_can_create_user(client, fix_admin_user):
+@pytest.mark.skip('Skipping until pdfparser can be properly mocked')
+def test_admin_can_create_user(
+    client, fix_admin_user, test_arango_db, mocked_responses, mocked_lmdb_open
+):
     login_resp = client.login_as_user(fix_admin_user.email, 'password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    # # Mocked responses from pdfparser
+    mocked_responses.add(
+        responses.POST,
+        re.compile('.+/token/rect/.+'),
+        status=201,
+        content_type='application/json',
+        json={'pages': []},
+    )
 
     response = client.post(
         '/accounts/',
@@ -77,7 +90,7 @@ def test_admin_can_create_user(client, fix_admin_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
 
 
 def test_nonadmin_cannot_create_user(client, test_user):
@@ -100,7 +113,7 @@ def test_nonadmin_cannot_create_user(client, test_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.status_code == 403
 
 
 def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
@@ -111,7 +124,7 @@ def test_admin_can_get_all_users(client, mock_users, fix_admin_user):
         '/accounts/', headers=headers, content_type='application/json'
     )
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
     result = response.get_json()
     # Add 2 to include the current user AND the assumed to be present ***ARANGO_DB_NAME*** superuser
     assert int(result['total']) == len(mock_users) + 2
@@ -125,7 +138,7 @@ def test_admin_can_get_any_user(client, mock_users, fix_admin_user):
     response = client.get(
         f'/accounts/{user.hash_id}', headers=headers, content_type='application/json'
     )
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
     result = response.get_json()
     assert int(result['total']) == 1
 
@@ -138,7 +151,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         '/accounts/', headers=headers, content_type='application/json'
     )
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
     result = response.get_json()
     assert int(result['total']) == 1
     assert result['results'][0]['email'] == test_user.email
@@ -149,7 +162,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
     result = response.get_json()
     assert int(result['total']) == 1
     assert result['results'][0]['email'] == test_user.email
@@ -160,7 +173,7 @@ def test_nonadmin_can_only_get_self(client, mock_users, test_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.status_code == 403
 
 
 @pytest.mark.parametrize(
@@ -184,7 +197,7 @@ def test_can_update_only_allowed_attributes(
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.NO_CONTENT
+    assert response.status_code == 204
 
     response = client.get(
         f'/accounts/{test_user.hash_id}',
@@ -210,7 +223,7 @@ def test_can_update_password(client, test_user):
         content_type='application/json',
     )
 
-    assert response.status_code == HTTPStatus.NO_CONTENT
+    assert response.status_code == 204
     login_resp = client.login_as_user(test_user.email, 'new_password')
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
     assert headers
@@ -224,7 +237,7 @@ def test_can_filter_users(client, mock_users, auth_token_header, username):
         headers=auth_token_header,
         content_type='application/json',
     )
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == 200
     response = response.get_json()
     users = response['result']
     assert len(users) == 1

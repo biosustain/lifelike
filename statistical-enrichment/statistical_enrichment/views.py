@@ -4,9 +4,10 @@ from webargs.flaskparser import use_args
 
 from .app import app
 from .auth import login_exempt
-from .services.rcache import redis_cached
+from .database import get_or_create_arango_client
 from .schemas import EnrichmentSchema
-from .services import get_enrichment_visualisation_service
+from .services.enrichment.enrichment_visualisation import enrich_go
+from .services.rcache import redis_cached
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -23,14 +24,14 @@ def healthz():
 
 @app.route('/enrich-with-go-terms', methods=['POST'])
 @use_args(EnrichmentSchema)
-def enrich_go(args):
+def enrich_with_go_terms(args):
     gene_names = args['geneNames']
     organism = args['organism']
     analysis = args['analysis']
     cache_id = '_'.join(['enrich_go', ','.join(gene_names), analysis, str(organism)])
-    enrichment_visualisation = get_enrichment_visualisation_service()
+    arango_client = get_or_create_arango_client()
     return redis_cached(
         cache_id,
-        partial(enrichment_visualisation.enrich_go, gene_names, analysis, organism),
+        partial(enrich_go, arango_client, gene_names, analysis, organism),
         dump=dumps,
     ), dict(mimetype='application/json')

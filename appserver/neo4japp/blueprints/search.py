@@ -9,11 +9,12 @@ from webargs.flaskparser import use_args
 from neo4japp.blueprints.filesystem import FilesystemBaseView
 from neo4japp.blueprints.projects import ProjectBaseView
 from neo4japp.constants import FRAGMENT_SIZE, LogEventType
+from neo4japp.data_transfer_objects import FTSResult
 from neo4japp.data_transfer_objects.common import ResultQuery
 from neo4japp.database import (
-    get_search_service_dao,
     get_elastic_service,
     get_file_type_service,
+    get_or_create_arango_client,
 )
 from neo4japp.exceptions import ServerException
 from neo4japp.models import Files, Projects
@@ -27,6 +28,13 @@ from neo4japp.schemas.search import (
     VizSearchSchema,
 )
 from neo4japp.services.file_types.providers import DirectoryTypeProvider
+from neo4japp.services.search import (
+    get_organisms,
+    get_organism_with_tax_id,
+    get_synonyms,
+    get_synonyms_count,
+    visualizer_search,
+)
 from neo4japp.services.filesystem import Filesystem
 from neo4japp.utils.globals import config
 from neo4japp.utils.jsonify import jsonify_with_class
@@ -36,10 +44,9 @@ from neo4japp.utils.request import Pagination
 bp = Blueprint('search', __name__, url_prefix='/search')
 
 
-@bp.route('/viz-search', methods=['POST'])
+@bp.route('/visualizer', methods=['POST'])
 @use_kwargs(VizSearchSchema)
-def visualizer_search(query, page, limit, domains, entities, organism):
-    search_dao = get_search_service_dao()
+def viz_search(query, page, limit, domains, entities, organism):
     current_app.logger.info(
         f'Term: {query}, Organism: {organism}, Entities: {entities}, Domains: {domains}',
         extra=UserEventLog(
@@ -48,7 +55,16 @@ def visualizer_search(query, page, limit, domains, entities, organism):
         ).to_dict(),
     )
 
-    results = search_dao.visualizer_search(
+    if not query:
+        return jsonify(
+            {
+                'result': FTSResult(query, [], 0, page, limit).to_dict(),
+            }
+        )
+
+    arango_client = get_or_create_arango_client()
+    results = visualizer_search(
+        arango_client,
         term=query,
         organism=organism,
         page=page,
@@ -58,7 +74,9 @@ def visualizer_search(query, page, limit, domains, entities, organism):
     )
     return jsonify(
         {
-            'result': results.to_dict(),
+            'result': FTSResult(
+                query, results['rows'], results['count'], page, limit
+            ).to_dict(),
         }
     )
 
@@ -331,14 +349,15 @@ class SynonymSearchView(FilesystemBaseView):
 
         page = pagination.page
         limit = pagination.limit
-        offset = (page - 1) * limit
+        skip = (page - 1) * limit
+
+        arango_client = get_or_create_arango_client()
 
         try:
-            search_dao = get_search_service_dao()
-            results = search_dao.get_synonyms(
-                search_term, organisms, types, offset, limit
+            results = get_synonyms(
+                arango_client, search_term, organisms, types, skip, limit
             )
-            count = search_dao.get_synonyms_count(search_term, organisms, types)
+            count = get_synonyms_count(arango_client, search_term, organisms, types)
         except Exception as e:
             current_app.logger.error(
                 f'Failed to get synonym data for term: {search_term}',
@@ -363,14 +382,14 @@ bp.add_url_rule('synonyms', view_func=SynonymSearchView.as_view('synonym_search'
 @bp.route('/organism/<string:organism_tax_id>', methods=['GET'])
 @jsonify_with_class()
 def get_organism(organism_tax_id: str):
-    search_dao = get_search_service_dao()
-    result = search_dao.get_organism_with_tax_id(organism_tax_id)
-    return SuccessResponse(result=result, status_code=200)
+    arango_client = get_or_create_arango_client()
+    return SuccessResponse(
+        result=get_organism_with_tax_id(arango_client, organism_tax_id), status_code=200
+    )
 
 
 @bp.route('/organisms', methods=['POST'])
 @use_kwargs(OrganismSearchSchema)
-def get_organisms(query, limit):
-    search_dao = get_search_service_dao()
-    results = search_dao.get_organisms(query, limit)
-    return jsonify({'result': results})
+def search_organisms(query, limit):
+    arango_client = get_or_create_arango_client()
+    return jsonify({'result': get_organisms(arango_client, query, limit)})
