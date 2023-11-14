@@ -16,7 +16,7 @@ def fisher_p(k, M, n, N):
     return hypergeom.cdf(n - k, M, n, M - N)
 
 
-def fisher(geneIds, GOterms, related_go_terms_count):
+def fisher(geneNames, GOterms, related_go_terms_count):
     """
     Run standard fisher's exact tests for each annotation term.
     """
@@ -25,18 +25,18 @@ def fisher(geneIds, GOterms, related_go_terms_count):
     if df.empty:
         return df.to_dict(orient='records')
 
-    query = pd.unique(geneIds)
+    query = pd.unique(geneNames)
 
-    M = df['geneIds'].explode().nunique()
+    M = df['geneNames'].explode().nunique()
     N = len(query)
 
     def f(go):
-        matching_gene_names = list(set(go['geneIds']).intersection(query))
-        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go['geneIds']), N)
+        matching_gene_names = list(set(go['geneNames']).intersection(query))
+        go['p-value'] = fisher_p(len(matching_gene_names), M, len(go['geneNames']), N)
         if pd.isnull(go['p-value']):
             go['p-value'] = None
         go['gene'] = f"{go['goTerm']} ({go['goId']})"
-        go['geneIds'] = matching_gene_names
+        go['geneNames'] = matching_gene_names
         return go
 
     df = df.apply(f, axis=1).sort_values(by='p-value')
