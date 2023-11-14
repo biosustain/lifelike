@@ -1,8 +1,5 @@
-import logging
-from functools import partial
 from typing import Optional, Self, List, Any
 
-from flask import g
 from langchain import LLMChain, PromptTemplate, BasePromptTemplate
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.chat_models.base import BaseChatModel
@@ -14,7 +11,6 @@ from langchain.prompts import (
 )
 from langchain.pydantic_v1 import Field
 from langchain.schema import BaseRetriever, Document
-from langchain.vectorstores import VectorStore
 from llmlib.utils.search.graph_search_api_wrapper import GraphSearchAPIWrapper
 
 
@@ -38,9 +34,6 @@ def default_terms_prompt_factory(query_key: str):
 
 
 class GraphSearchRetriever(BaseRetriever):
-    vectorstore: VectorStore = Field(
-        ..., description="Vectorstore to use for graph results."
-    )
     llm_chain: LLMChain
     graph_search: GraphSearchAPIWrapper = Field(
         ..., description="Graph search API wrapper."
@@ -51,7 +44,6 @@ class GraphSearchRetriever(BaseRetriever):
     @classmethod
     def from_llm(
         cls,
-        vectorstore: VectorStore,
         llm: BaseChatModel,
         graph_search: GraphSearchAPIWrapper,
         prompt: Optional[BasePromptTemplate] = None,
@@ -68,25 +60,9 @@ class GraphSearchRetriever(BaseRetriever):
         )
 
         return cls(
-            vectorstore=vectorstore,
             llm_chain=llm_chain,
             graph_search=graph_search,
             **kwargs,
-        )
-
-    def _add_nodes_to_vectorstore(self, nodes: List[Document]):
-        """Add nodes to vectorstore."""
-        return self.vectorstore.add_documents(
-            [self.graph_search.node_to_document(node) for node in nodes]
-        )
-
-    def _add_relationships_to_vectorstore(self, relationships: List[Document]):
-        """Add relationships to vectorstore."""
-        return self.vectorstore.add_documents(
-            [
-                self.graph_search.relationship_to_document(relationship)
-                for relationship in relationships
-            ]
         )
 
     def _get_relevant_documents(
