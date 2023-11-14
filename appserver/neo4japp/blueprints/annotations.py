@@ -821,7 +821,7 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
 
             text = (
                 f'<annotation type="{meta_type}" meta="{html.escape(json.dumps(meta))}">'
-                f'{term}'
+                f'{html.escape(term)}'
                 f'</annotation>'
             )
 
@@ -830,19 +830,21 @@ class FileAnnotationsGenerationView(FilesystemBaseView):
                 texts.append(text)
             else:
                 if not texts:
-                    texts.append(original_text[:lo_location_offset])
+                    texts.append(html.escape(original_text[:lo_location_offset]))
                     prev_ending_index = hi_location_offset
                     texts.append(text)
                 else:
                     # TODO: would lo_location_offset == prev_ending_index ever happen?
                     # if yes, need to handle it
                     texts.append(
-                        original_text[prev_ending_index + 1 : lo_location_offset]
+                        html.escape(
+                            original_text[prev_ending_index + 1 : lo_location_offset]
+                        )
                     )
                     prev_ending_index = hi_location_offset
                     texts.append(text)
 
-        texts.append(original_text[prev_ending_index + 1 :])
+        texts.append(html.escape(original_text[prev_ending_index + 1 :]))
         final_text = ''.join(texts)
         return f'<snippet>{final_text}</snippet>'
 
