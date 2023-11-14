@@ -65,7 +65,7 @@ export class ExportersRefComponent implements OnChanges {
   );
 
   isPrePublishExporter(exporter: Exporter) {
-    return exporter.name === 'Zip';
+    return exporter.isPublish;
   }
 
   ngOnChanges({ object }: SimpleChanges) {

@@ -50,6 +50,8 @@ export interface PreviewOptions {
 export interface Exporter {
   name: string;
 
+  isPublish?: boolean;
+
   export(linkedExport?: boolean): Observable<File>;
 }
 
@@ -74,7 +76,7 @@ export interface ObjectTypeProvider {
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions
+    options?: PreviewOptions,
   ): Observable<ComponentRef<any> | undefined>;
 
   /**
@@ -122,8 +124,9 @@ export class AbstractObjectTypeProviderHelper {
     protected readonly filesystemService: FilesystemService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly errorHandler: ErrorHandler,
-    protected readonly ngZone: NgZone
-  ) {}
+    protected readonly ngZone: NgZone,
+  ) {
+  }
 
   openEditDialog(target: FilesystemObject, options: {} = {}): Promise<ObjectEditDialogValue> {
     const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
@@ -135,7 +138,7 @@ export class AbstractObjectTypeProviderHelper {
           new BehaviorSubject<Progress>(
             new Progress({
               status: `Saving changes to ${getObjectLabel(target)}...`,
-            })
+            }),
           ),
         ],
       });
@@ -147,7 +150,7 @@ export class AbstractObjectTypeProviderHelper {
           map(() => value),
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({ label: 'Edit object' })
+          this.errorHandler.create({label: 'Edit object'}),
         )
         .toPromise();
     };
@@ -163,19 +166,21 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   constructor(
     private readonly helper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    private readonly store: Store<State>
-  ) {}
+    private readonly store: Store<State>,
+  ) {
+  }
 
   isAdmin$ = this.store.pipe(
     select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
+    map((roles) => roles.includes('admin')),
   );
+
   abstract handles(object: FilesystemObject): boolean;
 
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions
+    options?: PreviewOptions,
   ): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }
@@ -193,21 +198,32 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
+    const exporters = [
+      {
+        name: 'Zip',
+        export: () =>
+          this.filesystemService
+            .generateExport(object.hashId, {format: 'zip', exportLinked: true})
+            .pipe(map((blob) => new File([blob], object.filename + '.zip'))),
+      },
+    ];
     return this.isAdmin$.pipe(
       map((isAdmin) =>
         isAdmin
           ? [
-              {
-                name: 'Zip',
-                export: () =>
-                  this.filesystemService.generateExport(object.hashId, {
-                    format: 'zip',
-                    exportLinked: true,
-                  }),
-              },
-            ]
-          : []
-      )
+            {
+              name: 'Zip',
+              export: () =>
+                this.filesystemService.generateExport(object.hashId, {
+                  format: 'zip',
+                  exportLinked: true,
+                }),
+              isPublish: true,
+            },
+            ...exporters,
+          ]
+          : exporters,
+      ),
     );
   }
 
