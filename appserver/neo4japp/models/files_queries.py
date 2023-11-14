@@ -470,6 +470,25 @@ class FileHierarchy:
                     commentable=commentable,
                 )
 
+                # Needs to be this way cause we only support extending privileges in hierarchy
+                # (no support for reducing privileges)
+                from ..services.publish import Publish
+
+                if Publish.is_publish_project(row[self.project_key]):
+                    """
+                    All published files are readable, but not writable or commentable
+                    With the exception of the list of files, which is not readable by default
+                    Only the owner of the project can read the list of files
+                    """
+                    readable = True
+                    if file.parent_id is None:
+                        readable = privileges.readable
+                    privileges = FilePrivileges(
+                        readable=readable,
+                        writable=False,
+                        commentable=False,
+                    )
+
                 file.calculated_privileges[user_id] = privileges
 
             parent_file = file

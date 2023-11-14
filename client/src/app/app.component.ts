@@ -3,8 +3,9 @@ import { ActivatedRoute, NavigationCancel, NavigationEnd, Router } from '@angula
 import { Title } from '@angular/platform-browser';
 
 import { select, Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { defer, iif, Observable, of } from 'rxjs';
 import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
+import { shareReplay, switchMap } from 'rxjs/operators';
 
 import { State } from 'app/***ARANGO_USERNAME***-store';
 import { StorageService } from 'app/shared/services/storage.service';
@@ -15,6 +16,9 @@ import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
 import { toValidUrl } from 'app/shared/utils/browser';
+import { makeid } from 'app/shared/utils/identifiers';
+import { SessionStorageService } from 'app/shared/services/session-storage.service';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { environment } from '../environments/environment';
 
@@ -36,6 +40,7 @@ export class AppComponent {
   mainUrl: string;
   fragment: string;
   queryParams: any;
+  workspaceUrl$: Observable<string> = this.workspaceManager.workspaceUrl$.asObservable();
 
   constructor(
     private readonly store: Store<State>,
@@ -46,7 +51,8 @@ export class AppComponent {
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
     private storage: StorageService,
-    private authService: AuthenticationService
+    private authService: AuthenticationService,
+    private readonly workspaceManager: WorkspaceManager
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;

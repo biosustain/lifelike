@@ -50,7 +50,7 @@ from neo4japp.models.files_queries import (
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.filesystem import FileResponseSchema, MultipleFileResponseSchema
 from neo4japp.utils.file_content_buffer import FileContentBuffer
-from neo4japp.utils.globals import warn
+from neo4japp.utils.globals import warn, get_current_user
 from neo4japp.utils.network import read_url, ContentTooLongError
 
 
@@ -111,7 +111,8 @@ class Filesystem:
         :param attr_excl: list of file attributes to exclude from the query
         :return: the result, which may be an empty list
         """
-        current_user = g.current_user
+        current_user = get_current_user()
+        current_user_id = get_current_user('id')
 
         t_file = db.aliased(
             Files, name='_file'
@@ -163,16 +164,18 @@ class Filesystem:
         # determine a permission -- you also have to read all parent folders and the project!
         # Thankfully, we just loaded all parent folders and the project above, and so we'll use
         # the handy FileHierarchy class later to calculate this permission information.
+        # Internal code of thi method is checking `isinstance(current_user, AppUser)` so we can not
+        # use `current_user` LocalProxy here (LocalProxy is not an instance of AppUser)
         private_data_access = get_authorization_service().has_role(
-            current_user, 'private-data-access'
-        )
+            g.current_user, 'private-data-access'
+        ) if current_user else False
         query = add_project_user_role_columns(
-            query, t_project, current_user.id, access_override=private_data_access
+            query, t_project, current_user_id, access_override=private_data_access
         )
         query = add_file_user_role_columns(
-            query, t_file, current_user.id, access_override=private_data_access
+            query, t_file, current_user_id, access_override=private_data_access
         )
-        query = add_file_starred_columns(query, t_file.id, current_user.id)
+        query = add_file_starred_columns(query, t_file.id, current_user_id)
         query = add_file_size_column(query, t_file.content_id)
 
         if lazy_load_content:
@@ -196,8 +199,8 @@ class Filesystem:
         files = []
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
-            hierarchy.calculate_properties([current_user.id])
-            hierarchy.calculate_privileges([current_user.id])
+            hierarchy.calculate_properties([current_user_id])
+            hierarchy.calculate_privileges([current_user_id])
             hierarchy.calculate_starred_files()
             hierarchy.calculate_size()
             files.append(hierarchy.file)
@@ -295,7 +298,7 @@ class Filesystem:
     @staticmethod
     def check_file_permissions(
         files: List[Files],
-        user: AppUser,
+        user: Optional[AppUser],
         require_permissions: List[str],
         *,
         permit_recycled: bool,
@@ -309,15 +312,16 @@ class Filesystem:
         :param require_permissions: a list of permissions to require (like 'writable')
         :param permit_recycled: whether to allow recycled files
         """
+        user_id = user.id if user else None
         # Check each file
         for file in files:
             for permission in require_permissions:
-                if not getattr(file.calculated_privileges[user.id], permission):
+                if not getattr(file.calculated_privileges[user_id], permission):
                     # Do not reveal the filename with the error!
                     # TODO: probably refactor these readable, commentable to
                     # actual string values...
 
-                    if not file.calculated_privileges[user.id].readable:
+                    if not file.calculated_privileges[user_id].readable:
                         raise AccessRequestRequiredError(
                             curr_access='no',
                             req_access='readable',
@@ -344,7 +348,7 @@ class Filesystem:
                 )
 
     @staticmethod
-    def get_file_response(hash_id: str, user: AppUser):
+    def get_file_response(hash_id: str, user: AppUser = None):
         """
         Fetch a file and return a response that can be sent to the client. Permissions
         are checked and this method will throw a relevant response exception.
@@ -378,7 +382,7 @@ class Filesystem:
         return jsonify(
             FileResponseSchema(
                 context={
-                    'user_privilege_filter': g.current_user.id,
+                    'user_privilege_filter': get_current_user('id'),
                 },
                 exclude=('result.children.children',),  # We aren't loading sub-children
             ).dump(

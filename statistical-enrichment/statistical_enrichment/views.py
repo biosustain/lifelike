@@ -22,6 +22,7 @@ def healthz():
 
 
 @app.route('/enrich-with-go-terms', methods=['POST'])
+@login_exempt
 @use_args(EnrichmentSchema)
 def enrich_go(args):
     gene_names = args['geneNames']

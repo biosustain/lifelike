@@ -2,7 +2,12 @@ import { HttpEvent } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
-import { PaginatedRequestOptions, ResultList, TreeNode } from 'app/shared/schemas/common';
+import {
+  PaginatedRequestOptions,
+  ResultList,
+  StatusSchema,
+  TreeNode,
+} from 'app/shared/schemas/common';
 import {
   AddedAnnotationExclusion,
   Annotation,
@@ -11,8 +16,10 @@ import {
 } from 'app/pdf-viewer/annotation-type';
 import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { ImageBlob } from 'app/shared/utils/forms';
+import { ProgressArguments } from 'app/interfaces/common-dialog.interface';
 
 import { FilePrivileges, ProjectPrivileges } from './models/privileges';
+import { FilesystemObject } from './models/filesystem-object';
 
 // ========================================
 // Projects
@@ -350,4 +357,13 @@ export interface FileAnnotationHistoryResponse extends ResultList<FileAnnotation
 export interface HttpObservableResponse<T> {
   readonly body$: Observable<T>;
   readonly progress$: Observable<HttpEvent<T>>;
+}
+
+export interface CreationResult extends StatusSchema {
+  result?: FilesystemObject;
+}
+
+export interface Task<Result> {
+  body$: Observable<Result>;
+  progress$: Observable<ProgressArguments>;
 }

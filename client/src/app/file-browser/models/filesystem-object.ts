@@ -2,12 +2,11 @@ import { assign, has, isEmpty, isNil, pick, toPairs } from 'lodash-es';
 import { Subject } from 'rxjs';
 
 import {
-  KnowledgeMapGraph,
   Source,
   UniversalEntityData,
   UniversalGraphNode,
 } from 'app/drawing-tool/services/interfaces';
-import { AppUser, OrganismAutocomplete, User } from 'app/interfaces';
+import { AppUser, OrganismAutocomplete } from 'app/interfaces';
 import { PdfFile } from 'app/interfaces/pdf-files.interface';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
 import { Meta } from 'app/pdf-viewer/annotation-type';
@@ -31,6 +30,7 @@ import {
 } from '../providers/filesystem-object-data.provider';
 import { AnnotationConfigurations, FilesystemObjectData, ProjectData } from '../schema';
 import { createDragImage } from '../utils/drag';
+import { PublishService } from '../services/publish.service';
 
 // TODO: Rename this class after #unifiedfileschema
 export class ProjectImpl implements ObservableObject {
@@ -68,7 +68,18 @@ export class ProjectImpl implements ObservableObject {
     }
   }
 
+  get isPublication() {
+    return /^!publish@/.exec(this.name);
+  }
+
   get effectiveName(): string {
+    if (this.isPublication) {
+      const username = this.***ARANGO_USERNAME***?.user?.username;
+      if (username) {
+        return `Publications of ${username}`;
+      }
+      return `Publications`;
+    }
     return this.name || this.hashId;
   }
 
@@ -445,7 +456,7 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   get effectiveName(): string {
     if (this.isProjectRoot) {
-      return this.project.name;
+      return this.project.effectiveName;
     } else {
       return this.filename;
     }
@@ -471,10 +482,12 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
 
   getCommands(forEditing = true): any[] {
     // TODO: Move this method to ObjectTypeProvider
-    const projectName = encodeURIComponent(this.project ? this.project.name : 'default');
+    const projectName = encodeURIComponent(
+      this.project?.effectiveName?.replace(/\s/g, '_') ?? 'default'
+    );
     switch (this.mimeType) {
       case MimeTypes.Directory:
-        return ['/projects', projectName, 'folders', this.hashId];
+        return ['/folders', this.hashId];
       case MimeTypes.EnrichmentTable:
         return ['/projects', projectName, 'enrichment-table', this.hashId];
       case MimeTypes.Pdf:
@@ -507,7 +520,9 @@ export class FilesystemObject implements DirectoryObject, PdfFile, ObservableObj
             color: annotationTypesMap.get(meta.type.toLowerCase()).color,
           }).toString();
         }
+        break;
     }
+    url.searchParams.set('filename', this.effectiveName.replace(/\s/g, '_'));
     return url;
   }
 

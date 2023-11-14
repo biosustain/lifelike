@@ -5,8 +5,8 @@ from webargs.flaskparser import use_args
 
 from neo4japp.schemas.context import ContextRelationshipRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
+from neo4japp.utils.globals import get_current_username
 from neo4japp.services.llm import LLM
-from neo4japp.utils.globals import current_username
 
 bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 
@@ -42,7 +42,7 @@ def relationship(params):
         ],
         temperature=options.get('temperature', 0),
         max_tokens=2000,
-        user=str(hash(current_username)),
+        user=str(hash(get_current_username())),
         timeout=60,
     )
     response = ChatGPT.ChatCompletion.create(**create_params)
