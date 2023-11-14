@@ -1,9 +1,8 @@
 import { HttpClientModule } from '@angular/common/http';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { FileBrowserModule } from '../../../file-browser/file-browser.module';
+import { FileBrowserModule } from 'app/file-browser/file-browser.module';
 
 import { ExportersRefComponent } from './exporters-ref.component';
 import { ErrorHandler } from '../../services/error-handler.service';
