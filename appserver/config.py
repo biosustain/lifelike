@@ -56,8 +56,6 @@ class Base:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
 
-    SENTRY_ENABLED = False
-    SENTRY_KEY = os.environ.get('SENTRY_KEY')
 
     ELASTIC_APM_SERVER_URL = os.environ.get('ELASTIC_APM_SERVER_URL', False)
     ELASTICSEARCH_HOSTS = os.environ.get('ELASTICSEARCH_HOSTS')
@@ -161,7 +159,17 @@ class Staging(Base):
     DOMAIN = 'https://test.***ARANGO_DB_NAME***.bio'
 
     FORWARD_STACKTRACE = True
-    SENTRY_ENABLED = True
+
+    CHAT_GPT_PLAYGROUND_ENABLED = True
+
+
+class Contabo(Base):
+    """Contabo configurations"""
+
+    SITE_NAME = 'Lifelike Knowledge Search (UCSD)'
+    DOMAIN = 'https://g-know.ai'
+
+    FORWARD_STACKTRACE = True
 
     CHAT_GPT_PLAYGROUND_ENABLED = True
 
@@ -189,4 +197,3 @@ class Production(Base):
 
     DOMAIN = 'https://kg.***ARANGO_DB_NAME***.bio'
     FORWARD_STACKTRACE = False
-    SENTRY_ENABLED = True
