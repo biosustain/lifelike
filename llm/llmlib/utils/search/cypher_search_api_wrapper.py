@@ -21,8 +21,7 @@ WHERE n.eid IS NOT NULL AND NOT n.eid IN $exclude_eids
 WITH apoc.text.levenshteinSimilarity(term, n.name) as similarity, s, n, term
 ORDER BY similarity DESC
 WHERE similarity > 0.5
-WITH DISTINCT term, collect({node: n, node_id: id(n), similarity: similarity})[0..$top_k_matches] as matches
-RETURN term, matches
+RETURN term, id(n) as id, similarity as match_score
 """
 
 RELATED_SHORTEST_PATH_QUERY = """
@@ -38,7 +37,7 @@ MATCH path=allShortestPaths((a)-[*1..]-(b))
 WHERE
  all(r in relationships(path) where type(r) in $include_rels)
  and all(n in nodes(path) where not n.eid in $exclude_eids)
-RETURN path LIMIT $top_k
+RETURN apoc.convert.toString(path) as path, nodes(path) as nodes
 """
 
 
@@ -117,7 +116,7 @@ class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
     )
     relationships_query: str = RELATED_SHORTEST_PATH_QUERY
     relationships_query_params: Dict[str, Any] = dict(
-        top_k=3,
+        # top_k=3,
         include_rels=['CONSUMED_BY', 'PRODUCES', 'CATALYZES', 'REGULATES', 'HAS_TXONOMY', 'IS',
                       'HAS_KO', 'ELEMENT_OF', 'ENCODES'],
         exclude_eids=CURRENCY_METABOLITES,
@@ -147,25 +146,32 @@ class CypherSearchAPIWrapper(GraphSearchAPIWrapper):
             self.related_nodes_query,
             dict(**self.related_nodes_query_params, terms=terms),
         )
-        assert len(mapping) <= len(terms)
         return mapping
 
-    def get_relationships(self, term_match: List[TermMatches]) -> List[dict]:
-        term_match_id = [
-            {
-                'term': term_match['term'],
-                'matches': [
-                    {
-                        'id': match['node_id'],
-                        'similarity': match['similarity'],
-                    }
-                    for match in term_match['matches']
-                ],
-            }
-            for term_match in term_match
-        ]
-
+    def get_node(self, node_ids: List[int]) -> Node:
         return self.graph.query(
-            self.relationships_query,
-            dict(**self.relationships_query_params, term_match=term_match_id),
+            "MATCH (n) WHERE id(n) in $node_ids RETURN n",
+            dict(node_ids=node_ids),
         )
+
+    def get_relationship(self, relationship_id: int) -> Node:
+        return self.graph.query(
+            "MATCH ()-[r]->() WHERE id(r) = $relationship_id RETURN r",
+            dict(relationship_id=relationship_id),
+        )[0]
+
+    def get_relationships(self, source_id: int, target_id: int) -> Any:
+        result = self.graph.query(
+            self.relationships_query,
+            dict(
+                **self.relationships_query_params,
+                source_id=source_id,
+                target_id=target_id
+                ),
+        )
+        response = dict(
+            paths=list(map(lambda r: r['path'], result)),
+        )
+        if len(result) > 0:
+            response['nodes'] = result[0]['nodes']
+        return result
