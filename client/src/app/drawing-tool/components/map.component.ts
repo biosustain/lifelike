@@ -51,12 +51,13 @@ import { GraphEntity, KnowledgeMapGraph } from '../services/interfaces';
 import { MapImageProviderService } from '../services/map-image-provider.service';
 import { GraphActionsService } from '../services/graph-actions.service';
 import { GraphViewDirective } from '../directives/graph-view.directive';
+import { MapStoreService } from '../services/map-store.service';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  providers: [OpenFileProvider],
+  providers: [OpenFileProvider, MapStoreService],
 })
 export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewInit, OnChanges {
   @Input() highlightTerms: string[] | undefined;

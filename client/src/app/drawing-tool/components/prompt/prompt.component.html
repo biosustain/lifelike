@@ -14,14 +14,14 @@
       <ng-container *ngIf="controller.current$ | async as current"> : {{ current }} </ng-container>
     </button>
     <div ngbDropdownMenu class="w-100">
-      <button ngbDropdownItem class="text-truncate" (click)="controller.currentIdx$.next(-1)">
+      <button ngbDropdownItem class="text-truncate" (click)="controller.select(undefined)">
         Empty
       </button>
       <button
         ngbDropdownItem
         class="text-truncate"
-        *ngFor="let context of controller.entities; let i = index"
-        (click)="controller.currentIdx$.next(i)"
+        *ngFor="let context of controller.entities"
+        (click)="controller.select(context)"
       >
         {{ context }}
       </button>
@@ -79,6 +79,13 @@
   <br />
   <div class="card mt-2" style="white-space: pre-line" *ngIf="state.explanation?.value">
     <div class="card-body p-3 bg-light" style="white-space: pre-wrap">
+      <span
+        style="float: right"
+        class="ml-2 mb-2"
+        (click)="copyToClipboard(state.explanation.value.result)"
+      >
+        <i class="fas fa-copy"></i>
+      </span>
       <span
         style="float: right"
         class="ml-2 mb-2"

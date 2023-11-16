@@ -318,6 +318,8 @@ export class VisualizationComponent implements OnInit, OnDestroy {
   expandNode(expandNodeRequest: ExpandNodeRequest) {
     const { nodeId, filterLabels } = expandNodeRequest;
 
+    this.openLoadingClustersDialog();
+
     this.tracking.register({
       category: TRACKING_CATEGORIES.visualiser,
       action: TRACKING_ACTIONS.expandNode,
@@ -332,8 +334,6 @@ export class VisualizationComponent implements OnInit, OnDestroy {
       this.openNoResultsFromExpandDialog();
       return;
     }
-
-    this.openLoadingClustersDialog();
 
     this.visService.expandNode(nodeId, filterLabels).subscribe(
       (r: Neo4jResults) => {

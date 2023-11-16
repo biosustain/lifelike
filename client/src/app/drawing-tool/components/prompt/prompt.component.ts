@@ -1,12 +1,4 @@
-import {
-  Component,
-  Injector,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Optional,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Injector, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { BehaviorSubject, combineLatest, defer, Observable, ReplaySubject, Subject } from 'rxjs';
@@ -17,8 +9,8 @@ import {
   startWith,
   switchMap,
   takeUntil,
-  withLatestFrom,
 } from 'rxjs/operators';
+import { select } from '@ngrx/store';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import {
@@ -28,15 +20,15 @@ import {
 import { OpenPlaygroundParams } from 'app/playground/components/open-playground/open-playground.component';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
 import { ExplainService } from 'app/shared/services/explain.service';
-import {
-  DropdownController,
-  dropdownControllerFactory,
-} from 'app/shared/utils/dropdown.controller.factory';
+import { DropdownController } from 'app/shared/utils/dropdown.controller.factory';
 import { openModal } from 'app/shared/utils/modals';
 import { PlaygroundComponent } from 'app/playground/components/playground.component';
 import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
 import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
+import { ClipboardService } from 'app/shared/services/clipboard.service';
+
+import { MapStoreService, setContext } from '../../services/map-store.service';
 
 @Component({
   selector: 'app-drawing-tool-prompt',
@@ -47,7 +39,9 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     private readonly explainService: ExplainService,
     private readonly openFileProvider: OpenFileProvider,
     private readonly injector: Injector,
-    private readonly modalService: NgbModal
+    private readonly modalService: NgbModal,
+    private readonly clipboard: ClipboardService,
+    private readonly mapStore: MapStoreService
   ) {}
 
   private readonly destroy$: Subject<void> = new Subject();
@@ -73,7 +67,16 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     );
 
   readonly contextsController$: Observable<DropdownController<string>> = this.contexts$.pipe(
-    map(dropdownControllerFactory),
+    map(
+      (contexts) =>
+        ({
+          entities: Object.freeze(contexts),
+          current$: this.mapStore.state$
+            .pipe(select('context'))
+            .pipe(map((context) => (contexts.includes(context) ? context : undefined))),
+          select: (context: string) => this.mapStore.dispatch(setContext(context)),
+        } as DropdownController<string>)
+    ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
 
@@ -92,17 +95,17 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
    */
   readonly explain$ = new Subject<boolean>();
 
-  readonly explanation$: Observable<PipeStatus<ChatGPTResponse>|undefined> = this.params$.pipe(
-    switchMap(params =>
+  readonly explanation$: Observable<PipeStatus<ChatGPTResponse> | undefined> = this.params$.pipe(
+    switchMap((params) =>
       this.explain$.pipe(
         map(() => params),
         takeUntil(this.destroy$),
-        switchMap(({entities, temperature, context}) =>
-          this.explainService.relationship(entities, context, {temperature}).pipe(addStatus()),
+        switchMap(({ entities, temperature, context }) =>
+          this.explainService.relationship(entities, context, { temperature }).pipe(addStatus())
         ),
-        startWith(undefined),
-      ),
-    ),
+        startWith(undefined)
+      )
+    )
   );
 
   readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =
@@ -153,5 +156,9 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     const info = this.modalService.open(ChatgptResponseInfoModalComponent);
     info.componentInstance.queryParams = queryParams;
     return info.result;
+  }
+
+  copyToClipboard(text: string) {
+    return this.clipboard.copy(text);
   }
 }

@@ -240,4 +240,9 @@ export class ObjectTableComponent implements OnChanges, OnDestroy, AfterViewInit
     );
     this.columnSelectionPopover.open();
   }
+
+  // Rerender the row when row "identity" changes - visible param has been modified
+  rowSnapshotIdentity(index: number, item: FilesystemObject) {
+    return item.hashId + item.filename + item.starred;
+  }
 }
