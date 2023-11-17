@@ -4,6 +4,7 @@ from http import HTTPStatus
 import requests
 from flask import Blueprint, Response, current_app, request
 
+from neo4japp.blueprints.auth import login_optional
 from neo4japp.exceptions import StatisticalEnrichmentError, wrap_exceptions
 from neo4japp.services.chat_gpt import ChatGPT
 from neo4japp.utils.globals import config
@@ -81,6 +82,7 @@ def forward_request():
 
 
 @bp.route('/enrich-with-go-terms', methods=['POST'])
+@login_optional
 @wrap_exceptions(StatisticalEnrichmentError)
 def enrich_go():
     return forward_request()

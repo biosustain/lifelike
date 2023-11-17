@@ -5,7 +5,8 @@ from webargs.flaskparser import use_args
 
 from neo4japp.schemas.context import ContextRelationshipRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
-from neo4japp.utils.globals import current_username
+from neo4japp.utils.globals import get_current_username
+from neo4japp.services.llm import LLM
 
 bp = Blueprint('chat-gpt-api', __name__, url_prefix='/explain')
 
@@ -41,7 +42,7 @@ def relationship(params):
         ],
         temperature=options.get('temperature', 0),
         max_tokens=2000,
-        user=str(hash(current_username)),
+        user=str(hash(get_current_username())),
         timeout=60,
     )
     response = ChatGPT.ChatCompletion.create(**create_params)
@@ -50,3 +51,25 @@ def relationship(params):
             "result": choice.get('message').get('content').strip(),
             "query_params": create_params,
         }
+
+
+@bp.route('/relationship/graph', methods=['POST'])
+@use_args(ContextRelationshipRequestSchema)
+def relationship_graph(params):
+    entities = params.get('entities', [])
+    context = params.get('context')
+    options = params.get('options', {})
+    create_params = dict(
+        model="gpt-3.5-turbo",
+        query=(
+            'What is the relationship between '
+            + ', '.join(entities)
+            + (f', {context}' if context else '')
+            + '?'
+        ),
+        temperature=options.get('temperature', 0),
+        max_tokens=2000,
+        user=str(hash(get_current_username())),
+        timeout=60,
+    )
+    return LLM.graph_qa(**create_params)

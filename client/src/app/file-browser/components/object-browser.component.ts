@@ -100,8 +100,8 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
         tap((object) =>
           this.modulePropertiesChange.emit({
             title: object.isProjectRoot
-              ? object.project.name
-              : `${object.project.name} - ${object.filename}`,
+              ? object.project.effectiveName
+              : `${object.project.effectiveName} - ${object.filename}`,
             fontAwesomeIcon: 'folder',
           })
         )

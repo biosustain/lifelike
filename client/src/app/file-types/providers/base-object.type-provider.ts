@@ -3,12 +3,10 @@ import { ComponentRef, Injectable, InjectionToken, NgZone } from '@angular/core'
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { select, Store } from '@ngrx/store';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  CreateDialogOptions,
-  CreateResultMapping,
-} from 'app/file-browser/services/object-creation.service';
+import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
@@ -22,6 +20,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { AuthSelectors } from 'app/auth/store';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -50,6 +50,8 @@ export interface PreviewOptions {
 export interface Exporter {
   name: string;
 
+  isPublish?: boolean;
+
   export(linkedExport?: boolean): Observable<File>;
 }
 
@@ -74,7 +76,7 @@ export interface ObjectTypeProvider {
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions
+    options?: PreviewOptions,
   ): Observable<ComponentRef<any> | undefined>;
 
   /**
@@ -122,8 +124,9 @@ export class AbstractObjectTypeProviderHelper {
     protected readonly filesystemService: FilesystemService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly errorHandler: ErrorHandler,
-    protected readonly ngZone: NgZone
-  ) {}
+    protected readonly ngZone: NgZone,
+  ) {
+  }
 
   openEditDialog(target: FilesystemObject, options: {} = {}): Promise<ObjectEditDialogValue> {
     const dialogRef = openModal(this.modalService, ObjectEditDialogComponent);
@@ -135,7 +138,7 @@ export class AbstractObjectTypeProviderHelper {
           new BehaviorSubject<Progress>(
             new Progress({
               status: `Saving changes to ${getObjectLabel(target)}...`,
-            })
+            }),
           ),
         ],
       });
@@ -147,7 +150,7 @@ export class AbstractObjectTypeProviderHelper {
           map(() => value),
           finalize(() => progressDialogRef.close()),
           this.errorHandler.createFormErrorHandler(dialogRef.componentInstance.form),
-          this.errorHandler.create({ label: 'Edit object' })
+          this.errorHandler.create({label: 'Edit object'}),
         )
         .toPromise();
     };
@@ -158,15 +161,26 @@ export class AbstractObjectTypeProviderHelper {
 /**
  * A base class for object type providers.
  */
+@Injectable()
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
-  abstract handles(object: FilesystemObject): boolean;
+  constructor(
+    private readonly helper: AbstractObjectTypeProviderHelper,
+    protected readonly filesystemService: FilesystemService,
+    private readonly store: Store<State>,
+  ) {
+  }
 
-  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {}
+  isAdmin$ = this.store.pipe(
+    select(AuthSelectors.selectRoles),
+    map((roles) => roles.includes('admin')),
+  );
+
+  abstract handles(object: FilesystemObject): boolean;
 
   createPreviewComponent(
     object: FilesystemObject,
     contentValue$: Observable<Blob>,
-    options?: PreviewOptions
+    options?: PreviewOptions,
   ): Observable<ComponentRef<any> | undefined> {
     return of(null);
   }
@@ -184,7 +198,33 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([]);
+    const exporters = [
+      {
+        name: 'Zip',
+        export: () =>
+          this.filesystemService
+            .generateExport(object.hashId, {format: 'zip', exportLinked: true})
+            .pipe(map((blob) => new File([blob], object.filename + '.zip'))),
+      },
+    ];
+    return this.isAdmin$.pipe(
+      map((isAdmin) =>
+        isAdmin
+          ? [
+            {
+              name: 'Zip',
+              export: () =>
+                this.filesystemService.generateExport(object.hashId, {
+                  format: 'zip',
+                  exportLinked: true,
+                }),
+              isPublish: true,
+            },
+            ...exporters,
+          ]
+          : exporters,
+      ),
+    );
   }
 
   unzipContent(zipped: Blob): Observable<string> {

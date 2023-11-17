@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 import { SingleResult } from 'app/shared/schemas/common';
 import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
@@ -36,6 +36,23 @@ export interface ChatGPTModel {
   ***ARANGO_USERNAME***: string;
 }
 
+export interface GraphChatGPTResponse {
+  graph: {
+    nodes: {
+      eid: string;
+      displayName: string;
+      type: string;
+      entityType: string;
+    }[];
+    edges: {
+      from: string;
+      to: string;
+      label: string;
+    }[];
+  };
+  response: ChatGPTResponse;
+}
+
 @Injectable({ providedIn: '***ARANGO_USERNAME***' })
 export class ExplainService {
   endpoint = '/api/explain/';
@@ -52,5 +69,19 @@ export class ExplainService {
       context,
       options,
     });
+  }
+
+  relationshipGraph(
+    entities: Iterable<string>,
+    context?: string,
+    options: ExplainRelationshipOptions = {}
+  ): Observable<GraphChatGPTResponse> {
+    return this.http
+      .post<GraphChatGPTResponse>(this.endpoint + 'relationship/graph', {
+        entities: Array.from(entities),
+        context,
+        options,
+      })
+      .pipe(tap((response) => console.log(response)));
   }
 }

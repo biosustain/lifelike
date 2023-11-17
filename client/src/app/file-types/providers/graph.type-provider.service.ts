@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
 
 import {
   AbstractObjectTypeProvider,
@@ -12,6 +13,7 @@ import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SearchType } from 'app/search/shared';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { MimeTypes } from 'app/shared/constants';
+import { State } from 'app/***ARANGO_USERNAME***-store';
 
 export const GRAPH_SHORTHAND = 'Graph';
 
@@ -19,9 +21,10 @@ export const GRAPH_SHORTHAND = 'Graph';
 export class GraphTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-    protected readonly filesystemService: FilesystemService
+    protected readonly filesystemService: FilesystemService,
+    store: Store<State>
   ) {
-    super(abstractObjectTypeProviderHelper);
+    super(abstractObjectTypeProviderHelper, filesystemService, store);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -33,20 +36,23 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([
-      {
-        name: 'Graph',
-        export: () => {
-          return this.filesystemService.getContent(object.hashId).pipe(
-            map((blob) => {
-              return new File(
-                [blob],
-                object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph'
-              );
-            })
-          );
+    return super.getExporters(object).pipe(
+      map((inheritedExporters) => [
+        {
+          name: 'Graph',
+          export: () => {
+            return this.filesystemService.getContent(object.hashId).pipe(
+              map((blob) => {
+                return new File(
+                  [blob],
+                  object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph'
+                );
+              })
+            );
+          },
         },
-      },
-    ]);
+        ...inheritedExporters,
+      ])
+    );
   }
 }

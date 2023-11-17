@@ -1,49 +1,60 @@
 version: "3.8"
 
+x-postgres: &postgres
+  POSTGRES_HOST: pgdatabase
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+
+x-neo4j: &neo4j
+  NEO4J_SCHEME: bolt
+  NEO4J_HOST: graphdatabase
+  NEO4J_AUTH: neo4j/password
+  NEO4J_PORT: 7687
+
+x-elasticsearch: &elasticsearch
+  ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+  ELASTIC_FILE_INDEX_ID: file_dev
+
+x-arango: &arango
+  ARANGO_HOST: http://arangodb:8529
+  ARANGO_USERNAME: ***ARANGO_USERNAME***
+  ARANGO_PASSWORD: password
+  ARANGO_DB_NAME: ***ARANGO_DB_NAME***
+
+x-redis: &redis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_USERNAME: default
+  REDIS_PASSWORD: password
+  REDIS_SSL: false
+
+x-statistical-enrichment: &statistical-enrichment
+  SE_HOST: statistical-enrichment
+  SE_PORT: 5010
+
+x-llm: &llm
+  LLM_HOST: llm
+  LLM_PORT: 5000
+
 x-appserver: &appserver
   build: ./appserver
   env_file:
     - azure-secrets.env
   environment:
     # Log Services
-    - FORMAT_AS_JSON=false
+    FORMAT_AS_JSON: false
     # Flask
-    - FLASK_APP=app
-    - FLASK_APP_CONFIG=Development
-    - FLASK_DEBUG=1
-    - FLASK_ENV=development
-    # Postgres
-    - POSTGRES_HOST=pgdatabase
-    - POSTGRES_PORT=5432
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
-    - POSTGRES_DB=postgres
-    # ElasticSearch
-    - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    - ELASTIC_FILE_INDEX_ID=file_dev
-    # Neo4j
-    - NEO4J_SCHEME=bolt
-    - NEO4J_HOST=graphdatabase
-    - NEO4J_AUTH=neo4j/password
-    - NEO4J_PORT=7687
-    # Arango
-    - ARANGO_HOST=http://arangodb:8529
-    - ARANGO_USERNAME=***ARANGO_USERNAME***
-    - ARANGO_PASSWORD=password
-    - ARANGO_DB_NAME=***ARANGO_DB_NAME***
-    # Redis
-    - REDIS_HOST=redis
-    - REDIS_PORT=6379
-    - REDIS_USERNAME=default
-    - REDIS_PASSWORD=password
-    - REDIS_SSL=false
-    # StatisticalEnrichment
-    - SE_HOST=statistical-enrichment
-    - SE_PORT=5010
+    FLASK_APP: app
+    FLASK_APP_CONFIG: Development
+    FLASK_DEBUG: 1
+    FLASK_ENV: development
+    <<: [*postgres, *elasticsearch, *neo4j, *arango, *redis, *statistical-enrichment, *llm]
     # Other
-    - DOMAIN=http://localhost:4200
-    - LMDB_HOME_FOLDER=/home/n4j/neo4japp/services/annotations/lmdb/
-    - ASSETS_FOLDER=/home/n4j/assets/
+    DOMAIN: http://localhost:4200
+    LMDB_HOME_FOLDER: /home/n4j/neo4japp/services/annotations/lmdb/
+    ASSETS_FOLDER: /home/n4j/assets/
     # - OPENAI_API_KEY="<***ARANGO_DB_NAME***-openai-api-key>" defined in azure secrets
   volumes:
     - ./appserver:/home/n4j
@@ -90,6 +101,31 @@ services:
     networks:
       - frontend
 
+  llm:
+    container_name: llm
+    build:
+      context: ./llm
+      target: dev
+    entrypoint: flask run --host 0.0.0.0
+    ports:
+      - "5020:5000"
+    env_file:
+      - azure-secrets.env
+    environment:
+      # Flask
+      FLASK_APP: llmlib
+      FLASK_APP_CONFIG: Development
+      FLASK_DEBUG: 1
+      FLASK_ENV: development
+      <<: [*neo4j, *arango, *redis]
+    volumes:
+      - ./llm:/home/user
+    networks:
+      - backend
+    depends_on:
+      - graphdatabase
+      - redis
+
   statistical-enrichment:
     container_name: statistical-enrichment
     build: ./statistical-enrichment
@@ -97,20 +133,11 @@ services:
       - "5010:5010"
     environment:
       # Flask
-      - FLASK_APP=statistical_enrichment
-      - FLASK_APP_CONFIG=Development
-      - FLASK_DEBUG=1
-      - FLASK_ENV=development
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
-      # Redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=password
-      - REDIS_SSL=false
+      FLASK_APP: statistical_enrichment
+      FLASK_APP_CONFIG: Development
+      FLASK_DEBUG: 1
+      FLASK_ENV: development
+      <<: [*neo4j, *redis]
     # Allow debugging w/ IPython or pdb
     stdin_open: true
     tty: true
@@ -127,17 +154,8 @@ services:
     container_name: cache-invalidator
     build: ./cache-invalidator
     environment:
-      - LOG_LEVEL=debug
-      # Neo4j
-      - NEO4J_SCHEME=bolt
-      - NEO4J_HOST=graphdatabase
-      - NEO4J_AUTH=neo4j/password
-      - NEO4J_PORT=7687
-      # Redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=password
-      - REDIS_SSL=false
+      LOG_LEVEL: debug
+      <<: [*neo4j, *redis]
     volumes:
       - ./cache-invalidator:/app
     networks:
@@ -161,7 +179,7 @@ services:
     container_name: pgdatabase
     command: postgres -c max_wal_size=2GB -c log_statement='all'
     environment:
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5431:5432"
     networks:
@@ -171,8 +189,8 @@ services:
     container_name: graphdatabase
     image: neo4j:4.4-community
     environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
+      NEO4J_AUTH: neo4j/password
+      NEO4JLABS_PLUGINS: '["apoc", "n10s"]'
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -213,12 +231,12 @@ services:
       dockerfile: Dockerfile
       context: elasticsearch
     environment:
-      - discovery.type=single-node
-      - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
-      - bootstrap.memory_lock=true
-      - xpack.graph.enabled=false
-      - xpack.watcher.enabled=false
-      - xpack.license.self_generated.type=basic
+      discovery.type: single-node
+      http.max_content_length: 200mb #allow 200mb of content to be sent for indexing
+      bootstrap.memory_lock: true
+      xpack.graph.enabled: false
+      xpack.watcher.enabled: false
+      xpack.license.self_generated.type: basic
     ulimits:
       memlock:
         soft: -1

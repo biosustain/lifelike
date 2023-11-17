@@ -8,6 +8,7 @@ import { catchError, exhaust, map } from 'rxjs/operators';
 
 import { CopyrightInfringementRequest } from 'app/interfaces/reports.interface';
 import { COUNTRY_NAME_LIST } from 'app/shared/constants';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { ReportsService } from '../services/reports.service';
 
@@ -26,7 +27,8 @@ export class CopyrightInfringementFormComponent implements OnInit, OnDestroy {
   constructor(
     private reportsService: ReportsService,
     private router: Router,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly workspaceManager: WorkspaceManager
   ) {}
 
   ngOnInit(): void {
@@ -77,7 +79,7 @@ export class CopyrightInfringementFormComponent implements OnInit, OnDestroy {
           'Your request has been submitted. The Lifelike team will review your claim and you will be contacted shortly.',
           'close'
         );
-        this.router.navigateByUrl('/workspaces/local');
+        this.router.navigateByUrl(this.workspaceManager.workspaceUrl);
       });
   }
 

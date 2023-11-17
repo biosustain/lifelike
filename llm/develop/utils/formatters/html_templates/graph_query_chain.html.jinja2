@@ -1,0 +1,4 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(pt, ('query'), 'query') %}
+    <dd>{{ chain.query|code }}</dd>
+{% endcall %}

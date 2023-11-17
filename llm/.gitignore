@@ -1,0 +1,6 @@
+**/.ipynb_checkpoints
+**/.Trash-0
+**/.jupyter
+**/*.egg-info
+**/chroma_db_oai
+**/.pytest_cache
