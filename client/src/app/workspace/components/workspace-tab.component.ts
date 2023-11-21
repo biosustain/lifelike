@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -25,6 +26,7 @@ import { AppURL } from 'app/shared/utils/url';
   selector: 'app-workspace-tab',
   templateUrl: './workspace-tab.component.html',
   styleUrls: ['./workspace-tab.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkspaceTabComponent implements OnChanges {
   @Input() active: boolean;
