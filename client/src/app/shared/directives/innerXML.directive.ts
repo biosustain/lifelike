@@ -1,22 +1,38 @@
 import {
-  AfterViewInit,
+  ComponentFactory,
+  ComponentFactoryResolver,
+  ComponentRef,
   Directive,
-  ElementRef,
   Injector,
   Input,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
   ViewContainerRef,
-  ComponentFactoryResolver,
-  ComponentFactory,
-  ApplicationRef,
 } from '@angular/core';
 
-import { isString, find } from 'lodash-es';
+import { find, isString } from 'lodash-es';
+import { ReplaySubject, Subject } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 import { HIGHLIGHT_TEXT_TAG_HANDLER, XMLTag } from '../services/highlight-text.service';
-import { ModalBodyComponent } from '../components/modal/modal-body.component';
-import { findEntriesValue } from '../utils';
+import { DynamicViewService } from '../services/dynamic-view.service';
+
+interface NodeRef {
+  node: Node;
+}
+
+interface XMLTagRef<Child = any> extends NodeRef {
+  componentRef: ComponentRef<XMLTag>;
+  children: Child[];
+}
+
+type NodeOrXMLTagRef = NodeRef | XMLTagRef<NodeOrXMLTagRef>;
+
+type CreateComponentRef<T extends XMLTag> = (
+  componentFactory: ComponentFactory<T>,
+  projectableNodes?: any[][]
+) => ComponentRef<T>;
 
 /**
  * Build 'appInnerXML' tag which is meant to act same as 'innerHTML' just for our XML tags
@@ -24,24 +40,35 @@ import { findEntriesValue } from '../utils';
 @Directive({
   selector: '[appInnerXML]',
 })
-export class InnerXMLDirective implements OnChanges {
+export class InnerXMLDirective implements OnChanges, OnDestroy {
   static parser = new DOMParser();
 
   constructor(
     private readonly viewContainerRef: ViewContainerRef,
     private readonly injector: Injector,
-    private readonly componentFactoryResolver: ComponentFactoryResolver,
-    private app: ApplicationRef
+    private readonly componentFactoryResolver: ComponentFactoryResolver
   ) {}
 
-  private node: Node = null;
+  private node$: Subject<Node> = new ReplaySubject(1);
+  private updateSubscription = this.node$
+    .pipe(distinctUntilChanged((prev, next) => prev.isEqualNode(next)))
+    .subscribe((node) => {
+      this.viewContainerRef.clear();
+      return this.nodeToXMLTagRef(node, (componentFactory, projectableNodes) =>
+        this.viewContainerRef.createComponent(componentFactory, 0, this.injector, projectableNodes)
+      );
+    });
 
   @Input('appInnerXML') innerXML: string | XMLDocument | Node;
 
   ngOnChanges({ innerXML }: SimpleChanges) {
     if (innerXML) {
-      this.update(innerXML.currentValue);
+      this.node$.next(this.getNode(innerXML.currentValue));
     }
+  }
+
+  ngOnDestroy() {
+    this.updateSubscription?.unsubscribe();
   }
 
   private getNode(innerXML: string | XMLDocument | Node) {
@@ -71,59 +98,41 @@ export class InnerXMLDirective implements OnChanges {
     }
   }
 
-  private mapChildNode(node: Node): Node {
+  private nodeToXMLTagRef(
+    node: Node,
+    creator: CreateComponentRef<XMLTag> = (componentFactory, projectableNodes) =>
+      componentFactory.create(this.injector, projectableNodes)
+  ): NodeOrXMLTagRef {
     const xmlTagFactory = this.mapNodeToXMLTagFactory(node);
     if (xmlTagFactory) {
-      const componentRef = xmlTagFactory.componentFactory.create(this.injector, [
-        Array.from(node.childNodes).map((childNode) => this.mapChildNode(childNode)),
-      ]);
-      // Attach the view to the ApplicationRef so that you get change detection & host bindings
-      this.app.attachView(componentRef.hostView);
-      this.loadNodeAtributesToComponentInstance(
-        node,
-        xmlTagFactory.attributes,
-        componentRef.instance
+      const children = Array.from(node.childNodes).map((childNode) =>
+        this.nodeToXMLTagRef(childNode)
       );
-      return componentRef.location.nativeElement;
-    } else {
-      return node;
+      const componentRef = DynamicViewService.hookComponentRef(
+        creator(xmlTagFactory.componentFactory, [
+          children.map(
+            (child) => (child as XMLTagRef).componentRef?.location.nativeElement ?? child.node
+          ),
+        ]),
+        xmlTagFactory.componentFactory,
+        this.parseNodeAtributesToComponentInputs(node, xmlTagFactory.attributes)
+      );
+      return {
+        node,
+        componentRef,
+        children,
+      };
     }
+    return { node };
   }
 
-  private loadNodeAtributesToComponentInstance(
-    node: Node,
-    xmlTagAttributes: string[],
-    componentInstance: XMLTag
-  ) {
+  private parseNodeAtributesToComponentInputs(node: Node, xmlTagAttributes: string[]) {
     if (node instanceof Element) {
-      Array.from(node.attributes)
-        .filter((attr) => attr.specified && xmlTagAttributes.includes(attr.name))
-        .forEach((attr) => {
-          componentInstance[attr.name] = attr.value;
-        });
-    }
-    componentInstance.update();
-  }
-
-  public update(innerXML: string | XMLDocument | Node) {
-    const newNode = this.getNode(innerXML);
-    if (!newNode.isEqualNode(this.node)) {
-      this.node = newNode;
-      const xmlTagFactory = this.mapNodeToXMLTagFactory(newNode);
-      if (xmlTagFactory) {
-        this.viewContainerRef.clear();
-        const componentRef = this.viewContainerRef.createComponent(
-          xmlTagFactory.componentFactory,
-          0,
-          this.injector,
-          [Array.from(newNode.childNodes).map((childNode) => this.mapChildNode(childNode))]
-        );
-        this.loadNodeAtributesToComponentInstance(
-          newNode,
-          xmlTagFactory.attributes,
-          componentRef.instance
-        );
-      }
+      return Object.fromEntries(
+        Array.from(node.attributes)
+          .filter((attr) => attr.specified && xmlTagAttributes.includes(attr.name))
+          .map((attr) => [attr.name, attr.value])
+      );
     }
   }
 }
