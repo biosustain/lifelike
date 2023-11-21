@@ -56,11 +56,4 @@ export class HighlightTextService {
   }
 }
 
-export abstract class XMLTag {
-  /**
-   *   Helper method for programatically created component
-   *   to be called after input values changes
-   *   as of Angular 11 we will be able to use 'updateInput' instead
-   */
-  abstract update();
-}
+export abstract class XMLTag {}
