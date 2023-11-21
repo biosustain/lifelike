@@ -7,7 +7,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 
-import { isString } from 'lodash-es';
 import Color from 'color';
 
 import { ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
@@ -56,24 +55,6 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
   }[];
   backgroundColor: string;
 
-  update() {
-    this.parsedMeta = JSON.parse(this.meta) as Meta;
-    const { id, type, idType, idHyperlinks, links, allText } = this.parsedMeta;
-    const annoId = id.indexOf(':') !== -1 ? id.split(':')[1] : id;
-    this.annoId = annoId.indexOf('NULL') === -1 ? annoId : undefined;
-    this.idLink =
-      (ENTITY_TYPE_MAP[type] as EntityType)?.links.find((link) => link.name === idType)?.url +
-      this.annoId;
-    this.idHyperlinks = idHyperlinks.map((link) => JSON.parse(link));
-    // links should be sorted in the order that they appear in SEARCH_LINKS
-    this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
-      url: links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(allText)),
-      label: domain.replace('_', ' '),
-    }));
-    this.searchInternalLinks = this.highlightTextService.composeSearchInternalLinks(allText);
-    this.backgroundColor = this.toAnnotationBackgroundColor(this.getAnnotationColor());
-  }
-
   constructor(
     protected readonly highlightTextService: HighlightTextService,
     protected readonly workspaceManager: WorkspaceManager
@@ -81,9 +62,23 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
     super();
   }
 
-  ngOnChanges({ meta, type }: SimpleChanges) {
-    if (meta || type) {
-      this.update();
+  ngOnChanges(inputChange: SimpleChanges) {
+    if (inputChange.meta || inputChange.type) {
+      this.parsedMeta = JSON.parse(this.meta) as Meta;
+      const { id, type, idType, idHyperlinks, links, allText } = this.parsedMeta;
+      const annoId = id.indexOf(':') !== -1 ? id.split(':')[1] : id;
+      this.annoId = annoId.indexOf('NULL') === -1 ? annoId : undefined;
+      this.idLink =
+        (ENTITY_TYPE_MAP[type] as EntityType)?.links.find((link) => link.name === idType)?.url +
+        this.annoId;
+      this.idHyperlinks = idHyperlinks.map((link) => JSON.parse(link));
+      // links should be sorted in the order that they appear in SEARCH_LINKS
+      this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
+        url: links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(allText)),
+        label: domain.replace('_', ' '),
+      }));
+      this.searchInternalLinks = this.highlightTextService.composeSearchInternalLinks(allText);
+      this.backgroundColor = this.toAnnotationBackgroundColor(this.getAnnotationColor());
     }
   }
 
