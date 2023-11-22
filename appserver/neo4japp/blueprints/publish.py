@@ -22,7 +22,7 @@ class PrePublishView(MethodView):
     def post(self, hash_id: str):
         """Pre-publish endpoint.
         This aligns with file export endpoint,
-         however it makes required additional hierarchy manipulations.
+         just with equired additional hierarchy manipulations.
         """
         current_user = g.current_user
 
