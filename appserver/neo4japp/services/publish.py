@@ -1,3 +1,5 @@
+import pathlib
+
 from flask import g
 
 from neo4japp.database import db
@@ -16,7 +18,7 @@ class Publish:
 
     @classmethod
     def create_uncommited_publication(
-        cls, user_hash_id: str, *, creator: AppUser = None, **kwargs
+        cls, user_hash_id: str, filename, *, creator: AppUser = None, **kwargs
     ):
         publish_project = Projects.get_or_create(
             name=cls.get_publish_project_name(user_hash_id),
@@ -27,8 +29,12 @@ class Publish:
             ),
             role='project-write',  # only write - this is system managed
         )
+        filename_path = pathlib.Path(filename)
+        if filename_path.suffix == '.zip':
+            filename = str(filename_path.with_suffix(''))
         file = Filesystem.create_file(
             **kwargs,
+            filename=filename,
             parent=publish_project.***ARANGO_USERNAME***,
         )
 

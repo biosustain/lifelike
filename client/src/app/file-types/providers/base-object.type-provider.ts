@@ -200,7 +200,7 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
               {
                 name: 'Zip',
                 export: () =>
-                  this.filesystemService.generateExport(object.hashId, {
+                  this.filesystemService.generatePrePublish(object.hashId, {
                     format: 'zip',
                     exportLinked: true,
                   }),

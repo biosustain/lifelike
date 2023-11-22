@@ -166,9 +166,11 @@ class Filesystem:
         # the handy FileHierarchy class later to calculate this permission information.
         # Internal code of thi method is checking `isinstance(current_user, AppUser)` so we can not
         # use `current_user` LocalProxy here (LocalProxy is not an instance of AppUser)
-        private_data_access = get_authorization_service().has_role(
-            g.current_user, 'private-data-access'
-        ) if current_user else False
+        private_data_access = (
+            get_authorization_service().has_role(g.current_user, 'private-data-access')
+            if current_user
+            else False
+        )
         query = add_project_user_role_columns(
             query, t_project, current_user_id, access_override=private_data_access
         )
@@ -712,9 +714,10 @@ class Filesystem:
                 )
 
             try:
-                with db.session.begin_nested():
-                    db.session.add(file)
+                db.session.add(file)
+                db.session.commit()
             except IntegrityError:
+                db.session.rollback()
                 # Warning: this could catch some other integrity error
                 pass
             else:

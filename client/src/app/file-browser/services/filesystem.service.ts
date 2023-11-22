@@ -245,6 +245,20 @@ export class FilesystemService {
       );
   }
 
+  generatePrePublish(hashId: string, request: ObjectExportRequest): Observable<File> {
+    return this.http
+      .post(`/api/publish/${encodeURIComponent(hashId)}/prepare`, request, {
+        observe: 'response',
+        responseType: 'blob',
+      })
+      .pipe(
+        map(
+          (response: HttpResponse<Blob>) =>
+            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.zip')
+        )
+      );
+  }
+
   save(
     hashIds: string[],
     changes: Partial<BulkObjectUpdateRequest>,
