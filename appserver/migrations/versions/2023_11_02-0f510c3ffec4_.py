@@ -114,24 +114,40 @@ def data_upgrades():
                 updated_raw_file = updated_raw_file.getvalue()
                 new_hash = hashlib.sha256(updated_raw_file).digest()
 
+                existing_file_content = session.execute(
+                    sa.select(
+                        [t_files_content.c.id]
+                    )
+                    .where(
+                        t_files_content.c.checksum_sha256 == new_hash,
+                    )
+                ).first()
+
+                # If the checksum already exists in the FileContent table, don't update the old
+                # row. Instead, update the File row with the existing FileContent id.
+                if existing_file_content is not None:
+                    print(f'\tUsing new content id for Files#{file_id}: {existing_file_content[0]}')
+                    content_id = existing_file_content[0]
+                else:
+                    print(f'\tUpdating FilesContent#{content_id}')
+                    session.execute(
+                        t_files_content.update()
+                        .where(t_files_content.c.id == content_id)
+                        .values(
+                            id=content_id,
+                            raw_file=updated_raw_file,
+                            checksum_sha256=new_hash,
+                        )
+                    )
+
                 print(f'\tUpdating Files#{file_id}')
                 session.execute(
                     t_files.update()
                     .where(t_files.c.id == file_id)
                     .values(
+                        content_id=content_id,
                         annotations=annotations_obj,
                         enrichment_annotations=updated_enrichment_annotations,
-                    )
-                )
-
-                print(f'\tUpdating FilesContent#{content_id}')
-                session.execute(
-                    t_files_content.update()
-                    .where(t_files_content.c.id == content_id)
-                    .values(
-                        id=content_id,
-                        raw_file=updated_raw_file,
-                        checksum_sha256=new_hash,
                     )
                 )
                 session.flush()

@@ -1,6 +1,7 @@
 import { ComponentType } from '@angular/cdk/overlay';
 import {
   ChangeDetectorRef,
+  ComponentFactory,
   ComponentFactoryResolver,
   ComponentRef,
   Injectable,
@@ -66,6 +67,29 @@ export class DynamicViewService {
     };
   }
 
+  static hookComponentRef<T>(
+    componentRef: ComponentRef<T>,
+    componentFactory: ComponentFactory<T>,
+    inputs: Partial<T> | Observable<Partial<T>> = {}
+  ): ComponentRef<T> {
+    const componentCdr = componentRef.injector.get(ChangeDetectorRef);
+    const updateInputs = DynamicViewService.updateInputs(
+      componentRef.instance,
+      componentFactory.inputs,
+      new Set<string>(),
+      () => componentCdr.detectChanges()
+    );
+    if (isObservable(inputs)) {
+      // Subscribe to inputs changes
+      const inputsSyncSubscription = inputs.subscribe(updateInputs);
+      componentRef.onDestroy = () => inputsSyncSubscription.unsubscribe();
+    } else {
+      // Set initial inputs - updates will be not handled
+      updateInputs(inputs);
+    }
+    return componentRef;
+  }
+
   public detach(viewRef: ViewContainerRef, componentRef: ComponentRef<any>): ViewRef | null {
     const index = viewRef.indexOf(componentRef.hostView);
     if (index !== -1) {
@@ -88,21 +112,6 @@ export class DynamicViewService {
   ): ComponentRef<T> {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(component);
     const componentRef = viewRef.createComponent(componentFactory);
-    const componentCdr = componentRef.injector.get(ChangeDetectorRef);
-    const updateInputs = DynamicViewService.updateInputs(
-      componentRef.instance,
-      componentFactory.inputs,
-      new Set<string>(),
-      () => componentCdr.detectChanges()
-    );
-    if (isObservable(inputs)) {
-      // Subscribe to inputs changes
-      const inputsSyncSubscription = inputs.subscribe(updateInputs);
-      componentRef.onDestroy = () => inputsSyncSubscription.unsubscribe();
-    } else {
-      // Set initial inputs - updates will be not handled
-      updateInputs(inputs);
-    }
-    return componentRef;
+    return DynamicViewService.hookComponentRef(componentRef, componentFactory, inputs);
   }
 }
