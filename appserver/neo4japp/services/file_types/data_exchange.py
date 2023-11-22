@@ -217,7 +217,13 @@ class ZipDataExchange(DataExchangeProtocol):
                     else:
                         file_ref = cls._zip_file_model_formatter.load(zip_file, info)
                         # Draft FileContent instance (buffer can be changed later)
-                        assert import_ref.file.content is None, "Content already set."
+                        # assert import_ref.file.content is None, "Content already set."
+                        if import_ref.file.content is not None:
+                            warn(
+                                ServerWarning(
+                                    title='File content already set',
+                                )
+                            )
                         import_ref.file.content = FileContent()
                         import_ref.file.content.raw_file = FileContentBuffer(
                             file_ref.content
@@ -321,17 +327,12 @@ class ZipDataExchange(DataExchangeProtocol):
 
     @classmethod
     def generate_import(cls, export: FileExport) -> FileImport:
-        filename_parts = export.filename.split('.')
-        filename = '.'.join(filename_parts[:-1])
-        format_ = filename_parts[-1]
-
         with export.content as bufferView:
-            if format_ == 'zip':
-                files = cls._import(bufferView)
+            files = cls._import(bufferView)
 
         return FileImport(
             files=files,
-            filename=filename,
+            filename=export.filename,
         )
 
     @classmethod
