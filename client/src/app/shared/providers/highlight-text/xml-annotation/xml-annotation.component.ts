@@ -71,7 +71,7 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
       this.idLink =
         (ENTITY_TYPE_MAP[type] as EntityType)?.links.find((link) => link.name === idType)?.url +
         this.annoId;
-      this.idHyperlinks = idHyperlinks.map((link) => JSON.parse(link));
+      this.idHyperlinks = idHyperlinks?.map((link) => JSON.parse(link));
       // links should be sorted in the order that they appear in SEARCH_LINKS
       this.searchLinks = SEARCH_LINKS.map(({ domain, url }) => ({
         url: links[domain.toLowerCase()] || url.replace(/%s/, encodeURIComponent(allText)),
