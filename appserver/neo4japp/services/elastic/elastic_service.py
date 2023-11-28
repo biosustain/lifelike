@@ -652,6 +652,11 @@ class ElasticService(ElasticConnection):
             highlight=highlight,
         )
 
+        import json
+        print('\n\nFULL ELASTIC QUERY:')
+        print(json.dumps(es_query, indent=4))
+        print('\n\n')
+
         try:
             es_response = self.elastic_client.search(
                 index=index_id,

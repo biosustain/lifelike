@@ -176,6 +176,11 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             ).to_dict(),
         )
 
+        import json
+        print('\n\nINITIAL PARAMS FOR ELASTIC CONTENT SEARCH:')
+        print(json.dumps(params, indent=4))
+        print('\n\n')
+
         current_user = g.current_user
         file_type_service = get_file_type_service()
 
@@ -266,6 +271,10 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
             highlight=highlight,
         )
 
+        print('\n\nFULL ELASTIC RESULT:')
+        print(json.dumps(elastic_result, indent=4))
+        print('\n\n')
+
         elastic_result = elastic_result['hits']
 
         highlight_tag_re = re.compile('@@@@(/?)\\$')
@@ -281,6 +290,10 @@ class ContentSearchView(ProjectBaseView, FilesystemBaseView):
                 attr_excl=['enrichment_annotations', 'annotations'],
             )
         }
+
+        print('\n\nFILE MAP:')
+        print(json.dumps(file_map, indent=4))
+        print('\n\n')
 
         results = []
         for document in elastic_result['hits']:
