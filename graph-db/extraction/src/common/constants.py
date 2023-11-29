@@ -56,6 +56,7 @@ DB_PPUT = 'PseudomonasCyc'
 DB_BSUBCYC = 'BsubCyc'
 DB_PSYRCYC = 'PsyringaeCyc'
 DB_ECOCYC_COFACTOR_PRIMARY = 'EcoCycCofactorPrimary'
+DB_ECOCYC_COFACTOR_METALS_PRIMARY = 'EcoCycCofactorMetalsPrimary'
 
 
 DB_ARO = 'ARO'  # antibiotic resistance ontology
