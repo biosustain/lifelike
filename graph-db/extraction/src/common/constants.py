@@ -54,11 +54,9 @@ DB_METACYC = 'MetaCyc'
 # DB_PPUT = 'Pput160488cyc'
 DB_PPUT = 'PseudomonasCyc'
 DB_BSUBCYC = 'BsubCyc'
-DB_PAENIBACILLUSCYC = 'PaenibacillusCyc'
 DB_PSYRCYC = 'PsyringaeCyc'
-DB_PSEUDOMONAS_PUTIDA_KT_2440 = 'PseudomonasPutidaKT2440'
-DB_PSEUDOMONAS_AERUGINOSA_PAO_1 = 'PseudomonasAeruginosaPAO1'
-DB_STREPTOMYCES_COELICOLOR_A3_2 = 'StreptomycesCoelicolorA3_2'
+DB_ECOCYC_COFACTOR_PRIMARY = 'EcoCycCofactorPrimary'
+
 
 DB_ARO = 'ARO'  # antibiotic resistance ontology
 DB_NCBI = 'NCBI'
