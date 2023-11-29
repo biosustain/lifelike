@@ -165,12 +165,21 @@ set reaction_display_name:
     SET n.displayName = n.eid;
 
 
+limit_cofactors_to_only_metals:
+  type: GDS collapse
+  description: limit cofactors to only metals
+  query: |
+    MATCH ()-[r:HAS_COFACTOR]->(c)
+    WHERE NOT c.eid IN ["3FE-4S","ADENOSYLCOBALAMIN","CA+2","CO+2","COB-I-ALAMIN","CPD0-1882","CPD-15873","CPD-17649","CPD-23429","CPD-23430","CPD-24862","CPD-5","CPD-6","CPD-7","CPD-8123","CU+","CU+2","FE+2","FE+3","FeS-Centers","HEME_C","HEME_D","HEME_O","Heme-b","Hemes","K+","MG+2","MN+2","Mo-molybdopterin-cofactor","NI+2","PROTOHEME","SIROHEME","ZN+2"]
+    DELETE r;
+
+
 move_cofactor_relationship:
   type: GDS collapse
   description: move cofactor relationship from EnzReaction to Protein
   query: |
     match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
-    match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->(e)-[hcof:HAS_COFACTOR]->(cof)
+    match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->()-[:CATALYZES]->(e)-[hcof:HAS_COFACTOR]->(cof)
     merge (cof)-[:IS_COFACTOR_OF]->(protein)
     delete hcof;
 
