@@ -164,6 +164,17 @@ set reaction_display_name:
     WHERE n.displayName=''
     SET n.displayName = n.eid;
 
+
+move_cofactor_relationship:
+  type: GDS collapse
+  description: move cofactor relationship from EnzReaction to Protein
+  query: |
+    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
+    match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->(e)-[hcof:HAS_COFACTOR]->(cof)
+    merge (cof)-[:IS_COFACTOR_OF]->(protein)
+    delete hcof;
+
+
 collapse_EnzReaction_nodes:
   type: GDS collapse
   description: remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS
