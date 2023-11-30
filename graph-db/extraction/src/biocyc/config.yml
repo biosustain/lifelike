@@ -1,4 +1,4 @@
-EcoCycCofactorMetalsPrimary:
+EcoCycCofactorPrimary:
   data: ecoli_25.5.tar.gz
   extraParsers:
     - Primary
