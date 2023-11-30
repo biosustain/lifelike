@@ -469,7 +469,8 @@ Fallback = namedtuple('Fallback', ['organism_name', 'organism_synonym', 'organis
 @app.cli.command('reannotate')
 @click.argument('user')  # the user email
 @click.argument('password')
-def reannotate_files(user, password):
+@click.option('-h', '--hash-id-exclusions', default=[])
+def reannotate_files(user, password, hash_id_exclusions):
     from neo4japp.models import FileContent
 
     # from neo4japp.exceptions import AnnotationError
@@ -504,9 +505,9 @@ def reannotate_files(user, password):
                 'Authorization': f'Bearer {token}',
             },
         )
-        print(
-            f'Got response back for files {hash_ids}, status code is {resp.status_code}'
-        )
+        with open('reannotate_job_logs.txt', 'a') as reanno_logs_fp:
+            reanno_logs_fp.write(f'Got response back for files {hash_ids}, status code is {resp.status_code}\n')
+
         # if resp.status_code != HTTPStatus.OK:
         #     raise AnnotationError(resp.text)
         resp.close()
@@ -518,6 +519,7 @@ def reannotate_files(user, password):
 
     # NUM_PROCESSES = 2
     task_queue = Queue()
+    excluded_hash_ids = json.loads(f'"{hash_id_exclusions}"')
 
     files = (
         db.session.query(
@@ -531,6 +533,7 @@ def reannotate_files(user, password):
         .join(FileContent, FileContent.id == Files.content_id)
         .filter(
             and_(
+                Files.hash_id.notin_(excluded_hash_ids),
                 Files.mime_type.in_(
                     [FILE_MIME_TYPE_ENRICHMENT_TABLE]
                 ),
