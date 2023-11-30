@@ -532,7 +532,7 @@ def reannotate_files(user, password):
         .filter(
             and_(
                 Files.mime_type.in_(
-                    [FILE_MIME_TYPE_PDF, FILE_MIME_TYPE_ENRICHMENT_TABLE]
+                    [FILE_MIME_TYPE_ENRICHMENT_TABLE]
                 ),
                 Files.deletion_date.is_(None),
                 and_(Files.annotations.isnot(None), Files.annotations != '[]'),
