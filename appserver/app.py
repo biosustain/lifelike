@@ -505,8 +505,8 @@ def reannotate_files(user, password, hash_id_exclusions):
                 'Authorization': f'Bearer {token}',
             },
         )
-        with open('reannotate_job_logs.txt', 'a') as reanno_logs_fp:
-            reanno_logs_fp.write(f'Got response back for files {hash_ids}, status code is {resp.status_code}\n')
+
+        print(f'Got response back for files {hash_ids}, status code is {resp.status_code}\n')
 
         # if resp.status_code != HTTPStatus.OK:
         #     raise AnnotationError(resp.text)
