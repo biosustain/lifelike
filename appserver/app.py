@@ -519,7 +519,7 @@ def reannotate_files(user, password, hash_id_exclusions):
 
     # NUM_PROCESSES = 2
     task_queue = Queue()
-    excluded_hash_ids = json.loads(f'"{hash_id_exclusions}"')
+    excluded_hash_ids = json.loads(f'{hash_id_exclusions}')
 
     files = (
         db.session.query(
