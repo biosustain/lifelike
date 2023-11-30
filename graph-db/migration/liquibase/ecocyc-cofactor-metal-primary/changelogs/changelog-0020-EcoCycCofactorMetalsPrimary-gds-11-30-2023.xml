@@ -5,7 +5,7 @@
   xmlns:pro="http://www.liquibase.org/xml/ns/pro"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
 
-  <changeSet id="set_gene_link, date 11-29-2023" author="dominik">
+  <changeSet id="set_gene_link, date 11-30-2023" author="dominik">
     <comment>link genes to NCBI gene</comment>
     <sql>
     MATCH (n:Gene:db_BioCyc)
@@ -19,7 +19,7 @@ WITH n
   </changeSet>
 
 
-  <changeSet id="set_displayName, date 11-29-2023" author="dominik">
+  <changeSet id="set_displayName, date 11-30-2023" author="dominik">
     <comment>set biocyc node display name</comment>
     <sql>
     MATCH (n:db_BioCyc)
@@ -52,7 +52,7 @@ WITH
   </changeSet>
 
 
-  <changeSet id="set_node_description, date 11-29-2023" author="dominik">
+  <changeSet id="set_node_description, date 11-30-2023" author="dominik">
     <comment>set node description</comment>
     <sql>
     MATCH (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI)
@@ -103,7 +103,7 @@ WITH n
   </changeSet>
 
 
-  <changeSet id="set_reaction_enzyme_name, date 11-29-2023" author="dominik">
+  <changeSet id="set_reaction_enzyme_name, date 11-30-2023" author="dominik">
     <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
     <sql>
     MATCH (n:Reaction)-[:ENZYME_LINK]-(e)
@@ -114,7 +114,7 @@ WITH n, collect(e.name) as enzyme_name
   </changeSet>
 
 
-  <changeSet id="set_gene_pathways, date 11-29-2023" author="dominik">
+  <changeSet id="set_gene_pathways, date 11-30-2023" author="dominik">
     <comment>set pathways related to a gene.</comment>
     <sql>
     MATCH (n:db_EcoCycCofactorMetalsPrimary:Gene)
@@ -127,7 +127,7 @@ WITH n
   </changeSet>
 
 
-  <changeSet id="set_entity_type, date 11-29-2023" author="dominik">
+  <changeSet id="set_entity_type, date 11-30-2023" author="dominik">
     <comment>set entity type for common entities since a node could have many labels</comment>
     <sql>
     MATCH (n:Gene:db_BioCyc)
@@ -161,7 +161,7 @@ SET n.entityType = 'Terminator';
   </changeSet>
 
 
-  <changeSet id="set reaction_display_name, date 11-29-2023" author="dominik">
+  <changeSet id="set reaction_display_name, date 11-30-2023" author="dominik">
     <comment>set displayName as the first enzyme name in the enzyme_name property</comment>
     <sql>
     MATCH (n:Reaction)
@@ -191,18 +191,7 @@ SET n.displayName = n.eid;
   </changeSet>
 
 
-  <changeSet id="limit_cofactors_to_only_metals, date 11-29-2023" author="dominik">
-    <comment>limit cofactors to only metals</comment>
-    <sql>
-    MATCH ()-[r:HAS_COFACTOR]->(c)
-WHERE NOT c.eid IN ["3FE-4S","ADENOSYLCOBALAMIN","CA+2","CO+2","COB-I-ALAMIN","CPD0-1882","CPD-15873","CPD-17649","CPD-23429","CPD-23430","CPD-24862","CPD-5","CPD-6","CPD-7","CPD-8123","CU+","CU+2","FE+2","FE+3","FeS-Centers","HEME_C","HEME_D","HEME_O","Heme-b","Hemes","K+","MG+2","MN+2","Mo-molybdopterin-cofactor","NI+2","PROTOHEME","SIROHEME","ZN+2"]
-DELETE r;
-
-    </sql>
-  </changeSet>
-
-
-  <changeSet id="move_cofactor_relationship, date 11-29-2023" author="dominik">
+  <changeSet id="move_cofactor_relationship, date 11-30-2023" author="dominik">
     <comment>move cofactor relationship from EnzReaction to Protein</comment>
     <sql>
     match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
@@ -214,7 +203,31 @@ delete hcof;
   </changeSet>
 
 
-  <changeSet id="collapse_Regulation_nodes, date 11-29-2023" author="dominik">
+  <changeSet id="change_direction_of_has_cofactor, date 11-30-2023" author="dominik">
+    <comment>change direction of has cofactor</comment>
+    <sql>
+    MATCH (n)-[r:HAS_COFACTOR]->(c)
+DELETE r
+MERGE (c)-[:IS_COFACTOR_OF]->(n);
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="collapse_EnzReaction_nodes, date 11-30-2023" author="dominik">
+    <comment>remove EnzReaction nodes, connect protein directly to reaction with CATALYZES relationship. For GDS</comment>
+    <sql>
+    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
+    merge (n)-[:REGULATES]->(rxn) set n.enzreaction_id=e.eid delete r;
+    match(n:Protein)-[:CATALYZES]->(e:EnzReaction)-[:CATALYZES]->(r)
+    merge (n)-[cat:CATALYZES]->(r) set cat.enzreaction_id = e.eid
+    with distinct e as enz detach delete enz;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="collapse_Regulation_nodes, date 11-30-2023" author="dominik">
     <comment>remove Regulation nodes. Connect regulator directly with regulated elements</comment>
     <sql>
     MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
@@ -260,7 +273,7 @@ DETACH DELETE n;
   </changeSet>
 
 
-  <changeSet id="remove constraint, date 11-29-2023" author="dominik">
+  <changeSet id="remove constraint, date 11-30-2023" author="dominik">
     <comment>remove constrain so that reversed reactions can be created</comment>
     <sql>
     DROP CONSTRAINT constraint_db_BioCyc_eid IF EXISTS;
@@ -268,7 +281,7 @@ DETACH DELETE n;
   </changeSet>
 
 
-  <changeSet id="correct_reaction_direction, date 11-29-2023" author="dominik">
+  <changeSet id="correct_reaction_direction, date 11-30-2023" author="dominik">
     <comment>correct the input and out directions for reactions, create reversed reaction for each reversible reaction</comment>
     <sql>
     MATCH (n:Reaction:db_BioCyc)
@@ -326,7 +339,7 @@ SET n.displayName = n.displayName + '_r';
   </changeSet>
 
 
-  <changeSet id="recreate_constraint, date 11-29-2023" author="dominik">
+  <changeSet id="recreate_constraint, date 11-30-2023" author="dominik">
     <comment>recreate constrain for eid</comment>
     <sql>
     CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
@@ -334,7 +347,7 @@ SET n.displayName = n.displayName + '_r';
   </changeSet>
 
 
-  <changeSet id="reverse_Gene_TransUnit_relationship, date 11-29-2023" author="dominik">
+  <changeSet id="reverse_Gene_TransUnit_relationship, date 11-30-2023" author="dominik">
     <comment>reverse Gene to TransactionUnit relationship.</comment>
     <sql>
     MATCH (n:TranscriptionUnit:db_BioCyc)-[r:ELEMENT_OF]-(g:Gene)
@@ -346,7 +359,7 @@ DELETE r;
   </changeSet>
 
 
-  <changeSet id="remove_DNABindingSite_nodes, date 11-29-2023" author="dominik">
+  <changeSet id="remove_DNABindingSite_nodes, date 11-30-2023" author="dominik">
     <comment>remove DNABindingSite nodes. Most of the nodes are orphan nodes.</comment>
     <sql>
     MATCH (n:DNABindingSite)
@@ -356,7 +369,7 @@ DETACH DELETE n;
   </changeSet>
 
 
-  <changeSet id="remove_TYPEOF_relationship, date 11-29-2023" author="dominik">
+  <changeSet id="remove_TYPEOF_relationship, date 11-30-2023" author="dominik">
     <comment>remove TYPE_OF relationships to BioCycClass.</comment>
     <sql>
     MATCH (n)-[r:TYPE_OF]->()
@@ -366,7 +379,7 @@ DELETE r;
   </changeSet>
 
 
-  <changeSet id="remove_orphan_Class_nodes, date 11-29-2023" author="dominik">
+  <changeSet id="remove_orphan_Class_nodes, date 11-30-2023" author="dominik">
     <comment>remove orphan BioCycClass nodes.</comment>
     <sql>
     MATCH (n:BioCycClass)
@@ -377,7 +390,7 @@ DELETE n;
   </changeSet>
 
 
-  <changeSet id="remove_Enzyme_nodes, date 11-29-2023" author="dominik">
+  <changeSet id="remove_Enzyme_nodes, date 11-30-2023" author="dominik">
     <comment>remove Enzyme nodes.</comment>
     <sql>
     MATCH (n:db_Enzyme)
@@ -387,7 +400,7 @@ DETACH DELETE n;
   </changeSet>
 
 
-  <changeSet id="remove_synonym_nodes, date 11-29-2023" author="dominik">
+  <changeSet id="remove_synonym_nodes, date 11-30-2023" author="dominik">
     <comment>set synonym properties, then remove synonym nodes</comment>
     <sql>
     MATCH (n:db_BioCyc)-[:HAS_SYNONYM]-(s:Synonym)
@@ -401,7 +414,7 @@ DETACH DELETE s;
   </changeSet>
 
 
-  <changeSet id="label_currency_metabolites, date 11-29-2023" author="dominik">
+  <changeSet id="label_currency_metabolites, date 11-30-2023" author="dominik">
     <comment>Label common compound nodes as CurrencyMetabolite</comment>
     <sql>
     MATCH (n:db_BioCyc)
@@ -417,7 +430,7 @@ SET n:CurrencyMetabolite;
   </changeSet>
 
 
-  <changeSet id="set_detail_property, date 11-29-2023" author="dominik">
+  <changeSet id="set_detail_property, date 11-30-2023" author="dominik">
     <comment>change description property to detail since description is used by sankey for other purpose</comment>
     <sql>
     MATCH (n)
@@ -429,7 +442,7 @@ REMOVE n.description;
   </changeSet>
 
 
-  <changeSet id="mark_secondaries, date 11-29-2023" author="dominik">
+  <changeSet id="mark_secondaries, date 11-30-2023" author="dominik">
     <comment>Compounds meantioned in pathways which are not primary are secondary</comment>
     <sql>
     MATCH (:Compound)-[l:CONSUMED_BY|PRODUCES]-(:Reaction)-[:IN_PATHWAY]-(:Pathway)
@@ -440,7 +453,7 @@ SET l.SECONDARY = "";
   </changeSet>
 
 
-  <changeSet id="mark_implicit_primaries, date 11-29-2023" author="dominik">
+  <changeSet id="mark_implicit_primaries, date 11-30-2023" author="dominik">
     <comment>Compounds which are not in patways need to be marked primary by default</comment>
     <sql>
     MATCH (c:Compound)-[l:CONSUMED_BY|PRODUCES]-(r:Reaction)
@@ -451,10 +464,10 @@ SET l.PRIMARY = "Set implicitly";
   </changeSet>
 
 
-  <changeSet id="delete_primary_of, date 11-29-2023" author="dominik">
+  <changeSet id="delete_primary_of, date 11-30-2023" author="dominik">
     <comment>Delete primary_of relationships to not interfere with analysis</comment>
     <sql>
-    MATCH (c:Compound)-[l:PRIMARY_OF]->(p:Pathway)
+    MATCH (c)-[l:PRIMARY_OF]->(p)
 DELETE l;
 
     </sql>

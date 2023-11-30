@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="limit_cofactors_to_metals, date 11-30-2023" author="dominik">
+    <comment>limit cofactors to only metals</comment>
+    <sql>
+    MATCH (c)-[r:IS_COFACTOR_OF]->()
+WHERE NOT c.eid IN ["3FE-4S","ADENOSYLCOBALAMIN","CA+2","CO+2","COB-I-ALAMIN","CPD0-1882","CPD-15873","CPD-17649","CPD-23429","CPD-23430","CPD-24862","CPD-5","CPD-6","CPD-7","CPD-8123","CU+","CU+2","FE+2","FE+3","FeS-Centers","HEME_C","HEME_D","HEME_O","Heme-b","Hemes","K+","MG+2","MN+2","Mo-molybdopterin-cofactor","NI+2","PROTOHEME","SIROHEME","ZN+2"]
+DELETE r;
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

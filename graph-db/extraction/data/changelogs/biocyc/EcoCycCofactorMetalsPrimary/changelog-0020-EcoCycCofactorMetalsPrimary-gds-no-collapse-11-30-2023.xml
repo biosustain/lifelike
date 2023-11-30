@@ -408,7 +408,7 @@ SET l.PRIMARY = "Set implicitly";
   <changeSet id="delete_primary_of, date 11-30-2023" author="dominik">
     <comment>Delete primary_of relationships to not interfere with analysis</comment>
     <sql>
-    MATCH (c:Compound)-[l:PRIMARY_OF]->(p:Pathway)
+    MATCH (c)-[l:PRIMARY_OF]->(p)
 DELETE l;
 
     </sql>

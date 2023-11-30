@@ -424,7 +424,7 @@ delete_primary_of:
   type: GDS
   description: Delete primary_of relationships to not interfere with analysis
   query: |
-    MATCH (c:Compound)-[l:PRIMARY_OF]->(p:Pathway)
+    MATCH (c)-[l:PRIMARY_OF]->(p)
     DELETE l;
 
 
