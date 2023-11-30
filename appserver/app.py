@@ -487,6 +487,7 @@ def reannotate_files(user, password, hash_id_exclusions):
         return json.loads(req.text)['accessToken']['token']
 
     def do_work(token, hash_ids, configs, organism: Fallback):
+        print(f'Sending request for files {hash_ids}...\n')
         resp = requests.post(
             'http://localhost:5000/filesystem/annotations/generate',
             data=json.dumps(
