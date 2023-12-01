@@ -2,7 +2,11 @@ import { CollectionModalOptions, CollectionModel } from './utils/collection-mode
 import { ResultQuery } from './schemas/common';
 
 export class ModelList<T> {
-  constructor(items: T[] = [], options: CollectionModalOptions<T> = { multipleSelection: true }, query?) {
+  constructor(
+    items: T[] = [],
+    options: CollectionModalOptions<T> = { multipleSelection: true },
+    query?
+  ) {
     this.results = new CollectionModel<T>(items, options);
     this.collectionSize = items.length;
     this.query = query;
