@@ -87,6 +87,7 @@ def data_upgrades():
             [
                 t_files.c.id,
                 t_files.c.annotations,
+                t_files.c.enrichment_annotations,
                 t_files_content.c.id,
                 t_files_content.c.raw_file,
             ]
@@ -104,15 +105,19 @@ def data_upgrades():
     )
 
     for chunk in window_chunk(files, BATCH_SIZE):
-        for file_id, annotations_obj, content_id, raw_file in chunk:
+        for file_id, annotations_obj, enrichment_annotations_obj, content_id, raw_file in chunk:
             if annotations_obj not in [[], '[]']:
                 print(f'Processing File#{file_id}')
-                enrichment_annotations = json.load(BytesIO(raw_file))
-                updated_enrichment_annotations = fix_regulon_links(enrichment_annotations)
+                # Update file content enrichment annotations -- these DO NOT include the annotation snippets!!
+                fc_enrichment_annotations = json.load(BytesIO(raw_file))
+                updated_fc_enrichment_annotations = fix_regulon_links(fc_enrichment_annotations)
                 updated_raw_file = BytesIO()
-                updated_raw_file.write(json.dumps(updated_enrichment_annotations).encode())
+                updated_raw_file.write(json.dumps(updated_fc_enrichment_annotations).encode())
                 updated_raw_file = updated_raw_file.getvalue()
                 new_hash = hashlib.sha256(updated_raw_file).digest()
+
+                # Update files enrichment annotations -- these *DO* include the annotation snippets!!
+                updated_file_enrichment_annotations = fix_regulon_links(enrichment_annotations_obj)
 
                 existing_file_content = session.execute(
                     sa.select(
@@ -146,8 +151,7 @@ def data_upgrades():
                     .where(t_files.c.id == file_id)
                     .values(
                         content_id=content_id,
-                        annotations=annotations_obj,
-                        enrichment_annotations=updated_enrichment_annotations,
+                        enrichment_annotations=updated_file_enrichment_annotations,
                     )
                 )
                 session.flush()
