@@ -14,7 +14,7 @@ export class WorkspacePaneComponent {
 
   NEW_TAB_OPTIONS: TabDefaults[] = [
     { title: 'File Browser', fontAwesomeIcon: 'fa fa-layer-group', url: '/projects' },
-    { title: 'Knowledge Graph', fontAwesomeIcon: 'fa fa-chart-network', url: '/search/graph' },
+    { title: 'Knowledge Graph', fontAwesomeIcon: 'far fa-life-ring', url: '/search/graph' },
     { title: 'Search', fontAwesomeIcon: 'fa fa-search', url: '/search/content' },
   ];
 

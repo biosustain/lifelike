@@ -116,7 +116,7 @@ export enum FAClass {
   Map = 'fa fa-project-diagram',
   Graph = 'fak fa-diagram-sankey-solid',
   EnrichmentTable = 'fa fa-table',
-  Pdf = 'fa fa-file',
+  Pdf = 'fa fa-file-pdf',
   BioC = 'fa fa-file',
   Default = 'fa fa-file',
   Excel = 'fas fa-file-excel',

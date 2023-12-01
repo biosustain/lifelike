@@ -93,7 +93,7 @@ const routes: Routes = [
     canActivate: [LifelikeAuthGuard],
     data: {
       title: 'Knowledge Graph',
-      fontAwesomeIcon: 'fas fa-chart-network',
+      fontAwesomeIcon: 'far fa-life-ring',
     },
   },
   {
@@ -161,7 +161,7 @@ const routes: Routes = [
         canActivate: [LifelikeAuthGuard],
         data: {
           title: 'Knowledge Graph',
-          fontAwesomeIcon: 'fas fa-chart-network',
+          fontAwesomeIcon: 'far fa-life-ring',
         },
       },
     ],

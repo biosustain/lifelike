@@ -47,7 +47,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
         value.query != null && value.query.length
           ? `Knowledge Graph: ${value.query}`
           : 'Knowledge Graph',
-      fontAwesomeIcon: 'fas fa-chart-network',
+      fontAwesomeIcon: 'far fa-life-ring',
     }))
   );
   readonly params$: Observable<GraphSearchParameters> = this.route.queryParams.pipe(
