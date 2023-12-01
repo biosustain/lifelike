@@ -1,5 +1,9 @@
 @import 'lifelike-theme.scss';
 
+i:before {
+  content: '■';
+}
+
 $blue: #3797db;
 $dark-blue: #3177b8;
 

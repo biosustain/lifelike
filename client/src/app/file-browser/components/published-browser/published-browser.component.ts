@@ -45,7 +45,10 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
     shareReplay({ bufferSize: 1, refCount: true })
   );
   fileList: FilesystemObjectList = new FilesystemObjectList(
-    mockArrayOf(filesystemObjectLoadingMock)
+    mockArrayOf(filesystemObjectLoadingMock),
+    {
+      sort: (a, b) => b.updatedTimestamp - a.updatedTimestamp,
+    }
   );
 
   private loadTaskSubscription: Subscription;
