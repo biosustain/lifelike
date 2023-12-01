@@ -713,11 +713,12 @@ class Filesystem:
                     "filename",
                 )
 
+            savepoint = db.session.begin_nested()
             try:
                 db.session.add(file)
                 db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
+            except IntegrityError as e:
+                savepoint.rollback()
                 # Warning: this could catch some other integrity error
                 pass
             else:
