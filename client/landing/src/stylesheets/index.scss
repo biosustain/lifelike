@@ -207,7 +207,7 @@ body {
 
     &:not(:last-child):before {
       content: '\f111';
-      font-family: 'Font Awesome 5 Free', sans-serif;
+      font-family: 'FontAwesome', sans-serif;
       font-size: 200%;
       position: absolute;
       bottom: -0.8em;
@@ -251,7 +251,7 @@ body {
 
     &:not(:last-child):before {
       content: '\f111';
-      font-family: 'Font Awesome 5 Free', sans-serif;
+      font-family: 'FontAwesome', sans-serif;
       font-size: 200%;
       position: absolute;
       top: 50%;

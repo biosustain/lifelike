@@ -67,7 +67,7 @@ export class TraceViewComponent implements ModuleAwareComponent, OnDestroy {
   readonly modulePropertiesChange = this.title$.pipe(
     map((title) => ({
       title,
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fa-diagram-project',
     }))
   );
 

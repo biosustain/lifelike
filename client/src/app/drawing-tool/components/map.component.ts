@@ -272,7 +272,7 @@ export class MapComponent<ExtraResult = void> implements OnDestroy, AfterViewIni
   emitModuleProperties() {
     this.modulePropertiesChange.emit({
       title: this.map ? this.map.filename : 'Map',
-      fontAwesomeIcon: 'project-diagram',
+      fontAwesomeIcon: 'map',
       badge: this.unsavedChanges$.getValue() ? '*' : null,
     });
   }

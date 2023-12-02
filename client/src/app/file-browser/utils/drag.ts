@@ -17,9 +17,7 @@ export function createDragImage(label: string, fontAwesomeIconCode: string): Dra
   let height = paddingY * 2 + shadowSize;
 
   // Specifies the correct font to use depending on whether the icon is in our custom kit or not
-  const fontAwesomeFont = FA_CUSTOM_ICONS.includes(fontAwesomeIconCode as Unicodes)
-    ? '"Font Awesome Kit"'
-    : '"Font Awesome 5 Pro';
+  const fontAwesomeFont = '"FontAwesome"';
   const iconTextElement = new TextElement(ctx, {
     text: fontAwesomeIconCode,
     font: `900 16px ${fontAwesomeFont}`,

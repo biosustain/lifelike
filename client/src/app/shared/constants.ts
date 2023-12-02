@@ -47,7 +47,7 @@ export const JWT_REFRESH_TOKEN_INVALID = 'refresh token is invalid';
 
 export const LINK_NODE_ICON_OBJECT = {
   face: 'FontAwesome',
-  weight: 'bold', // Font Awesome 5 doesn't work properly unless bold.
+  weight: 'bold', // Font Awesome doesn't work properly unless bold.
   code: '\uf15b',
   size: 50,
   color: '#669999',
@@ -113,8 +113,8 @@ export enum MimeTypes {
 
 export enum FAClass {
   Directory = 'fa fa-folder',
-  Map = 'fa fa-project-diagram',
-  Graph = 'fak fa-diagram-sankey-solid',
+  Map = 'fa fa-map',
+  Graph = 'fa fa-diagram-project',
   EnrichmentTable = 'fa fa-table',
   Pdf = 'fa fa-file-pdf',
   BioC = 'fa fa-file',
@@ -140,7 +140,7 @@ export enum InternalURIType {
 
 export enum Unicodes {
   Directory = '\uf07b',
-  Map = '\uf542',
+  Map = '\uf279',
   EnrichmentTable = '\uf0ce',
   Pdf = '\uf1c1',
   BioC = '\uf15b',
@@ -149,16 +149,16 @@ export enum Unicodes {
   Link = '\uf0c1',
   Note = '\uf249',
   Default = '\uf15b',
+  KgSearch = '\uf1cd',
+  Search = '\uf002',
+  Excel = '\uf1c3',
+  Word = '\uf1c2',
+  PowerPoint = '\uf1c4',
+  Graph = '\uf542',
   // Careful using this, since it will only work when the font-family is specified as 'Font Awesome Kit.' This is normally done
   // with the 'fak' css class, and should ONLY be done with icons we have manually added to the kit. If you use this font with any
   // other unicode values, they WILL NOT work.
-  Graph = '\ue000',
-  Excel = '\ue001',
-  Word = '\ue002',
-  PowerPoint = '\ue003',
   Cytoscape = '\ue004',
-  Search = '\uf002',
-  KgSearch = '\uf78a',
 }
 // Colors used to render microsoft icons - they should not change
 export enum CustomIconColors {

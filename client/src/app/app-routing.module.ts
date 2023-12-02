@@ -135,7 +135,7 @@ const routes: Routes = [
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fa-diagram-project',
     },
     canDeactivate: [UnloadConfirmationGuard],
   },
@@ -245,7 +245,7 @@ const routes: Routes = [
     component: TraceViewComponent,
     data: {
       title: 'Trace details',
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fa-diagram-project',
     },
   },
   {
@@ -272,7 +272,7 @@ const routes: Routes = [
     component: MapViewComponent,
     data: {
       title: 'Map',
-      fontAwesomeIcon: 'project-diagram',
+      fontAwesomeIcon: 'map',
     },
   },
   {
@@ -282,7 +282,7 @@ const routes: Routes = [
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',
-      fontAwesomeIcon: 'project-diagram',
+      fontAwesomeIcon: 'map',
     },
   },
   /* TODO Refactor import

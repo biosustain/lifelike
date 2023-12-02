@@ -769,7 +769,7 @@ export class CanvasGraphView extends GraphView<CanvasBehavior> {
     const ctx = this.canvas.getContext('2d');
     ctx.font = `18px \'Dummy Lifelike Font ${Math.random()}\'`;
     const defaultMetrics = cachedMeasureText(ctx, dummyText);
-    ctx.font = "18px 'Font Awesome 5 Pro'";
+    ctx.font = "18px 'FontAwesome'";
     const faMetrics = cachedMeasureText(ctx, dummyText);
     for (const key of ['width', 'fontBoundingBoxAscent', 'hangingBaseline']) {
       if (defaultMetrics[key] !== faMetrics[key]) {

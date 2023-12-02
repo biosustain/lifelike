@@ -154,9 +154,7 @@ export class KnowledgeMapStyle implements NodeRenderStyle, EdgeRenderStyle, Grou
       const iconLabelColor = specialIconColor ?? iconTextColor;
       const iconSize = d.icon?.size ?? this.DEFAULT_ICON_SIZE;
       // Change font family to custom kit if icon is customly added
-      const fontAwesomeFont = FA_CUSTOM_ICONS.includes(iconCode)
-        ? '"Font Awesome Kit"'
-        : '"Font Awesome 5 Pro';
+      const fontAwesomeFont = '"FontAwesome"';
       const iconFontFace = d.icon?.face ?? fontAwesomeFont;
       const iconFont = `${iconSize}px ${iconFontFace}`;
 

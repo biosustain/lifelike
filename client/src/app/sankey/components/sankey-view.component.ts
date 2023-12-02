@@ -378,7 +378,7 @@ export class SankeyViewComponent
   ]).pipe(
     map(([{ filename }, edited]) => ({
       title: filename,
-      fontAwesomeIcon: 'fak fa-diagram-sankey-solid',
+      fontAwesomeIcon: 'fa-diagram-project',
       badge: edited ? '*' : undefined,
     }))
   );
