@@ -172,21 +172,20 @@ export class PrePublishExporterService {
       map((isAdmin) =>
         isAdmin
           ? [
-            {
-              name: 'Zip',
-              export: () =>
-                this.filesystemService.generatePrePublish(object.hashId, {
-                  format: 'zip',
-                  exportLinked: true,
-                }),
-            },
-          ]
+              {
+                name: 'Zip',
+                export: () =>
+                  this.filesystemService.generatePrePublish(object.hashId, {
+                    format: 'zip',
+                    exportLinked: true,
+                  }),
+              },
+            ]
           : []
       )
     );
   }
 }
-
 
 /**
  * A base class for object type providers.
@@ -195,9 +194,9 @@ export class PrePublishExporterService {
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   constructor(
     protected readonly helper: AbstractObjectTypeProviderHelper,
-    protected readonly filesystemService: FilesystemService,
-    // private readonly prePublishExporter: PrePublishExporterService
-  ) {}
+    protected readonly filesystemService: FilesystemService
+  ) // private readonly prePublishExporter: PrePublishExporterService
+  {}
 
   // isAdmin$ = this.store.pipe(
   //   select(AuthSelectors.selectRoles),

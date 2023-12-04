@@ -29,6 +29,7 @@ from neo4japp.exceptions import (
     NotAuthorized,
     HandledException,
     ServerException,
+    AccessRequestRequiredError,
 )
 from neo4japp.exceptions import wrap_exceptions
 from neo4japp.models import (
@@ -77,6 +78,7 @@ from neo4japp.utils.file_content_buffer import FileContentBuffer
 from .auth import login_optional
 from .utils import get_missing_hash_ids
 from ..services.filesystem import Filesystem
+from ..services.publish import Publish
 from ..utils.globals import get_current_user
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
@@ -528,9 +530,23 @@ class FileListView(FilesystemBaseView):
         hash_ids = targets['hash_ids']
 
         files = Filesystem.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
-        Filesystem.check_file_permissions(
-            files, current_user, ['writable'], permit_recycled=True
-        )
+
+        def is_publication_root(f: Files):
+            return (
+                Publish.is_publish_project(f.calculated_project)
+                and f.parent
+                and f.parent.parent_id is None
+                and f.calculated_project.creator_id == current_user.id
+            )
+
+        try:
+            Filesystem.check_file_permissions(
+                files, current_user, ['writable'], permit_recycled=True
+            )
+        except AccessRequestRequiredError as e:
+            for file in files:
+                if not is_publication_root(file):
+                    raise e
 
         # ========================================
         # Apply
