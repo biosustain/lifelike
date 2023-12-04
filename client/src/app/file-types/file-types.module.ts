@@ -1,7 +1,7 @@
 import { NgModule, Optional, SkipSelf } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { TYPE_PROVIDER } from './providers/base-object.type-provider';
+import { PrePublishExporterService, TYPE_PROVIDER } from './providers/base-object.type-provider';
 import { BiocTypeProvider } from './providers/bioc.type-provider';
 import { DirectoryTypeProvider } from './providers/directory.type-provider';
 import { EnrichmentTableTypeProvider } from './providers/enrichment-table.type-provider';
@@ -14,6 +14,7 @@ import { GraphTypeProvider } from './providers/graph.type-provider.service';
   declarations: [],
   imports: [CommonModule],
   providers: [
+    PrePublishExporterService,
     {
       provide: TYPE_PROVIDER,
       useClass: BiocTypeProvider,

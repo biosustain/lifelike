@@ -29,12 +29,11 @@ export class DirectoryTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    store: Store<State>,
     protected readonly injector: Injector,
     protected readonly objectCreationService: ObjectCreationService,
     protected readonly componentFactoryResolver: ComponentFactoryResolver
   ) {
-    super(abstractObjectTypeProviderHelper, filesystemService, store);
+    super(abstractObjectTypeProviderHelper, filesystemService);
   }
 
   handles(object: FilesystemObject): boolean {
