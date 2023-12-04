@@ -1779,8 +1779,8 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         return self.update_map(params, FileContentBuffer(previous_content))
 
-    def get_related_files(self, file: Files, recursive: Set[str]):
-        if file.hash_id in recursive:
+    def get_related_files(self, file: Files, recursive: Optional[Set[str]]):
+        if recursive and file.hash_id in recursive:
             return iter([])
         related_files_hashes = set()
         with self.open_graph_json(file) as json_graph:
@@ -1812,14 +1812,26 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             return file_type_service.get_related_files(related_files, recursive)
         else:
+            related_files = Filesystem.get_nondeleted_recycled_files(
+                Files.hash_id.in_(related_files_hashes), lazy_load_content=True
+            )
             inform(
                 ServerInfo(
                     title='Found related files',
                     message=f'{file.path} has {len(related_files_hashes)} related files',
                 )
             )
-
-        return related_files_hashes
+            warn(
+                ServerWarning(
+                    title='Skipping search for related files',
+                    message=f'Skipping recursive search for related files for {len(related_files_hashes)} related files',
+                    additional_msgs=(
+                        f'Files:',
+                        *map(lambda f: '\t+ ' + f.path, related_files),
+                    )
+                )
+            )
+            return related_files
 
     def relink_file(self, file: Files, files_hash_map: Dict[str, str]) -> None:
         def relink(json_graph):
@@ -1835,7 +1847,13 @@ class MapTypeProvider(BaseFileTypeProvider):
                     else:
                         warn(
                             ServerWarning(
-                                message=f'Cannot relink file: {hash_id} does not exist in mapping.',
+                                title='Cannot relink file',
+                                message=f'File {hash_id} does not exist in mapping.',
+                                additional_msgs=(
+                                    f'File: {file.path}',
+                                    f'Broken link: {link["url"]}',
+                                    f'Currently supported publishing packaging supports only one level deep recursion.',
+                                )
                             )
                         )
             return json_graph

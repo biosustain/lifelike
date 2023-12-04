@@ -1,6 +1,6 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
-import { from, Observable } from 'rxjs';
+import { combineLatest, from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import JSZip from 'jszip';
 import { Store } from '@ngrx/store';
@@ -16,6 +16,7 @@ import {
   CreateActionOptions,
   CreateDialogAction,
   Exporter,
+  PrePublishExporterService,
   PreviewOptions,
 } from 'app/file-types/providers/base-object.type-provider';
 import { SearchType } from 'app/search/shared';
@@ -23,20 +24,19 @@ import { RankedItem } from 'app/shared/schemas/common';
 import { mapBlobToBuffer, mapBufferToJson } from 'app/shared/utils/files';
 import { MimeTypes } from 'app/shared/constants';
 import { MapImageProviderService } from 'app/drawing-tool/services/map-image-provider.service';
-import { State } from 'app/***ARANGO_USERNAME***-store';
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    store: Store<State>,
     protected readonly injector: Injector,
     protected readonly objectCreationService: ObjectCreationService,
     protected readonly componentFactoryResolver: ComponentFactoryResolver,
-    protected readonly mapImageProviderService: MapImageProviderService
+    protected readonly mapImageProviderService: MapImageProviderService,
+    private readonly prePublishExporter: PrePublishExporterService
   ) {
-    super(abstractObjectTypeProviderHelper, filesystemService, store);
+    super(abstractObjectTypeProviderHelper, filesystemService);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -126,8 +126,11 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return super.getExporters(object).pipe(
-      map((inheritedExporters) => [
+    return combineLatest([
+      super.getExporters(object),
+      this.prePublishExporter.factory(object),
+    ]).pipe(
+      map(([inheritedExporters, prePublish]) => [
         ...['pdf', 'png', 'svg'].map((format) => ({
           name: format.toUpperCase(),
           export: (exportLinked) => {
@@ -167,6 +170,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
             );
           },
         })),
+        ...prePublish,
         ...inheritedExporters,
       ])
     );

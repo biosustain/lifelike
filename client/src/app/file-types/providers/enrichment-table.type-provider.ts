@@ -1,9 +1,8 @@
 import { ComponentFactory, ComponentFactoryResolver, Injectable, Injector } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, from, Observable, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, of } from 'rxjs';
 import { finalize, map, mergeMap, mergeScan, switchMap, take, tap } from 'rxjs/operators';
-import { Store } from '@ngrx/store';
 
 import {
   EnrichmentTableEditDialogComponent,
@@ -27,7 +26,7 @@ import {
   AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
-  Exporter,
+  Exporter, PrePublishExporterService,
   PreviewOptions,
 } from 'app/file-types/providers/base-object.type-provider';
 import { Progress } from 'app/interfaces/common-dialog.interface';
@@ -37,7 +36,6 @@ import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { TableCSVExporter } from 'app/shared/utils/tables/table-csv-exporter';
-import { State } from 'app/***ARANGO_USERNAME***-store';
 
 export const ENRICHMENT_TABLE_MIMETYPE = 'vnd.***ARANGO_DB_NAME***.document/enrichment-table';
 
@@ -48,7 +46,6 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    store: Store<State>,
     protected readonly modalService: NgbModal,
     protected readonly progressDialog: ProgressDialog,
     protected readonly annotationsService: AnnotationsService,
@@ -57,9 +54,10 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
     protected readonly worksheetViewerService: EnrichmentTableService,
     protected readonly componentFactoryResolver: ComponentFactoryResolver,
     protected readonly injector: Injector,
-    protected readonly worksheetService: EnrichmentTableService
+    protected readonly worksheetService: EnrichmentTableService,
+    private readonly prePublishExporter: PrePublishExporterService
   ) {
-    super(abstractObjectTypeProviderHelper, filesystemService, store);
+    super(abstractObjectTypeProviderHelper, filesystemService);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -318,8 +316,11 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return super.getExporters(object).pipe(
-      map((inheritedExporters) => [
+    return combineLatest([
+      super.getExporters(object),
+      this.prePublishExporter.factory(object),
+    ]).pipe(
+      map(([inheritedExporters, prePublish]) => [
         {
           name: 'CSV',
           export: () =>
@@ -377,6 +378,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
             );
           },
         },
+        ...prePublish,
         ...inheritedExporters,
       ])
     );

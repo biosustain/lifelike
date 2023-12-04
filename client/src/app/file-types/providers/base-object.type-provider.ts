@@ -155,21 +155,54 @@ export class AbstractObjectTypeProviderHelper {
   }
 }
 
+@Injectable()
+export class PrePublishExporterService {
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    private readonly store: Store<State>
+  ) {}
+
+  private isAdmin$ = this.store.pipe(
+    select(AuthSelectors.selectRoles),
+    map((roles) => roles.includes('admin'))
+  );
+
+  factory(object: FilesystemObject): Observable<Exporter[]> {
+    return this.isAdmin$.pipe(
+      map((isAdmin) =>
+        isAdmin
+          ? [
+            {
+              name: 'Zip',
+              export: () =>
+                this.filesystemService.generatePrePublish(object.hashId, {
+                  format: 'zip',
+                  exportLinked: true,
+                }),
+            },
+          ]
+          : []
+      )
+    );
+  }
+}
+
+
 /**
  * A base class for object type providers.
  */
 @Injectable()
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   constructor(
-    private readonly helper: AbstractObjectTypeProviderHelper,
+    protected readonly helper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    private readonly store: Store<State>
+    // private readonly prePublishExporter: PrePublishExporterService
   ) {}
 
-  isAdmin$ = this.store.pipe(
-    select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
-  );
+  // isAdmin$ = this.store.pipe(
+  //   select(AuthSelectors.selectRoles),
+  //   map((roles) => roles.includes('admin'))
+  // );
   abstract handles(object: FilesystemObject): boolean;
 
   createPreviewComponent(
@@ -193,22 +226,9 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return this.isAdmin$.pipe(
-      map((isAdmin) =>
-        isAdmin
-          ? [
-              {
-                name: 'Zip',
-                export: () =>
-                  this.filesystemService.generatePrePublish(object.hashId, {
-                    format: 'zip',
-                    exportLinked: true,
-                  }),
-              },
-            ]
-          : []
-      )
-    );
+    // LL-5375: limiting publishing options so it is rollable
+    // return this.prePublishExporter.factory(object);
+    return of([]);
   }
 
   unzipContent(zipped: Blob): Observable<string> {

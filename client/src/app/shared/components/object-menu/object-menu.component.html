@@ -34,7 +34,7 @@
 
 <ng-container
   *ngIf="
-    object.isCloneable || (object.privileges.writable && (object.isMovable || object.isDeletable))
+    object.isCloneable || (object.privileges.writable && (object.isMovable || object.isDeletable)) || (object.parent.isProjectRoot && object.project.isPublication)
   "
 >
   <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
@@ -45,7 +45,7 @@
       Move{{ nameEntity && object.isDirectory ? ' folder' : '' }} to...
     </button>
   </ng-container>
-  <ng-container *ngIf="!nameEntity && object.privileges.writable && showDelete">
+  <ng-container *ngIf="!nameEntity && (object.privileges.writable || (object.parent.isProjectRoot && object.project.isPublication)) && showDelete">
     <button ngbDropdownItem (click)="openDeleteDialog([object])" [disabled]="!object.isDeletable">
       Delete...
     </button>

@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Store } from '@ngrx/store';
 
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
   Exporter,
+  PrePublishExporterService,
 } from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SearchType } from 'app/search/shared';
 import { FilesystemService } from 'app/file-browser/services/filesystem.service';
 import { MimeTypes } from 'app/shared/constants';
-import { State } from 'app/***ARANGO_USERNAME***-store';
 
 export const GRAPH_SHORTHAND = 'Graph';
 
@@ -22,9 +21,9 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
-    store: Store<State>
+    private readonly prePublishExporter: PrePublishExporterService
   ) {
-    super(abstractObjectTypeProviderHelper, filesystemService, store);
+    super(abstractObjectTypeProviderHelper, filesystemService);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -36,8 +35,11 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return super.getExporters(object).pipe(
-      map((inheritedExporters) => [
+    return combineLatest([
+      super.getExporters(object),
+      this.prePublishExporter.factory(object),
+    ]).pipe(
+      map(([inheritedExporters, prePublish]) => [
         {
           name: 'Graph',
           export: () => {
@@ -51,6 +53,7 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
             );
           },
         },
+        ...prePublish,
         ...inheritedExporters,
       ])
     );
