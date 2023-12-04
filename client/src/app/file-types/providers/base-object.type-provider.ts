@@ -194,9 +194,8 @@ export class PrePublishExporterService {
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   constructor(
     protected readonly helper: AbstractObjectTypeProviderHelper,
-    protected readonly filesystemService: FilesystemService
-  ) // private readonly prePublishExporter: PrePublishExporterService
-  {}
+    protected readonly filesystemService: FilesystemService // private readonly prePublishExporter: PrePublishExporterService
+  ) {}
 
   // isAdmin$ = this.store.pipe(
   //   select(AuthSelectors.selectRoles),
