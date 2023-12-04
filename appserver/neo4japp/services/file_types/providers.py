@@ -1824,11 +1824,14 @@ class MapTypeProvider(BaseFileTypeProvider):
             warn(
                 ServerWarning(
                     title='Skipping search for related files',
-                    message=f'Skipping recursive search for related files for {len(related_files_hashes)} related files',
+                    message=(
+                        f'Skipping recursive search for related files'
+                        f' for {len(related_files_hashes)} related files'
+                    ),
                     additional_msgs=(
                         f'Files:',
                         *map(lambda f: '\t+ ' + f.path, related_files),
-                    )
+                    ),
                 )
             )
             return related_files
@@ -1852,8 +1855,9 @@ class MapTypeProvider(BaseFileTypeProvider):
                                 additional_msgs=(
                                     f'File: {file.path}',
                                     f'Broken link: {link["url"]}',
-                                    f'Currently supported publishing packaging supports only one level deep recursion.',
-                                )
+                                    f'Currently supported publishing packaging'
+                                    f' supports only one level deep recursion.',
+                                ),
                             )
                         )
             return json_graph

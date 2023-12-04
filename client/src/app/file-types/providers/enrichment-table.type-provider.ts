@@ -26,7 +26,8 @@ import {
   AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
-  Exporter, PrePublishExporterService,
+  Exporter,
+  PrePublishExporterService,
   PreviewOptions,
 } from 'app/file-types/providers/base-object.type-provider';
 import { Progress } from 'app/interfaces/common-dialog.interface';
