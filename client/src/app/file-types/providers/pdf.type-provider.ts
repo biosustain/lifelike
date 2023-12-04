@@ -29,7 +29,7 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getSearchTypes(): SearchType[] {
-    return [Object.freeze({id: MimeTypes.Pdf, shorthand: PDF_SHORTHAND, name: 'Documents'})];
+    return [Object.freeze({ id: MimeTypes.Pdf, shorthand: PDF_SHORTHAND, name: 'Documents' })];
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
@@ -45,15 +45,15 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith('.pdf') ? object.filename : object.filename + '.pdf',
+                  object.filename.endsWith('.pdf') ? object.filename : object.filename + '.pdf'
                 );
-              }),
+              })
             );
           },
         },
         ...prePublish,
         ...inheritedExporters,
-      ]),
+      ])
     );
   }
 }
