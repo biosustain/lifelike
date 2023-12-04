@@ -533,9 +533,11 @@ class FileListView(FilesystemBaseView):
 
         def is_publication_root(f: Files):
             return (
-                Publish.is_publish_project(f.calculated_project)
+                f.calculated_project
+                and Publish.is_publish_project(f.calculated_project)
                 and f.parent
                 and f.parent.parent_id is None
+                and f.calculated_project
                 and f.calculated_project.creator_id == current_user.id
             )
 
