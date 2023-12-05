@@ -421,7 +421,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     def extension(self):
         return Path(self.filename).suffix
 
-    def generate_non_conflicting_filename(self):
+    def generate_non_conflicting_filename(self, filename: str) -> str:
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
 
@@ -433,7 +433,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             ValueError: if a new (reasonable) filename cannot be found
         """
 
-        file_name, file_ext = os.path.splitext(self.filename)
+        file_name, file_ext = os.path.splitext(filename)
         file_ext_len = len(file_ext)
 
         # Remove the file extension from the filename column in the table
@@ -481,7 +481,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         new_filename = f"{file_name} ({next_index}){file_ext}"
 
         # Check that the new filename doesn't exceed the length of the column
-        if len(self.filename) > Files.filename.property.columns[0].type.length:
+        if len(filename) > Files.filename.property.columns[0].type.length:
             raise ValueError('new filename would exceed the length of the column')
 
         return new_filename
