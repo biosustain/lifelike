@@ -568,12 +568,14 @@ class FileListView(FilesystemBaseView):
             # accessible but only by URL and with no easy way to delete them
             if len(children):
                 if not recursive:
-                    raise ValidationError('Only empty folders can be deleted.', 'hash_ids')
+                    raise ValidationError(
+                        'Only empty folders can be deleted.', 'hash_ids'
+                    )
                 else:
                     for child in children:
                         delete_file(child, recursive=True)
 
-            if file.calculated_project.***ARANGO_USERNAME***_id == file.id:
+            if file.calculated_project and file.calculated_project.***ARANGO_USERNAME***_id == file.id:
                 raise ValidationError(
                     f"You cannot delete the ***ARANGO_USERNAME*** directory "
                     f"for a project (the folder for the project "

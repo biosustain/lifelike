@@ -54,7 +54,6 @@ from neo4japp.utils import EventLog, get_model_changes, request
 from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 
-
 class FileCollaboratorRole(RDBMSBase):
     __tablename__ = 'file_collaborator_role'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -261,10 +260,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     filename = db.Column(db.String(200), nullable=False)
     parent_id = db.Column(
         db.Integer,
-        db.ForeignKey(
-            'files.id',
-            ondelete='CASCADE'
-        ),
+        db.ForeignKey('files.id', ondelete='CASCADE'),
         nullable=True,
         index=True,
     )
@@ -273,7 +269,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         back_populates='children',
         foreign_keys=parent_id,
         uselist=False,
-        remote_side=[id]
+        remote_side=[id],
     )
     children = db.relationship(
         'Files',
