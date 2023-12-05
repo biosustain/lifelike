@@ -554,7 +554,7 @@ class FileListView(FilesystemBaseView):
         # Apply
         # ========================================
 
-        for file in files:
+        def delete_file(file: Files, recursive: bool = False):
             children = Filesystem.get_nondeleted_recycled_files(
                 and_(
                     Files.parent_id == file.id,
@@ -567,7 +567,11 @@ class FileListView(FilesystemBaseView):
             # yet and the children would just become orphan files that would still be
             # accessible but only by URL and with no easy way to delete them
             if len(children):
-                raise ValidationError('Only empty folders can be deleted.', 'hash_ids')
+                if not recursive:
+                    raise ValidationError('Only empty folders can be deleted.', 'hash_ids')
+                else:
+                    for child in children:
+                        delete_file(child, recursive=True)
 
             if file.calculated_project.root_id == file.id:
                 raise ValidationError(
@@ -582,6 +586,13 @@ class FileListView(FilesystemBaseView):
                 file.modifier = current_user
 
             file.delete()
+
+        for file in files:
+            if is_publication_root(file):
+                # Delete the publication
+                delete_file(file, recursive=True)
+            else:
+                delete_file(file)
 
         db.session.commit()
         # rollback in case of error?

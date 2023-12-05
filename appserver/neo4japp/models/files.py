@@ -50,8 +50,9 @@ from neo4japp.models.common import (
     HashIdMixin,
 )
 from neo4japp.models.projects import Projects
-from neo4japp.utils import EventLog, get_model_changes
+from neo4japp.utils import EventLog, get_model_changes, request
 from neo4japp.utils.file_content_buffer import FileContentBuffer
+
 
 
 class FileCollaboratorRole(RDBMSBase):
@@ -259,10 +260,26 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(200), nullable=False)
     parent_id = db.Column(
-        db.Integer, db.ForeignKey('files.id'), nullable=True, index=True
+        db.Integer,
+        db.ForeignKey(
+            'files.id',
+            ondelete='CASCADE'
+        ),
+        nullable=True,
+        index=True,
     )
     parent = db.relationship(
-        'Files', foreign_keys=parent_id, uselist=False, remote_side=[id]
+        'Files',
+        back_populates='children',
+        foreign_keys=parent_id,
+        uselist=False,
+        remote_side=[id]
+    )
+    children = db.relationship(
+        'Files',
+        back_populates='parent',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
     )
     mime_type = db.Column(db.String(127), nullable=False)
     description = db.Column(db.Text, nullable=True)
