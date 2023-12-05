@@ -1856,7 +1856,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                                     f'File: {file.path}',
                                     f'Broken link: {link["url"]}',
                                     f'Currently supported publishing packaging'
-                                    f' supports only one level deep recursion.',
+                                    f' has been limited to one level deep recursion.',
                                 ),
                             )
                         )
