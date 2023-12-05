@@ -71,7 +71,7 @@ class Filesystem:
 
     @staticmethod
     def get_nondeleted_recycled_file(
-            filter, lazy_load_content=False, attr_excl: List[str] = None
+        filter, lazy_load_content=False, attr_excl: List[str] = None
     ) -> Files:
         """
         Returns a file that is guaranteed to be non-deleted, but may or may not be
@@ -92,12 +92,12 @@ class Filesystem:
 
     @staticmethod
     def get_nondeleted_recycled_files(
-            filter=None,
-            lazy_load_content=False,
-            require_hash_ids: List[str] = None,
-            sort: List[str] = [],
-            sort_direction: List[str] = [],
-            attr_excl: List[str] = None,
+        filter=None,
+        lazy_load_content=False,
+        require_hash_ids: List[str] = None,
+        sort: List[str] = [],
+        sort_direction: List[str] = [],
+        attr_excl: List[str] = None,
     ) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
@@ -216,7 +216,7 @@ class Filesystem:
             if len(missing_hash_ids):
                 raise RecordNotFound(
                     message=f"The request specified one or more file or directory "
-                            f"({', '.join(missing_hash_ids)}) that could not be found."
+                    f"({', '.join(missing_hash_ids)}) that could not be found."
                 )
 
         # In the end, we just return a list of Files instances!
@@ -224,11 +224,11 @@ class Filesystem:
 
     @staticmethod
     def get_nondeleted_recycled_descendants(
-            filter,
-            lazy_load_content=False,
-            require_hash_ids: List[str] = None,
-            sort: List[str] = [],
-            attr_excl: List[str] = None,
+        filter,
+        lazy_load_content=False,
+        require_hash_ids: List[str] = None,
+        sort: List[str] = [],
+        attr_excl: List[str] = None,
     ) -> List[Files]:
         """
         Returns files that are guaranteed to be non-deleted, but may or may not be
@@ -300,11 +300,11 @@ class Filesystem:
 
     @staticmethod
     def check_file_permissions(
-            files: List[Files],
-            user: Optional[AppUser],
-            require_permissions: List[str],
-            *,
-            permit_recycled: bool,
+        files: List[Files],
+        user: Optional[AppUser],
+        require_permissions: List[str],
+        *,
+        permit_recycled: bool,
     ):
         """
         Helper method to check permissions on the provided files and other properties
@@ -397,7 +397,7 @@ class Filesystem:
 
     @staticmethod
     def get_bulk_file_response(
-            hash_ids, user: AppUser, missing_hash_ids: Iterable[str] = None
+        hash_ids, user: AppUser, missing_hash_ids: Iterable[str] = None
     ):
         """
         Fetch several files and return a response that can be sent to the client. Could
@@ -447,9 +447,9 @@ class Filesystem:
 
     @classmethod
     def _get_content(
-            cls,
-            content_url: Optional[str] = None,
-            content_value: Optional[Iterable[bytes]] = None,
+        cls,
+        content_url: Optional[str] = None,
+        content_value: Optional[Iterable[bytes]] = None,
     ) -> Tuple[FileContentBuffer, Optional[str]]:
         url = content_url
         buffer = content_value
@@ -488,9 +488,9 @@ class Filesystem:
                 # instead we have thrown a 415 to prevent non-pdf documents from being uploaded.
                 raise ServerException(
                     message='Your file could not be uploaded. Please make sure your URL ends '
-                            + 'with .pdf. For example, https://www.example.com/file.pdf. If the '
-                            + 'problem persists, please download the file to your computer from '
-                            + 'the original website and upload the file from your device.',
+                    + 'with .pdf. For example, https://www.example.com/file.pdf. If the '
+                    + 'problem persists, please download the file to your computer from '
+                    + 'the original website and upload the file from your device.',
                     code=e.code,
                 ) from e
             except (HTTPError, GDownException) as http_err:
@@ -498,23 +498,23 @@ class Filesystem:
                 if http_err.code == 406:
                     raise ServerException(
                         message='Your file could not be uploaded. Please make sure your URL ends '
-                                + 'with .pdf. For example, https://www.example.com/file.pdf. If '
-                                + 'the problem persists, please download the file to your '
-                                + 'computer from the original website and upload the file from '
-                                + 'your device.',
+                        + 'with .pdf. For example, https://www.example.com/file.pdf. If '
+                        + 'the problem persists, please download the file to your '
+                        + 'computer from the original website and upload the file from '
+                        + 'your device.',
                     ) from http_err
                 else:
                     # An error occurred that we were not expecting.
                     raise ServerException(
                         message='Your file could not be uploaded due to an unexpected error, '
-                                + 'please try again. If the problem persists, please download the '
-                                + 'file to your computer from the original website and upload the '
-                                + 'file from your device.'
+                        + 'please try again. If the problem persists, please download the '
+                        + 'file to your computer from the original website and upload the '
+                        + 'file from your device.'
                     ) from http_err
             except (ContentTooLongError, OverflowError) as e:
                 raise ServerException(
                     message='Your file could not be uploaded. The requested file is too large. '
-                            + 'Please limit file uploads to less than 315MB.',
+                    + 'Please limit file uploads to less than 315MB.',
                 ) from e
 
             return typing.cast(FileContentBuffer, buffer), url
@@ -527,19 +527,19 @@ class Filesystem:
 
     @classmethod
     def create_file(
-            cls,
-            filename,
-            *,
-            parent,
-            description=MISSING,
-            public=False,
-            content_hash_id=None,
-            content_url=None,
-            content_value=None,
-            mime_type=None,
-            fallback_organism=None,
-            contexts=MISSING,
-            annotation_configs=None,
+        cls,
+        filename,
+        *,
+        parent,
+        description=MISSING,
+        public=False,
+        content_hash_id=None,
+        content_url=None,
+        content_value=None,
+        mime_type=None,
+        fallback_organism=None,
+        contexts=MISSING,
+        annotation_configs=None,
     ) -> Files:
         """Method to create a new file or to clone a file into a new one."""
 
@@ -547,7 +547,9 @@ class Filesystem:
         file_type_service = get_file_type_service()
 
         file = Files()
-        file.filename = timeflake.random().base62 + filename  # placeholder filename - without name conflict
+        file.filename = (
+            timeflake.random().base62 + filename
+        )  # placeholder filename - without name conflict
         file.description = description if description is not MISSING else None
         file.user = current_user
         file.creator = current_user
@@ -571,9 +573,7 @@ class Filesystem:
                     Files.hash_id == source_hash_id
                 )
                 Filesystem.check_file_permissions(
-                    [existing_file], current_user,
-                    ['readable'],
-                    permit_recycled=True
+                    [existing_file], current_user, ['readable'], permit_recycled=True
                 )
             except RecordNotFound as e:
                 raise ValidationError(
