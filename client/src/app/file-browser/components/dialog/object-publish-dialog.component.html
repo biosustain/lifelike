@@ -109,13 +109,6 @@
       ></textarea>
     </app-form-row>
 
-    <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
-      <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
-        <label class="custom-control-label" for="public">Publicly share with the community</label>
-      </div>
-    </app-form-row>
-
     <ng-container *ngIf="possiblyAnnotatable">
       <fieldset class="fieldset-properties mt-4">
         <legend>Annotation Options</legend>

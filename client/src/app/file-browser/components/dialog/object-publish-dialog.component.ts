@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { NgbActiveModal, NgbModal, NgbNavChangeEvent } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { SharedSearchService } from 'app/shared/services/shared-search.service';
@@ -30,7 +30,7 @@ export class ObjectPublishDialogComponent extends ObjectEditDialogComponent {
 
   fileList: FileInput<any>[] = [];
   selectedFile: FileInput<any> = null;
-  selectedFileIndex;
+  selectedFileIndex: number;
 
   invalidInputs = false;
 
