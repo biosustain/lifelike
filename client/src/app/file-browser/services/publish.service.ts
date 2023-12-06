@@ -26,7 +26,7 @@ import { Progress, ProgressMode } from 'app/interfaces/common-dialog.interface';
 import { CreationResult, ObjectCreateRequest, Task } from '../schema';
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from './filesystem.service';
-import { ObjectUploadDialogComponent } from '../components/dialog/object-upload-dialog.component';
+import { ObjectPublishDialogComponent } from '../components/dialog/object-publish-dialog.component';
 
 interface PublishTask {
   request: ObjectCreateRequest;
@@ -192,7 +192,7 @@ export class PublishService {
     options: PublishDialogOptions = {},
     userHashId: string
   ): Promise<FilesystemObject> {
-    const dialogRef = this.modalService.open(ObjectUploadDialogComponent);
+    const dialogRef = this.modalService.open(ObjectPublishDialogComponent);
     dialogRef.componentInstance.title = options.title || 'New File';
     dialogRef.componentInstance.object = target;
     const keys: Array<keyof PublishDialogOptions> = [
