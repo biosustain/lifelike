@@ -51,6 +51,7 @@ import { ObjectTableComponent } from './components/object-table/object-table.com
 import { AppCdkTableColgroupBackportComponent } from './components/object-table/cdk-table-colgroup-backport.component';
 import { PublishedBrowserComponent } from './components/published-browser/published-browser.component';
 import { PublishService } from './services/publish.service';
+import { ObjectPublishDialogComponent } from './components/dialog/object-publish-dialog.component';
 
 @NgModule({
   declarations: [
@@ -86,6 +87,7 @@ import { PublishService } from './services/publish.service';
     ObjectReannotateResultsDialogComponent,
     ObjectViewerComponent,
     ObjectUploadDialogComponent,
+    ObjectPublishDialogComponent,
     BrowserPinnedListComponent,
     ObjectTileDeckComponent,
     AppResizableColumnDirective,
