@@ -720,7 +720,8 @@ class Filesystem:
                         "filename",
                     )
 
-                db.session.flush()
+                db.session.add(file)
+                db.session.commit()
             except IntegrityError as e:
                 savepoint.rollback()
                 # Warning: this could catch some other integrity error
