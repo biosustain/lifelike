@@ -74,7 +74,6 @@ export class ObjectPublishDialogComponent extends ObjectEditDialogComponent {
     return [
       {
         ...this.createObjectRequest(value),
-        ...(value.contentSource === 'contentUrl' && { contentUrl: value.contentUrl }),
         ...this.request,
       } as ObjectCreateRequest,
     ];
@@ -106,24 +105,6 @@ export class ObjectPublishDialogComponent extends ObjectEditDialogComponent {
         this.changeSelectedFile(this.fileList.length - 1);
       });
     }
-  }
-
-  activeTabChanged(event: NgbNavChangeEvent) {
-    if (this.fileList.length || this.form.get('contentUrl').value.length) {
-      if (!confirm('Are you sure? Your progress will be lost!')) {
-        event.preventDefault();
-        return;
-      }
-    }
-    this.fileList = [];
-    this.selectedFile = null;
-    this.selectedFileIndex = -1;
-    this.form.get('contentUrl').setValue('');
-    this.form.get('contentSource').setValue(event.nextId);
-    this.form.get('contentValue').setValue(null);
-    this.form.get('filename').setValue('');
-    this.filePossiblyAnnotatable = false;
-    this.invalidInputs = false;
   }
 
   urlChanged(event) {
