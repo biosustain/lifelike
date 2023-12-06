@@ -8,11 +8,7 @@
 
     <ng-container *ngIf="promptUpload">
       <div class="mt-4">
-        <app-form-row
-          for="content-value"
-          label="Add files"
-          [control]="form.get('contentValue')"
-        >
+        <app-form-row for="content-value" label="Add files" [control]="form.get('contentValue')">
           <div class="d-flex align-items-center text-truncate">
             <button type="button" class="btn btn-secondary mr-2" (click)="showFileDialog()">
               Browse...
@@ -34,41 +30,41 @@
           <caption class="alert-danger pa2-l" *ngIf="fileList.length >= maxFileCount">
             You can only upload
             {{
-            maxFileCount
+              maxFileCount
             }}
             files at once.
           </caption>
           <colgroup>
-            <col style="width: 50%"/>
+            <col style="width: 50%" />
           </colgroup>
           <thead>
-          <tr></tr>
-          <tr>
-            <th class="d-none d-lg-table-cell">Filename</th>
-          </tr>
+            <tr></tr>
+            <tr>
+              <th class="d-none d-lg-table-cell">Filename</th>
+            </tr>
           </thead>
           <tbody>
-          <tr
-            *ngFor="let file of fileList; let index = index"
-            (appTabSelectable)="changeSelectedFile(index)"
-            [class.bg-highlight]="index === selectedFileIndex"
-          >
-            <td class="align-middle text-truncate mw-100">
-              {{ file.filename }}
-            </td>
-            <td>
-              <i
-                class="fa fa-lg fa-exclamation-circle alert-danger"
-                ngbTooltip="Invalid input(s)!"
-                #tooltipRef="ngbTooltip"
-                [appAutoCloseTooltipOutOfView]="tooltipRef"
-                *ngIf="file.hasErrors"
-              ></i>
-            </td>
-            <td class="text-right">
-              <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
-            </td>
-          </tr>
+            <tr
+              *ngFor="let file of fileList; let index = index"
+              (appTabSelectable)="changeSelectedFile(index)"
+              [class.bg-highlight]="index === selectedFileIndex"
+            >
+              <td class="align-middle text-truncate mw-100">
+                {{ file.filename }}
+              </td>
+              <td>
+                <i
+                  class="fa fa-lg fa-exclamation-circle alert-danger"
+                  ngbTooltip="Invalid input(s)!"
+                  #tooltipRef="ngbTooltip"
+                  [appAutoCloseTooltipOutOfView]="tooltipRef"
+                  *ngIf="file.hasErrors"
+                ></i>
+              </td>
+              <td class="text-right">
+                <i (click)="handleDelete(index)" class="fa fa-trash-alt"></i>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -115,7 +111,7 @@
 
     <app-form-row [control]="form.get('public')" *ngIf="!object.isDirectory">
       <div class="custom-control custom-checkbox">
-        <input type="checkbox" class="custom-control-input" id="public" formControlName="public"/>
+        <input type="checkbox" class="custom-control-input" id="public" formControlName="public" />
         <label class="custom-control-label" for="public">Publicly share with the community</label>
       </div>
     </app-form-row>
