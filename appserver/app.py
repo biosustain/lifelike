@@ -711,7 +711,7 @@ def add_file(
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
-                    file.filename = file.generate_non_conflicting_filename()
+                    file.filename = file.generate_non_conflicting_filename(file.filename)
                 except ValueError:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
