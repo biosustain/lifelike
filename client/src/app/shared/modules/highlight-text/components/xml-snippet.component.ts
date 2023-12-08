@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
-import { XMLTag } from '../../services/highlight-text.service';
+import { XMLTag } from '../services/highlight-text.service';
+
 
 @Component({
   selector: 'app-xml-snippet',

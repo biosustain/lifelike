@@ -15,8 +15,8 @@ import { find, isString } from 'lodash-es';
 import { ReplaySubject, Subject } from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 
+import { DynamicViewService } from '../../../services/dynamic-view.service';
 import { HIGHLIGHT_TEXT_TAG_HANDLER, XMLTag } from '../services/highlight-text.service';
-import { DynamicViewService } from '../services/dynamic-view.service';
 
 interface NodeRef {
   node: Node;
