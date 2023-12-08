@@ -1,4 +1,5 @@
 import pathlib
+from typing import Type, Union
 
 from flask import g
 
@@ -13,7 +14,7 @@ class Publish:
         return f'!publish@{user_hash_id}'
 
     @staticmethod
-    def is_publish_project(project: Projects):
+    def is_publish_project(project: Union[Type[Projects], Projects]):
         return project.name.startswith('!publish@')
 
     @classmethod
