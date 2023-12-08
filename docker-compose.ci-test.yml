@@ -2,7 +2,7 @@
 version: "3.8"
 
 x-postgres: &postgres
-  POSTGRES_HOST: postgres
+  POSTGRES_HOST: pgdatabase
   POSTGRES_PORT: 5432
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
@@ -41,9 +41,9 @@ x-appserver: &appserver
     <<: [*postgres, *neo4j, *redis, *elasticsearch, *arango]
     LMDB_HOME_FOLDER: /home/n4j/neo4japp/services/annotations/lmdb/
   depends_on:
-    - postgres
     - elasticsearch
-    - neo4j
+    - graphdatabase
+    - pgdatabase
     - redis
     - arangodb
 
@@ -56,13 +56,13 @@ services:
     <<: *appserver
     command: rq worker -c rq_config --with-scheduler
 
-  postgres:
+  pgdatabase:
     image: postgres:13
     restart: on-failure
     environment:
       POSTGRES_PASSWORD: postgres
 
-  neo4j:
+  graphdatabase:
     image: neo4j:4.4-community
     restart: on-failure
     environment:
