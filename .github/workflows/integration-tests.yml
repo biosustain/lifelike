@@ -36,7 +36,7 @@ jobs:
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
       - name: Migration Integrity Check
-        run: ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver bin/migration-integrity-check
+        run: ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps migrate bin/migration-integrity-check
 
       - name: Linting and code style
         run: |-
