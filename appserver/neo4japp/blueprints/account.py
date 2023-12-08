@@ -5,7 +5,6 @@ import string
 
 from flask import Blueprint, current_app, g, jsonify
 from flask.views import MethodView
-from http import HTTPStatus
 from sendgrid.helpers.mail import Mail
 from sqlalchemy import func, literal_column, or_
 from sqlalchemy.dialects.postgresql import aggregate_order_by
@@ -26,7 +25,11 @@ from neo4japp.constants import (
     RESET_PASSWORD_SYMBOLS,
     LogEventType,
 )
-from neo4japp.database import db, get_authorization_service, get_account_service
+from neo4japp.database import (
+    db,
+    get_authorization_service,
+    get_projects_service,
+)
 from neo4japp.exceptions import (
     NotAuthorized,
     ServerException,
