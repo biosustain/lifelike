@@ -78,7 +78,7 @@
   <button ngbDropdownItem (click)="updateStarred(object.hashId, !object.starred)">
     {{ object.starred ? 'Remove from' : 'Add to' }} starred
   </button>
-  <button ngbDropdownItem (click)="updatePinned(object)">
+  <button *ngIf="object.privileges?.writable" ngbDropdownItem (click)="updatePinned(object)">
     {{ object.pinned ? 'Unpin' : 'Pin' }}
   </button>
   <ng-container *ngIf="object.isNavigable">
