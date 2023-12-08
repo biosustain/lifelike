@@ -20,6 +20,9 @@ jobs:
           access_token: ${{ github.token }}
 
       - uses: actions/checkout@v3
+        with:
+          # need submodule for legacy migrations
+          submodules: true
 
       - name: Build appserver image
         uses: whoan/docker-build-with-cache-action@v5
