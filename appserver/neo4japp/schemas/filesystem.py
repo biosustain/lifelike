@@ -32,6 +32,7 @@ class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
     name = fields.String()
     description = fields.String()
+    creator = fields.Nested(UserSchema)
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     privileges = fields.Method('get_privileges')

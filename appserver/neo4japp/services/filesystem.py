@@ -154,7 +154,9 @@ class Filesystem:
             build_file_hierarchy_query(
                 and_(*filters), t_project, t_file, file_attr_excl=attr_excl
             )
-            .options(raiseload('*'), joinedload(t_file.user))
+            .options(
+                raiseload('*'), joinedload(t_file.user), joinedload(t_project.creator)
+            )
             .order_by(*[dir_fn(text(f'_{col}')) for col, dir_fn in sort_map])
         )
 

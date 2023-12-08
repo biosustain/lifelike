@@ -41,6 +41,7 @@ export class ProjectImpl implements ObservableObject {
   hashId: string;
   name: string;
   description: string;
+  creator: AppUser;
   creationDate: string;
   modifiedDate: string;
   ***ARANGO_USERNAME***: FilesystemObject;
@@ -74,7 +75,7 @@ export class ProjectImpl implements ObservableObject {
 
   get effectiveName(): string {
     if (this.isPublication) {
-      const username = this.***ARANGO_USERNAME***?.user?.username;
+      const username = (this.creator ?? this.***ARANGO_USERNAME***?.user)?.username;
       if (username) {
         return `Publications of ${username}`;
       }
@@ -99,6 +100,7 @@ export class ProjectImpl implements ObservableObject {
       'hashId',
       'name',
       'description',
+      'creator',
       'creationDate',
       'modifiedDate',
       'privileges',
