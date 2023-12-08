@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { NgbModalModule, NgbTooltipModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModalModule, NgbPagination, NgbTooltipModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { SortableTableHeaderDirective } from 'app/shared/directives/table-sortable-header.directive';
 
@@ -20,6 +20,7 @@ import { LinkModule } from '../link/link.module';
     NgbTooltipModule,
     NgbTypeaheadModule,
     NgbModalModule,
+    NgbPagination,
   ],
   declarations: [TableCompleteComponent, SortableTableHeaderDirective],
   exports: [TableCompleteComponent],
