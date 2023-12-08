@@ -24,7 +24,7 @@ import { SNIPPET_PAGE_LIMIT, SNIPPET_RESULT_LIMIT } from 'app/shared/constants';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
 import { NCBI } from 'app/shared/url/constants';
 import { VISUALIZER_SNIPPET_TRANSFER_TYPE } from 'app/visualization/providers/visualizer-object-data.provider';
-import { AppURL, HttpURL } from 'app/shared/utils/url';
+import { HttpURL } from 'app/shared/url';
 
 @Component({
   selector: 'app-snippet-display',

@@ -6,7 +6,7 @@ import {
   DataTransferDataProvider,
   DataTransferToken,
 } from 'app/shared/services/data-transfer-data.service';
-import { AppURL } from 'app/shared/utils/url';
+import { AppURL } from 'app/shared/url';
 
 export const VISUALIZER_URI_TOKEN = new DataTransferToken<URIData[]>('visualizer-uri-list');
 export const VISUALIZER_SNIPPET_TRANSFER_TYPE = 'vnd.***ARANGO_DB_NAME***.transfer/visualizer-snippet';

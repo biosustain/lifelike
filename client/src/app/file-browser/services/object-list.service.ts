@@ -10,10 +10,10 @@ import { finalize, map, tap } from 'rxjs/operators';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
-import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
+import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
