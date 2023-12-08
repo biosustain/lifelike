@@ -13,7 +13,8 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { CollectionModel } from 'app/shared/utils/collection-model';
 import { openDownloadForBlob } from 'app/shared/utils/files';
 import { WorkspaceManager, WorkspaceNavigationExtras } from 'app/shared/workspace-manager';
-import { openInternalLink, toValidUrl } from 'app/shared/utils/browser';
+import { openInternalLink } from 'app/shared/utils/browser';
+import { HttpURL } from 'app/shared/url';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { getObjectLabel } from '../utils/objects';
@@ -75,7 +76,7 @@ export class ObjectListService {
         //  - Use a callback that does the download portion of the `else` block below
         openInternalLink(
           this.workspaceManager,
-          toValidUrl(this.router.createUrlTree(target.getCommands()).toString()),
+          new HttpURL(this.router.createUrlTree(target.getCommands()).toString()),
           _merge({ newTab: !target.isDirectory }, appLinks)
         );
       } else {
