@@ -417,7 +417,7 @@ class FileHierarchy:
     def calculate_privileges(self, user_ids):
         parent_file: Optional[Files] = None
 
-        current_user = g.current_user
+        current_user = getattr(g, 'current_user', None)
 
         # We need to iterate through the files from parent to child because
         # permissions are inherited and must be calculated in that order
@@ -491,16 +491,16 @@ class FileHierarchy:
                         commentable=False,
                     )
 
-                if user_id == current_user.id:
+                if current_user and user_id == current_user.id:
                     private_data_access = get_authorization_service().has_role(
                         current_user, 'private-data-access'
                     )
 
                     if private_data_access:
                         privileges = FilePrivileges(
-                            readable = True,
-                            writable = True,
-                            commentable = True,
+                            readable=True,
+                            writable=True,
+                            commentable=True,
                         )
 
                 file.calculated_privileges[user_id] = privileges
