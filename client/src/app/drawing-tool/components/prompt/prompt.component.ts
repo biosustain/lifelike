@@ -27,6 +27,7 @@ import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt
 import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { MapStoreService, setContext } from '../../services/map-store.service';
 
@@ -41,7 +42,8 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     private readonly injector: Injector,
     private readonly modalService: NgbModal,
     private readonly clipboard: ClipboardService,
-    private readonly mapStore: MapStoreService
+    private readonly mapStore: MapStoreService,
+    protected readonly authService: AuthenticationService
   ) {}
 
   private readonly destroy$: Subject<void> = new Subject();

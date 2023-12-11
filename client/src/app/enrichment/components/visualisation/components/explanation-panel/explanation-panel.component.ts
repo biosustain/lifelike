@@ -39,6 +39,7 @@ import {
 } from 'app/enrichment/services/enrichment-visualisation.service';
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-enrichment-explanation-panel',
@@ -51,6 +52,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly injector: Injector,
     readonly modalService: NgbModal,
     private readonly clipboard: ClipboardService,
+    protected readonly authService: AuthenticationService
   ) {}
 
   readonly contextsController$: Observable<DropdownController<string>> =

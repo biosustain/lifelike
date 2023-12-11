@@ -1,11 +1,6 @@
 import { Component } from '@angular/core';
 
-import { select, Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
-
-import { AuthSelectors } from 'app/auth/store';
-import { State } from 'app/root-store';
-import { AppUser } from 'app/interfaces';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { environment } from '../../../environments/environment';
 
@@ -14,7 +9,6 @@ import { environment } from '../../../environments/environment';
   templateUrl: './user-settings.component.html',
 })
 export class UserSettingsComponent {
-  readonly currentUsers$: Observable<AppUser>;
   activeTab: 'profile' | 'security';
 
   // TODO: Better to have an environment variable for this
@@ -25,7 +19,5 @@ export class UserSettingsComponent {
     return environment.oauthEnabled;
   }
 
-  constructor(private store: Store<State>) {
-    this.currentUsers$ = this.store.pipe(select(AuthSelectors.selectAuthUser));
-  }
+  constructor(protected readonly authService: AuthenticationService) {}
 }
