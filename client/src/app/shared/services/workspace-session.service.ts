@@ -39,7 +39,7 @@ export interface WorkspaceSessionLoader {
   providedIn: '***ARANGO_USERNAME***',
 })
 export class WorkspaceSessionService implements OnDestroy {
-  constructor(protected readonly authService: AuthenticationService) {}
+  constructor(readonly authService: AuthenticationService) {}
 
   private readonly storageUpdateSubscription = this.authService.loggedIn$.subscribe((loggedIn) => {
     this.storage = loggedIn ? localStorage : sessionStorage;

@@ -43,7 +43,7 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly objectTypeService: ObjectTypeService,
     protected readonly errorHandler: ErrorHandler,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   ngOnInit() {

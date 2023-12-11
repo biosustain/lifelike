@@ -19,6 +19,7 @@ import {
 } from 'app/drawing-tool/services/interfaces';
 import { createNodeDragImage } from 'app/drawing-tool/utils/drag';
 import { Meta } from 'app/pdf-viewer/annotation-type';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { SEARCH_LINKS } from '../../../links';
 import { annotationTypesMap } from '../../../annotation-styles';
@@ -57,7 +58,8 @@ export class XMLAnnotationComponent extends XMLTag implements OnChanges {
 
   constructor(
     protected readonly highlightTextService: HighlightTextService,
-    protected readonly workspaceManager: WorkspaceManager
+    protected readonly workspaceManager: WorkspaceManager,
+    readonly authService: AuthenticationService
   ) {
     super();
   }

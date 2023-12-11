@@ -29,7 +29,7 @@ export class ModuleMenuComponent extends ObjectMenuComponent implements OnChange
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
     protected readonly objectTypeService: ObjectTypeService,
-    protected readonly authService: AuthenticationService,
+    readonly authService: AuthenticationService,
     protected readonly clipboard: ClipboardService,
     private tabUrlService: ModuleContext
   ) {

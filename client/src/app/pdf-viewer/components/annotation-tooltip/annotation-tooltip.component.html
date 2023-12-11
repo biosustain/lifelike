@@ -76,7 +76,12 @@ Data Source: {{ idType ? idType : 'None' }}
   </div>
 </div>
 <ng-template #buttonWithIcon let-label="label" let-icon="icon" let-click="click">
-  <button type="button" class="btn btn-primary btn-block" (click)="click()">
+  <button
+    type="button"
+    class="btn btn-primary btn-block"
+    (click)="click()"
+    [disabled]="(authService.loggedIn$ | async) === false"
+  >
     <i [ngClass]="['fas', 'fa-fw', icon]"></i>
     <span>{{ label }}</span>
   </button>

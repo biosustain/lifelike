@@ -19,5 +19,5 @@ export class UserSettingsComponent {
     return environment.oauthEnabled;
   }
 
-  constructor(protected readonly authService: AuthenticationService) {}
+  constructor(readonly authService: AuthenticationService) {}
 }

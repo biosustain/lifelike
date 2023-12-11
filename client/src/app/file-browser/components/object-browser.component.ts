@@ -46,7 +46,7 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     protected readonly filesystemService: FilesystemService,
     protected readonly actions: FilesystemObjectActions,
     protected readonly objectTypeService: ObjectTypeService,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   readonly createActions$ = this.objectTypeService.all().pipe(
