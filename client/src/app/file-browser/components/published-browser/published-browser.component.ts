@@ -55,7 +55,7 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
     protected readonly projectActions: ProjectActions,
     protected readonly publishService: PublishService,
     private readonly activeRoute: ActivatedRoute,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   readonly userHashId$ = this.activeRoute.params.pipe(

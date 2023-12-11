@@ -51,7 +51,7 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
     protected readonly objectTypeService: ObjectTypeService,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   ngOnChanges({ object }: SimpleChanges) {

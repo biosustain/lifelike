@@ -47,14 +47,16 @@
       </div>
       <!-- search internal links -->
       <!-- TODO: collapsing -->
-      <div *ngIf="searchInternalLinks?.length">Search internal links</div>
-      <div>
-        <ng-container *ngFor="let searchInternalLink of searchInternalLinks">
-          <a href (click)="navigate($event, searchInternalLink.navigate)">
-            {{ searchInternalLink.label }} </a
-          ><br />
-        </ng-container>
-      </div>
+      <ng-container *ngIf="authService.loggedIn$">
+        <div *ngIf="searchInternalLinks?.length">Search internal links</div>
+        <div>
+          <ng-container *ngFor="let searchInternalLink of searchInternalLinks">
+            <a href (click)="navigate($event, searchInternalLink.navigate)">
+              {{ searchInternalLink.label }} </a
+            ><br />
+          </ng-container>
+        </div>
+      </ng-container>
     </div>
   </div>
 </ng-template>

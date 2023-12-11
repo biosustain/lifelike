@@ -36,7 +36,7 @@ export class AnnotationToolbarComponent {
     protected readonly snackBar: MatSnackBar,
     protected readonly errorHandler: ErrorHandler,
     protected readonly pdfAnnotation: PDFAnnotationService,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   @Input() set position(position) {

@@ -499,7 +499,7 @@ export class WorkspaceManager {
     private readonly injector: Injector,
     private readonly sessionService: WorkspaceSessionService,
     private readonly tracking: TrackingService,
-    protected readonly authService: AuthenticationService,
+    readonly authService: AuthenticationService,
     private readonly sessionStorage: SessionStorageService
   ) {
     this.authService.loggedIn$

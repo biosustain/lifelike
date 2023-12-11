@@ -29,7 +29,7 @@ export class ProjectMenuComponent {
     protected readonly errorHandler: ErrorHandler,
     protected readonly snackBar: MatSnackBar,
     protected readonly directoryTypeProvider: DirectoryTypeProvider,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   openEditDialog(project: ProjectImpl) {
