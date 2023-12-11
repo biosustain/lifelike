@@ -34,13 +34,13 @@ c.DockerSpawner.notebook_dir = notebook_dir
 # notebook directory in the container
 c.DockerSpawner.volumes = c.DockerSpawner.volumes = {
     "jupyterhub-user-{username}": notebook_dir,
-    "/home/ansible/jupyterhub/bootstrap-user.sh": {"bind": "/home/jovyan/bootstrap-user.sh", "mode": "rw"},
+    "/home/ansible/jupyterhub/bootstrap_user.sh": {"bind": "/home/jovyan/bootstrap_user.sh", "mode": "rw"},
     "/home/ansible/jupyterhub/pyunzip.py": {"bind": "/home/jovyan/pyunzip.py", "mode": "rw"}
 }
 
 # Replace the default command with the bootstrap script. This will check for the existence of the
 # GDS code and pull it if it doesn't exist.
-c.DockerSpawner.extra_create_kwargs.update({ "command": "/home/jovyan/bootstrap-user.sh" })
+c.DockerSpawner.extra_create_kwargs.update({ "command": "/home/jovyan/bootstrap_user.sh" })
 
 # Remove containers once they are stopped
 c.DockerSpawner.remove = True
