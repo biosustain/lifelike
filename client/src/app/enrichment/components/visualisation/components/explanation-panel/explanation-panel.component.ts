@@ -52,7 +52,7 @@ export class EnrichmentVisualisationExplanationPanelComponent {
     readonly injector: Injector,
     readonly modalService: NgbModal,
     private readonly clipboard: ClipboardService,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {}
 
   readonly contextsController$: Observable<DropdownController<string>> =

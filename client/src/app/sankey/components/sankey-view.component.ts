@@ -166,7 +166,7 @@ export class SankeyViewComponent
     public update: EditService,
     private readonly messageDialog: MessageDialog,
     private readonly moduleContext: ModuleContext,
-    protected readonly authService: AuthenticationService
+    readonly authService: AuthenticationService
   ) {
     this.moduleContext.register(this);
 

@@ -7,6 +7,7 @@ import { SEARCH_LINKS } from 'app/shared/links';
 import { DatabaseLink, ENTITY_TYPE_MAP, EntityType } from 'app/shared/annotation-types';
 import { InternalSearchService } from 'app/shared/services/internal-search.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { Annotation } from '../../annotation-type';
 import { PDFAnnotationService } from '../../services/pdf-annotation.service';
@@ -20,7 +21,8 @@ export class AnnotationTooltipComponent implements OnChanges {
     protected readonly internalSearch: InternalSearchService,
     protected readonly annotationService: PDFAnnotationService,
     protected readonly workspaceManager: WorkspaceManager,
-    protected readonly router: Router
+    protected readonly router: Router,
+    readonly authService: AuthenticationService
   ) {}
 
   @Input() private annotation!: Annotation;
