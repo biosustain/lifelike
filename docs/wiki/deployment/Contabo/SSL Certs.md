@@ -10,6 +10,14 @@ The Lifelike application and any other services requiring SSL certs should alrea
 
 To generate certificates for the main ***ARANGO_DB_NAME*** application, there are a number of steps required after the first deployment. Because we need a running server for Let's Encrypt to actually generate the certs, we need to start the proxy. However, the proxy currently assumes that the certs *already exist*. So, we need to temporarily update the proxy config so that we can generate the certs.
 
+In the `/home/ansible` folder, update the `docker-compose.contabo.yml` file to include the following volume configuration for the `proxy` service:
+
+```yaml
+    - ./nginx/conf/:/etc/nginx/conf.d/:ro
+```
+
+This will allow us to temporarily overwrite the built-in config used by the proxy image.
+
 In the `/home/ansible/nginx/conf` folder, add the file `default.conf`. If it already exists, create a backup file first with `cp default.conf default.conf.bak`. Then, replace the entire file with the following:
 
 ```conf
@@ -63,7 +71,7 @@ Repeat this process for the JupyterHub domain name. You can also streamline thes
 
 `docker-compose -f <docker-compose.yml file> run --rm  certbot certonly --web***ARANGO_USERNAME*** --web***ARANGO_USERNAME***-path /var/www/certbot/ --dry-run -d <***ARANGO_DB_NAME***-contabo-domain-name> -d <jupyterhub-contabo-domain-name>`
 
-Finally, stop the proxy container and remove the `/home/ansible/nginx/conf/default.conf` file.
+Finally, stop the proxy container and remove the `/home/ansible/nginx/conf/default.conf` file. Remove the volume from the `proxy` service we added earlier, and restart the proxy.
 
 ## Automatically Renew Certificates
 
