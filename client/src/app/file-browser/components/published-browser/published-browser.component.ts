@@ -1,22 +1,19 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-import { select, Store } from '@ngrx/store';
-import { BehaviorSubject, iif, Observable, of, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, iif, Observable, of, Subscription } from 'rxjs';
 import { map, shareReplay, switchMap } from 'rxjs/operators';
 
-import { AuthSelectors } from 'app/auth/store';
-import { State } from 'app/root-store';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
 import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { promiseOfOne } from 'app/shared/rxjs/to-promise';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { FilesystemObject } from '../../models/filesystem-object';
 import { FilesystemObjectList } from '../../models/filesystem-object-list';
 import { FilesystemService } from '../../services/filesystem.service';
 import { ProjectActions } from '../../services/project-actions';
-import { ProjectsService } from '../../services/projects.service';
 import { PublishService } from '../../services/publish.service';
 
 @Component({
@@ -55,33 +52,22 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly filesystemService: FilesystemService,
-    private readonly projectService: ProjectsService,
     protected readonly projectActions: ProjectActions,
     protected readonly publishService: PublishService,
-    private readonly store: Store<State>,
-    private readonly activeRoute: ActivatedRoute
+    private readonly activeRoute: ActivatedRoute,
+    protected readonly authService: AuthenticationService
   ) {}
-
-  readonly isAdmin$ = this.store.pipe(
-    select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
-  );
 
   readonly userHashId$ = this.activeRoute.params.pipe(
     switchMap((params) =>
       iif(
         () => params.user_hash_id !== undefined,
         of(params.user_hash_id),
-        this.store.pipe(
-          select(AuthSelectors.selectAuthUser),
-          map((user) => user.hashId)
-        )
+        this.authService.appUser$.pipe(map((user) => user.hashId))
       )
     ),
     shareReplay({ bufferSize: 1, refCount: true })
   );
-
-  private readonly destroy$ = new Subject();
 
   /**
    * Open a dialog to upload a file.

@@ -30,7 +30,12 @@
           </h2>
 
           <div class="d-flex ml-auto">
-            <button type="button" class="btn btn-secondary" (click)="openMapCreateDialog()">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="openMapCreateDialog()"
+              [disabled]="(authService.loggedIn$ | async) === false"
+            >
               <i class="fa fa-fw fa-plus-circle" aria-hidden="true"></i> New Map
             </button>
 

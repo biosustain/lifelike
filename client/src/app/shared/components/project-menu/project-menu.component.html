@@ -5,7 +5,7 @@
 </ng-container>
 <ng-container *ngIf="project.privileges.administrable">
   <div class="dropdown-divider"></div>
-  <app-exporters-ref [object]="project.root">
+  <app-exporters-ref [object]="project.root" *ngIf="authService.loggedIn$ | async">
     <ng-template let-action let-label="label">
       <button ngbDropdownItem (click)="action()">
         {{ label }}
