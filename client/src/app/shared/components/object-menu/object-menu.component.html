@@ -1,10 +1,4 @@
-<ng-container
-  *ngIf="
-    showOpen ||
-    (object.privileges.writable && (object.isEditable || object.isAnnotatable)) ||
-    object.isVersioned
-  "
->
+<div class="dropdown-group">
   <button
     ngbDropdownItem
     (click)="this.objectOpen.next(object)"
@@ -29,16 +23,9 @@
       Restore from history...
     </button>
   </ng-container>
-  <div class="dropdown-divider"></div>
-</ng-container>
+</div>
 
-<ng-container
-  *ngIf="
-    object.isCloneable ||
-    (object.privileges.writable && (object.isMovable || object.isDeletable)) ||
-    (object.parent.isProjectRoot && object.project.isPublication)
-  "
->
+<div class="dropdown-group">
   <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
     Copy{{ nameEntity && object.isDirectory ? ' folder' : '' }} to...
   </button>
@@ -59,10 +46,9 @@
       Delete...
     </button>
   </ng-container>
-  <div class="dropdown-divider"></div>
-</ng-container>
+</div>
 
-<ng-container>
+<div class="dropdown-group">
   <app-exporters-ref [object]="object">
     <ng-template let-action let-label="label">
       <button ngbDropdownItem (click)="action()">{{ label }}</button>
@@ -94,4 +80,4 @@
       Open file navigator
     </button>
   </ng-container>
-</ng-container>
+</div>
