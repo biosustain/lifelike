@@ -20,3 +20,14 @@
 .context-menu-body {
   z-index: $zindex-dropdown + 50;
 }
+
+.dropdown-group:not(:last-child) {
+  &:empty {
+    display: none;
+  }
+  &:not(:empty):after {
+    content: '';
+    display: block;
+    @include nav-divider($dropdown-divider-bg, $dropdown-divider-margin-y, true);
+  }
+}
