@@ -33,7 +33,7 @@
       <div class="btn-group ml-1">
         <button
           (click)="saveView()"
-          [disabled]="!object?.isEditable"
+          [disabled]="!object?.isEditable || (authService.loggedIn$ | async) === false"
           class="btn btn-secondary"
           container="body"
           ngbTooltip="Save View"
@@ -46,7 +46,7 @@
         </button>
         <button
           (click)="saveViewAs()"
-          [disabled]="!object?.isEditable"
+          [disabled]="!object?.isEditable || ((authService.loggedIn$ | async) === false)"
           class="btn btn-secondary"
           container="body"
           ngbTooltip="Save View As"
@@ -281,7 +281,7 @@
           <app-networktrace-view-dropdown-content
             class="dropdown-menu"
             ngbDropdownMenu
-            [isEditable]="object?.isEditable"
+            [isEditable]="object?.isEditable && (authService.loggedIn$ | async)"
             [viewport]="viewport"
             (deleteView)="confirmDeleteView($event)"
             (selectNetworkTraceIdx)="selectNetworkTraceIdx($event)"

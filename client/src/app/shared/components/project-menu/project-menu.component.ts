@@ -1,13 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { combineLatest, defer, iif, Observable, ReplaySubject, Subject } from 'rxjs';
-import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
-
-import { FilesystemObject, ProjectImpl } from 'app/file-browser/models/filesystem-object';
+import { ProjectImpl } from 'app/file-browser/models/filesystem-object';
 import { ProjectActions } from 'app/file-browser/services/project-actions';
-import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { DirectoryTypeProvider } from 'app/file-types/providers/directory.type-provider';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { ErrorHandler } from '../../services/error-handler.service';
 
@@ -31,7 +28,8 @@ export class ProjectMenuComponent {
     protected readonly projectActions: ProjectActions,
     protected readonly errorHandler: ErrorHandler,
     protected readonly snackBar: MatSnackBar,
-    protected readonly directoryTypeProvider: DirectoryTypeProvider
+    protected readonly directoryTypeProvider: DirectoryTypeProvider,
+    protected readonly authService: AuthenticationService
   ) {}
 
   openEditDialog(project: ProjectImpl) {

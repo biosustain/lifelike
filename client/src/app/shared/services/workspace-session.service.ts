@@ -1,14 +1,10 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { forEachRight } from 'lodash-es';
-import { select, Store } from '@ngrx/store';
-import { switchMap } from 'rxjs/operators';
 
-import { State } from 'app/***ARANGO_USERNAME***-store';
-import { AuthSelectors } from 'app/auth/store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { Pane } from '../workspace-manager';
-import { SessionStorageService } from './session-storage.service';
 
 const LOCAL_STORAGE_KEY = '***ARANGO_DB_NAME***_workspace_session';
 
@@ -43,12 +39,9 @@ export interface WorkspaceSessionLoader {
   providedIn: '***ARANGO_USERNAME***',
 })
 export class WorkspaceSessionService implements OnDestroy {
-  constructor(private readonly store: Store<State>) {}
+  constructor(protected readonly authService: AuthenticationService) {}
 
-  private readonly loggedIn$ = this.store.pipe(
-      select(AuthSelectors.selectAuthLoginState)
-  );
-  private readonly storageUpdateSubscription = this.loggedIn$.subscribe((loggedIn) => {
+  private readonly storageUpdateSubscription = this.authService.loggedIn$.subscribe((loggedIn) => {
     this.storage = loggedIn ? localStorage : sessionStorage;
   });
 

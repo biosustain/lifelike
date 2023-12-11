@@ -18,14 +18,12 @@ import {
 } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, map, shareReplay, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge, Observable, iif, of, defer } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge, iif, of, defer } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
-import { select, Store } from '@ngrx/store';
 
 import { timeoutPromise } from 'app/shared/utils/promise';
-import { AuthSelectors } from 'app/auth/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import {
@@ -35,8 +33,6 @@ import {
 } from './services/workspace-session.service';
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
-import { ErrorHandler } from './services/error-handler.service';
-import { UserError } from './exceptions';
 import { makeid } from './utils/identifiers';
 import { SessionStorageService } from './services/session-storage.service';
 
@@ -503,13 +499,11 @@ export class WorkspaceManager {
     private readonly injector: Injector,
     private readonly sessionService: WorkspaceSessionService,
     private readonly tracking: TrackingService,
-    private readonly errorHandler: ErrorHandler,
-    private readonly store: Store<State>,
+    protected readonly authService: AuthenticationService,
     private readonly sessionStorage: SessionStorageService
   ) {
-    store
+    this.authService.loggedIn$
       .pipe(
-        select(AuthSelectors.selectAuthLoginState),
         switchMap((loggedIn) =>
           iif(
             () => loggedIn,
@@ -520,7 +514,7 @@ export class WorkspaceManager {
         map((spaceId) => `/workspaces/${spaceId}`)
       )
       .subscribe(this.workspaceUrl$);
-    this.paneManager = new PaneManager(injector);
+    this.paneManager = new PaneManager(this.injector);
     this.hookRouter();
     this.emitEvents();
     this.panes$

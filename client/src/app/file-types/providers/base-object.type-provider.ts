@@ -3,7 +3,6 @@ import { ComponentRef, Injectable, InjectionToken, NgZone } from '@angular/core'
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { select, Store } from '@ngrx/store';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
@@ -20,8 +19,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { AuthSelectors } from 'app/auth/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -159,16 +157,11 @@ export class AbstractObjectTypeProviderHelper {
 export class PrePublishExporterService {
   constructor(
     protected readonly filesystemService: FilesystemService,
-    private readonly store: Store<State>
+    private readonly authService: AuthenticationService
   ) {}
 
-  private isAdmin$ = this.store.pipe(
-    select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
-  );
-
   factory(object: FilesystemObject): Observable<Exporter[]> {
-    return this.isAdmin$.pipe(
+    return this.authService.isAdmin$.pipe(
       map((isAdmin) =>
         isAdmin
           ? [
@@ -197,10 +190,6 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
     protected readonly filesystemService: FilesystemService // private readonly prePublishExporter: PrePublishExporterService
   ) {}
 
-  // isAdmin$ = this.store.pipe(
-  //   select(AuthSelectors.selectRoles),
-  //   map((roles) => roles.includes('admin'))
-  // );
   abstract handles(object: FilesystemObject): boolean;
 
   createPreviewComponent(

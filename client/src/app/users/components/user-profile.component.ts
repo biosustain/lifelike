@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 
 import { AppUser, UserUpdateData } from 'app/interfaces';
 import { State } from 'app/***ARANGO_USERNAME***-store';
-import { AuthActions, AuthSelectors } from 'app/auth/store';
+import { AuthActions } from 'app/auth/store';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { KeycloakAccountService } from '../services/keycloak-account.service';
 import { KeycloakUserData } from '../interfaces';
@@ -24,11 +25,12 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private readonly keycloakAccountService: KeycloakAccountService,
-    private store$: Store<State>
+    private readonly authService: AuthenticationService,
+    private readonly store$: Store<State>
   ) {}
 
   ngOnInit() {
-    this.store$.pipe(select(AuthSelectors.selectAuthUser)).subscribe((user) => {
+    this.authService.appUser$.subscribe((user) => {
       this.currentUser = user;
       this.form = new FormGroup({
         username: new FormControl(user.username, Validators.required),

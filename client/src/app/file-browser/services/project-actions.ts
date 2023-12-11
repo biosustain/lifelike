@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { of, throwError, iif, defer } from 'rxjs';
-import { finalize, catchError, map, switchMap, tap, first, take } from 'rxjs/operators';
-import { Store, select } from '@ngrx/store';
+import { finalize, catchError, switchMap, tap, first } from 'rxjs/operators';
 
 import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
@@ -11,15 +10,12 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { DeleteNonEmpty } from 'app/shared/exceptions';
 import { wrapExceptions } from 'app/shared/rxjs/wrapExceptions';
-import { State } from 'app/***ARANGO_USERNAME***-store';
-import { AuthSelectors } from 'app/auth/store';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { DirectoryObject } from 'app/interfaces/projects.interface';
-import { openDownloadForBlob } from 'app/shared/utils/files';
-import { MessageType } from 'app/interfaces/message-dialog.interface';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { ProjectsService } from './projects.service';
-import { FilesystemObject, ProjectImpl } from '../models/filesystem-object';
+import { ProjectImpl } from '../models/filesystem-object';
 import {
   ProjectEditDialogComponent,
   ProjectEditDialogValue,
@@ -34,7 +30,6 @@ import { FilesystemObjectActions } from './filesystem-object-actions';
 @Injectable()
 export class ProjectActions {
   constructor(
-    private readonly store: Store<State>,
     protected readonly projectService: ProjectsService,
     protected readonly modalService: NgbModal,
     protected readonly messageDialog: MessageDialog,
@@ -42,13 +37,9 @@ export class ProjectActions {
     protected readonly filesystemService: FilesystemService,
     protected readonly progressDialog: ProgressDialog,
     protected readonly actions: FilesystemObjectActions,
-    protected readonly clipboard: ClipboardService
+    protected readonly clipboard: ClipboardService,
+    private readonly authService: AuthenticationService
   ) {}
-
-  isAdmin$ = this.store.pipe(
-    select(AuthSelectors.selectRoles),
-    map((roles) => roles.includes('admin'))
-  );
 
   addSimpleProgressDialog(message: string, title = 'Working...') {
     const progressDialogRef = this.progressDialog.display({
@@ -122,7 +113,7 @@ export class ProjectActions {
           catchError((err) =>
             iif(
               () => err instanceof DeleteNonEmpty,
-              this.isAdmin$.pipe(
+              this.authService.isAdmin$.pipe(
                 first(),
                 switchMap((isAdmin) =>
                   iif(

@@ -12,17 +12,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { cloneDeep } from 'lodash-es';
-import { combineLatest, defer, iif, Observable, ReplaySubject, Subject } from 'rxjs';
-import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
+import { ReplaySubject, Subject } from 'rxjs';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
-import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-object-menu',
@@ -51,7 +50,8 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
     protected readonly route: ActivatedRoute,
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
-    protected readonly objectTypeService: ObjectTypeService
+    protected readonly objectTypeService: ObjectTypeService,
+    protected readonly authService: AuthenticationService
   ) {}
 
   ngOnChanges({ object }: SimpleChanges) {

@@ -10,15 +10,12 @@ import { DirectoryPreviewComponent } from 'app/file-browser/components/directory
 import { ObjectCreationService } from 'app/file-browser/services/object-creation.service';
 import { RankedItem } from 'app/shared/schemas/common';
 import { MimeTypes } from 'app/shared/constants';
-import { AuthSelectors } from 'app/auth/store';
-import { State } from 'app/***ARANGO_USERNAME***-store';
 
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
   CreateActionOptions,
   CreateDialogAction,
-  Exporter,
   PreviewOptions,
 } from './base-object.type-provider';
 

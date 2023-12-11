@@ -15,7 +15,7 @@
       Re-annotate
     </button>
   </ng-container>
-  <ng-container *ngIf="object.isVersioned">
+  <ng-container *ngIf="object.isVersioned && (authService.loggedIn$ | async)">
     <button ngbDropdownItem (click)="openVersionHistoryDialog(object)" *ngIf="!showRestore">
       Version history...
     </button>
@@ -26,7 +26,11 @@
 </div>
 
 <div class="dropdown-group">
-  <button ngbDropdownItem (click)="openCloneDialog(object)" *ngIf="object.isCloneable">
+  <button
+    *ngIf="object.isCloneable && (authService.loggedIn$ | async)"
+    ngbDropdownItem
+    (click)="openCloneDialog(object)"
+  >
     Copy{{ nameEntity && object.isDirectory ? ' folder' : '' }} to...
   </button>
   <ng-container *ngIf="object.privileges.writable && forEditing">
@@ -49,7 +53,7 @@
 </div>
 
 <div class="dropdown-group">
-  <app-exporters-ref [object]="object">
+  <app-exporters-ref [object]="object" *ngIf="authService.loggedIn$ | async">
     <ng-template let-action let-label="label">
       <button ngbDropdownItem (click)="action()">{{ label }}</button>
     </ng-template>
@@ -61,7 +65,11 @@
     Open external URL...
   </button>
   <button *ngIf="object.doi" ngbDropdownItem (click)="openLink(object.doi)">Open DOI...</button>
-  <button ngbDropdownItem (click)="updateStarred(object.hashId, !object.starred)">
+  <button
+    *ngIf="authService.loggedIn$ | async"
+    ngbDropdownItem
+    (click)="updateStarred(object.hashId, !object.starred)"
+  >
     {{ object.starred ? 'Remove from' : 'Add to' }} starred
   </button>
   <button *ngIf="object.privileges?.writable" ngbDropdownItem (click)="updatePinned(object)">

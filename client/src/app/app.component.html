@@ -2,7 +2,7 @@
   <!-- Left menu -->
   <div
     class="vertical-nav d-flex flex-column flex-wrap overflow-auto flex-shrink-0"
-    *ngIf="{loggedIn: loggedIn$ | async} as status"
+    *ngIf="{ loggedIn: authService.loggedIn$ | async } as status"
   >
     <!-- Top buttons -->
     <div class="d-flex flex-column">
@@ -46,7 +46,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fa fa-folder"></i>
       </a>
@@ -60,7 +60,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fas fa-chart-network"></i>
       </a>
@@ -74,7 +74,7 @@
         [forceWorkbench]="true"
         [newTab]="true"
         preferPane="left"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fa fa-search"></i>
       </a>
@@ -84,7 +84,7 @@
         ngbTooltip="Starred Content"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fas fa-star"></i>
       </a>
@@ -94,7 +94,7 @@
         ngbTooltip="Published"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fas fa-books"></i>
       </a>
@@ -111,7 +111,7 @@
         ngbTooltip="Pathway Browser Prototype"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fas fa-drafting-compass"></i>
       </a>
@@ -121,7 +121,7 @@
         ngbTooltip="Knowledge Graph Statistics"
         #tooltipRef="ngbTooltip"
         [appAutoCloseTooltipOutOfView]="tooltipRef"
-        [ngClass]="{'btn disabled': !status.loggedIn}"
+        [ngClass]="{ 'btn disabled': !status.loggedIn }"
       >
         <i class="fas fa-chart-bar"></i>
       </a>
@@ -189,7 +189,7 @@
             <a class="dropdown-item" (click)="buildInfo()" placement="right"> Lifelike Info </a>
             <a
               class="dropdown-item"
-              *ngIf="(userRoles$ | async)?.includes('admin')"
+              *ngIf="authService.isAdmin$ | async"
               [routerLink]="['/admin']"
               placement="right"
             >
@@ -198,7 +198,7 @@
             <a class="dropdown-item" (click)="downloadManual()" placement="right"> User Guide </a>
             <a
               class="dropdown-item"
-              [routerLink]="['/users', (appUser$ | async)?.username]"
+              [routerLink]="['/users', (authService.appUser$ | async)?.username]"
               placement="right"
             >
               Account
