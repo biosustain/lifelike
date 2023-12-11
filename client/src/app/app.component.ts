@@ -42,8 +42,8 @@ export class AppComponent {
     private readonly modalService: NgbModal,
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
-    private storage: StorageService,
-    protected authService: AuthenticationService,
+    private readonly storage: StorageService,
+    readonly authService: AuthenticationService,
     private readonly workspaceManager: WorkspaceManager
   ) {
     this.ngbModalConfig.backdrop = 'static';
