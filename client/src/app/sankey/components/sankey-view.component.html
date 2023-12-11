@@ -46,7 +46,7 @@
         </button>
         <button
           (click)="saveViewAs()"
-          [disabled]="!object?.isEditable || ((authService.loggedIn$ | async) === false)"
+          [disabled]="!object?.isEditable || (authService.loggedIn$ | async) === false"
           class="btn btn-secondary"
           container="body"
           ngbTooltip="Save View As"
