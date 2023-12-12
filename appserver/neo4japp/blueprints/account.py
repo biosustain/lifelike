@@ -299,6 +299,7 @@ def update_password(params: dict, hash_id):
                 raise ServerException(message='New password cannot be the old one.')
             target.set_password(params['new_password'])
             target.forced_password_reset = False
+            target.failed_login_count = 0
         else:
             raise ServerException(message='Old password is invalid.')
         try:
