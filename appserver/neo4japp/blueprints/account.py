@@ -299,7 +299,6 @@ def update_password(params: dict, hash_id):
                 raise ServerException(message='New password cannot be the old one.')
             target.set_password(params['new_password'])
             target.forced_password_reset = False
-            target.failed_login_count = 0
         else:
             raise ServerException(message='Old password is invalid.')
         try:
@@ -379,11 +378,15 @@ def unlock_user(hash_id):
     if g.current_user.has_role('admin') is False:
         raise NotAuthorized()
     else:
-        with db.session.begin_nested():
+        try:
             target = db.session.query(AppUser).filter(AppUser.hash_id == hash_id).one()
             target.failed_login_count = 0
 
             db.session.add(target)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
 
     return jsonify(dict(result='')), 204
 
