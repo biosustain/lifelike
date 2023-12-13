@@ -50,6 +50,8 @@ jobs:
             path: ./statistical-enrichment
           - image: kg-jupyterhub
             path: ./jupyterhub
+          - image: kg-jupyterhub-singleuser
+            path: ./jupyterhub-singleuser
           - image: kg-proxy
             path: ./proxy
           - image: filebeat

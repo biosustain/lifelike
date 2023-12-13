@@ -1,0 +1,14 @@
+#### Requirements with no version specified ####
+pandas
+numpy
+simplejson
+networkx
+plotly
+scipy
+openpyxl
+matplotlib
+ipython
+sympy
+nose
+xlsxwriter
+python-arango

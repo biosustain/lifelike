@@ -8,10 +8,10 @@
 # Start the Bootstrap Process
 echo "bootstrap process running ..."
 
+echo "...pulling GDS code..."
 if [ -d "$GDS_DIRECTORY" ]; then
     echo "...directory for GDS already exists. skipped"
 else
-    echo "...initial content loading for user..."
     cd $JUPYTER_NOTEBOOK_DIR
     wget $GDS_REPO_DOWNLOAD_LINK
 
