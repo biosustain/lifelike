@@ -2,6 +2,9 @@
 # Distributed under the terms of the Modified BSD License.
 FROM jupyterhub/singleuser:4.0.2
 
+# Mark this image as "do not delete". We need this to avoid accidentally deleting the image when pruning.
+LABEL storage="do_not_delete"
+
 COPY --chown=1000:1000 . /home/jovyan
 
 # Install Python deps
