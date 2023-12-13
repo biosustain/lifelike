@@ -11,5 +11,5 @@ arangodump --server.database <database> --server.endpoint <connection-string> --
 ## Load An Arango Dump Into the Target Database
 
 ```bash
-arangorestore --server.database <database> --server.endpoint <connection-string> --server.username <username> --server.password <password> --input-directory <fullpath>
+arangorestore --server.database <database> --server.endpoint <connection-string> --server.username <username> --server.password <password> --input-directory <fullpath> --create-database true
 ```
