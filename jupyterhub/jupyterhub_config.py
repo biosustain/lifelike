@@ -66,7 +66,11 @@ c.JupyterHub.template_paths = [f"{os.path.dirname(nativeauthenticator.__file__)}
 c.Spawner.environment = {
     "JUPYTER_NOTEBOOK_DIR" : os.environ["JUPYTER_NOTEBOOK_DIR"],
     "GDS_DIRECTORY": f'{os.environ["JUPYTER_NOTEBOOK_DIR"]}/{os.environ["GDS_REPO_NAME"]}',
-    "GDS_REPO_DOWNLOAD_LINK": os.environ["GDS_REPO_DOWNLOAD_LINK"]
+    "GDS_REPO_DOWNLOAD_LINK": os.environ["GDS_REPO_DOWNLOAD_LINK"],
+    "DEFAULT_GDS_ARANGO_URI": os.environ["DEFAULT_GDS_ARANGO_URI"],
+    "DEFAULT_GDS_ARANGO_USERNAME": os.environ["DEFAULT_GDS_ARANGO_USERNAME"],
+    "DEFAULT_GDS_PASSWORD": os.environ["DEFAULT_GDS_PASSWORD"],
+    "DEFAULT_GDS_ARANGO_DBNAME": os.environ["DEFAULT_GDS_ARANGO_DBNAME"]
 }
 
 # Allowed admins
