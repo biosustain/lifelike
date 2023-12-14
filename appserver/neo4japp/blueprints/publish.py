@@ -55,7 +55,8 @@ class PrePublishView(MethodView):
             )
 
             common_path = (
-                path.commonpath([target_file.path] + [f.path for f in related]) if len(related) else ''
+                path.commonpath([target_file.path] + [f.path for f in related])
+                if len(related) else ''
             )
 
             # Flattern inbetween folders to preserve file hierarhy in export
