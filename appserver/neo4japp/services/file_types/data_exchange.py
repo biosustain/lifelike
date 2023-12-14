@@ -179,6 +179,7 @@ class ZipDataExchange(DataExchangeProtocol):
                 metadata_filename = path.join(
                     dirname, cls._METADATA_FILE_FORMAT.format(basename=basename)
                 )
+                print(metadata_filename)
                 cls._zip_file_model_metadata_formatter.dump(
                     zip_file,
                     metadata_filename,
@@ -208,7 +209,10 @@ class ZipDataExchange(DataExchangeProtocol):
                         metadata_file_ref = cls._zip_file_model_metadata_formatter.load(
                             zip_file, info
                         )
-                        assert import_ref.metadata is None, "Metadata already set."
+                        if import_ref.metadata is not None:
+                            warn(
+                                ServerWarning(title="Metadata already set.")
+                            )
                         import_ref.metadata = metadata_file_ref.content
                         # Apply metadata import fields
                         for column, value in import_ref.metadata.items():
@@ -220,9 +224,7 @@ class ZipDataExchange(DataExchangeProtocol):
                         # assert import_ref.file.content is None, "Content already set."
                         if import_ref.file.content is not None:
                             warn(
-                                ServerWarning(
-                                    title='File content already set',
-                                )
+                                ServerWarning(title='File content already set')
                             )
                         import_ref.file.content = FileContent()
                         import_ref.file.content.raw_file = FileContentBuffer(
@@ -308,6 +310,7 @@ class ZipDataExchange(DataExchangeProtocol):
         import_path_map: Dict[str, _ImportRef] = dict()
 
         def get_import_ref(zip_path_: str) -> _ImportRef:
+            print(zip_path_)
             if zip_path_ not in import_path_map:
                 import_path_map[zip_path_] = _ImportRef()
             return import_path_map[zip_path_]
