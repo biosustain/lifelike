@@ -54,6 +54,8 @@ jobs:
             path: ./jupyterhub-singleuser
           - image: kg-proxy
             path: ./proxy
+          - image: kg-elasticsearch
+            path: ./elasticsearch
           - image: filebeat
             path: ./filebeat
           - image: metricbeat
