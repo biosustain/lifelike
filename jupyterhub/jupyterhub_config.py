@@ -42,6 +42,15 @@ c.DockerSpawner.remove = True
 # For debugging arguments passed to spawned containers
 c.DockerSpawner.debug = True
 
+# User resource consumption limits
+
+# Current value is high for a multi-user environment, but we're only expecting a small number of
+# users to be active at once.
+c.DockerSpawner.mem_limit = "2G"
+
+# There can only be 8 user servers active at any given time
+c.JupyterHub.active_server_limit = 8
+
 # User containers will access hub by container name on the Docker network
 c.JupyterHub.hub_ip = "jupyterhub"
 c.JupyterHub.hub_port = 8080
