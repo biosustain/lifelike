@@ -55,7 +55,7 @@ class PrePublishView(MethodView):
             )
 
             common_path = (
-                path.commonpath([f.path for f in related]) if len(related) else ''
+                path.commonpath([target_file.path] + [f.path for f in related]) if len(related) else ''
             )
 
             # Flattern inbetween folders to preserve file hierarhy in export
@@ -150,7 +150,7 @@ class PrePublishView(MethodView):
             #     sbrf.path = path.join(target_file.path, path.relpath(sbrf.path, common_path))
 
             if target_file.mime_type != FILE_MIME_TYPE_DIRECTORY:
-                files_to_export = [target_file] + permited_related_files
+                files_to_export = list(set([target_file] + permited_related_files))
             else:
                 files_to_export = permited_related_files
 
