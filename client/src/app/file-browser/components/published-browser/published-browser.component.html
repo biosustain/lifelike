@@ -23,7 +23,6 @@
               class="btn btn-primary"
               style="width: max-content; flex-shrink: 0"
               (click)="openPublishDialog()"
-              *ngIf="authService.isAdmin$ | async"
             >
               <i class="fa fa-fw fa-upload"></i> Publish
             </button>

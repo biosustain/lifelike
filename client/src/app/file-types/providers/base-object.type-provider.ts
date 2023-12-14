@@ -161,22 +161,16 @@ export class PrePublishExporterService {
   ) {}
 
   factory(object: FilesystemObject): Observable<Exporter[]> {
-    return this.authService.isAdmin$.pipe(
-      map((isAdmin) =>
-        isAdmin
-          ? [
-              {
-                name: 'Zip',
-                export: () =>
-                  this.filesystemService.generatePrePublish(object.hashId, {
-                    format: 'zip',
-                    exportLinked: true,
-                  }),
-              },
-            ]
-          : []
-      )
-    );
+    return of([
+      {
+        name: 'Zip',
+        export: () =>
+          this.filesystemService.generatePrePublish(object.hashId, {
+            format: 'zip',
+            exportLinked: true,
+          }),
+      },
+    ]);
   }
 }
 
