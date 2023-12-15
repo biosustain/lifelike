@@ -158,7 +158,7 @@ class Staging(Base):
     """Staging configurations"""
 
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
-    DOMAIN = 'https://test.lifelike.bio'
+    DOMAIN = 'https://staging.lifelike.bio'
 
     FORWARD_STACKTRACE = True
     SENTRY_ENABLED = True
