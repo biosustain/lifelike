@@ -60,4 +60,16 @@ def get_model_changes(model):
     return changes
 
 
-__all__ = ['ft_search', 'get_model_changes']
+def ensure_detached(model, session):
+    """
+    Ensure that the model is detached from the session.
+
+    This is useful for ensuring that changes made to the model are not
+    persisted to the database.
+    """
+    state = inspect(model)
+    if not state.detached and not state.transient:
+        session.expunge(model)
+
+
+__all__ = ['ft_search', 'get_model_changes', 'ensure_detached']

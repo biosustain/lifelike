@@ -285,7 +285,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         index=True,
         nullable=True,
     )
-    content = db.relationship('FileContent', foreign_keys=content_id)
+    content = db.relationship(
+        'FileContent',
+        foreign_keys=content_id,
+        cascade='save-update, merge, expunge',
+    )
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('appuser.id', ondelete='CASCADE'),
