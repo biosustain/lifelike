@@ -210,9 +210,7 @@ class ZipDataExchange(DataExchangeProtocol):
                             zip_file, info
                         )
                         if import_ref.metadata is not None:
-                            warn(
-                                ServerWarning(title="Metadata already set.")
-                            )
+                            warn(ServerWarning(title="Metadata already set."))
                         import_ref.metadata = metadata_file_ref.content
                         # Apply metadata import fields
                         for column, value in import_ref.metadata.items():
@@ -223,9 +221,7 @@ class ZipDataExchange(DataExchangeProtocol):
                         # Draft FileContent instance (buffer can be changed later)
                         # assert import_ref.file.content is None, "Content already set."
                         if import_ref.file.content is not None:
-                            warn(
-                                ServerWarning(title='File content already set')
-                            )
+                            warn(ServerWarning(title='File content already set'))
                         import_ref.file.content = FileContent()
                         import_ref.file.content.raw_file = FileContentBuffer(
                             file_ref.content

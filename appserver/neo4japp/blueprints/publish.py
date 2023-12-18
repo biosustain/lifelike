@@ -68,8 +68,8 @@ class PrePublishView(MethodView):
 
             def add_parent(_related_file: Files):
                 if (
-                        _related_file.parent
-                        and len(_related_file.parent.path) > common_path_len
+                    _related_file.parent
+                    and len(_related_file.parent.path) > common_path_len
                 ):
                     related.add(_related_file.parent)
                     add_parent(_related_file.parent)
@@ -86,7 +86,7 @@ class PrePublishView(MethodView):
                     ServerWarning(
                         title='Skipped non-readable file',
                         message=f'User {current_user.username} has sufficient permissions'
-                                f' to read "{_related_file.path}".',
+                        f' to read "{_related_file.path}".',
                     )
                 )
 
@@ -157,7 +157,8 @@ class PrePublishView(MethodView):
                 for sbrf in separate_branch_related_files:
                     if sbrf.parent not in separate_branch_related_files:
                         ancestors = [
-                            f for f in separate_branch_related_files
+                            f
+                            for f in separate_branch_related_files
                             if f.path.startswith(sbrf.path) and f != sbrf
                         ]
                         path_to_replace = sbrf.path
