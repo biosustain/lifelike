@@ -14,6 +14,7 @@ from neo4japp.services.file_types.data_exchange import DataExchange
 from neo4japp.services.filesystem import Filesystem
 from neo4japp.utils import make_cacheable_file_response
 from neo4japp.utils.globals import warn
+from neo4japp.utils.sqlalchemy import ensure_detached
 
 bp = Blueprint('publish', __name__, url_prefix='/publish')
 
@@ -40,6 +41,7 @@ class PrePublishView(MethodView):
         savepoint = db.session.begin_nested()
 
         try:
+            # region READING RELATED FILES
             # LL - 5375: limiting publishing options so it is rolloutable
             # related = set(
             #     cast(
@@ -66,8 +68,8 @@ class PrePublishView(MethodView):
 
             def add_parent(_related_file: Files):
                 if (
-                    _related_file.parent
-                    and len(_related_file.parent.path) > common_path_len
+                        _related_file.parent
+                        and len(_related_file.parent.path) > common_path_len
                 ):
                     related.add(_related_file.parent)
                     add_parent(_related_file.parent)
@@ -84,11 +86,25 @@ class PrePublishView(MethodView):
                     ServerWarning(
                         title='Skipped non-readable file',
                         message=f'User {current_user.username} has sufficient permissions'
-                        f' to read "{_related_file.path}".',
+                                f' to read "{_related_file.path}".',
                     )
                 )
 
             permited_related_files = list(filter(has_read_permission, related))  # type: ignore
+            # endregion
+
+            # region UPDATING FILE HIERARCHY FOR PUBLICATION
+            # Detach from the session to prevent changes to the database
+            if target_file.mime_type != FILE_MIME_TYPE_DIRECTORY:
+                # noinspection PyStatementEffect
+                target_file.content  # Trigger lazy load of content
+            ensure_detached(target_file, db.session)
+            for file in permited_related_files:
+                if file.mime_type != FILE_MIME_TYPE_DIRECTORY:
+                    # noinspection PyStatementEffect
+                    file.content  # Trigger lazy load of content
+                ensure_detached(file, db.session)
+            # now on files are in detached state
 
             # Rename project ***ARANGO_USERNAME*** folder to project name
             for file in permited_related_files:
@@ -123,7 +139,14 @@ class PrePublishView(MethodView):
                             related_folder_filename += str(uuid4())
                             break
 
+                # Find a vacant id for the folder
+                vacant_id = 0
+                used_ids = set([f.id for f in permited_related_files + [target_file]])
+                while vacant_id in used_ids:
+                    vacant_id += 1
+
                 related_folder = Files(
+                    id=vacant_id,
                     filename=related_folder_filename,
                     mime_type=FILE_MIME_TYPE_DIRECTORY,
                     creator=current_user,
@@ -133,20 +156,27 @@ class PrePublishView(MethodView):
                 permited_related_files.append(related_folder)
                 for sbrf in separate_branch_related_files:
                     if sbrf.parent not in separate_branch_related_files:
-                        children = [
-                            f for f in separate_branch_related_files if f.parent == sbrf
+                        ancestors = [
+                            f for f in separate_branch_related_files
+                            if f.path.startswith(sbrf.path) and f != sbrf
                         ]
                         path_to_replace = sbrf.path
                         sbrf.parent = related_folder
+                        sbrf.parent_id = related_folder.id
+                        sbrf.path = path.join(
+                            related_folder.path,
+                            path.basename(sbrf.path),
+                        )
 
                         # Remap paths to be relative to the folder
-                        for child in children:
-                            child.path = path.join(
-                                related_folder.path,
-                                path.relpath(child.path, path_to_replace),
+                        for ancestor in ancestors:
+                            ancestor.path = path.join(
+                                sbrf.path,
+                                str(path.relpath(ancestor.path, path_to_replace)),
                             )
 
             target_file.path = f'/{filename}'
+            # endregion
 
             # for sbrf in same_branch_related_files:
             #     sbrf.path = path.join(target_file.path, path.relpath(sbrf.path, common_path))
