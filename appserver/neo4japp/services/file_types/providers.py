@@ -288,7 +288,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
     def get_related_files(
         self,
         file: Files,
-        recursive: Set[str],
+        recursive: Optional[Set[str]],
     ) -> Iterator[Files]:
         if file.hash_id in recursive:
             return iter([])
