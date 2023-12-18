@@ -171,7 +171,7 @@ class ZipDataExchange(DataExchangeProtocol):
                 metadata = {
                     key: getattr(f, key)
                     for key in cls._EXPORT_FIELDS
-                    if getattr(f, key)
+                    if getattr(f, key, None) is not None
                 }
 
                 dirname = path.dirname(filename)
@@ -268,6 +268,7 @@ class ZipDataExchange(DataExchangeProtocol):
         import_id_map = {
             import_ref.metadata['id']: import_ref
             for import_ref in import_path_map.values()
+            if 'id' in import_ref.metadata
         }
         for import_ref in import_id_map.values():
             if not import_ref.root:  # Skip parents of import root files
@@ -301,6 +302,7 @@ class ZipDataExchange(DataExchangeProtocol):
         files_hash_id_map = {
             import_ref.metadata['hash_id']: import_ref.file.hash_id
             for import_ref in import_path_map.values()
+            if 'hash_id' in import_ref.metadata
         }
         for import_ref in import_path_map.values():
             get_file_type_service().relink_file(import_ref.file, files_hash_id_map)

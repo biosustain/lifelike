@@ -275,12 +275,13 @@ class BaseFileTypeProvider:
         """
 
     def get_related_files(
-        self, file: Files, recursive: Set[str]
+        self, file: Files, recursive: Optional[Set[str]]
     ) -> Iterator[Union[Files, str]]:
         """
         Return a list of files linked to the given file.
         """
-        recursive.add(file.hash_id)
+        if recursive:
+            recursive.add(file.hash_id)
         return iter([])
 
     def relink_file(self, file: Files, files_hash_map) -> None:
@@ -412,7 +413,7 @@ class FileTypeService:
         """
         self.get(file.mime_type).relink_file(file, files_hash_map)
 
-    def get_related_files(self, files: List[Files], recursive: Set[str]):
+    def get_related_files(self, files: List[Files], recursive: Optional[Set[str]]):
         def get_related_files(f: Files):
             return self.get(f.mime_type).get_related_files(f, recursive)
 
