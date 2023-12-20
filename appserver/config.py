@@ -158,7 +158,7 @@ class Staging(Base):
     """Staging configurations"""
 
     SITE_NAME = 'Lifelike Knowledge Search (Staging)'
-    DOMAIN = 'https://test.***ARANGO_DB_NAME***.bio'
+    DOMAIN = 'https://staging.***ARANGO_DB_NAME***.bio'
 
     FORWARD_STACKTRACE = True
     SENTRY_ENABLED = True
