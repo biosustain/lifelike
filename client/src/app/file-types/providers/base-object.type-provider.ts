@@ -47,6 +47,7 @@ export interface PreviewOptions {
 
 export interface Exporter {
   name: string;
+  isPrePublish?: boolean;
 
   export(linkedExport?: boolean): Observable<File>;
 }
@@ -164,6 +165,7 @@ export class PrePublishExporterService {
     return of([
       {
         name: 'Zip',
+        isPrePublish: true,
         export: () =>
           this.filesystemService.generatePrePublish(object.hashId, {
             format: 'zip',
@@ -209,7 +211,17 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
     // LL-5375: limiting publishing options so it is rollable
     // return this.prePublishExporter.factory(object);
-    return of([]);
+    // LL-5387: partly reintroduce features
+    return of([
+      {
+        name: 'Zip',
+        export: () =>
+          this.filesystemService.generateExport(object.hashId, {
+            format: 'zip',
+            exportLinked: true,
+          }),
+      },
+    ]);
   }
 
   unzipContent(zipped: Blob): Observable<string> {

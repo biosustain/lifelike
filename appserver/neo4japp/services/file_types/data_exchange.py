@@ -179,7 +179,6 @@ class ZipDataExchange(DataExchangeProtocol):
                 metadata_filename = path.join(
                     dirname, cls._METADATA_FILE_FORMAT.format(basename=basename)
                 )
-                print(metadata_filename)
                 cls._zip_file_model_metadata_formatter.dump(
                     zip_file,
                     metadata_filename,
