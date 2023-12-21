@@ -480,17 +480,19 @@ SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
 
 MAX_CONTEXT_PARAM_LENGTH = 250
 MAX_CONTEXT_PARAMS = 20
-EXTENSION_MIME_TYPES = BiDict({
-    '.pdf': FILE_MIME_TYPE_PDF,
-    '.map.zip': FILE_MIME_TYPE_MAP,
-    '.graph.json': FILE_MIME_TYPE_GRAPH,
-    '.bioc': FILE_MIME_TYPE_BIOC,
-    '.enrichment.json': FILE_MIME_TYPE_ENRICHMENT_TABLE,
-    '.dump.zip': FILE_MIME_TYPE_DUMP,
-    '.svg': 'image/svg+xml',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.zip': FILE_MIME_TYPE_ZIP,
-    # TODO: Use a mime type library?
-})
+EXTENSION_MIME_TYPES = BiDict(
+    {
+        '.pdf': FILE_MIME_TYPE_PDF,
+        '.map.zip': FILE_MIME_TYPE_MAP,
+        '.graph.json': FILE_MIME_TYPE_GRAPH,
+        '.bioc': FILE_MIME_TYPE_BIOC,
+        '.enrichment.json': FILE_MIME_TYPE_ENRICHMENT_TABLE,
+        '.dump.zip': FILE_MIME_TYPE_DUMP,
+        '.svg': 'image/svg+xml',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.zip': FILE_MIME_TYPE_ZIP,
+        # TODO: Use a mime type library?
+    }
+)
