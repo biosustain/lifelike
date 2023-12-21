@@ -47,6 +47,7 @@ t_files_content = sa.Table(
 
 BATCH_SIZE = 1
 
+
 def fix_regulon_links(enrichment: dict) -> dict:
     result = enrichment.get('result', None)
     if result is not None:
@@ -62,9 +63,10 @@ def fix_regulon_links(enrichment: dict) -> dict:
                             if link is not None:
                                 if link.startswith('http://'):
                                     new_link = f'https://{link.split("http://")[1]}'
-                                    enrichment['result']['genes'][idx]['domains']['Regulon'][subdomain]['link'] = new_link
+                                    enrichment['result']['genes'][idx]['domains'][
+                                        'Regulon'
+                                    ][subdomain]['link'] = new_link
     return enrichment
-
 
 
 def upgrade():
@@ -96,8 +98,8 @@ def data_upgrades():
                 t_files,
                 sa.and_(
                     t_files.c.content_id == t_files_content.c.id,
-                    t_files.c.mime_type == 'vnd.lifelike.document/enrichment-table'
-                )
+                    t_files.c.mime_type == 'vnd.lifelike.document/enrichment-table',
+                ),
             )
         )
         .order_by(t_files.c.id)
@@ -108,17 +110,18 @@ def data_upgrades():
             if annotations_obj not in [[], '[]']:
                 print(f'Processing File#{file_id}')
                 enrichment_annotations = json.load(BytesIO(raw_file))
-                updated_enrichment_annotations = fix_regulon_links(enrichment_annotations)
+                updated_enrichment_annotations = fix_regulon_links(
+                    enrichment_annotations
+                )
                 updated_raw_file = BytesIO()
-                updated_raw_file.write(json.dumps(updated_enrichment_annotations).encode())
+                updated_raw_file.write(
+                    json.dumps(updated_enrichment_annotations).encode()
+                )
                 updated_raw_file = updated_raw_file.getvalue()
                 new_hash = hashlib.sha256(updated_raw_file).digest()
 
                 existing_file_content = session.execute(
-                    sa.select(
-                        [t_files_content.c.id]
-                    )
-                    .where(
+                    sa.select([t_files_content.c.id]).where(
                         t_files_content.c.checksum_sha256 == new_hash,
                     )
                 ).first()
@@ -126,7 +129,9 @@ def data_upgrades():
                 # If the checksum already exists in the FileContent table, don't update the old
                 # row. Instead, update the File row with the existing FileContent id.
                 if existing_file_content is not None:
-                    print(f'\tUsing new content id for Files#{file_id}: {existing_file_content[0]}')
+                    print(
+                        f'\tUsing new content id for Files#{file_id}: {existing_file_content[0]}'
+                    )
                     content_id = existing_file_content[0]
                 else:
                     print(f'\tUpdating FilesContent#{content_id}')
