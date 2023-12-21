@@ -83,5 +83,4 @@ jobs:
 
       - name: Client linting autofix
         if: github.event.inputs.autoFix && github.event.inputs.tslintAutoFix
-        working-directory: client
         uses: ./.github/actions/client-lint-autofix
