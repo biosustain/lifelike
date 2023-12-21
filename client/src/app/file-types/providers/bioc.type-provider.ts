@@ -35,8 +35,9 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith(BiocTypeProvider.defaultExtension) ?
-                    object.filename : object.filename + BiocTypeProvider.defaultExtension
+                  object.filename.endsWith(BiocTypeProvider.defaultExtension)
+                    ? object.filename
+                    : object.filename + BiocTypeProvider.defaultExtension
                 );
               })
             );

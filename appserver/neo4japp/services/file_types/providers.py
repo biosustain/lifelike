@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
 from os import path
-from typing import Optional, List, Dict, Set, Tuple, Iterator
+from typing import Optional, List, Dict, Set, Tuple, Iterator, cast
 from itertools import chain
 from more_itertools import flatten
 from sqlalchemy import and_
@@ -324,13 +324,15 @@ class DumpTypeProvider(BaseFileTypeProvider):
     MIME_TYPE = FILE_MIME_TYPE_DUMP
     SHORTHAND = 'dump'
     mime_types = (MIME_TYPE,)
-    EXTENSION = EXTENSION_MIME_TYPES.get_key(MIME_TYPE)
+    EXTENSION = cast(str, EXTENSION_MIME_TYPES.get_key(MIME_TYPE))
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
     ) -> List[Tuple[Certanity, str]]:
         return (
-            [(Certanity.match, self.MIME_TYPE)] if str(extension).lower().endswith(self.EXTENSION) else []
+            [(Certanity.match, self.MIME_TYPE)]
+            if str(extension).lower().endswith(self.EXTENSION)
+            else []
         )
 
     # def detect_provider(

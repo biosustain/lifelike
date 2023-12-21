@@ -625,7 +625,11 @@ class Filesystem:
                 file.mime_type = mime_type
             else:
                 try:
-                    extension = extension or file.extension or Path(content_value.filename).suffix
+                    extension = (
+                        extension
+                        or file.extension
+                        or Path(content_value.filename).suffix
+                    )
                 except Exception:
                     pass
 
@@ -644,7 +648,7 @@ class Filesystem:
             filename += re.sub(
                 rf"{re.escape(getattr(provider, 'EXTENSION', ''))}$",
                 '',
-                str(extension or '')
+                str(extension or ''),
             )
 
             # if it is a bioc-xml file
@@ -657,8 +661,8 @@ class Filesystem:
                     filename = file_name + '.bioc'
 
             if provider == file_type_service.default_provider:
-                file_name, extension = os.path.splitext(file.filename)
-                if extension.isupper():
+                # Why?
+                if extension and extension.isupper():
                     file.mime_type = 'application/pdf'
                 provider = file_type_service.get(file.mime_type)
                 provider.convert(buffer)
