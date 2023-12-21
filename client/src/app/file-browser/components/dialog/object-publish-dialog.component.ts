@@ -34,7 +34,7 @@ export class ObjectPublishDialogComponent extends ObjectEditDialogComponent {
 
   invalidInputs = false;
 
-  readonly extensionsToCutRegex = /.map$/;
+  readonly filenameExtensionSplit = /^(?<filename>.+?)(?<extension>(\.[^.]*)*)$/i;
 
   constructor(
     modal: NgbActiveModal,
@@ -83,12 +83,13 @@ export class ObjectPublishDialogComponent extends ObjectEditDialogComponent {
     const publishLimit = this.maxFileCount - this.fileList.length;
     for (let i = 0; i < event.target.files.length && i < publishLimit; i++) {
       const targetFile = event.target.files[i];
-      const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
+      const {filename, extension} = targetFile.name.match(this.filenameExtensionSplit).groups;
       await extractDescriptionFromFile(targetFile).then((description) => {
         const fileEntry: FileInput<any> = {
           formState: {
             contentValue: targetFile,
             filename,
+            extension,
             description,
             public: false,
             fallbackOrganism: null,

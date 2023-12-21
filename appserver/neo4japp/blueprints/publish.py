@@ -180,7 +180,11 @@ class PrePublishView(MethodView):
             else:
                 files_to_export = permited_related_files
 
-            export = DataExchange.generate_export(filename, files_to_export, 'zip')
+            export = DataExchange.generate_export(
+                filename + '.prepublish.dump',
+                files_to_export,
+                'zip'
+            )
         finally:
             savepoint.rollback()
 

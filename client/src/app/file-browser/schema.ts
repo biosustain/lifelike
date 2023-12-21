@@ -170,6 +170,7 @@ export type ObjectSearchRequest =
  */
 export interface BulkObjectUpdateRequest extends Partial<ContentValue> {
   filename?: string;
+  extension?: string;
   parentHashId?: string;
   description?: string;
   uploadUrl?: string;
