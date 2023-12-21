@@ -92,14 +92,25 @@ Statistical enrichment relies on Front-end, appserver, redis, graph database and
 [Source code](https://github.com/SBRG/kg-prototypes/tree/master/client)
 [Source code welcome page](https://github.com/SBRG/***ARANGO_DB_NAME***-website)
 
+Frontend (Typescript, Angular, Bootstrap) 
+
 ## Appserver
 
 [Source code](https://github.com/SBRG/kg-prototypes/tree/master/appserver)
+Only endpoint for frontend / core logic 
+
+runs postgres migrations on start 
+
+Converts text entities to annotations 
+
+Parse file contents for elastic search + updates elasticsearch indexes 
 
 ## PDF parser
 
 [Source code](https://github.com/SBRG/pdfparse)
 [Source code pdfbox2](https://github.com/SBRG/pdfbox2)
+
+Extract text blocks from pdf/text 
 
 ## Elasticsearch
 
@@ -110,6 +121,8 @@ Statistical enrichment relies on Front-end, appserver, redis, graph database and
 [Source code neo4j](https://github.com/SBRG/kg-prototypes/tree/master/neo4j)
 [Source code arango](https://github.com/SBRG/kg-prototypes/tree/master/arango)
 
+Graphdatabase for knowledge and annotation exclusions (inclusions are in Postgres) 
+
 ## Keycloak
 
 [Source code](https://github.com/SBRG/***ARANGO_DB_NAME***-keycloak)
@@ -117,3 +130,27 @@ Statistical enrichment relies on Front-end, appserver, redis, graph database and
 ## Cache-invalidator
 
 [Source code](https://github.com/SBRG/kg-prototypes/tree/master/cache-invalidator)
+Cron like service recalculating common and expensive cache values in timely manner.
+
+## Redis
+
+Used for cache, task queue.
+
+## Postgress
+
+Main db containing users, files, annotations etc. 
+
+## Elasticsearch
+
+Hold logs, metrics, indexed file contents
+
+## Logstash 
+[Source code](https://github.com/SBRG/kg-prototypes/tree/master/logstash)
+
+## Metricbeat 
+[Source code](https://github.com/SBRG/kg-prototypes/tree/master/metricbeat)
+save docker metrics to elastic 
+
+## Filebeat 
+[Source code](https://github.com/SBRG/kg-prototypes/tree/master/filebeat)
+save docker logs to elastic
