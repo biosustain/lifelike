@@ -47,8 +47,9 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith(PdfTypeProvider.defaultExtension) ?
-                    object.filename : object.filename + PdfTypeProvider.defaultExtension
+                  object.filename.endsWith(PdfTypeProvider.defaultExtension)
+                    ? object.filename
+                    : object.filename + PdfTypeProvider.defaultExtension
                 );
               })
             );
