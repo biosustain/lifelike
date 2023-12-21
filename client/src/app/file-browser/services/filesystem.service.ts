@@ -240,7 +240,7 @@ export class FilesystemService {
       .pipe(
         map(
           (response: HttpResponse<Blob>) =>
-            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.zip')
+            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.dump.zip')
         )
       );
   }

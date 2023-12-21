@@ -83,6 +83,7 @@ from neo4japp.constants import (
     MAPS_RE,
     RELATIVE_FILE_PATH_RE,
     EXTENSION_MIME_TYPES,
+    FILE_MIME_TYPE_DUMP,
 )
 from neo4japp.exceptions import (
     HandledException,
@@ -320,14 +321,15 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
 
 
 class DumpTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'dump'
+    MIME_TYPE = FILE_MIME_TYPE_DUMP
     SHORTHAND = 'dump'
     mime_types = (MIME_TYPE,)
+    EXTENSION = EXTENSION_MIME_TYPES.get_key(MIME_TYPE)
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
     ) -> List[Tuple[Certanity, str]]:
-        return [(Certanity.match, self.MIME_TYPE)] if extension == '.zip' else []
+        return [(Certanity.match, self.MIME_TYPE)] if extension == self.EXTENSION else []
 
     # def detect_provider(
     #     self, mime_type: str
