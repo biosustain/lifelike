@@ -49,8 +49,9 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.toLowerCase().endsWith(GraphTypeProvider.defaultExtension) ?
-                    object.filename : object.filename + GraphTypeProvider.defaultExtension
+                  object.filename.toLowerCase().endsWith(GraphTypeProvider.defaultExtension)
+                    ? object.filename
+                    : object.filename + GraphTypeProvider.defaultExtension
                 );
               })
             );
