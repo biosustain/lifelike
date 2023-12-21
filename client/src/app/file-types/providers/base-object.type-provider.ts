@@ -57,6 +57,8 @@ export interface Exporter {
  * are used by the application to discover operations on objects stored within Lifelike.
  */
 export interface ObjectTypeProvider {
+  readonly defaultExtension?: string;
+
   /**
    * Test whether this provider is for the given type of object.
    * @param object the object
@@ -164,7 +166,7 @@ export class PrePublishExporterService {
   factory(object: FilesystemObject): Observable<Exporter[]> {
     return of([
       {
-        name: 'Zip',
+        name: 'Zip Dump (Pre-Publish)',
         isPrePublish: true,
         export: () =>
           this.filesystemService.generatePrePublish(object.hashId, {
@@ -181,6 +183,8 @@ export class PrePublishExporterService {
  */
 @Injectable()
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
+  static readonly defaultExtension?: string;
+
   constructor(
     protected readonly helper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService // private readonly prePublishExporter: PrePublishExporterService
@@ -214,7 +218,7 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
     // LL-5387: partly reintroduce features
     return of([
       {
-        name: 'Zip',
+        name: 'Zip Dump',
         export: () =>
           this.filesystemService.generateExport(object.hashId, {
             format: 'zip',

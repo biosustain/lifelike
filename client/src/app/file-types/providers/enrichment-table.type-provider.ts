@@ -44,6 +44,8 @@ const BIOC_ID_COLUMN_INDEX = 2;
 
 @Injectable()
 export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.llenrichmenttable.json';
+
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
@@ -374,7 +376,7 @@ export class EnrichmentTableTypeProvider extends AbstractObjectTypeProvider {
           export: () => {
             return this.filesystemService.getContent(object.hashId).pipe(
               map((blob) => {
-                return new File([blob], object.filename + '.llenrichmenttable.json');
+                return new File([blob], object.filename + EnrichmentTableTypeProvider.defaultExtension);
               })
             );
           },

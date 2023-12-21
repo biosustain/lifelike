@@ -19,7 +19,7 @@ class Publish:
 
     @classmethod
     def create_uncommited_publication(
-        cls, user_hash_id: str, filename, *, creator: AppUser = None, **kwargs
+        cls, user_hash_id: str, filename, *, extension, creator: AppUser = None, **kwargs
     ):
         publish_project = Projects.get_or_create(
             name=cls.get_publish_project_name(user_hash_id),
@@ -36,6 +36,7 @@ class Publish:
         file = Filesystem.create_file(
             **kwargs,
             filename=filename,
+            extension=(extension or '').replace('.prepublish.dump.zip', '.dump.zip'),
             parent=publish_project.root,
         )
 

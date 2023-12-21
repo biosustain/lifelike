@@ -15,6 +15,8 @@ export const BIOC_SHORTHAND = 'BioC';
 
 @Injectable()
 export class BiocTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.json';
+
   handles(object: FilesystemObject): boolean {
     return object.mimeType === MimeTypes.BioC;
   }
@@ -33,7 +35,8 @@ export class BiocTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith('.json') ? object.filename : object.filename + '.json'
+                  object.filename.endsWith(BiocTypeProvider.defaultExtension) ?
+                    object.filename : object.filename + BiocTypeProvider.defaultExtension
                 );
               })
             );

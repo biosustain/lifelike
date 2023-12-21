@@ -254,7 +254,7 @@ class BaseFileTypeProvider:
                 target_file.filename
                 if target_file.filename != '/'
                 else target_file.project.name
-            )
+            ) + '.dump'
 
             return DataExchange.generate_export(filename, permited_files, format_)
         finally:

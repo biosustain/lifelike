@@ -18,6 +18,8 @@ export const GRAPH_SHORTHAND = 'Graph';
 
 @Injectable()
 export class GraphTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.graph';
+
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
@@ -47,7 +49,8 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph'
+                  object.filename.toLowerCase().endsWith(GraphTypeProvider.defaultExtension) ?
+                    object.filename : object.filename + GraphTypeProvider.defaultExtension
                 );
               })
             );
