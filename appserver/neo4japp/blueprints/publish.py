@@ -42,17 +42,10 @@ class PrePublishView(MethodView):
 
         try:
             # region READING RELATED FILES
-            # LL - 5375: limiting publishing options so it is rolloutable
-            # related = set(
-            #     cast(
-            #         List[Files],
-            #         file_type.get_related_files(target_file, recursive=set()),
-            #     )
-            # )
             related = set(
                 cast(
                     List[Files],
-                    file_type.get_related_files(target_file, recursive=None),
+                    file_type.get_related_files(target_file, recursive=set()),
                 )
             )
 

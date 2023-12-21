@@ -290,7 +290,7 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         file: Files,
         recursive: Optional[Set[str]],
     ) -> Iterator[Files]:
-        if file.hash_id in recursive:
+        if recursive and file.hash_id in recursive:
             return iter([])
 
         related_files = Filesystem.get_nondeleted_recycled_files(
