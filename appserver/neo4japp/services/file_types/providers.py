@@ -329,7 +329,9 @@ class DumpTypeProvider(BaseFileTypeProvider):
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
     ) -> List[Tuple[Certanity, str]]:
-        return [(Certanity.match, self.MIME_TYPE)] if extension == self.EXTENSION else []
+        return (
+            [(Certanity.match, self.MIME_TYPE)] if extension == self.EXTENSION else []
+        )
 
     # def detect_provider(
     #     self, mime_type: str
