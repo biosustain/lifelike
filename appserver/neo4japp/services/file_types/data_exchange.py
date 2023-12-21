@@ -152,11 +152,7 @@ class ZipDataExchange(DataExchangeProtocol):
         with ZipFile(buffer, 'w') as zip_file:
             for f in files:
                 relative_path = path.relpath(f.path, common_path)
-                extension_item = find(
-                    lambda ext_mimetype: ext_mimetype[1] == f.mime_type,
-                    EXTENSION_MIME_TYPES.items(),
-                )
-                extension = extension_item[0] if extension_item else ''
+                extension = EXTENSION_MIME_TYPES.get_key(f.mime_type, '')
                 filename = relative_path + extension
 
                 # Write only if content is not empty (e.g. omit folders)
