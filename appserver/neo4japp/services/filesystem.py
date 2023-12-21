@@ -1,4 +1,5 @@
 import os
+import re
 import typing
 import urllib
 from collections import defaultdict
@@ -532,6 +533,7 @@ class Filesystem:
         cls,
         filename,
         *,
+        extension: str = None,
         parent,
         description=MISSING,
         public=False,
@@ -622,9 +624,8 @@ class Filesystem:
             if mime_type:
                 file.mime_type = mime_type
             else:
-                extension = None
                 try:
-                    extension = file.extension or Path(content_value.filename).suffix
+                    extension = extension or file.extension or Path(content_value.filename).suffix
                 except Exception:
                     pass
 
@@ -635,6 +636,17 @@ class Filesystem:
             provider = file_type_service.get(file.mime_type)
             # if no provider matched try to convert
 
+            # Keep extension (without default part) in filename
+            # Example:
+            #   (filename='test', extension='.pdf') => 'test'
+            #   (filename='test', extension='.abc.pdf') => 'test.abc'
+            #   (filename='test', extension='.abc.dump.zip') => 'test.abc'
+            filename += re.sub(
+                rf"{re.escape(getattr(provider, 'EXTENSION', ''))}$",
+                '',
+                str(extension or '')
+            )
+
             # if it is a bioc-xml file
             if file.mime_type == FILE_MIME_TYPE_BIOC:
                 # then convert it to BiocJSON
@@ -642,7 +654,7 @@ class Filesystem:
                 file_name, ext = os.path.splitext(file.filename)
                 # if ext is not bioc then set it bioc.
                 if ext.lower() != '.bioc':
-                    file.filename = file_name + '.bioc'
+                    filename = file_name + '.bioc'
 
             if provider == file_type_service.default_provider:
                 file_name, extension = os.path.splitext(file.filename)

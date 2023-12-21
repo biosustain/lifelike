@@ -16,6 +16,8 @@ import { FilesystemService } from 'app/file-browser/services/filesystem.service'
 
 @Injectable()
 export class PdfTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.pdf';
+
   constructor(
     protected readonly helper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
@@ -45,7 +47,8 @@ export class PdfTypeProvider extends AbstractObjectTypeProvider {
               map((blob) => {
                 return new File(
                   [blob],
-                  object.filename.endsWith('.pdf') ? object.filename : object.filename + '.pdf'
+                  object.filename.endsWith(PdfTypeProvider.defaultExtension) ?
+                    object.filename : object.filename + PdfTypeProvider.defaultExtension
                 );
               })
             );

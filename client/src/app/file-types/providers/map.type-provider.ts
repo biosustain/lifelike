@@ -27,6 +27,8 @@ import { MapImageProviderService } from 'app/drawing-tool/services/map-image-pro
 
 @Injectable()
 export class MapTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.map';
+
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
     protected readonly filesystemService: FilesystemService,
@@ -142,7 +144,7 @@ export class MapTypeProvider extends AbstractObjectTypeProvider {
           export: () => {
             return this.filesystemService.getContent(object.hashId).pipe(
               map((blob) => {
-                return new File([blob], object.filename + '.map');
+                return new File([blob], object.filename + MapTypeProvider.defaultExtension);
               })
             );
           },

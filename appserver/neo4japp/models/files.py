@@ -362,6 +362,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # yourself or use helpers that populate these fields. These fields are used by
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
+    _extension: Optional[str] = None
     calculated_project: Optional[Projects] = None
     calculated_privileges: Dict[int, FilePrivileges]  # key = AppUser.id
     calculated_children: Optional[List['Files']] = None  # children of this file
@@ -436,7 +437,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
     @property
     def extension(self):
-        return Path(self.filename).suffix
+        return self._extension or Path(self.filename).suffix
+
+    @extension.setter
+    def extension(self, value):
+        self._extension = value
 
     def generate_non_conflicting_filename(self, filename: str) -> str:
         """Generate a new filename based of the current filename when there is a filename

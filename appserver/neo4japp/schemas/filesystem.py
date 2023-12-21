@@ -215,8 +215,8 @@ class FileSchema(StarredFileSchema):
     def get_parent(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
         if obj.parent is not None and (
-            privilege_user_id is None
-            or obj.parent.calculated_privileges[privilege_user_id].readable
+                privilege_user_id is None
+                or obj.parent.calculated_privileges[privilege_user_id].readable
         ):
             return FileSchema(
                 context=self.context,
@@ -235,7 +235,7 @@ class FileSchema(StarredFileSchema):
                 child
                 for child in obj.calculated_children
                 if privilege_user_id is None
-                or child.calculated_privileges[privilege_user_id].readable
+                   or child.calculated_privileges[privilege_user_id].readable
             ]
             return FileSchema(
                 context=self.context,
@@ -355,6 +355,7 @@ class FileSearchRequestSchema(CamelCaseSchema):
 
 class CoreFileUpdateRequestSchema(CamelCaseSchema):
     filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
+    extension = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=100))
     description = fields.String(
         validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
     )
@@ -389,6 +390,9 @@ class PublishResponseSchema(SingleResultSchema):
 class FileCreateRequestSchema(FileUpdateRequestSchema):
     filename = NiceFilenameString(
         required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    extension = NiceFilenameString(
+        required=False, validate=marshmallow.validate.Length(min=1, max=100)
     )
     parent_hash_id = fields.String(
         required=True, validate=marshmallow.validate.Length(min=1, max=36)
