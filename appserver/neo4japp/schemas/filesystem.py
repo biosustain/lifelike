@@ -358,7 +358,7 @@ class CoreFileUpdateRequestSchema(CamelCaseSchema):
     extension = NiceFilenameString(
         required=False,
         allow_none=True,
-        validate=marshmallow.validate.Length(min=1, max=100)
+        validate=marshmallow.validate.Length(min=1, max=100),
     )
     description = fields.String(
         validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
@@ -398,7 +398,7 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
     extension = NiceFilenameString(
         allow_none=True,
         required=False,
-        validate=marshmallow.validate.Length(min=1, max=100)
+        validate=marshmallow.validate.Length(min=1, max=100),
     )
     parent_hash_id = fields.String(
         required=True, validate=marshmallow.validate.Length(min=1, max=36)
