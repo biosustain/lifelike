@@ -102,13 +102,9 @@ class PrePublishView(MethodView):
             # Rename project root folder to project name
             for file in permited_related_files:
                 if file.filename == '/':
-                    file.filename = file.project.name
+                    file.filename = file.true_filename
 
-            filename = (
-                target_file.filename
-                if target_file.filename != '/'
-                else target_file.project.name
-            )
+            filename = target_file.true_filename
 
             # Find files that are related to the target but not within it (e.g. folder)
             separate_branch_related_files = []
