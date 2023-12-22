@@ -74,7 +74,10 @@ class PrePublishView(MethodView):
             def has_read_permission(_related_file: Files):
                 try:
                     Filesystem.check_file_permissions(
-                        [_related_file], current_user, ['readable'], permit_recycled=True
+                        [_related_file],
+                        current_user,
+                        ['readable'],
+                        permit_recycled=True,
                     )
                     return True
                 except Exception:

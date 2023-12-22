@@ -494,9 +494,12 @@ def test_prepublish(email, password):
     user = db.session.query(AppUser).filter(AppUser.email == email).one()
 
     from neo4japp.services.filesystem import Filesystem
+
     with app.app_context():
         g.current_user = user
-        for file in Filesystem.get_nondeleted_recycled_files(Files.mime_type == FILE_MIME_TYPE_MAP, lazy_load_content=True):
+        for file in Filesystem.get_nondeleted_recycled_files(
+            Files.mime_type == FILE_MIME_TYPE_MAP, lazy_load_content=True
+        ):
             # print(file, file.calculated_privileges)
             try:
                 Filesystem.check_file_permissions(
@@ -510,7 +513,9 @@ def test_prepublish(email, password):
                 print("Processing file: ", file.path, file.hash_id, file.id)
                 resp = client.post(f'/publish/{file.hash_id}/prepare', headers=headers)
                 if resp.status_code == 200:
-                    print("Success", resp.content_length, file.path, file.hash_id, file.id)
+                    print(
+                        "Success", resp.content_length, file.path, file.hash_id, file.id
+                    )
                     pass
                 else:
                     print("Failed", file.path, file.hash_id, file.id)
@@ -519,7 +524,13 @@ def test_prepublish(email, password):
                     if resp_json.get('type') == 'FileNotFound':
                         raise FileNotFoundError
                     else:
-                        print("Failed response", resp_json, file.path, file.hash_id, file.id)
+                        print(
+                            "Failed response",
+                            resp_json,
+                            file.path,
+                            file.hash_id,
+                            file.id,
+                        )
                         break
             except FileNotFoundError:
                 print("File not found: ", file.path, file.hash_id, file.id)
