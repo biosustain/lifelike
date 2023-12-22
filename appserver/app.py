@@ -495,10 +495,7 @@ def test_prepublish(email, password):
     for row in query:
         try:
             print("Processing file: ", row.path, row.hash_id, row.id)
-            resp = client.post(
-                f'/publish/{row.hash_id}/prepare',
-                headers=headers
-            )
+            resp = client.post(f'/publish/{row.hash_id}/prepare', headers=headers)
             if resp.status_code == 200:
                 print("Success", resp.content_length, row.path, row.hash_id, row.id)
                 pass
@@ -518,6 +515,7 @@ def test_prepublish(email, password):
             print("Exception: ", row.path, row.hash_id, row.id)
             # printing stack trace
             import traceback
+
             traceback.print_exc()
             raise
 
