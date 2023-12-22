@@ -491,33 +491,46 @@ def test_prepublish(email, password):
 
     headers = generate_jwt_headers(login_resp['accessToken']['token'])
 
-    query = db.session.query(Files).filter(Files.mime_type == FILE_MIME_TYPE_MAP)
-    for row in query:
-        try:
-            print("Processing file: ", row.path, row.hash_id, row.id)
-            resp = client.post(f'/publish/{row.hash_id}/prepare', headers=headers)
-            if resp.status_code == 200:
-                print("Success", resp.content_length, row.path, row.hash_id, row.id)
-                pass
-            else:
-                print("Failed", row.path, row.hash_id, row.id)
-                resp_json = resp.get_json()
-                print(resp.status_code, resp_json)
-                if resp_json.get('type') == 'FileNotFound':
-                    raise FileNotFoundError
-                else:
-                    print("Failed response", resp_json, row.path, row.hash_id, row.id)
-                    break
-        except FileNotFoundError:
-            print("File not found: ", row.path, row.hash_id, row.id)
-            continue
-        except Exception:
-            print("Exception: ", row.path, row.hash_id, row.id)
-            # printing stack trace
-            import traceback
+    user = db.session.query(AppUser).filter(AppUser.email == email).one()
 
-            traceback.print_exc()
-            raise
+    from neo4japp.services.filesystem import Filesystem
+    with app.app_context():
+        g.current_user = user
+        for file in Filesystem.get_nondeleted_recycled_files(Files.mime_type == FILE_MIME_TYPE_MAP, lazy_load_content=True):
+            # print(file, file.calculated_privileges)
+            try:
+                Filesystem.check_file_permissions(
+                    [file], user, ['readable'], permit_recycled=True
+                )
+            except:
+                # Ignore files that are not readable
+                continue
+
+            try:
+                print("Processing file: ", file.path, file.hash_id, file.id)
+                resp = client.post(f'/publish/{file.hash_id}/prepare', headers=headers)
+                if resp.status_code == 200:
+                    print("Success", resp.content_length, file.path, file.hash_id, file.id)
+                    pass
+                else:
+                    print("Failed", file.path, file.hash_id, file.id)
+                    resp_json = resp.get_json()
+                    print(resp.status_code, resp_json)
+                    if resp_json.get('type') == 'FileNotFound':
+                        raise FileNotFoundError
+                    else:
+                        print("Failed response", resp_json, file.path, file.hash_id, file.id)
+                        break
+            except FileNotFoundError:
+                print("File not found: ", file.path, file.hash_id, file.id)
+                continue
+            except Exception:
+                print("Exception: ", file.path, file.hash_id, file.id)
+                # printing stack trace
+                import traceback
+
+                traceback.print_exc()
+                raise
 
 
 @app.cli.command('create-lmdb')

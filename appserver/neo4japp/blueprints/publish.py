@@ -72,8 +72,13 @@ class PrePublishView(MethodView):
 
             # Check read permissions
             def has_read_permission(_related_file: Files):
-                if _related_file.calculated_privileges[current_user.id].readable:
+                try:
+                    Filesystem.check_file_permissions(
+                        [_related_file], current_user, ['readable'], permit_recycled=True
+                    )
                     return True
+                except Exception:
+                    pass
 
                 warn(
                     ServerWarning(
