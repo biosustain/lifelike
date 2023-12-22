@@ -17,7 +17,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
 )
 from neo4japp.database import get_file_type_service
-from neo4japp.exceptions import ServerWarning
+from neo4japp.exceptions import ServerWarning, ServerException
 from neo4japp.models import Files, FileContent
 from neo4japp.models.common import generate_hash_id
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
@@ -363,7 +363,18 @@ class DataExchange:
         if not exchange_provider:
             raise ExportFormatError()
 
-        return exchange_provider.generate_export(filename, files)
+        try:
+            return exchange_provider.generate_export(filename, files)
+        except OverflowError as e:
+            raise ServerException(
+                title='Export too large',
+                message='The total size of files to export exceeds the maximum allowed.',
+                additional_msgs=(
+                    'Please select a smaller set of files to export.',
+                    'If you need to export a large amount of data,'
+                    ' please divide it into smaller chunks.',
+                )
+            ) from e
 
     @staticmethod
     def generate_import(export: FileExport) -> FileImport:
