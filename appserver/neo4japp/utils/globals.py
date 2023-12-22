@@ -58,6 +58,13 @@ def inform(i: ServerInfo):
         logging.info(i)
 
 
-__all__ = ['warn', 'inform', 'warnings', 'info', 'config', 'get_current_user',
-           'current_user_get_factory',
-           'get_current_username']
+__all__ = [
+    'warn',
+    'inform',
+    'warnings',
+    'info',
+    'config',
+    'get_current_user',
+    'current_user_get_factory',
+    'get_current_username',
+]
