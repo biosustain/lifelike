@@ -373,7 +373,7 @@ class DataExchange:
                     'Please select a smaller set of files to export.',
                     'If you need to export a large amount of data,'
                     ' please divide it into smaller chunks.',
-                )
+                ),
             ) from e
 
     @staticmethod
