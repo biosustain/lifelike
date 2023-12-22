@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 from flask import g, current_app
@@ -47,14 +48,14 @@ def warn(w: ServerWarning, *, cause: Exception = None):
     if hasattr(g, 'warnings'):
         g.warnings.add(w)
     else:
-        current_app.logging.warn(w)
+        logging.warn(w)
 
 
 def inform(i: ServerInfo):
     if hasattr(g, 'info'):
         g.info.add(i)
     else:
-        current_app.logging.info(i)
+        logging.info(i)
 
 
 __all__ = ['warn', 'inform', 'warnings', 'info', 'config', 'get_current_user',
