@@ -18,7 +18,7 @@ import requests
 import timeflake
 from flask import request, g
 from marshmallow.exceptions import ValidationError
-from sqlalchemy import inspect, Table
+from sqlalchemy import inspect, Table, select
 from sqlalchemy.sql.expression import and_, text
 
 from neo4japp.blueprints.auth import auth
@@ -474,6 +474,52 @@ def upload_lmdb():
     manager = LMDBManager(AzureStorageProvider(), 'lmdb')
     lmdb_dir_path = os.path.join(app.***ARANGO_USERNAME***_path, 'services/annotations/lmdb')
     manager.upload_all(lmdb_dir_path)
+
+
+@app.cli.command('test-prepublish')
+@click.option('--email', '-e', required=True, type=str)
+@click.option('--password', '-p', required=True, type=str)
+def test_prepublish(email, password):
+    from tests.helpers.api import generate_jwt_headers
+
+    client = app.test_client()
+    login_resp = client.post(
+        '/auth/login',
+        data=json.dumps({'email': email, 'password': password}),
+        content_type='application/json',
+    ).get_json()
+
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    query = db.session.query(Files).filter(Files.mime_type == FILE_MIME_TYPE_MAP)
+    for row in query:
+        try:
+            print("Processing file: ", row.path, row.hash_id, row.id)
+            resp = client.post(
+                f'/publish/{row.hash_id}/prepare',
+                headers=headers
+            )
+            if resp.status_code == 200:
+                print("Success", resp.content_length, row.path, row.hash_id, row.id)
+                pass
+            else:
+                print("Failed", row.path, row.hash_id, row.id)
+                resp_json = resp.get_json()
+                print(resp.status_code, resp_json)
+                if resp_json.get('type') == 'FileNotFound':
+                    raise FileNotFoundError
+                else:
+                    print("Failed response", resp_json, row.path, row.hash_id, row.id)
+                    break
+        except FileNotFoundError:
+            print("File not found: ", row.path, row.hash_id, row.id)
+            continue
+        except Exception:
+            print("Exception: ", row.path, row.hash_id, row.id)
+            # printing stack trace
+            import traceback
+            traceback.print_exc()
+            raise
 
 
 @app.cli.command('create-lmdb')
