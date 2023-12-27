@@ -349,7 +349,8 @@ def get_organism_with_tax_id_query() -> str:
             FILTER t.eid == @tax_id
             RETURN {
                 tax_id: t.eid,
-                organism_name: t.name
+                organism_name: t.name,
+                synonym: t.name
             }
     """
 
