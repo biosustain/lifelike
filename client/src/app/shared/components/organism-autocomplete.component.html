@@ -31,7 +31,10 @@
     <div ngbDropdownMenu [attr.aria-labelledby]="organismDropdown">
       <ng-container *ngFor="let curatedOrganism of organismShortlist">
         <ng-container
-          *ngTemplateOutlet="organismResult; context: { organism: curatedOrganism, term: inputText }"
+          *ngTemplateOutlet="
+            organismResult;
+            context: { organism: curatedOrganism, term: inputText }
+          "
         ></ng-container>
       </ng-container>
       <ng-container *ngIf="search.value as searchResults">
