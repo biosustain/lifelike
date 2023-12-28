@@ -92,7 +92,11 @@
     explanation: explanation$ | async
   } as state"
 >
-  <button class="w-100 btn btn-primary mt-2" (click)="generateExplanation()">
+  <button
+    class="w-100 btn btn-primary mt-2"
+    (click)="generateExplanation()"
+    [disabled]="(authService.loggedIn$ | async) === false"
+  >
     <ng-container *ngIf="state.explanation?.loading; else settled">
       <i class="fa fa-spinner fa-spin mr-1"></i> Generating explanation
     </ng-container>

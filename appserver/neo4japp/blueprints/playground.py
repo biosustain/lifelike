@@ -5,7 +5,7 @@ from webargs.flaskparser import use_args
 from neo4japp.schemas.playground.chat_completions import ChatCompletionsRequestSchema
 from neo4japp.schemas.playground.completions import CompletionsRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
-from neo4japp.utils.globals import config, current_username
+from neo4japp.utils.globals import config, get_current_username
 from neo4japp.utils.string import stream_to_json_lines
 
 bp = Blueprint('playground', __name__, url_prefix='/playground')
@@ -23,7 +23,7 @@ def models():
 
 
 def _completions_call(completion, params):
-    wrapped_params = {**params, 'user': str(hash(current_username))}
+    wrapped_params = {**params, 'user': str(hash(get_current_username()))}
     if params.get('stream'):
         response = completion.create_stream(**wrapped_params)
         return Response(stream_to_json_lines(response), mimetype='text/plain')

@@ -30,6 +30,14 @@ export class SessionStorageService implements Storage {
     return key;
   }
 
+  getSetItem(key, value) {
+    let existingValue = this.getItem(key);
+    if (existingValue === null) {
+      existingValue = this.setItem(value, key);
+    }
+    return existingValue;
+  }
+
   removeItem(key) {
     this.storage.removeItem(key);
   }

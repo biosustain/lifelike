@@ -3,6 +3,7 @@ from flask.views import MethodView
 from flask_apispec import use_kwargs
 from http import HTTPStatus
 
+from neo4japp.blueprints.auth import login_optional
 from neo4japp.constants import ANNOTATION_STYLES_DICT
 from neo4japp.database import get_or_create_arango_client
 from neo4japp.data_transfer_objects.visualization import (

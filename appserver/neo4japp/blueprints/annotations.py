@@ -28,7 +28,7 @@ from webargs.flaskparser import use_args
 
 from neo4japp.exceptions import AnnotationError, ServerException
 from neo4japp.exceptions import wrap_exceptions
-from .auth import login_exempt
+from .auth import login_exempt, login_optional
 from .filesystem import bp as filesystem_bp, FilesystemBaseView
 from .permissions import requires_role
 from .utils import get_missing_hash_ids
@@ -93,6 +93,7 @@ from ..services.annotations.utils.graph_queries import (
 from ..services.arangodb import convert_datetime, execute_arango_query, get_db
 from ..services.enrichment.data_transfer_objects import EnrichmentCellTextMapping
 from ..services.filesystem import Filesystem
+from ..utils.globals import get_current_user
 from ..utils.http import make_cacheable_file_response
 from ..utils.logger import UserEventLog
 from ..utils.string import sub_whitespace
@@ -101,15 +102,14 @@ bp = Blueprint('annotations', __name__, url_prefix='/annotations')
 
 
 class FileAnnotationsView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch annotations for a file.."""
-        current_user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
-            [file], current_user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         if file.annotations:
@@ -149,15 +149,14 @@ class FileAnnotationsView(FilesystemBaseView):
 
 
 class EnrichmentAnnotationsView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch annotations for enrichment table."""
-        current_user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
-            [file], current_user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         if file.enrichment_annotations:
@@ -349,6 +348,7 @@ class FileAnnotationSortedView(FilesystemBaseView):
 
         yield from get_sorted_annotation_rows(values, 'value')
 
+    @login_optional
     @use_args(
         {
             "sort": fields.Str(
@@ -360,13 +360,12 @@ class FileAnnotationSortedView(FilesystemBaseView):
     )
     def post(self, args: Dict[str, str], hash_id: str):
         sort = args['sort']
-        current_user = g.current_user
 
         file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
-            [file], current_user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         buffer = io.StringIO()

@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple, Dict, Iterable
 from flask import jsonify, Blueprint, g
 from flask.views import MethodView
 from marshmallow import ValidationError
-from sqlalchemy import and_
+from sqlalchemy import and_, not_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import raiseload, joinedload
 from webargs.flaskparser import use_args
@@ -39,6 +39,7 @@ from neo4japp.schemas.projects import (
 )
 from .utils import get_missing_hash_ids
 from neo4japp.utils import Pagination
+from ..services.publish import Publish
 
 
 class ProjectBaseView(MethodView):
@@ -68,12 +69,17 @@ class ProjectBaseView(MethodView):
 
         query = (
             db.session.query(Projects)
-            .options(joinedload(Projects.***ARANGO_USERNAME***), raiseload('*'))
+            .options(
+                joinedload(Projects.***ARANGO_USERNAME***), joinedload(Projects.creator), raiseload('*')
+            )
             .filter(Projects.deletion_date.is_(None))
             .distinct()
         )
 
         if accessible_only and not private_data_access:
+            # Filter out special publish projects
+            query = query.filter(not_(Publish.is_publish_project(Projects)))
+
             expected_roles = ['project-read', 'project-write', 'project-admin']
 
             project_role_sq = (

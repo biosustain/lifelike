@@ -69,7 +69,9 @@ class ProjectsService(RDBMSBaseDao):
 
         return query.all()
 
-    def create_project_uncommitted(self, user: AppUser, projects: Projects) -> Projects:
+    def create_project_uncommitted(
+        self, user: AppUser, projects: Projects, role: str = 'project-admin'
+    ) -> Projects:
         db.session.add(projects)
 
         ***ARANGO_USERNAME*** = Files()
@@ -83,10 +85,8 @@ class ProjectsService(RDBMSBaseDao):
         projects.***ARANGO_USERNAME*** = ***ARANGO_USERNAME***
 
         # Set default ownership
-        admin_role = (
-            db.session.query(AppRole).filter(AppRole.name == 'project-admin').one()
-        )
-        self.add_collaborator_uncommitted(user, admin_role, projects)
+        app_role = db.session.query(AppRole).filter(AppRole.name == role).one()
+        self.add_collaborator_uncommitted(user, app_role, projects)
 
         return projects
 
