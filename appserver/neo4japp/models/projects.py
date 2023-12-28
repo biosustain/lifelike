@@ -1,7 +1,8 @@
 import re
 
 from dataclasses import dataclass
-from flask import current_app
+from flask import current_app, g
+from marshmallow import ValidationError
 from sqlalchemy import (
     bindparam,
     column,
@@ -17,12 +18,14 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.engine import Connection
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Mapper, validates
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.query import Query
 from typing import Dict, Optional
 
 from neo4japp.constants import LogEventType
-from neo4japp.database import db
+from neo4japp.database import db, get_projects_service
 from neo4japp.exceptions import ServerException
 from neo4japp.models.auth import (
     AppRole,
@@ -134,6 +137,57 @@ class Projects(RDBMSBase, FullTimestampMixin, HashIdMixin):  # type: ignore
                 ),
             )
         )
+
+    @classmethod
+    def get_or_create(
+        cls,
+        name: str,
+        **kwargs,
+    ):
+        """Get the existing Project for the given name or create a new one
+        if needed.
+
+        This method does not commit the transaction.
+
+        :param name: the name of the project
+        :param kwargs: a project-like object
+        :return: the project
+        """
+
+        try:
+            return db.session.query(Projects).filter(Projects.name == name).one()
+        except NoResultFound:
+            current_user = g.current_user
+
+            project_service = get_projects_service()
+
+            create_project_uncommitted_kwargs = {}
+            project_kwargs = {}
+            for key, value in kwargs.items():
+                if key in ('role',):
+                    create_project_uncommitted_kwargs[key] = value
+                else:
+                    project_kwargs[key] = value
+
+            project = Projects()
+            project.name = name
+            project.creator = current_user
+            for key, value in project_kwargs.items():
+                setattr(project, key, value)
+
+            try:
+                with db.session.begin_nested():
+                    project_service.create_project_uncommitted(
+                        current_user,
+                        project,
+                        **create_project_uncommitted_kwargs,
+                    )
+            except IntegrityError as e:
+                raise ValidationError(
+                    'The project name already is already taken.', 'name'
+                ) from e
+            else:
+                return project
 
 
 # Start ORM Events & Helpers

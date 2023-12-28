@@ -12,17 +12,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { cloneDeep } from 'lodash-es';
-import { combineLatest, defer, iif, Observable, ReplaySubject, Subject } from 'rxjs';
-import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
+import { ReplaySubject, Subject } from 'rxjs';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { ObjectVersion } from 'app/file-browser/models/object-version';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { getObjectLabel } from 'app/file-browser/utils/objects';
-import { Exporter, ObjectTypeProvider } from 'app/file-types/providers/base-object.type-provider';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-object-menu',
@@ -43,23 +42,6 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
   @Output() objectRestore = new EventEmitter<ObjectVersion>();
   @Output() objectUpdate = new EventEmitter<FilesystemObject>();
   private readonly object$: Subject<FilesystemObject> = new ReplaySubject(1);
-  readonly typeProvider$: Observable<ObjectTypeProvider> = this.object$.pipe(
-    switchMap((object) =>
-      iif(
-        () => Boolean(object),
-        defer(() => this.objectTypeService.get(object).pipe(shareReplay())),
-        defer(() => this.objectTypeService.getDefault())
-      )
-    )
-  );
-  readonly exporters$: Observable<Exporter[]> = combineLatest([
-    this.object$,
-    this.typeProvider$,
-  ]).pipe(
-    this.errorHandler.create({ label: 'Get exporters' }),
-    mergeMap(([object, typeProvider]) => typeProvider.getExporters(object)),
-    shareReplay()
-  );
 
   constructor(
     readonly router: Router,
@@ -68,10 +50,9 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
     protected readonly route: ActivatedRoute,
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
-    protected readonly objectTypeService: ObjectTypeService
-  ) {
-    this.typeProvider$ = objectTypeService.getDefault();
-  }
+    protected readonly objectTypeService: ObjectTypeService,
+    readonly authService: AuthenticationService
+  ) {}
 
   ngOnChanges({ object }: SimpleChanges) {
     if (object && !object.firstChange) {
@@ -152,10 +133,6 @@ export class ObjectMenuComponent implements OnInit, OnChanges {
       },
       () => {}
     );
-  }
-
-  openExportDialog(target: FilesystemObject) {
-    return this.actions.openExportDialog(target);
   }
 
   openShareDialog(target: FilesystemObject) {

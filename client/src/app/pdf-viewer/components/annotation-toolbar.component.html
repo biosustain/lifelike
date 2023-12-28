@@ -8,7 +8,7 @@
       #tooltipRef="ngbTooltip"
       [appAutoCloseTooltipOutOfView]="tooltipRef"
       (click)="openAnnotationPanel($event)"
-      [disabled]="!isSelectionAnnotatable()"
+      [disabled]="!isSelectionAnnotatable() || (authService.loggedIn$ | async) === false"
     >
       <span><i class="fa fa-fw fa-money-check-edit"></i> Annotate</span>
     </button>

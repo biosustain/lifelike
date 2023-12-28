@@ -1,16 +1,13 @@
-import { AfterViewInit, Component, OnChanges } from '@angular/core';
+import { Component, OnChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { get } from 'lodash-es';
 
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { WorkspaceManager } from 'app/shared/workspace-manager';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { FilesystemObjectActions } from 'app/file-browser/services/filesystem-object-actions';
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
-import { ViewService } from 'app/file-browser/services/view.service';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { ObjectMenuComponent } from '../object-menu/object-menu.component';
 import { ClipboardService } from '../../services/clipboard.service';
@@ -32,10 +29,20 @@ export class ModuleMenuComponent extends ObjectMenuComponent implements OnChange
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly actions: FilesystemObjectActions,
     protected readonly objectTypeService: ObjectTypeService,
+    readonly authService: AuthenticationService,
     protected readonly clipboard: ClipboardService,
     private tabUrlService: ModuleContext
   ) {
-    super(router, snackBar, errorHandler, route, workspaceManager, actions, objectTypeService);
+    super(
+      router,
+      snackBar,
+      errorHandler,
+      route,
+      workspaceManager,
+      actions,
+      objectTypeService,
+      authService
+    );
   }
 
   async openShareDialog(target: FilesystemObject) {

@@ -1,7 +1,7 @@
 """TODO: Possibly turn this into a DAO in the future.
 For now, it's just a file with query functions to help DRY.
 """
-
+from flask import g
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import and_, inspect, literal
 from sqlalchemy.orm import (
@@ -15,7 +15,7 @@ from sqlalchemy.orm import (
 )
 from typing import Optional, Union, Literal
 
-from neo4japp.database import db
+from neo4japp.database import db, get_authorization_service
 from . import AppUser, AppRole, Projects
 from .files import Files, StarredFile, FileCollaboratorRole, FileContent
 from .projects_queries import ProjectCalculator
@@ -417,6 +417,8 @@ class FileHierarchy:
     def calculate_privileges(self, user_ids):
         parent_file: Optional[Files] = None
 
+        current_user = getattr(g, 'current_user', None)
+
         # We need to iterate through the files from parent to child because
         # permissions are inherited and must be calculated in that order
         for row in reversed(self.results):
@@ -469,6 +471,37 @@ class FileHierarchy:
                     writable=writable,
                     commentable=commentable,
                 )
+
+                # Needs to be this way cause we only support extending privileges in hierarchy
+                # (no support for reducing privileges)
+                from ..services.publish import Publish
+
+                if Publish.is_publish_project(row[self.project_key]):
+                    """
+                    All published files are readable, but not writable or commentable
+                    With the exception of the list of files, which is not readable by default
+                    Only the owner of the project can read the list of files
+                    """
+                    readable = True
+                    if file.parent_id is None:
+                        readable = privileges.readable
+                    privileges = FilePrivileges(
+                        readable=readable,
+                        writable=False,
+                        commentable=False,
+                    )
+
+                if current_user and user_id == current_user.id:
+                    private_data_access = get_authorization_service().has_role(
+                        current_user, 'private-data-access'
+                    )
+
+                    if private_data_access:
+                        privileges = FilePrivileges(
+                            readable=True,
+                            writable=True,
+                            commentable=True,
+                        )
 
                 file.calculated_privileges[user_id] = privileges
 

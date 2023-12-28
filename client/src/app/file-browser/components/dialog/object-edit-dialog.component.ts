@@ -70,6 +70,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
       contentUrl: new FormControl(''),
       parent: new FormControl(null),
       filename: new FormControl('', [Validators.required, filenameValidator]),
+      extension: new FormControl(null),
       description: new FormControl('', [Validators.maxLength(MAX_DESCRIPTION_LENGTH)]),
       public: new FormControl(false),
       contexts: new FormArray([]),
@@ -247,6 +248,7 @@ export class ObjectEditDialogComponent extends CommonFormDialogComponent<ObjectE
   createObjectRequest(value: CreateObjectRequest): ObjectCreateRequest {
     const object = {
       filename: value.filename,
+      extension: value.extension,
       parentHashId: value.parent?.hashId ?? null,
       description: value.description,
       contexts: value.contexts,

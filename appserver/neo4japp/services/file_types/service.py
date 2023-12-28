@@ -1,13 +1,19 @@
 from enum import IntEnum, unique
 from itertools import chain
-from typing import Dict, List, Optional, Tuple, Union, Iterator, Set
+from os import path
+from typing import Dict, List, Optional, Tuple, Union, Iterator, Set, cast
 
 import magic
-from more_itertools import flatten
+from flask import g
 
+from neo4japp.constants import FILE_MIME_TYPE_DIRECTORY
+from neo4japp.database import db
+from neo4japp.exceptions import ServerWarning
 from neo4japp.models.files import Files
+from neo4japp.services.file_types.data_exchange import DataExchange
 from neo4japp.services.file_types.exports import ExportFormatError, FileExport
 from neo4japp.utils.file_content_buffer import FileContentBuffer
+from neo4japp.utils.globals import warn
 
 
 @unique
@@ -165,31 +171,94 @@ class BaseFileTypeProvider:
         # the highlights will look like garbage to the user
         return False
 
-    def generate_export(self, file: Files, format: str) -> FileExport:
+    def generate_export(self, target_file: Files, format_: str) -> FileExport:
         """
         Generate an export for this file of the provided format. If the format is not
         supported, then an exception should be raised. The file.content field of the
         provided file is available and may (or may not) have been eager loaded.
 
-        :param file: the file
-        :param format: the format
+        :param target_file: the file
+        :param format_: the format
         :return: an export
         :raises ExportFormatError: raised if the export is not supported
         """
         raise ExportFormatError()
 
-    def generate_linked_export(self, file: Files, format: str) -> FileExport:
+    def generate_linked_export(self, target_file: Files, format_: str) -> FileExport:
         """
         Generate an export for this file of the provided format. If the format is not
         supported, then an exception should be raised. The file.content field of the
         provided file is available and may (or may not) have been eager loaded.
 
-        :param file: the file
-        :param format: the format
+        :param target_file: the file
+        :param format_: the format
         :return: an export
         :raises ExportFormatError: raised if the export is not supported
         """
-        raise ExportFormatError()
+        if format_ != 'zip':
+            raise ExportFormatError(
+                "Unknown or invalid export format for the requested file."
+            )
+
+        # To prevent leaking changes to the database, we use a savepoint
+        savepoint = db.session.begin_nested()
+
+        try:
+            related = set(
+                cast(List[Files], self.get_related_files(target_file, recursive=set()))
+            )
+            if target_file.mime_type != FILE_MIME_TYPE_DIRECTORY:
+                related.add(target_file)
+
+            # Flattern inbetween folders to preserve file hierarhy in export
+            # (generate_export() exports only files in the list)
+            common_path_len = len(
+                path.commonpath([path.dirname(f.path) for f in related])
+                if len(related)
+                else ''
+            )
+
+            def add_parent(_related_file: Files):
+                if (
+                    _related_file.parent
+                    and len(_related_file.parent.path) > common_path_len
+                ):
+                    related.add(_related_file.parent)
+                    add_parent(_related_file.parent)
+
+            for related_file in related.copy():
+                add_parent(related_file)
+
+            # Check read permissions
+            def has_read_permission(_related_file: Files):
+                current_user = g.current_user
+                if _related_file.calculated_privileges[current_user.id].readable:
+                    return True
+
+                warn(
+                    ServerWarning(
+                        title='Skipped non-readable file',
+                        message=f'User {current_user.username} has sufficient permissions'
+                        f' to read "{_related_file.path}".',
+                    )
+                )
+
+            permited_files = list(filter(has_read_permission, related))  # type: ignore
+
+            # Rename project root folder to project name
+            for file in permited_files:
+                if file.filename == '/':
+                    file.filename = file.project.name
+
+            filename = (
+                target_file.filename
+                if target_file.filename != '/'
+                else target_file.project.name
+            ) + '.dump'
+
+            return DataExchange.generate_export(filename, permited_files, format_)
+        finally:
+            savepoint.rollback()
 
     def prepare_content(self, buffer: FileContentBuffer, params: dict, file: Files):
         """
@@ -206,12 +275,13 @@ class BaseFileTypeProvider:
         """
 
     def get_related_files(
-        self, file: Files, recursive: Set[str]
+        self, file: Files, recursive: Optional[Set[str]]
     ) -> Iterator[Union[Files, str]]:
         """
         Return a list of files linked to the given file.
         """
-        recursive.add(file.hash_id)
+        if recursive:
+            recursive.add(file.hash_id)
         return iter([])
 
     def relink_file(self, file: Files, files_hash_map) -> None:
@@ -343,7 +413,7 @@ class FileTypeService:
         """
         self.get(file.mime_type).relink_file(file, files_hash_map)
 
-    def get_related_files(self, files: List[Files], recursive: Set[str]):
+    def get_related_files(self, files: List[Files], recursive: Optional[Set[str]]):
         def get_related_files(f: Files):
             return self.get(f.mime_type).get_related_files(f, recursive)
 

@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 
 import { AccountService } from 'app/users/services/account.service';
 import { AppUser, PrivateAppUser, UserUpdateData } from 'app/interfaces';
@@ -13,10 +13,11 @@ import { BackgroundTask } from 'app/shared/rxjs/background-task';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { ErrorHandler } from 'app/shared/services/error-handler.service';
 import { Progress } from 'app/interfaces/common-dialog.interface';
-import { AuthActions, AuthSelectors } from 'app/auth/store';
+import { AuthActions } from 'app/auth/store';
 import { State } from 'app/root-store';
 import { appUserLoadingMock } from 'app/shared/mocks/loading/user';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { UserCreateDialogComponent } from './user-create-dialog.component';
 import { UserUpdateDialogComponent } from './user-update-dialog.component';
@@ -43,7 +44,8 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
     private readonly progressDialog: ProgressDialog,
     private readonly snackBar: MatSnackBar,
     private readonly errorHandler: ErrorHandler,
-    private store: Store<State>
+    private readonly store: Store<State>,
+    private readonly authService: AuthenticationService
   ) {}
 
   ngOnInit() {
@@ -51,9 +53,7 @@ export class UserBrowserComponent implements OnInit, OnDestroy {
       this.users = data.results;
       this.updateFilter();
     });
-    this.store
-      .pipe(select(AuthSelectors.selectAuthUser))
-      .subscribe((user) => (this.currentUser = user));
+    this.authService.appUser$.subscribe((user) => (this.currentUser = user));
     this.refresh();
   }
 
