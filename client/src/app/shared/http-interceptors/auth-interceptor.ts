@@ -53,7 +53,7 @@ export class AuthenticationInterceptor implements HttpInterceptor {
               },
             })
           );
-          this.router.navigate(['/login']);
+          // this.router.navigate(['/login']);
           return throwError(err);
         })
       );

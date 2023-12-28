@@ -6,6 +6,7 @@ from enum import Enum
 
 from werkzeug.local import LocalProxy
 
+from neo4japp.utils.bidict import BiDict
 from neo4japp.utils.enum import Enumd
 from neo4japp.utils.globals import config
 
@@ -42,10 +43,12 @@ MASTER_INITIAL_PROJECT_NAME = 'master-initial-project'
 
 FILE_MIME_TYPE_DIRECTORY = 'vnd.lifelike.filesystem/directory'
 FILE_MIME_TYPE_PDF = 'application/pdf'
+FILE_MIME_TYPE_ZIP = 'application/zip'
 FILE_MIME_TYPE_BIOC = 'vnd.lifelike.document/bioc'
 FILE_MIME_TYPE_MAP = 'vnd.lifelike.document/map'
 FILE_MIME_TYPE_GRAPH = 'vnd.lifelike.document/graph'
 FILE_MIME_TYPE_ENRICHMENT_TABLE = 'vnd.lifelike.document/enrichment-table'
+FILE_MIME_TYPE_DUMP = 'vnd.lifelike.document/dump'
 
 
 class SortDirection(Enum):
@@ -416,9 +419,14 @@ ASSETS_PATH = LocalProxy(lambda: config.get('ASSETS_PATH'))
 SUPPORTED_MAP_MERGING_FORMATS = ['pdf', 'png', 'svg']
 # links to maps with spaces at the beginning are still valid
 MAPS_RE = re.compile('^ */projects/.+/maps/(?P<hash_id>.+)$')
-RELATIVE_FILE_PATH_RE = re.compile(
-    '^ *(/projects/[^/]+)?/(enrichment-(table|visualisation)|sankey(-many-to-many)?|folders|files|bioc|maps|file-navigator|pdf-viewer|dt/map(/edit)?)/(?P<hash_id>[^/?#\n]*)[^\n]*$'  # noqa
-)
+
+
+def compose_relative_path():
+    domain = config.get('DOMAIN')
+    return f'^ *({domain})?(/projects/[^/]+)?/(enrichment-(table|visualisation)|sankey(-many-to-many)?|folders|files|bioc|maps|file-navigator|pdf-viewer|dt/map(/edit)?)/(?P<hash_id>[^/?#\n]*)[^\n]*$'  # noqa
+
+
+RELATIVE_FILE_PATH_RE = LocalProxy(lambda: re.compile(compose_relative_path()))
 
 # Start SVG map export data constants
 IMAGES_RE = LocalProxy(lambda: re.compile(f"{config.get('ASSETS_PATH')}.*.png"))
@@ -472,16 +480,19 @@ SEED_FILE_KEY_FILE_CONTENT = 'neo4japp.models.FileContent'
 
 MAX_CONTEXT_PARAM_LENGTH = 250
 MAX_CONTEXT_PARAMS = 20
-EXTENSION_MIME_TYPES = {
-    '.pdf': 'application/pdf',
-    '.map.zip': 'vnd.lifelike.document/map',
-    '.graph.json': 'vnd.lifelike.document/graph',
-    '.bioc': 'vnd.lifelike.document/bioc',
-    '.enrichment.json': 'vnd.lifelike.document/enrichment-table',
-    '.svg': 'image/svg+xml',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.zip': 'application/zip',
-    # TODO: Use a mime type library?
-}
+EXTENSION_MIME_TYPES = BiDict(
+    {
+        '.pdf': FILE_MIME_TYPE_PDF,
+        '.map.zip': FILE_MIME_TYPE_MAP,
+        '.graph.json': FILE_MIME_TYPE_GRAPH,
+        '.bioc': FILE_MIME_TYPE_BIOC,
+        '.enrichment.json': FILE_MIME_TYPE_ENRICHMENT_TABLE,
+        '.dump.zip': FILE_MIME_TYPE_DUMP,
+        '.svg': 'image/svg+xml',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.zip': FILE_MIME_TYPE_ZIP,
+        # TODO: Use a mime type library?
+    }
+)

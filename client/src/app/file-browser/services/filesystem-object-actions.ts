@@ -3,9 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, forkJoin, from, merge, of } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, merge, Observable, of } from 'rxjs';
 import { finalize, map, mergeMap, take, tap } from 'rxjs/operators';
-import { clone, first, values, chain } from 'lodash-es';
+import { clone, defaults, first } from 'lodash-es';
 
 import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
@@ -17,6 +17,7 @@ import { ResultMapping } from 'app/shared/schemas/common';
 import { Progress } from 'app/interfaces/common-dialog.interface';
 import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
+import { Exporter } from 'app/file-types/providers/base-object.type-provider';
 
 import { ObjectDeleteDialogComponent } from '../components/dialog/object-delete-dialog.component';
 import { FilesystemObject } from '../models/filesystem-object';
@@ -31,7 +32,7 @@ import {
 } from '../components/dialog/object-export-dialog.component';
 import { FileAnnotationHistoryDialogComponent } from '../components/dialog/file-annotation-history-dialog.component';
 import { AnnotationsService } from './annotations.service';
-import { ObjectCreationService, CreateResultMapping } from './object-creation.service';
+import { ObjectCreationService } from './object-creation.service';
 import { AnnotationGenerationResultData } from '../schema';
 import { ObjectReannotateResultsDialogComponent } from '../components/dialog/object-reannotate-results-dialog.component';
 import { ObjectEditDialogValue } from '../components/dialog/object-edit-dialog.component';
@@ -68,44 +69,75 @@ export class FilesystemObjectActions {
     });
   }
 
-  /**
-   * Open the dialog to export an object.
-   * @param target the object to export
-   */
-  openExportDialog(target: FilesystemObject): Promise<boolean> {
-    const dialogRef = this.modalService.open(ObjectExportDialogComponent);
-    dialogRef.componentInstance.title = `Export ${getObjectLabel(target)}`;
-    dialogRef.componentInstance.target = target;
-    dialogRef.componentInstance.accept = (value: ObjectExportDialogValue) => {
-      const progressDialogRef = this.createProgressDialog('Generating export...');
-      try {
-        return value.exporter
-          .export(value.exportLinked)
-          .pipe(
-            take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
-            finalize(() => progressDialogRef.close()),
-            map((file: File) => {
-              openDownloadForBlob(file, file.name);
-              return true;
-            }),
-            this.errorHandler.create({ label: 'Export object' })
-          )
-          .toPromise();
-      } catch (e) {
-        progressDialogRef.close();
-        throw e;
-      }
-    };
-    dialogRef.componentInstance.dismiss = (error) => {
+  export(
+    {
+      exporter,
+      exportLinked,
+    }: {
+      exporter: Exporter;
+      exportLinked: boolean;
+    },
+    options?: { label: string }
+  ): Promise<boolean> {
+    const { label } = defaults(options, { label: 'Export object' });
+    const progressDialogRef = this.createProgressDialog('Generating export...');
+    try {
+      return exporter
+        .export(exportLinked)
+        .pipe(
+          take(1), // Must do this due to RxJs<->Promise<->etc. tomfoolery
+          finalize(() => progressDialogRef.close()),
+          map((file: File) => {
+            openDownloadForBlob(file, file.name);
+            return true;
+          }),
+          this.errorHandler.create({ label })
+        )
+        .toPromise();
+    } catch (e) {
+      progressDialogRef.close();
+      throw e;
+    }
+  }
+
+  exportDismissFactory =
+    (target: FilesystemObject, overwrites: Partial<MessageArguments> = {}) =>
+    (error: boolean): Observable<boolean> => {
       if (error) {
         this.messageDialog.display({
           title: 'No Export Formats',
           message: `No export formats are supported for ${getObjectLabel(target)}.`,
           type: MessageType.Warning,
-        } as MessageArguments);
+          ...overwrites,
+        });
       }
       return of(false);
     };
+
+  /**
+   * Open the dialog to export an object.
+   * @param target the object to export
+   */
+  openExportDialog(
+    target: FilesystemObject,
+    inputs: {
+      exporters?: Exporter[];
+      title?: string;
+      target?: FilesystemObject;
+      accept?: (value: ObjectExportDialogValue) => Promise<boolean>;
+      dismiss?: (error: boolean) => Observable<boolean>;
+    } = {}
+  ): Promise<boolean> {
+    const dialogRef = this.modalService.open(ObjectExportDialogComponent);
+    Object.assign(
+      dialogRef.componentInstance,
+      defaults(inputs, {
+        title: `Export ${getObjectLabel(target)}`,
+        target,
+        accept: (value: ObjectExportDialogValue) => this.export(value, { label: 'Export object' }),
+        dismiss: this.exportDismissFactory(target, {}),
+      })
+    );
     return from(dialogRef.result.catch(() => false)).toPromise();
   }
 

@@ -30,11 +30,11 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
 
   fileList: FileInput<any>[] = [];
   selectedFile: FileInput<any> = null;
-  selectedFileIndex;
+  selectedFileIndex: number;
 
   invalidInputs = false;
 
-  readonly extensionsToCutRegex = /.map$/;
+  readonly filenameExtensionSplit = /^(?<filename>.+?)(?<extension>(\.[^.]*)*)$/i;
 
   constructor(
     modal: NgbActiveModal,
@@ -84,12 +84,13 @@ export class ObjectUploadDialogComponent extends ObjectEditDialogComponent {
     const uploadLimit = this.maxFileCount - this.fileList.length;
     for (let i = 0; i < event.target.files.length && i < uploadLimit; i++) {
       const targetFile = event.target.files[i];
-      const filename: string = targetFile.name.replace(this.extensionsToCutRegex, '');
+      const { filename, extension } = targetFile.name.match(this.filenameExtensionSplit).groups;
       await extractDescriptionFromFile(targetFile).then((description) => {
         const fileEntry: FileInput<any> = {
           formState: {
             contentValue: targetFile,
             filename,
+            extension,
             description,
             public: false,
             fallbackOrganism: null,

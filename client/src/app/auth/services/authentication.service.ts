@@ -2,17 +2,37 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 import { Observable, of, timer, Subscription } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { map, mergeMap, shareReplay } from 'rxjs/operators';
+import { select, Store } from '@ngrx/store';
 
 import { LifelikeJWTTokenResponse } from 'app/interfaces';
+import { State } from 'app/root-store';
+
+import { AuthSelectors } from '../store';
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService implements OnDestroy {
+  constructor(private http: HttpClient, private readonly store: Store<State>) {}
   readonly baseUrl = '/api/auth';
 
   private refreshSubscription: Subscription;
 
-  constructor(private http: HttpClient) {}
+  public loggedIn$ = this.store.pipe(
+    select(AuthSelectors.selectAuthLoginState),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  public appUser$ = this.store.pipe(
+    select(AuthSelectors.selectAuthUser),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  public userRoles$ = this.store.pipe(
+    select(AuthSelectors.selectRoles),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
+  public isAdmin$ = this.userRoles$.pipe(
+    map((roles) => roles.includes('admin')),
+    shareReplay({ bufferSize: 1, refCount: true })
+  );
 
   ngOnDestroy() {
     this.refreshSubscription.unsubscribe();

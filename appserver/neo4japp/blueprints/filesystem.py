@@ -29,6 +29,7 @@ from neo4japp.exceptions import (
     NotAuthorized,
     HandledException,
     ServerException,
+    AccessRequestRequiredError,
 )
 from neo4japp.exceptions import wrap_exceptions
 from neo4japp.models import (
@@ -74,8 +75,11 @@ from neo4japp.utils import (
     UserEventLog,
 )
 from neo4japp.utils.file_content_buffer import FileContentBuffer
+from .auth import login_optional
 from .utils import get_missing_hash_ids
 from ..services.filesystem import Filesystem
+from ..services.publish import Publish
+from ..utils.globals import get_current_user
 
 bp = Blueprint('filesystem', __name__, url_prefix='/filesystem')
 
@@ -526,15 +530,31 @@ class FileListView(FilesystemBaseView):
         hash_ids = targets['hash_ids']
 
         files = Filesystem.get_nondeleted_recycled_files(Files.hash_id.in_(hash_ids))
-        Filesystem.check_file_permissions(
-            files, current_user, ['writable'], permit_recycled=True
-        )
+
+        def is_publication_root(f: Files):
+            return (
+                f.calculated_project
+                and Publish.is_publish_project(f.calculated_project)
+                and f.parent
+                and f.parent.parent_id is None
+                and f.calculated_project
+                and f.calculated_project.creator_id == current_user.id
+            )
+
+        try:
+            Filesystem.check_file_permissions(
+                files, current_user, ['writable'], permit_recycled=True
+            )
+        except AccessRequestRequiredError as e:
+            for file in files:
+                if not is_publication_root(file):
+                    raise e
 
         # ========================================
         # Apply
         # ========================================
 
-        for file in files:
+        def delete_file(file: Files, recursive: bool = False):
             children = Filesystem.get_nondeleted_recycled_files(
                 and_(
                     Files.parent_id == file.id,
@@ -547,9 +567,15 @@ class FileListView(FilesystemBaseView):
             # yet and the children would just become orphan files that would still be
             # accessible but only by URL and with no easy way to delete them
             if len(children):
-                raise ValidationError('Only empty folders can be deleted.', 'hash_ids')
+                if not recursive:
+                    raise ValidationError(
+                        'Only empty folders can be deleted.', 'hash_ids'
+                    )
+                else:
+                    for child in children:
+                        delete_file(child, recursive=True)
 
-            if file.calculated_project.root_id == file.id:
+            if file.calculated_project and file.calculated_project.root_id == file.id:
                 raise ValidationError(
                     f"You cannot delete the root directory "
                     f"for a project (the folder for the project "
@@ -562,6 +588,13 @@ class FileListView(FilesystemBaseView):
                 file.modifier = current_user
 
             file.delete()
+
+        for file in files:
+            if is_publication_root(file):
+                # Delete the publication
+                delete_file(file, recursive=True)
+            else:
+                delete_file(file)
 
         db.session.commit()
         # rollback in case of error?
@@ -581,11 +614,11 @@ class FileListView(FilesystemBaseView):
 
 
 class FileSearchView(FilesystemBaseView):
+    @login_optional
     @use_args(FileSearchRequestSchema)
     @use_args(PaginatedRequestSchema)
     def post(self, params: dict, pagination: dict):
-        current_user = g.current_user
-
+        current_user_id = get_current_user('id')
         if params['type'] == 'public':
             # First we query for public files without getting parent directory
             # or project information
@@ -614,7 +647,7 @@ class FileSearchView(FilesystemBaseView):
                 Files.hash_id == hash_id, lazy_load_content=True
             )
             Filesystem.check_file_permissions(
-                [file], current_user, ['readable'], permit_recycled=True
+                [file], get_current_user(), ['readable'], permit_recycled=True
             )
 
             # TODO: Sort?
@@ -642,7 +675,7 @@ class FileSearchView(FilesystemBaseView):
             files = [
                 file
                 for file in files
-                if file.calculated_privileges[current_user.id].readable
+                if file.calculated_privileges[current_user_id].readable
             ]
             # Ensure directories appear at the top of the list
             files.sort(key=lambda f: not (f.mime_type == FILE_MIME_TYPE_DIRECTORY))
@@ -653,7 +686,7 @@ class FileSearchView(FilesystemBaseView):
         return jsonify(
             FileListSchema(
                 context={
-                    'user_privilege_filter': g.current_user.id,
+                    'user_privilege_filter': current_user_id,
                 },
                 exclude=('results.children',),
             ).dump(
@@ -666,10 +699,12 @@ class FileSearchView(FilesystemBaseView):
 
 
 class FileDetailView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch a single file."""
-        current_user = g.current_user
-        return Filesystem.get_file_response(hash_id, current_user)
+        current_user = get_current_user()
+        params = dict(user=current_user) if current_user else dict()
+        return Filesystem.get_file_response(hash_id, **params)
 
     @use_args(
         lambda request: FileUpdateRequestSchema(partial=True),
@@ -711,15 +746,14 @@ class FileDetailView(FilesystemBaseView):
 
 
 class FileContentView(FilesystemBaseView):
+    @login_optional
     def get(self, hash_id: str):
         """Fetch a single file's content."""
-        current_user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(
             Files.hash_id == hash_id, lazy_load_content=True
         )
         Filesystem.check_file_permissions(
-            [file], current_user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         # Lazy loaded
@@ -1149,14 +1183,13 @@ class FileLockListView(FileLockBaseView):
 class FileAnnotationHistoryView(FilesystemBaseView):
     """Implements lookup of a file's annotation history."""
 
+    @login_optional
     @use_args(PaginatedRequestSchema)
     def get(self, pagination: Dict, hash_id: str):
         """Get the annotation of a file."""
-        user = g.current_user
-
         file = Filesystem.get_nondeleted_recycled_file(Files.hash_id == hash_id)
         Filesystem.check_file_permissions(
-            [file], user, ['readable'], permit_recycled=True
+            [file], get_current_user(), ['readable'], permit_recycled=True
         )
 
         query = (

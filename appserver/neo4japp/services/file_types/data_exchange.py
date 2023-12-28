@@ -17,7 +17,7 @@ from neo4japp.constants import (
     FILE_MIME_TYPE_DIRECTORY,
 )
 from neo4japp.database import get_file_type_service
-from neo4japp.exceptions import ServerWarning
+from neo4japp.exceptions import ServerWarning, ServerException
 from neo4japp.models import Files, FileContent
 from neo4japp.models.common import generate_hash_id
 from neo4japp.services.file_types.exports import FileExport, ExportFormatError
@@ -152,11 +152,7 @@ class ZipDataExchange(DataExchangeProtocol):
         with ZipFile(buffer, 'w') as zip_file:
             for f in files:
                 relative_path = path.relpath(f.path, common_path)
-                extension_item = find(
-                    lambda ext_mimetype: ext_mimetype[1] == f.mime_type,
-                    EXTENSION_MIME_TYPES.items(),
-                )
-                extension = extension_item[0] if extension_item else ''
+                extension = EXTENSION_MIME_TYPES.get_key(f.mime_type, '')
                 filename = relative_path + extension
 
                 # Write only if content is not empty (e.g. omit folders)
@@ -171,7 +167,7 @@ class ZipDataExchange(DataExchangeProtocol):
                 metadata = {
                     key: getattr(f, key)
                     for key in cls._EXPORT_FIELDS
-                    if getattr(f, key)
+                    if getattr(f, key, None) is not None
                 }
 
                 dirname = path.dirname(filename)
@@ -208,7 +204,8 @@ class ZipDataExchange(DataExchangeProtocol):
                         metadata_file_ref = cls._zip_file_model_metadata_formatter.load(
                             zip_file, info
                         )
-                        assert import_ref.metadata is None, "Metadata already set."
+                        if import_ref.metadata is not None:
+                            warn(ServerWarning(title="Metadata already set."))
                         import_ref.metadata = metadata_file_ref.content
                         # Apply metadata import fields
                         for column, value in import_ref.metadata.items():
@@ -217,7 +214,9 @@ class ZipDataExchange(DataExchangeProtocol):
                     else:
                         file_ref = cls._zip_file_model_formatter.load(zip_file, info)
                         # Draft FileContent instance (buffer can be changed later)
-                        assert import_ref.file.content is None, "Content already set."
+                        # assert import_ref.file.content is None, "Content already set."
+                        if import_ref.file.content is not None:
+                            warn(ServerWarning(title='File content already set'))
                         import_ref.file.content = FileContent()
                         import_ref.file.content.raw_file = FileContentBuffer(
                             file_ref.content
@@ -260,6 +259,7 @@ class ZipDataExchange(DataExchangeProtocol):
         import_id_map = {
             import_ref.metadata['id']: import_ref
             for import_ref in import_path_map.values()
+            if 'id' in import_ref.metadata
         }
         for import_ref in import_id_map.values():
             if not import_ref.root:  # Skip parents of import root files
@@ -293,6 +293,7 @@ class ZipDataExchange(DataExchangeProtocol):
         files_hash_id_map = {
             import_ref.metadata['hash_id']: import_ref.file.hash_id
             for import_ref in import_path_map.values()
+            if 'hash_id' in import_ref.metadata
         }
         for import_ref in import_path_map.values():
             get_file_type_service().relink_file(import_ref.file, files_hash_id_map)
@@ -302,6 +303,7 @@ class ZipDataExchange(DataExchangeProtocol):
         import_path_map: Dict[str, _ImportRef] = dict()
 
         def get_import_ref(zip_path_: str) -> _ImportRef:
+            print(zip_path_)
             if zip_path_ not in import_path_map:
                 import_path_map[zip_path_] = _ImportRef()
             return import_path_map[zip_path_]
@@ -321,17 +323,12 @@ class ZipDataExchange(DataExchangeProtocol):
 
     @classmethod
     def generate_import(cls, export: FileExport) -> FileImport:
-        filename_parts = export.filename.split('.')
-        filename = '.'.join(filename_parts[:-1])
-        format_ = filename_parts[-1]
-
         with export.content as bufferView:
-            if format_ == 'zip':
-                files = cls._import(bufferView)
+            files = cls._import(bufferView)
 
         return FileImport(
             files=files,
-            filename=filename,
+            filename=export.filename,
         )
 
     @classmethod
@@ -366,7 +363,18 @@ class DataExchange:
         if not exchange_provider:
             raise ExportFormatError()
 
-        return exchange_provider.generate_export(filename, files)
+        try:
+            return exchange_provider.generate_export(filename, files)
+        except OverflowError as e:
+            raise ServerException(
+                title='Export too large',
+                message='The total size of files to export exceeds the maximum allowed.',
+                additional_msgs=(
+                    'Please select a smaller set of files to export.',
+                    'If you need to export a large amount of data,'
+                    ' please divide it into smaller chunks.',
+                ),
+            ) from e
 
     @staticmethod
     def generate_import(export: FileExport) -> FileImport:
