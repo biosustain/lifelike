@@ -100,6 +100,7 @@ class ProjectCalculator:
             project_writable = self.result[f'has_project-write_{user_id}']
 
             from neo4japp.services.publish import Publish
+
             if user_id is None and Publish.is_publish_project(project):
                 # The publish project is always readable by everyone
                 project_readable = True
