@@ -20,7 +20,7 @@ def compose_query(entities: List[str], context: Optional[str]):
     else:
         query_core = f'What is the relationship between {", ".join(entities)}'
 
-    context_query = f' in the context of {context}' if context else''
+    context_query = f' in the context of {context}' if context else ''
 
     return query_core + context_query + '?'
 
