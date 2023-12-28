@@ -6,6 +6,7 @@ import {
   HttpErrorResponse,
   HttpEvent,
   HttpEventType,
+  HttpHeaders,
   HttpResponse,
 } from '@angular/common/http';
 
@@ -49,6 +50,9 @@ import { FileAnnotationHistory } from '../models/file-annotation-history';
 import { ObjectLock } from '../models/object-lock';
 import { RecentFilesService } from './recent-files.service';
 
+const getFilenameFromHeaders = (headers: HttpHeaders): string | null =>
+  headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1];
+
 /**
  * Endpoints to manage with the filesystem exposed to the user.
  */
@@ -85,6 +89,48 @@ export class FilesystemService {
     const progress$ = this.http
       .post<SingleResult<FilesystemObjectData>>(
         `/api/filesystem/objects`,
+        objectToMixedFormData(request),
+        {
+          observe: 'events',
+          reportProgress: true,
+          responseType: 'json',
+        }
+      )
+      .pipe(
+        map((event) =>
+          event.type === HttpEventType.Response
+            ? ({
+                ...event,
+                body: {
+                  ...event.body,
+                  result: new FilesystemObject().update(event.body.result),
+                },
+              } as HttpResponse<SingleResult<FilesystemObject>>)
+            : event
+        ),
+        // Wait for connect before emitting
+        publish()
+      ) as ConnectableObservable<HttpEvent<SingleResult<FilesystemObject>>>;
+    return {
+      // Progress subscribe is not returning values until we subscribe to body$
+      progress$,
+      body$: progress$.pipe(
+        // Send connect upon subscribe
+        refCount(),
+        filter(({ type }) => type === HttpEventType.Response),
+        // Cast to any cause typesript does not understand above filter syntax
+        map((response) => (response as any).body as SingleResult<FilesystemObject>)
+      ),
+    };
+  }
+
+  publish(
+    request: ObjectCreateRequest,
+    userHashId: string
+  ): HttpObservableResponse<SingleResult<FilesystemObject>> {
+    const progress$ = this.http
+      .post<SingleResult<FilesystemObjectData>>(
+        `/api/user/${userHashId}/published`,
         objectToMixedFormData(request),
         {
           observe: 'events',
@@ -185,10 +231,32 @@ export class FilesystemService {
       .pipe(map((data) => from(data.result)));
   }
 
-  generateExport(hashId: string, request: ObjectExportRequest): Observable<Blob> {
-    return this.http.post(`/api/filesystem/objects/${encodeURIComponent(hashId)}/export`, request, {
-      responseType: 'blob',
-    });
+  generateExport(hashId: string, request: ObjectExportRequest): Observable<File> {
+    return this.http
+      .post(`/api/filesystem/objects/${encodeURIComponent(hashId)}/export`, request, {
+        observe: 'response',
+        responseType: 'blob',
+      })
+      .pipe(
+        map(
+          (response: HttpResponse<Blob>) =>
+            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.dump.zip')
+        )
+      );
+  }
+
+  generatePrePublish(hashId: string, request: ObjectExportRequest): Observable<File> {
+    return this.http
+      .post(`/api/publish/${encodeURIComponent(hashId)}/prepare`, request, {
+        observe: 'response',
+        responseType: 'blob',
+      })
+      .pipe(
+        map(
+          (response: HttpResponse<Blob>) =>
+            new File([response.body], getFilenameFromHeaders(response.headers) ?? 'export.zip')
+        )
+      );
   }
 
   save(
@@ -431,6 +499,20 @@ export class FilesystemService {
         return list;
       })
     );
+  }
+
+  getPublished(userHashId: string) {
+    return this.http
+      .get<ResultList<FilesystemObjectData>>(`/api/user/${userHashId}/published`)
+      .pipe(
+        map((data) => {
+          const list = new FilesystemObjectList();
+          list.results.replace(
+            data.results?.map((itemData) => new FilesystemObject().update(itemData)) ?? []
+          );
+          return list;
+        })
+      );
   }
 
   updateStarred(hashId: string, starred: boolean) {

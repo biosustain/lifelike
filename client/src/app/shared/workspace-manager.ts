@@ -18,11 +18,12 @@ import {
 } from '@angular/router';
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 
-import { filter, switchMap } from 'rxjs/operators';
-import { BehaviorSubject, Subscription, Subject, merge } from 'rxjs';
+import { filter, map, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Subscription, Subject, merge, iif, of, defer } from 'rxjs';
 import { cloneDeep, flatMap, assign, escape, escapeRegExp, merge as _merge } from 'lodash-es';
 
 import { timeoutPromise } from 'app/shared/utils/promise';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { ModuleAwareComponent, ModuleProperties, ShouldConfirmUnload } from './modules';
 import {
@@ -32,8 +33,8 @@ import {
 } from './services/workspace-session.service';
 import { TrackingService } from './services/tracking.service';
 import { TRACKING_ACTIONS, TRACKING_CATEGORIES } from './schemas/tracking';
-import { ErrorHandler } from './services/error-handler.service';
-import { UserError } from './exceptions';
+import { makeid } from './utils/identifiers';
+import { SessionStorageService } from './services/session-storage.service';
 
 export interface TabDefaults {
   title: string;
@@ -487,7 +488,7 @@ export class PaneManager {
 })
 export class WorkspaceManager {
   paneManager: PaneManager;
-  readonly workspaceUrl = '/workspaces/local';
+  readonly workspaceUrl$: BehaviorSubject<string> = new BehaviorSubject<string>('/workspaces');
   tabCreationTargetPane: Pane | undefined;
   focusedPane: Pane | undefined;
   private interceptNextRoute = false;
@@ -498,9 +499,22 @@ export class WorkspaceManager {
     private readonly injector: Injector,
     private readonly sessionService: WorkspaceSessionService,
     private readonly tracking: TrackingService,
-    private readonly errorHandler: ErrorHandler
+    readonly authService: AuthenticationService,
+    private readonly sessionStorage: SessionStorageService
   ) {
-    this.paneManager = new PaneManager(injector);
+    this.authService.loggedIn$
+      .pipe(
+        switchMap((loggedIn) =>
+          iif(
+            () => loggedIn,
+            of('local'),
+            defer(() => of(this.sessionStorage.getSetItem('space_id', makeid())))
+          )
+        ),
+        map((spaceId) => `/workspaces/${spaceId}`)
+      )
+      .subscribe(this.workspaceUrl$);
+    this.paneManager = new PaneManager(this.injector);
     this.hookRouter();
     this.emitEvents();
     this.panes$
@@ -517,6 +531,10 @@ export class WorkspaceManager {
       )
       .subscribe((activeTabChange) => {});
     (document as any).navigateByUrl = this.navigateByUrl.bind(this);
+  }
+
+  get workspaceUrl(): string {
+    return this.workspaceUrl$.value;
   }
 
   isWithinWorkspace() {

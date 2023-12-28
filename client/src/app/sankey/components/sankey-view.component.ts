@@ -62,6 +62,7 @@ import { MessageDialog } from 'app/shared/services/message-dialog.service';
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { ModuleContext } from 'app/shared/services/module-context.service';
 import { GenericDataProvider } from 'app/shared/providers/data-transfer-data/generic-data.provider';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { SankeySearchService } from '../services/search.service';
 import { PathReportComponent } from './path-report/path-report.component';
@@ -164,7 +165,8 @@ export class SankeyViewComponent
     private search: SankeySearchService,
     public update: EditService,
     private readonly messageDialog: MessageDialog,
-    private readonly moduleContext: ModuleContext
+    private readonly moduleContext: ModuleContext,
+    readonly authService: AuthenticationService
   ) {
     this.moduleContext.register(this);
 

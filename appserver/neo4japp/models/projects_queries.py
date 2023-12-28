@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import inspect, and_, literal
 
 from neo4japp.database import db
@@ -8,7 +10,7 @@ from neo4japp.models.projects import ProjectPrivileges
 def add_project_user_role_columns(
     query,
     project_table,
-    user_id,
+    user_id: Optional[int],
     role_names=None,
     column_format=None,
     access_override=False,
@@ -92,9 +94,16 @@ class ProjectCalculator:
         project: Projects = self.result[self.project_key]
 
         for user_id in user_ids:
+            # TODO prevent username 'None' from being used
             project_manageable = self.result[f'has_project-admin_{user_id}']
             project_readable = self.result[f'has_project-read_{user_id}']
             project_writable = self.result[f'has_project-write_{user_id}']
+
+            from neo4japp.services.publish import Publish
+
+            if user_id is None and Publish.is_publish_project(project):
+                # The publish project is always readable by everyone
+                project_readable = True
 
             privileges = ProjectPrivileges(
                 readable=project_manageable or project_readable or project_writable,

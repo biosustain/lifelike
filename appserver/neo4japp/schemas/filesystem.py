@@ -32,6 +32,7 @@ class ProjectSchema(CamelCaseSchema):
     hash_id = fields.String()
     name = fields.String()
     description = fields.String()
+    creator = fields.Nested(UserSchema)
     creation_date = fields.DateTime()
     modified_date = fields.DateTime()
     privileges = fields.Method('get_privileges')
@@ -48,7 +49,7 @@ class ProjectSchema(CamelCaseSchema):
 
     def get_privileges(self, obj: Projects):
         privilege_user_id = self.get_user_privilege_filter()
-        if privilege_user_id is not None and obj.calculated_privileges:
+        if obj.calculated_privileges:
             return ProjectPrivilegesSchema(context=self.context).dump(
                 obj.calculated_privileges[privilege_user_id]
             )
@@ -72,6 +73,10 @@ class FileHashIdSchema(CamelCaseSchema):
 class ProjectRootSchema(FileHashIdSchema, StarredFileSchema):
     public = fields.Boolean()
     mime_type = fields.String()
+
+
+class PublishRootSchema(FileHashIdSchema):
+    pass
 
 
 ProjectPrivilegesSchema = marshmallow_dataclass.class_schema(ProjectPrivileges)
@@ -192,7 +197,7 @@ class FileSchema(StarredFileSchema):
 
     def get_privileges(self, obj: Files):
         privilege_user_id = self.get_user_privilege_filter()
-        if privilege_user_id is not None and obj.calculated_privileges:
+        if obj.calculated_privileges:
             return FilePrivilegesSchema(context=self.context).dump(
                 obj.calculated_privileges[privilege_user_id]
             )
@@ -244,6 +249,70 @@ class FileSchema(StarredFileSchema):
             return None
 
 
+class PublishedFileSchema(CamelCaseSchema):
+    hash_id = fields.String()
+    filename = fields.String()
+    user = fields.Nested(UserSchema())
+    description = fields.String()
+    mime_type = fields.String()
+    doi = fields.String()
+    upload_url = fields.String()
+    size = fields.String()
+    public = fields.Boolean()
+    pinned = fields.Boolean()
+    annotations_date = fields.DateTime()
+    fallback_organism = fields.Nested(FallbackOrganismSchema())
+    creation_date = fields.DateTime()
+    modified_date = fields.DateTime()
+    recycling_date = fields.DateTime()
+    parent = fields.Method('get_parent')
+    children = fields.Method('get_children')
+    privileges = fields.Method('get_privileges')
+    highlight = fields.Method('get_highlight')
+    path = fields.String()
+    # TODO: Remove this if we ever give ***ARANGO_USERNAME*** files actual names instead of '/'. This mainly exists
+    # as a helper for getting the real name of a ***ARANGO_USERNAME*** file.
+    true_filename = fields.String()
+    contexts = ContextsSchema
+    annotation_configs = fields.Nested(AnnotationConfigurations())
+
+    def get_privileges(self, obj: Files):
+        return FilePrivileges(
+            readable=True,
+            writable=False,
+            commentable=False,
+        )
+
+    def get_highlight(self, obj: Files):
+        return obj.calculated_highlight
+
+    def get_parent(self, obj: Files):
+        if obj.parent is not None:
+            return FileSchema(
+                context=self.context,
+                exclude=(
+                    'project',
+                    'children',
+                    'parent',
+                ),
+            ).dump(obj.parent)
+        else:
+            return None
+
+    def get_children(self, obj: Files):
+        if obj.calculated_children is not None:
+            return FileSchema(
+                context=self.context,
+                exclude=(
+                    'project',
+                    'parent',
+                ),
+                many=True,
+            ).dump(obj.calculated_children)
+        else:
+            return None
+
+
 class RankedFileSchema(RankedItemSchema):
     item = fields.Nested(FileSchema)
 
@@ -284,19 +353,31 @@ class FileSearchRequestSchema(CamelCaseSchema):
                 raise ValidationError("A linkedHashId is required.", 'linked_hash_id')
 
 
-class BulkFileUpdateRequestSchema(CamelCaseSchema):
+class CoreFileUpdateRequestSchema(CamelCaseSchema):
     filename = NiceFilenameString(validate=marshmallow.validate.Length(min=1, max=200))
-    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
+    extension = NiceFilenameString(
+        required=False,
+        allow_none=True,
+        validate=marshmallow.validate.Length(min=1, max=100),
+    )
     description = fields.String(
         validate=marshmallow.validate.Length(max=MAX_FILE_DESCRIPTION_LENGTH)
     )
+    public = fields.Boolean(default=False)
+    content_value = fields.Field(required=False)
+
+
+class PublishSchema(CoreFileUpdateRequestSchema):
+    pass
+
+
+class BulkFileUpdateRequestSchema(CoreFileUpdateRequestSchema):
+    parent_hash_id = fields.String(validate=marshmallow.validate.Length(min=1, max=36))
     upload_url = fields.String(validate=marshmallow.validate.Length(min=0, max=2048))
     fallback_organism = fields.Nested(FallbackOrganismSchema, allow_none=True)
     annotation_configs = fields.Nested(AnnotationConfigurations)
     contexts = ContextsSchema
-    public = fields.Boolean(default=False)
     pinned = fields.Boolean(default=False)
-    content_value = fields.Field(required=False)
     hashes_of_linked = fields.List(fields.String, required=False)
     new_images = fields.List(fields.Field, required=False)
     deleted_images = fields.List(fields.String, required=False)
@@ -306,9 +387,18 @@ class FileUpdateRequestSchema(BulkFileUpdateRequestSchema):
     pass
 
 
+class PublishResponseSchema(SingleResultSchema):
+    result = fields.Nested(PublishSchema())
+
+
 class FileCreateRequestSchema(FileUpdateRequestSchema):
     filename = NiceFilenameString(
         required=True, validate=marshmallow.validate.Length(min=1, max=200)
+    )
+    extension = NiceFilenameString(
+        allow_none=True,
+        required=False,
+        validate=marshmallow.validate.Length(min=1, max=100),
     )
     parent_hash_id = fields.String(
         required=True, validate=marshmallow.validate.Length(min=1, max=36)
@@ -339,6 +429,13 @@ class FileCreateRequestSchema(FileUpdateRequestSchema):
                 )
 
 
+class PublishRequestSchema(FileCreateRequestSchema):
+    parent_hash_id = fields.String(
+        validate=marshmallow.validate.Length(min=1, max=36),
+        allow_none=True,
+    )
+
+
 class FileExportRequestSchema(CamelCaseSchema):
     format = fields.String(required=True)
     export_linked = fields.Boolean()
@@ -365,6 +462,10 @@ class MultipleFileResponseSchema(ResultMappingSchema):
 
 class FileListSchema(ResultListSchema):
     results = fields.List(fields.Nested(FileSchema))
+
+
+class PublishedFileListSchema(ResultListSchema):
+    results = fields.List(fields.Nested(PublishedFileSchema()))
 
 
 class FileNode(CamelCaseSchema):

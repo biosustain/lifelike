@@ -1,4 +1,5 @@
 import os
+import re
 import typing
 import urllib
 from collections import defaultdict
@@ -7,6 +8,7 @@ from typing import List, Iterable, Optional, Tuple
 from urllib.error import HTTPError
 
 import gdown
+import timeflake
 from flask import g, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import and_, asc as asc_, desc as desc_
@@ -50,7 +52,7 @@ from neo4japp.models.files_queries import (
 from neo4japp.models.projects_queries import add_project_user_role_columns
 from neo4japp.schemas.filesystem import FileResponseSchema, MultipleFileResponseSchema
 from neo4japp.utils.file_content_buffer import FileContentBuffer
-from neo4japp.utils.globals import warn
+from neo4japp.utils.globals import warn, get_current_user
 from neo4japp.utils.network import read_url, ContentTooLongError
 
 
@@ -111,7 +113,8 @@ class Filesystem:
         :param attr_excl: list of file attributes to exclude from the query
         :return: the result, which may be an empty list
         """
-        current_user = g.current_user
+        current_user = get_current_user()
+        current_user_id = get_current_user('id')
 
         t_file = db.aliased(
             Files, name='_file'
@@ -152,7 +155,9 @@ class Filesystem:
             build_file_hierarchy_query(
                 and_(*filters), t_project, t_file, file_attr_excl=attr_excl
             )
-            .options(raiseload('*'), joinedload(t_file.user))
+            .options(
+                raiseload('*'), joinedload(t_file.user), joinedload(t_project.creator)
+            )
             .order_by(*[dir_fn(text(f'_{col}')) for col, dir_fn in sort_map])
         )
 
@@ -163,16 +168,20 @@ class Filesystem:
         # determine a permission -- you also have to read all parent folders and the project!
         # Thankfully, we just loaded all parent folders and the project above, and so we'll use
         # the handy FileHierarchy class later to calculate this permission information.
-        private_data_access = get_authorization_service().has_role(
-            current_user, 'private-data-access'
+        # Internal code of thi method is checking `isinstance(current_user, AppUser)` so we can not
+        # use `current_user` LocalProxy here (LocalProxy is not an instance of AppUser)
+        private_data_access = (
+            get_authorization_service().has_role(g.current_user, 'private-data-access')
+            if current_user
+            else False
         )
         query = add_project_user_role_columns(
-            query, t_project, current_user.id, access_override=private_data_access
+            query, t_project, current_user_id, access_override=private_data_access
         )
         query = add_file_user_role_columns(
-            query, t_file, current_user.id, access_override=private_data_access
+            query, t_file, current_user_id, access_override=private_data_access
         )
-        query = add_file_starred_columns(query, t_file.id, current_user.id)
+        query = add_file_starred_columns(query, t_file.id, current_user_id)
         query = add_file_size_column(query, t_file.content_id)
 
         if lazy_load_content:
@@ -196,8 +205,8 @@ class Filesystem:
         files = []
         for rows in grouped_results.values():
             hierarchy = FileHierarchy(rows, t_file, t_project)
-            hierarchy.calculate_properties([current_user.id])
-            hierarchy.calculate_privileges([current_user.id])
+            hierarchy.calculate_properties([current_user_id])
+            hierarchy.calculate_privileges([current_user_id])
             hierarchy.calculate_starred_files()
             hierarchy.calculate_size()
             files.append(hierarchy.file)
@@ -295,7 +304,7 @@ class Filesystem:
     @staticmethod
     def check_file_permissions(
         files: List[Files],
-        user: AppUser,
+        user: Optional[AppUser],
         require_permissions: List[str],
         *,
         permit_recycled: bool,
@@ -309,15 +318,16 @@ class Filesystem:
         :param require_permissions: a list of permissions to require (like 'writable')
         :param permit_recycled: whether to allow recycled files
         """
+        user_id = user.id if user else None
         # Check each file
         for file in files:
             for permission in require_permissions:
-                if not getattr(file.calculated_privileges[user.id], permission):
+                if not getattr(file.calculated_privileges[user_id], permission):
                     # Do not reveal the filename with the error!
                     # TODO: probably refactor these readable, commentable to
                     # actual string values...
 
-                    if not file.calculated_privileges[user.id].readable:
+                    if not file.calculated_privileges[user_id].readable:
                         raise AccessRequestRequiredError(
                             curr_access='no',
                             req_access='readable',
@@ -344,7 +354,7 @@ class Filesystem:
                 )
 
     @staticmethod
-    def get_file_response(hash_id: str, user: AppUser):
+    def get_file_response(hash_id: str, user: AppUser = None):
         """
         Fetch a file and return a response that can be sent to the client. Permissions
         are checked and this method will throw a relevant response exception.
@@ -378,7 +388,7 @@ class Filesystem:
         return jsonify(
             FileResponseSchema(
                 context={
-                    'user_privilege_filter': g.current_user.id,
+                    'user_privilege_filter': get_current_user('id'),
                 },
                 exclude=('result.children.children',),  # We aren't loading sub-children
             ).dump(
@@ -523,6 +533,7 @@ class Filesystem:
         cls,
         filename,
         *,
+        extension: str = None,
         parent,
         description=MISSING,
         public=False,
@@ -540,7 +551,9 @@ class Filesystem:
         file_type_service = get_file_type_service()
 
         file = Files()
-        file.filename = filename
+        file.filename = (
+            timeflake.random().base62 + filename
+        )  # placeholder filename - without name conflict
         file.description = description if description is not MISSING else None
         file.user = current_user
         file.creator = current_user
@@ -611,9 +624,12 @@ class Filesystem:
             if mime_type:
                 file.mime_type = mime_type
             else:
-                extension = None
                 try:
-                    extension = file.extension or Path(content_value.filename).suffix
+                    extension = (
+                        extension
+                        or file.extension
+                        or Path(content_value.filename).suffix
+                    )
                 except Exception:
                     pass
 
@@ -624,6 +640,17 @@ class Filesystem:
             provider = file_type_service.get(file.mime_type)
             # if no provider matched try to convert
 
+            # Keep extension (without default part) in filename
+            # Example:
+            #   (filename='test', extension='.pdf') => 'test'
+            #   (filename='test', extension='.abc.pdf') => 'test.abc'
+            #   (filename='test', extension='.abc.dump.zip') => 'test.abc'
+            filename += re.sub(
+                rf"{re.escape(getattr(provider, 'EXTENSION', ''))}$",
+                '',
+                str(extension or ''),
+            )
+
             # if it is a bioc-xml file
             if file.mime_type == FILE_MIME_TYPE_BIOC:
                 # then convert it to BiocJSON
@@ -631,11 +658,11 @@ class Filesystem:
                 file_name, ext = os.path.splitext(file.filename)
                 # if ext is not bioc then set it bioc.
                 if ext.lower() != '.bioc':
-                    file.filename = file_name + '.bioc'
+                    filename = file_name + '.bioc'
 
             if provider == file_type_service.default_provider:
-                file_name, extension = os.path.splitext(file.filename)
-                if extension.isupper():
+                # Why?
+                if extension and extension.isupper():
                     file.mime_type = 'application/pdf'
                 provider = file_type_service.get(file.mime_type)
                 provider.convert(buffer)
@@ -686,6 +713,7 @@ class Filesystem:
         # Commit and filename conflict resolution
         # ========================================
 
+        savepoint = db.session.begin_nested()  # Make checkpoint for rollback
         # Filenames could conflict, so we may need to generate a new filename
         # Trial 1: First attempt
         # Trial 2: Try adding (N+1) to the filename and try again
@@ -693,24 +721,27 @@ class Filesystem:
         # Trial 4: Give up
         # Trial 3 only does something if the transaction mode is in READ COMMITTED or worse (!)
         for trial in range(4):
-            if 1 <= trial <= 2:  # Try adding (N+1)
-                try:
-                    file.filename = file.generate_non_conflicting_filename()
-                except ValueError as e:
+            try:
+                if trial == 0:
+                    file.filename = filename  # Set initial filename
+                if 1 <= trial <= 2:  # Try adding (N+1)
+                    try:
+                        file.filename = file.generate_non_conflicting_filename(filename)
+                    except ValueError as e:
+                        raise ValidationError(
+                            'Filename conflicts with an existing file in the same folder.',
+                            "filename",
+                        ) from e
+                elif trial == 3:  # Give up
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',
                         "filename",
-                    ) from e
-            elif trial == 3:  # Give up
-                raise ValidationError(
-                    'Filename conflicts with an existing file in the same folder.',
-                    "filename",
-                )
+                    )
 
-            try:
-                with db.session.begin_nested():
-                    db.session.add(file)
-            except IntegrityError:
+                db.session.add(file)
+                db.session.commit()
+            except IntegrityError as e:
+                savepoint.rollback()
                 # Warning: this could catch some other integrity error
                 pass
             else:

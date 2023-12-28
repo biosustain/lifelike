@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, NavigationCancel, NavigationEnd, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { NgbModal, NgbModalConfig, NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap';
 
@@ -10,11 +10,10 @@ import { State } from 'app/***ARANGO_USERNAME***-store';
 import { StorageService } from 'app/shared/services/storage.service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
 import * as AuthActions from 'app/auth/store/actions';
-import { AuthSelectors } from 'app/auth/store';
-import { AppUser } from 'app/interfaces';
 import { AppVersionDialogComponent } from 'app/app-version-dialog.component';
 import { downloader } from 'app/shared/DOMutils';
 import { toValidUrl } from 'app/shared/utils/browser';
+import { WorkspaceManager } from 'app/shared/workspace-manager';
 
 import { environment } from '../environments/environment';
 
@@ -27,15 +26,13 @@ import { environment } from '../environments/environment';
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  readonly appUser$: Observable<AppUser>;
-  readonly userRoles$: Observable<string[]>;
-  readonly loggedIn$: Observable<boolean>;
   helpDeskUrl = 'https://sbrgsoftware.atlassian.net/servicedesk/customer/portal/1/group/1/create/9';
   standAloneFileUrlRegex = /^\/(projects|folders)\//;
   isStandaloneFileOpen: boolean;
   mainUrl: string;
   fragment: string;
   queryParams: any;
+  workspaceUrl$: Observable<string> = this.workspaceManager.workspaceUrl$.asObservable();
 
   constructor(
     private readonly store: Store<State>,
@@ -45,15 +42,12 @@ export class AppComponent {
     private readonly modalService: NgbModal,
     private readonly ngbModalConfig: NgbModalConfig,
     private readonly ngbPaginationConfig: NgbPaginationConfig,
-    private storage: StorageService,
-    private authService: AuthenticationService
+    private readonly storage: StorageService,
+    readonly authService: AuthenticationService,
+    private readonly workspaceManager: WorkspaceManager
   ) {
     this.ngbModalConfig.backdrop = 'static';
     this.ngbPaginationConfig.maxSize = 5;
-
-    this.loggedIn$ = store.pipe(select(AuthSelectors.selectAuthLoginState));
-    this.appUser$ = store.pipe(select(AuthSelectors.selectAuthUser));
-    this.userRoles$ = store.pipe(select(AuthSelectors.selectRoles));
 
     this.authService.scheduleRenewal();
 
@@ -61,7 +55,7 @@ export class AppComponent {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd || event instanceof NavigationCancel) {
         const title = this.activatedRoute.firstChild?.snapshot?.data?.title;
-        titleService.setTitle(title ? `Lifelike: ${title}` : 'Lifelike');
+        this.titleService.setTitle(title ? `Lifelike: ${title}` : 'Lifelike');
         this.isStandaloneFileOpen = this.standAloneFileUrlRegex.test(event.url);
 
         const url = toValidUrl(event.url);

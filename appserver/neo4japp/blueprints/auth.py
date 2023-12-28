@@ -44,6 +44,14 @@ def login_exempt(f):
     return f
 
 
+def login_optional(f):
+    """
+    Decorator used to specify endpoints that do not require user authentication but use it.
+    """
+    f.login_optional = True
+    return f
+
+
 class TokenService:
     def __init__(self, app_secret: str, algorithm: str = 'HS256'):
         self.app_secret = app_secret
