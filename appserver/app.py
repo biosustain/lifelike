@@ -505,7 +505,7 @@ def test_prepublish(email, password):
                 Filesystem.check_file_permissions(
                     [file], user, ['readable'], permit_recycled=True
                 )
-            except:
+            except Exception:
                 # Ignore files that are not readable
                 continue
 
