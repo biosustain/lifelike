@@ -18,7 +18,7 @@ import requests
 import timeflake
 from flask import request, g
 from marshmallow.exceptions import ValidationError
-from sqlalchemy import inspect, Table
+from sqlalchemy import inspect, Table, select
 from sqlalchemy.sql.expression import and_, text
 
 from neo4japp.blueprints.auth import auth
@@ -98,6 +98,39 @@ def request_navigator_log():
 login_required_dummy_view = auth.login_required(lambda: None)
 
 
+def login_optional_dummy_view():
+    try:
+        _auth = auth.get_auth()
+
+        # Flask normally handles OPTIONS requests on its own, but in the
+        # case it is configured to forward those to the application, we
+        # need to ignore authentication headers and let the request through
+        # to avoid unwanted interactions with CORS.
+        if request.method != 'OPTIONS' and _auth:  # pragma: no cover
+            password = auth.get_auth_password(_auth)
+
+            auth.authenticate(_auth, password)
+    except Exception:
+        # We intentionally want to swallow errors here to allow the
+        # application to handle unauthorized access in a custom manner
+        # e.g. through a @login_optional decorated view.
+        pass
+
+
+def route_has_flag(flag: str):
+    view = app.view_functions[request.endpoint]
+
+    if getattr(view, flag, False):
+        return True
+    view_class = getattr(view, 'view_class', None)
+    if view_class:
+        if getattr(view_class, flag, False):
+            return True
+        method = getattr(view_class, request.method.lower(), None)
+        if method and getattr(method, flag, False):
+            return True
+
+
 @app.before_request
 def default_login_required():
     # exclude 404 errors and static routes
@@ -105,10 +138,11 @@ def default_login_required():
     if not request.endpoint or request.endpoint.rsplit('.', 1)[-1] == 'static':
         return
 
-    view = app.view_functions[request.endpoint]
-
-    if getattr(view, 'login_exempt', False):
+    if route_has_flag('login_exempt'):
         return
+
+    if route_has_flag('login_optional'):
+        return login_optional_dummy_view()
 
     return login_required_dummy_view()
 
@@ -442,6 +476,74 @@ def upload_lmdb():
     manager.upload_all(lmdb_dir_path)
 
 
+@app.cli.command('test-prepublish')
+@click.option('--email', '-e', required=True, type=str)
+@click.option('--password', '-p', required=True, type=str)
+def test_prepublish(email, password):
+    from tests.helpers.api import generate_jwt_headers
+
+    client = app.test_client()
+    login_resp = client.post(
+        '/auth/login',
+        data=json.dumps({'email': email, 'password': password}),
+        content_type='application/json',
+    ).get_json()
+
+    headers = generate_jwt_headers(login_resp['accessToken']['token'])
+
+    user = db.session.query(AppUser).filter(AppUser.email == email).one()
+
+    from neo4japp.services.filesystem import Filesystem
+
+    with app.app_context():
+        g.current_user = user
+        for file in Filesystem.get_nondeleted_recycled_files(
+            Files.mime_type == FILE_MIME_TYPE_MAP, lazy_load_content=True
+        ):
+            # print(file, file.calculated_privileges)
+            try:
+                Filesystem.check_file_permissions(
+                    [file], user, ['readable'], permit_recycled=True
+                )
+            except Exception:
+                # Ignore files that are not readable
+                continue
+
+            try:
+                print("Processing file: ", file.path, file.hash_id, file.id)
+                resp = client.post(f'/publish/{file.hash_id}/prepare', headers=headers)
+                if resp.status_code == 200:
+                    print(
+                        "Success", resp.content_length, file.path, file.hash_id, file.id
+                    )
+                    pass
+                else:
+                    print("Failed", file.path, file.hash_id, file.id)
+                    resp_json = resp.get_json()
+                    print(resp.status_code, resp_json)
+                    if resp_json.get('type') == 'FileNotFound':
+                        raise FileNotFoundError
+                    else:
+                        print(
+                            "Failed response",
+                            resp_json,
+                            file.path,
+                            file.hash_id,
+                            file.id,
+                        )
+                        break
+            except FileNotFoundError:
+                print("File not found: ", file.path, file.hash_id, file.id)
+                continue
+            except Exception:
+                print("Exception: ", file.path, file.hash_id, file.id)
+                # printing stack trace
+                import traceback
+
+                traceback.print_exc()
+                raise
+
+
 @app.cli.command('create-lmdb')
 @click.option('--file-type', type=str)
 def create_lmdb_files(file_type):
@@ -677,7 +779,9 @@ def add_file(
         for trial in range(4):
             if 1 <= trial <= 2:  # Try adding (N+1)
                 try:
-                    file.filename = file.generate_non_conflicting_filename()
+                    file.filename = file.generate_non_conflicting_filename(
+                        file.filename
+                    )
                 except ValueError:
                     raise ValidationError(
                         'Filename conflicts with an existing file in the same folder.',

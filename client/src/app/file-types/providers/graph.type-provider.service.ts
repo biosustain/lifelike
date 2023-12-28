@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { Observable, of } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import {
   AbstractObjectTypeProvider,
   AbstractObjectTypeProviderHelper,
   Exporter,
+  PrePublishExporterService,
 } from 'app/file-types/providers/base-object.type-provider';
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
 import { SearchType } from 'app/search/shared';
@@ -17,11 +18,14 @@ export const GRAPH_SHORTHAND = 'Graph';
 
 @Injectable()
 export class GraphTypeProvider extends AbstractObjectTypeProvider {
+  static readonly defaultExtension = '.graph';
+
   constructor(
     abstractObjectTypeProviderHelper: AbstractObjectTypeProviderHelper,
-    protected readonly filesystemService: FilesystemService
+    protected readonly filesystemService: FilesystemService,
+    private readonly prePublishExporter: PrePublishExporterService
   ) {
-    super(abstractObjectTypeProviderHelper);
+    super(abstractObjectTypeProviderHelper, filesystemService);
   }
 
   handles(object: FilesystemObject): boolean {
@@ -33,20 +37,29 @@ export class GraphTypeProvider extends AbstractObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([
-      {
-        name: 'Graph',
-        export: () => {
-          return this.filesystemService.getContent(object.hashId).pipe(
-            map((blob) => {
-              return new File(
-                [blob],
-                object.filename.endsWith('.graph') ? object.filename : object.filename + '.graph'
-              );
-            })
-          );
+    return combineLatest([
+      super.getExporters(object),
+      this.prePublishExporter.factory(object),
+    ]).pipe(
+      map(([inheritedExporters, prePublish]) => [
+        {
+          name: 'Graph',
+          export: () => {
+            return this.filesystemService.getContent(object.hashId).pipe(
+              map((blob) => {
+                return new File(
+                  [blob],
+                  object.filename.toLowerCase().endsWith(GraphTypeProvider.defaultExtension)
+                    ? object.filename
+                    : object.filename + GraphTypeProvider.defaultExtension
+                );
+              })
+            );
+          },
         },
-      },
-    ]);
+        ...prePublish,
+        ...inheritedExporters,
+      ])
+    );
   }
 }

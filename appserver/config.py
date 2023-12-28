@@ -129,7 +129,7 @@ class Base:
 class Development(Base):
     """Development configurations"""
 
-    DOMAIN = 'http://localhost'
+    DOMAIN = 'http://localhost:4200'
 
     LOGGING_LEVEL = logging.DEBUG
 

@@ -6,20 +6,19 @@
   <app-modal-body>
     <app-form-row for="exporter" label="Format" [control]="form.get('exporter')">
       <select
-        (ngModelChange)="setLinkedExportSupported()"
         class="custom-select"
         formControlName="exporter"
         id="exporter"
         [appFormInput]="form.get('exporter')"
         appAutoFocus
       >
-        <option *ngFor="let exporter of exporters; let i = index" [value]="i">
+        <option *ngFor="let exporter of exporters$ | async; let i = index" [value]="i">
           {{ exporter.name }}
         </option>
       </select>
     </app-form-row>
 
-    <div class="custom-control custom-checkbox mt-2" [hidden]="!isLinkedExportSupported">
+    <div class="custom-control custom-checkbox mt-2" [hidden]="islinkedExportDisabled$ | async">
       <input
         type="checkbox"
         class="custom-control-input"

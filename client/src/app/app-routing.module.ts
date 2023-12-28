@@ -1,5 +1,7 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { InjectionToken, NgModule } from '@angular/core';
+import { Router, RouterModule, Routes } from '@angular/router';
+
+import { Store } from '@ngrx/store';
 
 import { AdminPanelComponent } from 'app/admin/components/admin-panel.component';
 import { VisualizationComponent } from 'app/visualization/containers/visualization/visualization.component';
@@ -34,6 +36,11 @@ import { CopyrightInfringementPolicyComponent } from 'app/policies/components/co
 import { PrivacyPolicyComponent } from 'app/policies/components/privacy-policy.component';
 import { TermsAndConditionsComponent } from 'app/policies/components/terms-and-conditions.component';
 import { StarredBrowserComponent } from 'app/file-browser/components/starred-browser.component';
+import { PublishedBrowserComponent } from 'app/file-browser/components/published-browser/published-browser.component';
+import { UserRedirectGuard } from 'app/auth/guards/user-redirect.service';
+import { State } from 'app/auth/store/state';
+
+const PUBLISH_REDIRECT = new InjectionToken('PUBLISH_REDIRECT');
 
 const routes: Routes = [
   {
@@ -106,7 +113,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/enrichment-table/:file_id',
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     component: EnrichmentTableViewerComponent,
     data: {
       title: 'Enrichment Table',
@@ -115,7 +122,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/enrichment-visualisation/:file_id',
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     component: EnrichmentVisualisationViewerComponent,
     data: {
       title: 'Statistical Enrichment',
@@ -125,7 +132,7 @@ const routes: Routes = [
   {
     // Project name parameter is no longer used
     path: 'projects/:project_name/sankey/:file_id',
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     component: SankeyViewComponent,
     data: {
       title: 'Sankey',
@@ -161,9 +168,18 @@ const routes: Routes = [
     ],
   },
   {
-    path: 'workspaces/:space_id',
+    path: 'workspaces/local',
     component: WorkspaceComponent,
     canActivate: [LifelikeAuthGuard],
+    data: {
+      title: 'Workbench',
+    },
+    canDeactivate: [UnloadConfirmationGuard],
+  },
+  {
+    path: 'workspaces/:space_id',
+    component: WorkspaceComponent,
+    canActivate: [],
     data: {
       title: 'Workbench',
     },
@@ -199,7 +215,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name',
     component: ObjectBrowserComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'Projects',
       fontAwesomeIcon: 'layer-group',
@@ -218,16 +234,50 @@ const routes: Routes = [
   {
     path: 'folders/:dir_id',
     component: ObjectBrowserComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'Projects',
       fontAwesomeIcon: 'layer-group',
     },
   },
   {
+    path: 'published',
+    canActivate: [LifelikeAuthGuard, PUBLISH_REDIRECT],
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: 'published/:hash_id',
+    canActivate: [LifelikeAuthGuard, PUBLISH_REDIRECT],
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: ':user_hash_id/published',
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
+    path: ':user_hash_id/published/:hash_id',
+    component: PublishedBrowserComponent,
+    data: {
+      title: 'Published',
+      fontAwesomeIcon: 'books',
+    },
+  },
+  {
     path: 'files/:hash_id',
     component: ObjectViewerComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'File',
       fontAwesomeIcon: 'file',
@@ -235,7 +285,7 @@ const routes: Routes = [
   },
   {
     path: 'files/:hash_id/trace/:network_trace_idx/:trace_idx',
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     component: TraceViewComponent,
     data: {
       title: 'Trace details',
@@ -245,7 +295,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/files/:file_id',
     component: PdfViewComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'PDF Viewer',
       fontAwesomeIcon: 'file-pdf',
@@ -254,7 +304,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/bioc/:file_id',
     component: BiocViewComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'BioC Viewer',
       fontAwesomeIcon: 'file-alt',
@@ -262,7 +312,7 @@ const routes: Routes = [
   },
   {
     path: 'projects/:project_name/maps/:hash_id',
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     component: MapViewComponent,
     data: {
       title: 'Map',
@@ -272,7 +322,7 @@ const routes: Routes = [
   {
     path: 'projects/:project_name/maps/:hash_id/edit',
     component: MapEditorComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     canDeactivate: [UnloadConfirmationGuard],
     data: {
       title: 'Map Editor',
@@ -300,7 +350,7 @@ const routes: Routes = [
   {
     path: 'file-navigator/:project_name/:file_id',
     component: ObjectNavigatorComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'File Navigator',
       fontAwesomeIcon: 'fas fa-compass',
@@ -309,7 +359,7 @@ const routes: Routes = [
   {
     path: 'enrichment-visualisation/:project_name/:file_id',
     component: EnrichmentVisualisationViewerComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [],
     data: {
       title: 'Enrichment Visualisation',
       fontAwesomeIcon: 'chart-bar',
@@ -382,5 +432,15 @@ const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
+  providers: [
+    {
+      provide: PUBLISH_REDIRECT,
+      useFactory: (store: Store<State>, router: Router) =>
+        new UserRedirectGuard(store, router, ({ user, active }) =>
+          router.createUrlTree([user.hashId, 'published'].concat(active.params.hash_id ?? []))
+        ),
+      deps: [Store, Router],
+    },
+  ],
 })
 export class AppRoutingModule {}

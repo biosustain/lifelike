@@ -1,0 +1,22 @@
+<ng-container *ngIf="notPrePublishExporters$ | addStatus | async as exporters">
+  <ng-container *ngIf="exporters.value?.length">
+    <ng-template
+      [ngTemplateOutlet]="buttonTemplate"
+      [ngTemplateOutletContext]="{
+        $implicit: openExportDialogFactory(exporters.value),
+        label: 'Export...'
+      }"
+    ></ng-template>
+  </ng-container>
+</ng-container>
+<ng-container *ngIf="prePublishExporters$ | addStatus | async as prePublishers">
+  <ng-container *ngIf="prePublishers.value?.length">
+    <ng-template
+      [ngTemplateOutlet]="buttonTemplate"
+      [ngTemplateOutletContext]="{
+        $implicit: openPrePublishDialogFactory(prePublishers.value),
+        label: 'Pre-publish...'
+      }"
+    ></ng-template>
+  </ng-container>
+</ng-container>

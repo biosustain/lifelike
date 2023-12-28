@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { Subscription, throwError, iif, of, ReplaySubject, merge, defer } from 'rxjs';
+import { Subscription, throwError, iif, of, ReplaySubject, merge, defer, Observable } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { map, switchMap, tap, first, shareReplay } from 'rxjs/operators';
 
@@ -21,6 +21,7 @@ import { MessageType } from 'app/interfaces/message-dialog.interface';
 import { addStatus } from 'app/shared/pipes/add-status.pipe';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 import { FilesystemObject } from '../models/filesystem-object';
 import { FilesystemService } from '../services/filesystem.service';
@@ -44,7 +45,8 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
     protected readonly projectService: ProjectsService,
     protected readonly filesystemService: FilesystemService,
     protected readonly actions: FilesystemObjectActions,
-    protected readonly objectTypeService: ObjectTypeService
+    protected readonly objectTypeService: ObjectTypeService,
+    readonly authService: AuthenticationService
   ) {}
 
   readonly createActions$ = this.objectTypeService.all().pipe(
@@ -100,8 +102,8 @@ export class ObjectBrowserComponent implements ModuleAwareComponent {
         tap((object) =>
           this.modulePropertiesChange.emit({
             title: object.isProjectRoot
-              ? object.project.name
-              : `${object.project.name} - ${object.filename}`,
+              ? object.project.effectiveName
+              : `${object.project.effectiveName} - ${object.filename}`,
             fontAwesomeIcon: 'folder',
           })
         )

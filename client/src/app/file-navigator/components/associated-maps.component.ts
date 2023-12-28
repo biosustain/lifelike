@@ -15,6 +15,7 @@ import { ObjectTypeService } from 'app/file-types/services/object-type.service';
 import { MimeTypes } from 'app/shared/constants';
 import { filesystemObjectLoadingMock } from 'app/shared/mocks/loading/file';
 import { mockArrayOf } from 'app/shared/mocks/loading/utils';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 @Component({
   selector: 'app-associated-maps',
@@ -41,7 +42,8 @@ export class AssociatedMapsComponent implements OnInit, OnDestroy {
     protected readonly filesystemObjectActions: FilesystemObjectActions,
     protected readonly workspaceManager: WorkspaceManager,
     protected readonly objectTypeService: ObjectTypeService,
-    protected readonly errorHandler: ErrorHandler
+    protected readonly errorHandler: ErrorHandler,
+    readonly authService: AuthenticationService
   ) {}
 
   ngOnInit() {

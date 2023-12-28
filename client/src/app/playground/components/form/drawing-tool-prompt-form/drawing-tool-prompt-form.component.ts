@@ -63,7 +63,7 @@ if there is more than one entity and context:
     } else {
       queryCore = `What is the relationship between ${entities.join(', ')}`;
     }
-    const contextQuery =  (context ? ` in the context of ${context}` : '');
+    const contextQuery = context ? ` in the context of ${context}` : '';
 
     return queryCore + contextQuery + '?';
   }

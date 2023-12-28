@@ -27,7 +27,7 @@ from neo4japp.encoders import CustomJSONEncoder
 from neo4japp.exceptions import ServerException, ServerWarning
 from neo4japp.schemas.common import ErrorResponseSchema, WarningResponseSchema
 from neo4japp.services.chat_gpt import ChatGPT
-from neo4japp.utils.globals import current_username
+from neo4japp.utils.globals import get_current_username
 from neo4japp.utils.logger import ErrorLog, WarningLog
 from neo4japp.utils.server_timing import ServerTiming
 from neo4japp.utils.transaction_id import transaction_id
@@ -187,7 +187,7 @@ def handle_error(ex):
             expected=True,
             event_type=LogEventType.HANDLED.value,
             transaction_id=transaction_id,
-            username=current_username,
+            username=get_current_username(),
         ).to_dict(),
     )
     return jsonify(ErrorResponseSchema().dump(ex)), ex.code
@@ -201,7 +201,7 @@ def handle_warning(warn):
             warning_name=f'{type(warn)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-            username=current_username,
+            username=get_current_username(),
         ).to_dict(),
     )
     return jsonify(WarningResponseSchema().dump(warn)), warn.code
@@ -219,7 +219,7 @@ def handle_generic_error(code: HTTPStatus, ex: Exception):
             expected=True,
             event_type=LogEventType.UNHANDLED.value,
             transaction_id=transaction_id,
-            username=current_username,
+            username=get_current_username(),
         ).to_dict(),
     )
 
@@ -240,7 +240,7 @@ def handle_generic_warning(code: int, ex: Warning):
             warning_name=f'{type(ex)}',
             event_type=LogEventType.WARNINIG.value,
             transaction_id=transaction_id,
-            username=current_username,
+            username=get_current_username(),
         ).to_dict(),
     )
 

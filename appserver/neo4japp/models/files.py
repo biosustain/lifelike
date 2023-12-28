@@ -50,7 +50,7 @@ from neo4japp.models.common import (
     HashIdMixin,
 )
 from neo4japp.models.projects import Projects
-from neo4japp.utils import EventLog, get_model_changes
+from neo4japp.utils import EventLog, get_model_changes, request
 from neo4japp.utils.file_content_buffer import FileContentBuffer
 
 
@@ -259,10 +259,23 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     filename = db.Column(db.String(200), nullable=False)
     parent_id = db.Column(
-        db.Integer, db.ForeignKey('files.id'), nullable=True, index=True
+        db.Integer,
+        db.ForeignKey('files.id', ondelete='CASCADE'),
+        nullable=True,
+        index=True,
     )
     parent = db.relationship(
-        'Files', foreign_keys=parent_id, uselist=False, remote_side=[id]
+        'Files',
+        back_populates='children',
+        foreign_keys=parent_id,
+        uselist=False,
+        remote_side=[id],
+    )
+    children = db.relationship(
+        'Files',
+        back_populates='parent',
+        cascade='all, delete-orphan',
+        passive_deletes=True,
     )
     mime_type = db.Column(db.String(127), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -272,7 +285,11 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         index=True,
         nullable=True,
     )
-    content = db.relationship('FileContent', foreign_keys=content_id)
+    content = db.relationship(
+        'FileContent',
+        foreign_keys=content_id,
+        cascade='save-update, merge, expunge',
+    )
     user_id = db.Column(
         db.Integer,
         db.ForeignKey('appuser.id', ondelete='CASCADE'),
@@ -345,6 +362,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
     # yourself or use helpers that populate these fields. These fields are used by
     # a lot of the API endpoints, and some of the helper methods that query for Files
     # will populate these fields for you
+    _extension: Optional[str] = None
     calculated_project: Optional[Projects] = None
     calculated_privileges: Dict[int, FilePrivileges]  # key = AppUser.id
     calculated_children: Optional[List['Files']] = None  # children of this file
@@ -419,9 +437,13 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
 
     @property
     def extension(self):
-        return Path(self.filename).suffix
+        return self._extension or Path(self.filename).suffix
 
-    def generate_non_conflicting_filename(self):
+    @extension.setter
+    def extension(self, value):
+        self._extension = value
+
+    def generate_non_conflicting_filename(self, filename: str) -> str:
         """Generate a new filename based of the current filename when there is a filename
         conflict with another file in the same folder.
 
@@ -433,7 +455,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
             ValueError: if a new (reasonable) filename cannot be found
         """
 
-        file_name, file_ext = os.path.splitext(self.filename)
+        file_name, file_ext = os.path.splitext(filename)
         file_ext_len = len(file_ext)
 
         # Remove the file extension from the filename column in the table
@@ -481,7 +503,7 @@ class Files(RDBMSBase, FullTimestampMixin, RecyclableMixin, HashIdMixin):  # typ
         new_filename = f"{file_name} ({next_index}){file_ext}"
 
         # Check that the new filename doesn't exceed the length of the column
-        if len(self.filename) > Files.filename.property.columns[0].type.length:
+        if len(filename) > Files.filename.property.columns[0].type.length:
             raise ValueError('new filename would exceed the length of the column')
 
         return new_filename

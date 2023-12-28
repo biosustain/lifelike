@@ -5,10 +5,7 @@ import { finalize, map } from 'rxjs/operators';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { FilesystemObject } from 'app/file-browser/models/filesystem-object';
-import {
-  CreateDialogOptions,
-  CreateResultMapping,
-} from 'app/file-browser/services/object-creation.service';
+import { CreateDialogOptions } from 'app/file-browser/services/object-creation.service';
 import {
   ObjectEditDialogComponent,
   ObjectEditDialogValue,
@@ -22,6 +19,7 @@ import { ProgressDialog } from 'app/shared/services/progress-dialog.service';
 import { openModal } from 'app/shared/utils/modals';
 import { SearchType } from 'app/search/shared';
 import { Progress } from 'app/interfaces/common-dialog.interface';
+import { AuthenticationService } from 'app/auth/services/authentication.service';
 
 export const TYPE_PROVIDER = new InjectionToken<ObjectTypeProvider[]>('objectTypeProvider');
 
@@ -49,6 +47,7 @@ export interface PreviewOptions {
 
 export interface Exporter {
   name: string;
+  isPrePublish?: boolean;
 
   export(linkedExport?: boolean): Observable<File>;
 }
@@ -58,6 +57,8 @@ export interface Exporter {
  * are used by the application to discover operations on objects stored within Lifelike.
  */
 export interface ObjectTypeProvider {
+  readonly defaultExtension?: string;
+
   /**
    * Test whether this provider is for the given type of object.
    * @param object the object
@@ -155,13 +156,41 @@ export class AbstractObjectTypeProviderHelper {
   }
 }
 
+@Injectable()
+export class PrePublishExporterService {
+  constructor(
+    protected readonly filesystemService: FilesystemService,
+    private readonly authService: AuthenticationService
+  ) {}
+
+  factory(object: FilesystemObject): Observable<Exporter[]> {
+    return of([
+      {
+        name: 'Zip Dump (Pre-Publish)',
+        isPrePublish: true,
+        export: () =>
+          this.filesystemService.generatePrePublish(object.hashId, {
+            format: 'zip',
+            exportLinked: true,
+          }),
+      },
+    ]);
+  }
+}
+
 /**
  * A base class for object type providers.
  */
+@Injectable()
 export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
-  abstract handles(object: FilesystemObject): boolean;
+  static readonly defaultExtension?: string;
 
-  constructor(private readonly helper: AbstractObjectTypeProviderHelper) {}
+  constructor(
+    protected readonly helper: AbstractObjectTypeProviderHelper,
+    protected readonly filesystemService: FilesystemService // private readonly prePublishExporter: PrePublishExporterService
+  ) {}
+
+  abstract handles(object: FilesystemObject): boolean;
 
   createPreviewComponent(
     object: FilesystemObject,
@@ -184,7 +213,19 @@ export abstract class AbstractObjectTypeProvider implements ObjectTypeProvider {
   }
 
   getExporters(object: FilesystemObject): Observable<Exporter[]> {
-    return of([]);
+    // LL-5375: limiting publishing options so it is rollable
+    // return this.prePublishExporter.factory(object);
+    // LL-5387: partly reintroduce features
+    return of([
+      {
+        name: 'Zip Dump',
+        export: () =>
+          this.filesystemService.generateExport(object.hashId, {
+            format: 'zip',
+            exportLinked: true,
+          }),
+      },
+    ]);
   }
 
   unzipContent(zipped: Blob): Observable<string> {

@@ -9,7 +9,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
 from os import path
-from typing import Optional, List, Dict, Set, Tuple, Iterator
+from typing import Optional, List, Dict, Set, Tuple, Iterator, cast
 from itertools import chain
 from more_itertools import flatten
 from sqlalchemy import and_
@@ -83,6 +83,7 @@ from neo4japp.constants import (
     MAPS_RE,
     RELATIVE_FILE_PATH_RE,
     EXTENSION_MIME_TYPES,
+    FILE_MIME_TYPE_DUMP,
 )
 from neo4japp.exceptions import (
     HandledException,
@@ -285,68 +286,12 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
         if size > 0:
             raise ValueError("Directories can't have content")
 
-    def generate_linked_export(self, file: Files, format_: str) -> FileExport:
-        return self.generate_export(file, format_)
-
-    def generate_export(self, target_file: Files, format_: str) -> FileExport:
-        # To prevent leaking changes to the database, we use a savepoint
-        savepoint = db.session.begin_nested()
-
-        try:
-            related_files = set(self.get_related_files(target_file, recursive=set()))
-
-            # Flattern inbetween folders to preserve file hierarhy in export
-            # (generate_export() exports only files in the list)
-            common_path_len = len(
-                path.commonpath([path.dirname(f.path) for f in related_files])
-                if len(related_files)
-                else ''
-            )
-
-            def add_parent(_related_file: Files):
-                if (
-                    _related_file.parent
-                    and len(_related_file.parent.path) > common_path_len
-                ):
-                    related_files.add(_related_file.parent)
-                    add_parent(_related_file.parent)
-
-            for related_file in related_files.copy():
-                add_parent(related_file)
-
-            # Check read permissions
-            def has_read_permission(_related_file: Files):
-                current_user = g.current_user
-                if _related_file.calculated_privileges[current_user.id].readable:
-                    return True
-
-                warn(
-                    ServerWarning(
-                        title='Skipped non-readable file',
-                        message=f'User {current_user.username} has sufficient permissions'
-                        f' to read "{_related_file.path}".',
-                    )
-                )
-
-            permited_files = list(filter(has_read_permission, related_files))  # type: ignore
-
-            # Rename project ***ARANGO_USERNAME*** folder to project name
-            for file in permited_files:
-                if file.filename == '/':
-                    file.filename = file.project.name
-
-            return DataExchange.generate_export(
-                target_file.filename, permited_files, format_
-            )
-        finally:
-            savepoint.rollback()
-
     def get_related_files(
         self,
         file: Files,
-        recursive: Set[str],
+        recursive: Optional[Set[str]],
     ) -> Iterator[Files]:
-        if file.hash_id in recursive:
+        if recursive and file.hash_id in recursive:
             return iter([])
 
         related_files = Filesystem.get_nondeleted_recycled_files(
@@ -376,14 +321,19 @@ class DirectoryTypeProvider(BaseFileTypeProvider):
 
 
 class DumpTypeProvider(BaseFileTypeProvider):
-    MIME_TYPE = 'dump'
+    MIME_TYPE = FILE_MIME_TYPE_DUMP
     SHORTHAND = 'dump'
     mime_types = (MIME_TYPE,)
+    EXTENSION = cast(str, EXTENSION_MIME_TYPES.get_key(MIME_TYPE))
 
     def detect_mime_type(
         self, buffer: FileContentBuffer, extension: str = None
     ) -> List[Tuple[Certanity, str]]:
-        return [(Certanity.match, self.MIME_TYPE)] if extension == '.zip' else []
+        return (
+            [(Certanity.match, self.MIME_TYPE)]
+            if str(extension).lower().endswith(self.EXTENSION)
+            else []
+        )
 
     # def detect_provider(
     #     self, mime_type: str
@@ -1499,17 +1449,15 @@ class MapTypeProvider(BaseFileTypeProvider):
             filename=f"{file.filename}{ext}",
         )
 
-    def generate_linked_export(self, file: Files, format: str) -> FileExport:
-        if format in SUPPORTED_MAP_MERGING_FORMATS:
+    def generate_linked_export(self, file: Files, format_: str) -> FileExport:
+        if format_ in SUPPORTED_MAP_MERGING_FORMATS:
             link_to_page_map: Dict[str, int] = dict()
             files = self.get_all_linked_maps(
                 file, {file.hash_id}, [file], link_to_page_map
             )
-            return self.merge(files, format, link_to_page_map)
+            return self.merge(files, format_, link_to_page_map)
         else:
-            raise ExportFormatError(
-                "Unknown or invalid export format for the requested file."
-            )
+            return super().generate_linked_export(file, format_)
 
     @contextmanager
     def open_graph_json(self, file: Files, mode='r'):
@@ -1837,8 +1785,8 @@ class MapTypeProvider(BaseFileTypeProvider):
 
         return self.update_map(params, FileContentBuffer(previous_content))
 
-    def get_related_files(self, file: Files, recursive: Set[str]):
-        if file.hash_id in recursive:
+    def get_related_files(self, file: Files, recursive: Optional[Set[str]]):
+        if recursive and file.hash_id in recursive:
             return iter([])
         related_files_hashes = set()
         with self.open_graph_json(file) as json_graph:
@@ -1848,7 +1796,7 @@ class MapTypeProvider(BaseFileTypeProvider):
                 if match:
                     related_files_hashes.add(match.group('hash_id'))
 
-        if recursive:
+        if recursive is not None:
             recursive.add(file.hash_id)
             related_files_new_hashes = related_files_hashes - recursive
             related_files = Filesystem.get_nondeleted_recycled_files(
@@ -1870,14 +1818,29 @@ class MapTypeProvider(BaseFileTypeProvider):
 
             return file_type_service.get_related_files(related_files, recursive)
         else:
+            related_files = Filesystem.get_nondeleted_recycled_files(
+                Files.hash_id.in_(related_files_hashes), lazy_load_content=True
+            )
             inform(
                 ServerInfo(
                     title='Found related files',
                     message=f'{file.path} has {len(related_files_hashes)} related files',
                 )
             )
-
-        return related_files_hashes
+            warn(
+                ServerWarning(
+                    title='Skipping search for related files',
+                    message=(
+                        f'Skipping recursive search for related files'
+                        f' for {len(related_files_hashes)} related files'
+                    ),
+                    additional_msgs=(
+                        f'Files:',
+                        *map(lambda f: '\t+ ' + f.path, related_files),
+                    ),
+                )
+            )
+            return related_files
 
     def relink_file(self, file: Files, files_hash_map: Dict[str, str]) -> None:
         def relink(json_graph):
@@ -1893,7 +1856,14 @@ class MapTypeProvider(BaseFileTypeProvider):
                     else:
                         warn(
                             ServerWarning(
-                                message=f'Cannot relink file: {hash_id} does not exist in mapping.',
+                                title='Cannot relink file',
+                                message=f'File {hash_id} does not exist in mapping.',
+                                additional_msgs=(
+                                    f'File: {file.path}',
+                                    f'Broken link: {link["url"]}',
+                                    f'Currently supported publishing packaging'
+                                    f' has been limited to one level deep recursion.',
+                                ),
                             )
                         )
             return json_graph
