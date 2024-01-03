@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-3.8.xsd">
+
+  <changeSet id="set_gene_link, date 01-03-2024" author="dominik">
+    <comment>link genes to NCBI gene</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)
+WHERE size(n.accession) > 0
+WITH n
+  MATCH (g:Gene)
+  WHERE g.locus_tag = n.accession
+  MERGE (n)-[:IS]->(g);
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_displayName, date 01-03-2024" author="dominik">
+    <comment>set biocyc node display name</comment>
+    <sql>
+    MATCH (n:db_BioCyc)
+SET n.displayName = n.name;
+
+MATCH (n)
+WHERE (not exists (n.displayName)) or n.displayName = ''
+SET n.displayName = n.biocyc_id;
+
+MATCH (n:Regulation:db_BioCyc)-[:TYPE_OF]-(t:db_BioCyc)
+WITH
+  n,
+  CASE
+      WHEN n.mode='+' then t.eid + ' (+)'
+      WHEN n.mode='-' then t.eid + ' (-)'
+      ELSE t.eid
+  END as displayName
+    SET n.displayName = displayName;
+  MATCH (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene)
+  WITH n, collect(g.name) as genes
+    WITH
+      n,
+      CASE
+          WHEN exists (n.name) then n.name + ' (tu)'
+          ELSE apoc.text.join(apoc.coll.sort(genes), '-') + ' (tu)'
+      END as displayName
+        SET n.displayName = displayName;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_node_description, date 01-03-2024" author="dominik">
+    <comment>set node description</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)-[:IS]-(g:Gene:db_NCBI)
+SET n.description = g.full_name;
+
+MATCH (n:Gene:db_BioCyc)
+WHERE not exists(n.description) or n.description = '-'
+WITH n
+  MATCH (n)-[:ENCODES]-(p)
+  SET n.description = p.name;
+
+MATCH (n:TranscriptionUnit:db_BioCyc)-[:ELEMENT_OF]-(g:Gene)
+WITH n, collect(g.description) as descs
+  SET n.description = 'TranscriptionUnit for ' + apoc.text.join(descs, ' and ');
+
+MATCH (n:Promoter:db_BioCyc)-[:ELEMENT_OF]->(tu)-[:ELEMENT_OF]-(g:Gene)
+WITH n, collect(g.description) as details
+  SET n.description = 'Promoter for ' + apoc.text.join(details, ' and ');
+
+MATCH (n:Protein:db_BioCyc)-[:ENCODES]-(g:Gene)
+WHERE not exists(n.name)
+SET n.name = g.description;
+
+MATCH (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein)
+WHERE not exists(n.name)
+WITH n, collect(p.name) as comps
+  SET n.name = 'complex of ' + apoc.text.join(comps, ', ');
+
+MATCH (p:db_BioCyc)-[:COMPONENT_OF]->(n:Protein:db_BioCyc)
+WITH n, collect(p.displayName) as comps
+  SET n.description = 'complex of ' + apoc.text.join(comps, ' and ');
+
+MATCH (n:Reaction:db_BioCyc)
+WITH n
+  MATCH (x)-[:CONSUMED_BY]-(n)-[:PRODUCES]-(y)
+  WITH
+    n,
+    collect(distinct x.displayName) as c1,
+    collect(distinct y.displayName) as c2,
+    CASE
+      WHEN n.direction = 'REVERSIBLE' then ' &lt;=> '
+      WHEN n.direction contains 'RIGHT-TO-LEFT' then ' &lt;= '
+      ELSE ' => '
+    END as symbol
+      SET n.detail = apoc.text.join(c1, ' + ') + symbol + apoc.text.join(c2, ' + ');
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_reaction_enzyme_name, date 01-03-2024" author="dominik">
+    <comment>set reaction enzyme_name property based on its connection with Enzyme</comment>
+    <sql>
+    MATCH (n:Reaction)-[:ENZYME_LINK]-(e)
+WITH n, collect(e.name) as enzyme_name
+  SET n.enzyme_name = enzyme_name;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_gene_pathways, date 01-03-2024" author="dominik">
+    <comment>set pathways related to a gene.</comment>
+    <sql>
+    MATCH (n:db_EcoCycCofactorPrimary:Gene)
+WITH n
+  MATCH path=(n)-[:ENCODES]-()-[:COMPONENT_OF*0..]->()-[]-(:EnzReaction)--(:Reaction)--(p:Pathway:db_EcoCycCofactorPrimary)
+  WITH n, collect(p.name) as pathways
+    SET n.pathways = pathways
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_entity_type, date 01-03-2024" author="dominik">
+    <comment>set entity type for common entities since a node could have many labels</comment>
+    <sql>
+    MATCH (n:Gene:db_BioCyc)
+SET n.entityType='Gene';
+
+MATCH (n:Compound)
+SET n.entityType='Chemical';
+
+MATCH (n:Protein:db_BioCyc)
+SET n.entityType='Protein';
+
+MATCH (n:Reaction)
+SET n.entityType='Reaction';
+
+MATCH (n:Pathway)
+SET n.entityType='Pathway';
+
+MATCH (n:RNA)
+SET n.entityType='RNA';
+
+MATCH (n:Promoter)
+SET n.entityType='Promoter';
+
+MATCH (n:TranscriptionUnit)
+SET n.entityType='TranscriptionUnit';
+
+MATCH (n:Terminator)
+SET n.entityType = 'Terminator';
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set reaction_display_name, date 01-03-2024" author="dominik">
+    <comment>set displayName as the first enzyme name in the enzyme_name property</comment>
+    <sql>
+    MATCH (n:Reaction)
+SET n.displayName = '';
+
+MATCH (n:Reaction)
+WHERE exists(n.name)
+SET n.displayName = n.name;
+
+MATCH (n:Reaction)
+WHERE exists(n.enzyme_name) and n.displayName = ''
+SET n.displayName = n.enzyme_name[0];
+
+MATCH (e:EnzReaction)-[:CATALYZES]->(n:Reaction)
+WHERE n.displayName='' and exists (e.name)
+SET n.displayName = e.name;
+
+MATCH (n:Reaction)
+WHERE n.displayName &lt;> ''
+SET n.displayName = n.displayName + '-RXN';
+
+MATCH (n:Reaction)
+WHERE n.displayName=''
+SET n.displayName = n.eid;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="move_cofactor_relationship, date 01-03-2024" author="dominik">
+    <comment>move cofactor relationship from EnzReaction to Protein</comment>
+    <sql>
+    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
+match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->()-[:CATALYZES]->(e)-[hcof:HAS_COFACTOR]->(cof)
+merge (cof)-[:IS_COFACTOR_OF]->(protein)
+delete hcof;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="change_direction_of_has_cofactor, date 01-03-2024" author="dominik">
+    <comment>change direction of has cofactor</comment>
+    <sql>
+    MATCH (n)-[r:HAS_COFACTOR]->(c)
+DELETE r
+MERGE (c)-[:IS_COFACTOR_OF]->(n);
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="collapse_Regulation_nodes, date 01-03-2024" author="dominik">
+    <comment>remove Regulation nodes. Connect regulator directly with regulated elements</comment>
+    <sql>
+    MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE r.mode='+' and exists(r.enzreaction_id)
+WITH x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+  MERGE (x)-[rel:ACTIVATES]->(y)
+  SET rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE r.mode='-' and exists(r.enzreaction_id)
+WITH x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+  MERGE (x)-[rel:INHIBITS]->(y)
+  SET rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE r.mode='' and exists(r.enzreaction_id)
+WITH x, y, collect(r.eid) as regIds, collect(r.enzreaction_id) as enzs
+  MERGE (x)-[rel:REGULATES]->(y)
+  SET rel.regulation_ids=regIds, rel.enzreaction_ids = enzs;
+
+MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE r.mode='+'
+WITH x, y, collect(r.eid) as regIds
+  MERGE (x)-[rel:ACTIVATES]->(y)
+  SET rel.regulation_ids=regIds;
+
+MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE r.mode='-'
+WITH x, y, collect(r.eid) as regIds
+  MERGE (x)-[rel:INHIBITS]->(y)
+  SET rel.regulation_ids=regIds;
+
+MATCH (x)-[:REGULATES]->(r:Regulation)-[:REGULATES]->(y)
+WHERE not exists(r.mode) or r.mode=''
+WITH x, y, collect(r.eid) as regIds
+  MERGE (x)-[rel:REGULATES]->(y)
+  SET rel.regulation_ids=regIds;
+
+MATCH (n:Regulation)
+DETACH DELETE n;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove constraint, date 01-03-2024" author="dominik">
+    <comment>remove constrain so that reversed reactions can be created</comment>
+    <sql>
+    DROP CONSTRAINT constraint_db_BioCyc_eid IF EXISTS;
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="correct_reaction_direction, date 01-03-2024" author="dominik">
+    <comment>correct the input and out directions for reactions, create reversed reaction for each reversible reaction</comment>
+    <sql>
+    MATCH (n:Reaction:db_BioCyc)
+WHERE n.direction ENDS WITH 'RIGHT-TO-LEFT' and not exists(n.reversed)
+SET n.reversed=True
+WITH n
+CALL {
+  WITH n
+    MATCH (n)-[r:CONSUMED_BY]-(c)
+    RETURN r, n as from_node, 'PRODUCES' as type, properties(r) as props, c as to_node
+UNION
+  WITH n
+    MATCH (n)-[r:PRODUCES]-(c)
+    RETURN r, c as from_node, 'CONSUMED_BY' as type, properties(r) as props, n as to_node
+}
+CALL apoc.create.relationship(from_node, type, props, to_node) YIELD rel
+DELETE r;
+
+MATCH (n:Reaction:db_BioCyc)
+WHERE n.direction = 'REVERSIBLE'
+WITH n
+  MATCH (n)-[:PRODUCES]-(p), (n)-[:CONSUMED_BY]-(c)
+  WHERE id(p) = id(c)
+  WITH collect(distinct n) as undirectReactions
+    MATCH (n:Reaction:db_BioCyc)
+    WHERE n.direction = 'REVERSIBLE' and not exists(n.reversed) and not n in undirectReactions
+    SET n.reversed=True
+    WITH collect(n) as inputNodes
+      call apoc.refactor.cloneNodesWithRelationships(inputNodes) yield input, output
+      return count(*);
+
+MATCH (n:Reaction:db_BioCyc)
+WITH n.eid as id, collect(n) as nodes
+  WHERE size(nodes) > 1
+  WITH nodes[0] as n
+    SET n.eid = n.biocyc_id + '_r'
+    WITH n
+    CALL {
+      WITH n
+        MATCH (n)-[r:CONSUMED_BY]-(c)
+        RETURN r, n as from_node, 'PRODUCES' as type, properties(r) as props, c as to_node
+    UNION
+      WITH n
+        MATCH (n)-[r:PRODUCES]-(c)
+        RETURN r, c as from_node, 'CONSUMED_BY' as type, properties(r) as props, n as to_node
+    }
+    CALL apoc.create.relationship(from_node, type, props, to_node) YIELD rel
+    DELETE r;
+
+MATCH (n:Reaction)
+WHERE n.eid ENDS WITH '_r' and not n.displayName ENDS WITH '_r'
+SET n.displayName = n.displayName + '_r';
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="recreate_constraint, date 01-03-2024" author="dominik">
+    <comment>recreate constrain for eid</comment>
+    <sql>
+    CREATE CONSTRAINT constraint_db_BioCyc_eid IF NOT EXISTS ON (n:db_BioCyc) ASSERT n.eid IS UNIQUE;
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="reverse_Gene_TransUnit_relationship, date 01-03-2024" author="dominik">
+    <comment>reverse Gene to TransactionUnit relationship.</comment>
+    <sql>
+    MATCH (n:TranscriptionUnit:db_BioCyc)-[r:ELEMENT_OF]-(g:Gene)
+MERGE (n)-[rr:HAS_GENE]->(g)
+ON CREATE SET rr = properties(r)
+DELETE r;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove_DNABindingSite_nodes, date 01-03-2024" author="dominik">
+    <comment>remove DNABindingSite nodes. Most of the nodes are orphan nodes.</comment>
+    <sql>
+    MATCH (n:DNABindingSite)
+DETACH DELETE n;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove_TYPEOF_relationship, date 01-03-2024" author="dominik">
+    <comment>remove TYPE_OF relationships to BioCycClass.</comment>
+    <sql>
+    MATCH (n)-[r:TYPE_OF]->()
+DELETE r;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove_orphan_Class_nodes, date 01-03-2024" author="dominik">
+    <comment>remove orphan BioCycClass nodes.</comment>
+    <sql>
+    MATCH (n:BioCycClass)
+WHERE not (n)-[]-()
+DELETE n;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove_Enzyme_nodes, date 01-03-2024" author="dominik">
+    <comment>remove Enzyme nodes.</comment>
+    <sql>
+    MATCH (n:db_Enzyme)
+DETACH DELETE n;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="remove_synonym_nodes, date 01-03-2024" author="dominik">
+    <comment>set synonym properties, then remove synonym nodes</comment>
+    <sql>
+    MATCH (n:db_BioCyc)-[:HAS_SYNONYM]-(s:Synonym)
+WITH n, collect(s.name) as syns
+SET n.synonyms=syns;
+
+MATCH (s:Synonym)
+DETACH DELETE s;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="label_currency_metabolites, date 01-03-2024" author="dominik">
+    <comment>Label common compound nodes as CurrencyMetabolite</comment>
+    <sql>
+    MATCH (n:db_BioCyc)
+WHERE n.biocyc_id in [
+  'PROTON', 'WATER', 'OXYGEN-MOLECULE', 'NADP', 'NADPH', 'ATP', 'PPI', 'CARBON-DIOXIDE', 'Pi',
+  'ADP', 'CO-A', 'UDP', 'NAD', 'NADH', 'AMP', 'AMMONIA', 'HYDROGEN-PEROXIDE', 'Acceptor',
+  'Donor-H2', '3-5-ADP', 'GDP', 'CARBON-MONOXIDE', 'GTP', 'FAD', 'NADH-P-OR-NOP',
+  'NAD-P-OR-NOP', 'AMMONIUM', 'NA+'
+]
+SET n:CurrencyMetabolite;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="set_detail_property, date 01-03-2024" author="dominik">
+    <comment>change description property to detail since description is used by sankey for other purpose</comment>
+    <sql>
+    MATCH (n)
+WHERE exists(n.description)
+SET n.detail = n.description
+REMOVE n.description;
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="mark_secondaries, date 01-03-2024" author="dominik">
+    <comment>Compounds meantioned in pathways which are not primary are secondary</comment>
+    <sql>
+    MATCH (:Compound)-[l:CONSUMED_BY|PRODUCES]-(:Reaction)-[:IN_PATHWAY]-(:Pathway)
+WHERE NOT EXISTS(l.PRIMARY)
+SET l.SECONDARY = "";
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="mark_implicit_primaries, date 01-03-2024" author="dominik">
+    <comment>Compounds which are not in patways need to be marked primary by default</comment>
+    <sql>
+    MATCH (c:Compound)-[l:CONSUMED_BY|PRODUCES]-(r:Reaction)
+WHERE isEmpty((r)-[:IN_PATHWAY]->(:Pathway))
+SET l.PRIMARY = "Set implicitly";
+
+    </sql>
+  </changeSet>
+
+
+  <changeSet id="delete_primary_of, date 01-03-2024" author="dominik">
+    <comment>Delete primary_of relationships to not interfere with analysis</comment>
+    <sql>
+    MATCH (c:Compound)-[l:PRIMARY_OF]->(p:Pathway)
+DELETE l;
+
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
