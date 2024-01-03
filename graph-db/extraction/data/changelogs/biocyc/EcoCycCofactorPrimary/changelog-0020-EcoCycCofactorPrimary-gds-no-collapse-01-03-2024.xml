@@ -191,29 +191,6 @@ SET n.displayName = n.eid;
   </changeSet>
 
 
-  <changeSet id="move_cofactor_relationship, date 01-03-2024" author="dominik">
-    <comment>move cofactor relationship from EnzReaction to Protein</comment>
-    <sql>
-    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
-match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->()-[:CATALYZES]->(e)-[hcof:HAS_COFACTOR]->(cof)
-merge (cof)-[:IS_COFACTOR_OF]->(protein)
-delete hcof;
-
-    </sql>
-  </changeSet>
-
-
-  <changeSet id="change_direction_of_has_cofactor, date 01-03-2024" author="dominik">
-    <comment>change direction of has cofactor</comment>
-    <sql>
-    MATCH (n)-[r:HAS_COFACTOR]->(c)
-DELETE r
-MERGE (c)-[:IS_COFACTOR_OF]->(n);
-
-    </sql>
-  </changeSet>
-
-
   <changeSet id="remove constraint, date 01-03-2024" author="dominik">
     <comment>remove constrain so that reversed reactions can be created</comment>
     <sql>

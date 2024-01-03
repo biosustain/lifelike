@@ -174,23 +174,23 @@ set reaction_display_name:
 #    DELETE r;
 
 
-move_cofactor_relationship:
-  type: GDS collapse
-  description: move cofactor relationship from EnzReaction to Protein
-  query: |
-    match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
-    match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->()-[:CATALYZES]->(e)-[hcof:HAS_COFACTOR]->(cof)
-    merge (cof)-[:IS_COFACTOR_OF]->(protein)
-    delete hcof;
+# move_cofactor_relationship:
+#   type: GDS collapse
+#   description: move cofactor relationship from EnzReaction to Protein
+#   query: |
+#     match (n:Regulation)-[r:REGULATES]->(e:EnzReaction)-[:CATALYZES]->(rxn:Reaction)
+#     match ()-[:ENCODES]->(protein)-[:COMPONENT_OF*0..]->()-[:CATALYZES]->(e)-[hcof:HAS_COFACTOR]->(cof)
+#     merge (cof)-[:IS_COFACTOR_OF]->(protein)
+#     delete hcof;
 
 
-change_direction_of_has_cofactor:
-  type: GDS collapse
-  description: change direction of has cofactor
-  query: |
-    MATCH (n)-[r:HAS_COFACTOR]->(c)
-    DELETE r
-    MERGE (c)-[:IS_COFACTOR_OF]->(n);
+# change_direction_of_has_cofactor:
+#   type: GDS collapse
+#   description: change direction of has cofactor
+#   query: |
+#     MATCH (n)-[r:HAS_COFACTOR]->(c)
+#     DELETE r
+#     MERGE (c)-[:IS_COFACTOR_OF]->(n);
 
 
 collapse_EnzReaction_nodes:
