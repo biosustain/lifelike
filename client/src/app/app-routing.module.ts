@@ -348,7 +348,7 @@ const routes: Routes = [
   {
     path: 'kg-statistics',
     component: KgStatisticsComponent,
-    canActivate: [LifelikeAuthGuard],
+    canActivate: [LifelikeAuthGuard, AdminGuard],
     data: {
       fontAwesomeIcon: 'fas fa-chart-bar',
     },
