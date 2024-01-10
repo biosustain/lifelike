@@ -116,7 +116,7 @@
         <i class="fas fa-drafting-compass"></i>
       </a>
       <a
-        *ngIf="(userRoles$ | async)?.includes('admin')"
+        *ngIf="authService.isAdmin$ | async"
         routerLink="kg-statistics"
         placement="right"
         ngbTooltip="Knowledge Graph Statistics"
