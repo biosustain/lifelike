@@ -171,10 +171,13 @@ def camel_to_snake(s):
     return ''.join(buf)
 
 
-def camel_to_snake_dict(d, new_dict: dict) -> dict:
+def camel_to_snake_dict(d, new_dict: dict = None) -> dict:
     """Converts a camelCase dict to snake case while taking into
     consideration a nested list or dict as a value.
     """
+    if new_dict is None:
+        new_dict = dict()
+
     if type(d) is not dict:
         return d
     for k, v in d.items():
@@ -354,6 +357,11 @@ def equal_number_of_words(term_a: str, term_b: str) -> bool:
     return len(term_a.split(' ')) == len(term_b.split(' '))
 
 
+def stream_to_json_lines(stream):
+    for chunk in stream:
+        yield json.dumps(chunk) + '\n'
+
+
 __all__ = [
     'is_nice_word_boundary_char',
     'is_nice_char',
@@ -375,4 +383,5 @@ __all__ = [
     'CamelDictMixin',
     'CasePreservedDict',
     'equal_number_of_words',
+    'stream_to_json_lines',
 ]

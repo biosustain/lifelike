@@ -1,5 +1,7 @@
 import { Component, Input } from '@angular/core';
 
+import { isEmpty } from 'lodash-es';
+
 import { UniversalGraphNode } from 'app/drawing-tool/services/interfaces';
 import { FTSQueryRecord } from 'app/interfaces';
 import { DBHostname } from 'app/shared/constants';
@@ -28,8 +30,10 @@ export class SearchRecordNodeComponent {
   @Input()
   set node(value: FTSQueryRecord) {
     this.currentNode = value;
-    this.normalizedNodeLabel = value.node.label.toLowerCase();
-    this.nodeURL = stringToHex(value.node.id.toString());
+    if (!isEmpty(value.node)) {
+      this.normalizedNodeLabel = value.node.label.toLowerCase();
+      this.nodeURL = stringToHex(value.node.id.toString());
+    }
   }
 
   get node(): FTSQueryRecord {

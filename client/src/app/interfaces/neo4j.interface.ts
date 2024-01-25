@@ -1,3 +1,4 @@
+import { IdType } from 'vis-network';
 import { ColorObject } from 'vis-network/dist/types/network/gephiParser';
 
 export interface NodeLegend {
@@ -10,7 +11,7 @@ export interface NodeLegend {
 export type DefaultNodeData = Record<string, any> & { eid: any };
 /** Node representation from the backend */
 export interface GraphNode<Data = DefaultNodeData> {
-  id: number;
+  id: IdType;
   label: string;
   data: Data;
   subLabels: Array<string>;
@@ -21,11 +22,11 @@ export interface GraphNode<Data = DefaultNodeData> {
 
 /** Edge represenattion from the backend */
 export interface GraphRelationship<Data = Record<string, any>> {
-  id: number;
+  id: IdType;
   label: string;
   data: Data;
-  to: number;
-  from: number;
+  to: IdType;
+  from: IdType;
   toLabel: string;
   fromLabel: string;
 }
@@ -39,8 +40,8 @@ export interface VisNode<Data = DefaultNodeData> extends GraphNode<Data> {
 }
 
 export interface DuplicateVisNode<Data = DefaultNodeData> extends VisNode<Data> {
-  id: any;
-  duplicateOf: number;
+  id: IdType;
+  duplicateOf: IdType;
 }
 
 /** VisJS Edge Representations for Client */
@@ -52,10 +53,10 @@ export interface VisEdge<Data = Record<string, any>> extends GraphRelationship<D
 // TODO: For DuplicateVisEdge, `to` and `from` are actually string types in the shape 'duplicateEdge:{hash}'.
 // We may want to update this interface so the type is reflected properly.
 export interface DuplicateVisEdge<Data = Record<string, any>> extends VisEdge<Data> {
-  id: any;
-  duplicateOf: number | null;
-  originalFrom: number | null;
-  originalTo: number | null;
+  id: IdType;
+  duplicateOf: IdType | null;
+  originalFrom: IdType | null;
+  originalTo: IdType | null;
 }
 
 export interface Neo4jResults<NodeData = DefaultNodeData, EdgeData = Record<string, any>> {
@@ -101,7 +102,7 @@ export interface FTSResult<Data = Record<string, any>> {
 }
 
 export interface SearchRecord {
-  nodeId: number;
+  nodeId: IdType;
   label: string;
   subLabels: Array<string>;
   data: string;

@@ -13,6 +13,7 @@ directory = path.realpath(path.dirname(__file__))
 def test_add_custom_annotation_inclusion_annotate_all(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner,
 ):
@@ -42,6 +43,7 @@ def test_add_custom_annotation_inclusion_annotate_all(
 def test_add_custom_annotation_inclusion_multi_word(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner,
 ):
@@ -72,6 +74,7 @@ def test_add_custom_annotation_inclusion_multi_word(
 def test_add_custom_annotation_inclusion(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner,
 ):
@@ -101,6 +104,7 @@ def test_add_custom_annotation_inclusion(
 def test_add_custom_annotation_inclusion_multi_word_gene_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner,
 ):
@@ -130,6 +134,7 @@ def test_add_custom_annotation_inclusion_multi_word_gene_limit(
 def test_add_custom_annotation_inclusion_multi_word_food_limit(
     get_manual_annotation_service,
     mock_add_custom_annotation_inclusion,
+    test_arango_db,
     file_in_project,
     project_owner,
 ):

@@ -4,7 +4,7 @@ from typing import Any, Optional, Type
 import attr
 from flask import g, jsonify, request
 
-from neo4japp.utils import CamelDictMixin, camel_to_snake_dict
+from neo4japp.utils.string import camel_to_snake_dict, CamelDictMixin
 
 
 def scope_flask_app_ctx(name):

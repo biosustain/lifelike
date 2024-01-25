@@ -9,7 +9,7 @@ if [ "${FLASK_ENV}" = "development" ] && [ "${FLASK_APP_CONFIG}" = "Development"
     # wait for postgres
     timeout 300 ${__dir__}/wait-for-postgres
     # wait for neo4j
-    timeout 300 ${__dir__}/wait-for-neo4j
+    timeout 300 ${__dir__}/wait-for-arango
     #wait for elastic
     timeout 300 ${__dir__}/wait-for-elastic
     # setup db

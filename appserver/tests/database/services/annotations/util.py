@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Tuple
 
 from neo4japp.services.annotations import (
     EntityRecognitionService,

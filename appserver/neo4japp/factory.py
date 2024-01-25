@@ -3,7 +3,6 @@ import logging
 from http import HTTPStatus
 
 from elasticapm.contrib.flask import ElasticAPM
-from neo4j.exceptions import ServiceUnavailable
 from functools import partial
 from flask import current_app, Flask, jsonify, has_request_context, request
 from flask.logging import wsgi_errors_stream
@@ -18,7 +17,6 @@ from werkzeug.utils import find_modules, import_string
 
 from neo4japp.constants import LogEventType
 from neo4japp.database import (
-    close_neo4j_db,
     close_redis_conn,
     close_arango_client,
     db,
@@ -118,7 +116,6 @@ def create_app(name='neo4japp', config_package='config.Development'):
     app = Flask(name)
     app.config.from_object(config_package)
     app.teardown_appcontext_funcs = [
-        close_neo4j_db,
         close_redis_conn,
         close_arango_client,
     ]
@@ -158,7 +155,6 @@ def create_app(name='neo4japp', config_package='config.Development'):
     )
     app.register_error_handler(ServerException, handle_error)
     app.register_error_handler(BrokenPipeError, handle_error)
-    app.register_error_handler(ServiceUnavailable, handle_error)
     app.register_error_handler(ServerWarning, handle_warning)
     app.register_error_handler(Warning, partial(handle_generic_warning, 199))
     app.register_error_handler(Exception, partial(handle_generic_error, 500))

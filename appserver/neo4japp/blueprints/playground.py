@@ -5,8 +5,8 @@ from webargs.flaskparser import use_args
 from neo4japp.schemas.playground.chat_completions import ChatCompletionsRequestSchema
 from neo4japp.schemas.playground.completions import CompletionsRequestSchema
 from neo4japp.services.chat_gpt import ChatGPT
-from neo4japp.util import stream_to_json_lines
 from neo4japp.utils.globals import config, get_current_username
+from neo4japp.utils.string import stream_to_json_lines
 
 bp = Blueprint('playground', __name__, url_prefix='/playground')
 
