@@ -22,7 +22,7 @@ Kubernetes: `>=1.20.0-0`
 | https://charts.bitnami.com/bitnami | postgresql | 11.0.4 |
 | https://charts.bitnami.com/bitnami | redis | 16.2.0 |
 | https://helm.elastic.co | elasticsearch | 7.16.3 |
-| https://neo4j-contrib.github.io/neo4j-helm | neo4j | 4.4.3 |
+| https://github.com/arangodb/kube-arangodb | kube-arangodb | 1.2.39 |
 
 ## Values
 
@@ -40,11 +40,11 @@ Kubernetes: `>=1.20.0-0`
 | statisticalEnrichment | object | `{"image":{"repository":"ghcr.io/sbrg/lifelike-statistical-enrichment","tag":""},"livenessProbe":{"enabled":true,"failureThreshold":20,"initialDelaySeconds":20,"path":"/healthz","periodSeconds":10,"successThreshold":1,"timeoutSeconds":10},"readinessProbe":{"enabled":true,"failureThreshold":20,"initialDelaySeconds":20,"path":"/healthz","periodSeconds":10,"successThreshold":1,"timeoutSeconds":10},"replicaCount":1,"resources":{},"service":{"port":5000,"type":"ClusterIP"}}` | ---------------------------------------------------------------------------- |
 | pdfparser | object | `{"autoScaling":{"enabled":false,"maxReplicas":4,"minReplicas":2,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80},"image":{"repository":"ghcr.io/sbrg/lifelike-pdfparser","tag":"latest"},"livenessProbe":{"enabled":true,"failureThreshold":20,"initialDelaySeconds":20,"path":"/","periodSeconds":10,"successThreshold":1,"timeoutSeconds":10},"readinessProbe":{"enabled":true,"failureThreshold":20,"initialDelaySeconds":20,"path":"/","periodSeconds":10,"successThreshold":1,"timeoutSeconds":10},"replicaCount":1,"resources":{},"service":{"port":7600,"type":"ClusterIP"}}` | ---------------------------------------------------------------------------- |
 | postgresqlExternal | object | `{"database":"postgres","existingSecret":"","host":"postgres.local","password":"password","port":5432,"user":"postgres"}` | ---------------------------------------------------------------------------- |
-| neo4jExternal.host | string | `"neo4j.local"` |  |
-| neo4jExternal.port | int | `7687` |  |
-| neo4jExternal.user | string | `"neo4j"` |  |
-| neo4jExternal.password | string | `"password"` |  |
-| neo4jExternal.database | string | `"neo4j"` |  |
+| arangodbExternal.host | string | `"arangodb.local"` |  |
+| arangodbExternal.port | int | `7687` |  |
+| arangodbExternal.user | string | `"arangodb"` |  |
+| arangodbExternal.password | string | `"password"` |  |
+| arangodbExternal.database | string | `"arangodb"` |  |
 | redisExternal.host | string | `"redis.local"` |  |
 | redisExternal.port | int | `6379` |  |
 | redisExternal.password | string | `""` |  |
@@ -55,7 +55,7 @@ Kubernetes: `>=1.20.0-0`
 | elasticsearchExternal.ssl | bool | `false` |  |
 | postgresql | object | `{"auth":{"database":"database","postgresPassword":"password"},"enabled":true}` | ---------------------------------------------------------------------------- |
 | postgresql.enabled | bool | `true` | Set to false to disable automatic deployment of PostgreSQL |
-| neo4j | object | `{"core":{"numberOfServers":1,"persistentVolume":{"size":"100Gi"},"standalone":true},"enabled":true,"imageTag":"4.4.3-community","neo4jPassword":"password"}` | ---------------------------------------------------------------------------- |
+| arangodb | object | `{"core":{"numberOfServers":1,"persistentVolume":{"size":"100Gi"},"standalone":true},"enabled":true,"imageTag":"4.4.3-community","arangodbPassword":"password"}` | ---------------------------------------------------------------------------- |
 | elasticsearch | object | `{"enabled":true,"esConfig":{"elasticsearch.yml":"node.store.allow_mmap: false\n"},"fullnameOverride":"elasticsearch","image":"ghcr.io/sbrg/lifelike-elasticsearch","imageTag":"7.16.3","volumeClaimTemplate":{"resources":{"requests":{"storage":"30Gi"}}}}` | ---------------------------------------------------------------------------- |
 | redis | object | `{"auth":{"password":"password"},"commonConfiguration":"# Disable persistence to disk\nsave \"\"\n# Disable AOF https://redis.io/topics/persistence#append-only-file\nappendonly no","enabled":true,"master":{"extraFlags":["--maxmemory-policy allkeys-lru"],"persistence":{"enabled":false}},"replica":{"extraFlags":["--maxmemory-policy allkeys-lru"],"persistence":{"enabled":false}}}` | ---------------------------------------------------------------------------- |
 

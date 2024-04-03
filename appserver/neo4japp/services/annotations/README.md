@@ -146,9 +146,9 @@ A global inclusion/exclusion is **both** a local and a global.
 
 Local inclusions/exclusions are stored in Postgres, as well as global exclusions. The locals are saved in the `files` table, while the globals are in `global_list`.
 
-The global inclusions are stored in Neo4j under the label `:GlobalInclusion` if they do not map to any existing nodes, otherwise use that existing node and create a new synonym relationship with it.
+The global inclusions are stored in ArangoDB under the label `:GlobalInclusion` if they do not map to any existing nodes, otherwise use that existing node and create a new synonym relationship with it.
 
-Because we do not curate before they're added to Neo4j, a user can potentially create a bad global inclusion. To correctly delete, we need the property `original_entity_types` so we don't accidentally delete the wrong thing. See https://sbrgsoftware.atlassian.net/browse/LL-3625 for more information.
+Because we do not curate before they're added to ArangoDB, a user can potentially create a bad global inclusion. To correctly delete, we need the property `original_entity_types` so we don't accidentally delete the wrong thing. See https://sbrgsoftware.atlassian.net/browse/LL-3625 for more information.
 
 ## NLP Service
 

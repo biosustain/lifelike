@@ -1,25 +1,27 @@
 version: "3.8"
 
+# Hasn't been migrated to Arango - not working
+
 services:
-  neo4j:
-    image: neo4j:4.4-community
+  arangodb:
+    image: arangodb:4.4-community
     restart: on-failure
     environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc"]
-      - NEO4J_dbms.unmanaged_extension_classes=n10s.endpoint=/rdf # for the neosemantics-4.3.0.0.jar
+      - ARANGODB_AUTH=arangodb/password
+      - ARANGODBLABS_PLUGINS=["apoc"]
+      - ARANGODB_dbms.unmanaged_extension_classes=n10s.endpoint=/rdf # for the neosemantics-4.3.0.0.jar
     ports:
       - 7687:7687
       - 7474:7474
     volumes:
-      - neo4j:/var/lib/neo4j/data
+      - arangodb:/var/lib/arangodb/data
 
   migrator:
     build:
       context: migrator
     environment:
-      - NEO4J_HOST=neo4j
-      - NEO4J_PASSWORD=password
+      - ARANGODB_HOST=arangodb
+      - ARANGODB_PASSWORD=password
       - CHANGELOG_FILE=lifelike-graph/changelog-master.xml
       - DATAFILES_PREFIX=stage
       - LOG_LEVEL=debug
@@ -29,9 +31,9 @@ services:
       - ./changelog:/liquibase/changelog
       - ./tmp:/tmp
     depends_on:
-      - neo4j
+      - arangodb
     links:
-      - neo4j
+      - arangodb
 
 volumes:
-  neo4j: {}
+  arangodb: {}

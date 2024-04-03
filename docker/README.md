@@ -1,3 +1,5 @@
+
+
 # Getting Started with Lifelike using Docker
 
 Docker is an easy way to get started with Lifelike.
@@ -50,7 +52,7 @@ The stack definition is divided into three Docker Compose files:
 ```tree
 ├── docker-compose.yml           --> Base core services
 ├── docker-compose.dev.yml       --> Overrides base core services for local development and debugging.
-└── docker-compose.services.yml  --> Adds third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
+└── docker-compose.services.yml  --> Adds third party services (PostgreSQL, ArangoDB, Elasticsearch, Redis)
 ```
 
 You may combine them as you need and/or add your own `docker-compose.override.yml` to override any configuration. (this file will be ignored by Git)

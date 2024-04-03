@@ -21,17 +21,6 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Build appserver image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-appserver
-          image_tag: ${{ github.sha }}
-          context: ./appserver
-          dockerfile: ./Dockerfile
-
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 

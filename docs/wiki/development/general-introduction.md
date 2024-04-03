@@ -101,7 +101,7 @@ For `$container_name`, you have a choice of:
 docker compose exec pgdatabase psql -U postgres -h pgdatabase -d postgres
 ```
 
-### Neo4j
+### ArangoDB
 
 ```sh
 docker compose exec database cypher-shell -u neo4j

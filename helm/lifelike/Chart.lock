@@ -2,9 +2,9 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 11.0.4
-- name: neo4j
-  repository: https://neo4j-contrib.github.io/neo4j-helm
-  version: 4.4.3
+- name: kube-arangodb
+  repository: https://github.com/arangodb/kube-arangodb
+  version: 1.2.39
 - name: elasticsearch
   repository: https://helm.elastic.co
   version: 7.16.3

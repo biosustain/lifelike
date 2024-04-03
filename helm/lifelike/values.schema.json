@@ -363,7 +363,7 @@
                 }
             }
         },
-        "neo4j": {
+        "arangodb": {
             "type": "object",
             "properties": {
                 "core": {
@@ -391,12 +391,12 @@
                 "imageTag": {
                     "type": "string"
                 },
-                "neo4jPassword": {
+                "arangodbPassword": {
                     "type": "string"
                 }
             }
         },
-        "neo4jExternal": {
+        "arangodbExternal": {
             "type": "object",
             "properties": {
                 "database": {

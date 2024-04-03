@@ -5,7 +5,7 @@ version: "3.8"
 services:
   # PostgreSQL database
   postgres:
-    image: postgres:13
+    image: postgres:11
     restart: unless-stopped
     container_name: postgres
     environment:
@@ -18,45 +18,52 @@ services:
       test: ["CMD", "pg_isready", "-U", "postgres", "-q"]
       start_period: 10s
 
-  ## Neo4j graph database
-  neo4j:
-    image: neo4j:4.4-community
-    restart: unless-stopped
-    container_name: neo4j
+  ## ArangoDB graph database
+  arangodb:
+    build:
+      # Note that this Dockerfile simply adds a user directory and installs the helper scripts into it, and then executes the default arango
+      # entrypoint as normal.
+      context: ../arangodb
+      dockerfile: Dockerfile
+    container_name: arangodb
     environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc"]
+      ARANGO_ROOT_PASSWORD: password
+      LIFELIKE_DB_NAME: lifelike
     ports:
-      - 7687:7687
-      - 7474:7474
+      - 8529:8529
     volumes:
-      - neo4j:/var/lib/neo4j/data
-    healthcheck:
-      test: ["CMD", "wget", "localhost:7474", "-O", "-"]
-      start_period: 1m
+      - ../arangodb/bin:/home/dbuser/bin # the /home/dbuser directory is setup in the Dockerfile
+      - ../arangodb/data:/var/lib/arangodb3
+      - ../arangodb/apps:/var/lib/arangodb3-apps
 
   ## Ekasticsearch search engine
   elasticsearch:
-    image: ghcr.io/sbrg/lifelike-elasticsearch:7.16.3
-    restart: unless-stopped
     container_name: elasticsearch
+    build:
+      dockerfile: Dockerfile
+      context: ../elasticsearch
     environment:
       - discovery.type=single-node
+      - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
       - bootstrap.memory_lock=true
-    ports:
-      - 9200
+      - xpack.graph.enabled=false
+      - xpack.watcher.enabled=false
+      - xpack.license.self_generated.type=basic
     volumes:
-      - elasticsearch:/usr/share/elasticsearch/data
+      - ../elasticsearch:/usr/share/elasticsearch/data
     ulimits:
       memlock:
         soft: -1
         hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
     healthcheck:
       test: ["CMD", "curl", "-f", "localhost:9200/_cluster/health"]
       start_period: 1m
 
   redis:
-    image: redis:alpine
+    image: redis:6-alpine
     restart: unless-stopped
     container_name: redis
     ports:
@@ -68,34 +75,43 @@ services:
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=postgres
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=root
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=lifelike
       - ELASTICSEARCH_URL=http://elasticsearch:9200
       - REDIS_HOST=redis
     depends_on:
       - postgres
-      - neo4j
+      - arangodb
       - elasticsearch
 
   statistical-enrichment:
     environment:
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=root
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=lifelike
       - REDIS_HOST=redis
     depends_on:
-      - neo4j
+      - arangodb
       - redis
 
   cache-invalidator:
     environment:
-      - NEO4J_HOST=neo4j
-      - NEO4J_AUTH=neo4j/password
+      # Arango
+      - ARANGO_HOST=http://arangodb:8529
+      - ARANGO_USERNAME=root
+      - ARANGO_PASSWORD=password
+      - ARANGO_DB_NAME=lifelike
       - REDIS_HOST=redis
     depends_on:
-      - neo4j
+      - arangodb
       - redis
 
 volumes:
   postgres:
-  neo4j:
+  arangodb:
   elasticsearch:

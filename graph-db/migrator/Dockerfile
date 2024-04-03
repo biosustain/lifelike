@@ -20,23 +20,23 @@ RUN mvn -B clean package -DskipTests
 FROM liquibase/liquibase:$LIQUIBASE_IMAGE_TAG
 LABEL org.opencontainers.image.source https://github.com/SBRG/lifelike
 
-ARG LIQUIBASE_NEO4J_VERSION=4.7.1.3
-ARG NEO4J_JDBC_VERSION=4.0.5
+ARG LIQUIBASE_ARANGODB_VERSION=4.7.1.3
+ARG ARANGODB_JDBC_VERSION=4.0.5
 
-# Install liquibase-neo4j extension
-RUN lpm update && lpm add --global liquibase-neo4j@$LIQUIBASE_NEO4J_VERSION
+# Install liquibase-arangodb extension
+RUN lpm update && lpm add --global liquibase-arangodb@$LIQUIBASE_ARANGODB_VERSION
 
-# Download Neo4j JDBC driver
-ADD --chown=liquibase:liquibase https://github.com/neo4j-contrib/neo4j-jdbc/releases/download/${NEO4J_JDBC_VERSION}/neo4j-jdbc-driver-${NEO4J_JDBC_VERSION}.jar lib/
+# Download ArangoDB JDBC driver
+ADD --chown=liquibase:liquibase https://github.com/arangodb-contrib/arangodb-jdbc/releases/download/${ARANGODB_JDBC_VERSION}/arangodb-jdbc-driver-${ARANGODB_JDBC_VERSION}.jar lib/
 
 # Copy JAR from build stage
 COPY --from=build --chown=liquibase:liquibase /target/graphdb-migrator-*.jar ./lib
 
-# Neo4j database configuration
-ENV NEO4J_HOST=
-ENV NEO4J_USERNAME=neo4j
-ENV NEO4J_PASSWORD=neo4j
-ENV NEO4J_DATABASE=neo4j
+# ArangoDB database configuration
+ENV ARANGODB_HOST=
+ENV ARANGODB_USERNAME=arangodb
+ENV ARANGODB_PASSWORD=arangodb
+ENV ARANGODB_DATABASE=arangodb
 
 # Master changelog file. e.g. lifelike-graph/changelog-master.xml
 ENV CHANGELOG_FILE=

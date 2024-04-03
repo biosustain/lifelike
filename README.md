@@ -120,7 +120,7 @@ Lifelike is a distributed system comprised of the following components:
 ### Backing services
 
 - **PostgreSQL** as a RDBMS.
-- **Neo4j** as a graph database.
+- **ArangoDB** as a graph database.
 - **Elasticsearch** as a full-text search engine.
 - **Redis** as a key-value cache store.
 - **PDFParser** as a document parsing library.

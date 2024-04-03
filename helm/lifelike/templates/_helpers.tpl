@@ -163,18 +163,18 @@ Set postgres secretKey
 
 
 {{/* ---------------------------------------------------------------------- */}}
-{{/* Neo4J                                                                  */}}
+{{/* ArangoDB                                                               */}}
 {{/* ---------------------------------------------------------------------- */}}
 
 {{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "lifelike.neo4j.fullname" -}}
-{{- if .Values.neo4j.fullnameOverride -}}
-{{- .Values.neo4j.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- define "lifelike.arangodb.fullname" -}}
+{{- if .Values.arangodb.fullnameOverride -}}
+{{- .Values.arangodb.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default "neo4j" .Values.neo4j.nameOverride -}}
+{{- $name := default "arangodb" .Values.arangodb.nameOverride -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -184,57 +184,57 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- end -}}
 
 {{/*
-Return the Neo4j hostname
+Return the ArangoDB hostname
 */}}
-{{- define "lifelike.neo4jHost" -}}
-{{- if .Values.neo4j.enabled }}
-    {{- printf "%s" (include "lifelike.neo4j.fullname" .) -}}
+{{- define "lifelike.arangodbHost" -}}
+{{- if .Values.arangodb.enabled }}
+    {{- printf "%s" (include "lifelike.arangodb.fullname" .) -}}
 {{- else -}}
-    {{- printf "%s" .Values.neo4jExternal.host -}}
+    {{- printf "%s" .Values.arangodbExternal.host -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the Neo4j port
+Return the ArangoDB port
 */}}
-{{- define "lifelike.neo4jPort" -}}
-{{- if .Values.neo4j.enabled }}
+{{- define "lifelike.arangodbPort" -}}
+{{- if .Values.arangodb.enabled }}
     {{- printf "7687" -}}
 {{- else -}}
-    {{- .Values.neo4jExternal.port -}}
+    {{- .Values.arangodbExternal.port -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the Neo4j user
+Return the ArangoDB user
 */}}
-{{- define "lifelike.neo4jUser" -}}
-{{- if .Values.neo4j.enabled }}
-    {{- printf "neo4j" -}}
+{{- define "lifelike.arangodbUser" -}}
+{{- if .Values.arangodb.enabled }}
+    {{- printf "arangodb" -}}
 {{- else -}}
-    {{- printf "%s" .Values.neo4jExternal.user -}}
+    {{- printf "%s" .Values.arangodbExternal.user -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the Neo4j password
+Return the ArangoDB password
 */}}
-{{- define "lifelike.neo4jPassword" -}}
-{{- if .Values.neo4j.enabled }}
-    {{- printf "%s" .Values.neo4j.neo4jPassword -}}
+{{- define "lifelike.arangodbPassword" -}}
+{{- if .Values.arangodb.enabled }}
+    {{- printf "%s" .Values.arangodb.arangodbPassword -}}
 {{- else -}}
-    {{- printf "%s" .Values.neo4jExternal.password -}}
+    {{- printf "%s" .Values.arangodbExternal.password -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the Neo4j database name
+Return the ArangoDB database name
 */}}
-{{- define "lifelike.neo4jDatabase" -}}
-{{- if .Values.neo4j.enabled }}
-    {{- default "neo4j" .Values.neo4j.defaultDatabase -}}
+{{- define "lifelike.arangodbDatabase" -}}
+{{- if .Values.arangodb.enabled }}
+    {{- default "arangodb" .Values.arangodb.defaultDatabase -}}
 {{- else -}}
-    {{- default "neo4j" .Values.neo4jExternal.database -}}
+    {{- default "arangodb" .Values.arangodbExternal.database -}}
 {{- end -}}
 {{- end -}}
 
@@ -282,7 +282,7 @@ Return the Elasticsearch port
 {{- end -}}
 
 {{/*
-Return the Neo4j user
+Return the ArangoDB user
 */}}
 {{- define "lifelike.elasticsearchUser" -}}
 {{- if .Values.elasticsearch.enabled }}
@@ -472,17 +472,17 @@ PostgreSQL environment variables helper
 
 
 {{/*
-Neo4j environment variables helper
+ArangoDB environment variables helper
 */}}
-{{- define "lifelike.neo4jEnv" -}}
-- name: NEO4J_HOST
-  value: {{ template "lifelike.neo4jHost" . }}
-- name: NEO4J_PORT
-  value: {{ include "lifelike.neo4jPort" . | quote }}
-- name: NEO4J_AUTH
-  value: {{ template "lifelike.neo4jUser" . }}/{{ template "lifelike.neo4jPassword" . }}
-- name: NEO4J_DB
-  value: {{ template "lifelike.neo4jDatabase" . }}
+{{- define "lifelike.arangodbEnv" -}}
+- name: ARANGODB_HOST
+  value: {{ template "lifelike.arangodbHost" . }}
+- name: ARANGODB_PORT
+  value: {{ include "lifelike.arangodbPort" . | quote }}
+- name: ARANGODB_AUTH
+  value: {{ template "lifelike.arangodbUser" . }}/{{ template "lifelike.arangodbPassword" . }}
+- name: ARANGODB_DB
+  value: {{ template "lifelike.arangodbDatabase" . }}
 {{- end -}}
 
 

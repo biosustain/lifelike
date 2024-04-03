@@ -207,7 +207,7 @@ statisticalEnrichment:
     periodSeconds: 10
     successThreshold: 1
     timeoutSeconds: 10
-  
+
   service:
     type: ClusterIP
     port: 5000
@@ -282,13 +282,13 @@ postgresqlExternal:
   ## -- Read password from an existing secret, must contain key "postgres-password"
   existingSecret: ""
 
-## -- External Neo4j connection details, ignored if neo4j.enabled is set to true
-neo4jExternal:
-  host: neo4j.local
+## -- External ArangoDB connection details, ignored if arangodb.enabled is set to true
+arangodbExternal:
+  host: arangodb.local
   port: 7687
-  user: neo4j
+  user: arangodb
   password: password
-  database: neo4j
+  database: arangodb
 
 
 ## -- External Redis connection details, ignored if redis.enabled is set to true
@@ -328,19 +328,19 @@ postgresql:
     database: database
 
 # ------------------------------------------------------------------------------
-# Neo4j database
+# ArangoDB database
 # ------------------------------------------------------------------------------
 
-## -- Embedded Neo4j subchart deployment
-## -- See all available values: https://github.com/neo4j-contrib/neo4j-helm/blob/master/values.yaml
-neo4j:
-  ## -- Set to false to disable automatic deployment of Neo4j
+## -- Embedded ArangoDB subchart deployment
+## -- See all available values: https://github.com/arangodb-contrib/arangodb-helm/blob/master/values.yaml
+arangodb:
+  ## -- Set to false to disable automatic deployment of ArangoDB
   enabled: true
 
   imageTag: 4.4.3-community
 
-  ## -- Neo4j password
-  neo4jPassword: password
+  ## -- ArangoDB password
+  arangodbPassword: password
 
   core:
     ## -- Whether to deploy a standalone server or a replicated cluster

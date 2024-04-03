@@ -1,7 +1,7 @@
 # ========================================
 # Base image
 # ========================================
-FROM python:3.10-slim as base
+FROM python:3.11-slim as base
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -42,12 +42,12 @@ USER app
 # Copy application code
 COPY --chown=app main.py ./
 
-# Neo4j configuration
-ENV NEO4J_HOST=neo4j
-ENV NEO4J_PORT=7687
-ENV NEO4J_AUTH=neo4j/password
-ENV NEO4J_SCHEME=bolt
-ENV NEO4J_DATABASE=neo4j
+# ArangoDB configuration
+ENV ARANGODB_HOST=arangodb
+ENV ARANGODB_PORT=7687
+ENV ARANGODB_AUTH=arangodb/password
+ENV ARANGODB_SCHEME=bolt
+ENV ARANGODB_DATABASE=arangodb
 
 # Redis cache configuration
 ENV REDIS_HOST=redis

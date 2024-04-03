@@ -1,7 +1,7 @@
 # ========================================
 # Base image
 # ========================================
-FROM python:3.10-slim as base
+FROM python:3.9-slim as base
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -82,12 +82,12 @@ ENV POSTGRES_USER=postgres
 ENV POSTGRES_PASSWORD=postgres
 ENV POSTGRES_DB=postgres
 
-# Neo4j configuration
-ENV NEO4J_HOST=neo4j
-ENV NEO4J_PORT=7687
-ENV NEO4J_AUTH=neo4j/password
-ENV NEO4J_DATABASE=neo4j
-ENV NEO4J_SCHEME=bolt
+# ArangoDB configuration
+ENV ARANGODB_HOST=arangodb
+ENV ARANGODB_PORT=7687
+ENV ARANGODB_AUTH=arangodb/password
+ENV ARANGODB_DATABASE=arangodb
+ENV ARANGODB_SCHEME=bolt
 
 # Elasticsearch configuration
 ENV ELASTICSEARCH_URL=http://elasticsearch:9200
@@ -129,5 +129,5 @@ EXPOSE $PORT
 HEALTHCHECK --start-period=30s \
     CMD curl -f localhost:$PORT/meta || exit 1
 
-RUN chmod +x bin/docker-entrypoint.sh
-ENTRYPOINT ["bin/docker-entrypoint.sh"]
+RUN chmod +x bin/startup.sh
+ENTRYPOINT ["bin/startup.sh"]

@@ -1,6 +1,6 @@
 ## This is an example values files for installing Lifelike Helm chart
 ## connecting to external existing database services
-## instead of installing the embedded subcharts (postgres, neo4j and elasticsearch)
+## instead of installing the embedded subcharts (postgres, arangodb and elasticsearch)
 
 
 # Disable the embedded PostgreSQL subchart
@@ -14,14 +14,14 @@ postgresqlExternal:
   database: postgres
   password: password
 
-# Disable embedded Neo4j subchart
-neo4j:
+# Disable embedded ArangoDB subchart
+arangodb:
   enabled: false
-# Configure external Neo4j database
-neo4jExternal:
-  host: neo4j.local
+# Configure external ArangoDB database
+arangodbExternal:
+  host: arangodb.local
   port: 7687
-  user: neo4j
+  user: arangodb
   password: password
 
 # Disable embedded Elasticsearch subchart

@@ -8,7 +8,7 @@ from neo4japp.utils import CamelDictMixin
 
 @attr.s(frozen=True)
 class FTSQueryRecord(CamelDictMixin):
-    """Single record from a full text query in Neo4j"""
+    """Single record from a full text query in ArangoDB"""
 
     node: GraphNode = attr.ib()
 
@@ -36,7 +36,7 @@ class FTSReferenceRecord(FTSQueryRecord):
 
 @attr.s(frozen=True)
 class FTSResult(CamelDictMixin):
-    """Paginated results for a full text search query in Neo4j"""
+    """Paginated results for a full text search query in ArangoDB"""
 
     query: str = attr.ib()
     nodes: List[FTSQueryRecord] = attr.ib()
