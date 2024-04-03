@@ -2,7 +2,6 @@
 ## connecting to external existing database services
 ## instead of installing the embedded subcharts (postgres, arangodb and elasticsearch)
 
-
 # Disable the embedded PostgreSQL subchart
 postgresql:
   enabled: false

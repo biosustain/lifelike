@@ -55,15 +55,15 @@ Visualizations are a powerful way to help you to understand the relationships be
 
 Lifelike currently provides the following built-in visualization types:
 
-- Maps
-- Enrichment tables
-- Sankey diagrams
-- Pathway Browser
+-   Maps
+-   Enrichment tables
+-   Sankey diagrams
+-   Pathway Browser
 
 ### Other features
 
-- Multi-user collaborative workbench
-- Powerful search engine
+-   Multi-user collaborative workbench
+-   Powerful search engine
 
 ## Common development operations
 
@@ -111,20 +111,20 @@ Lifelike is a distributed system comprised of the following components:
 
 ### Core services
 
-- **[Appserver](appserver)**. Backend API service, written in Python using the the Flask framework.
-- **[Client](client)**. Frontend Single Page Application, written in Typescript using the Angular framework.
-- **[Statistical enrichment](statistical-enrichment)**. Statistics generation microservice, written in Python using the the Flask framework.
-- **[Cache invalidator](cache-invalidator)**. Recurrent task runner for bulk large computations and cache data management, written in Python.
-- **[Graph data migrator](graph-db)**. Utility service for migrating and versioning knowledge graph database, using the Liquibase database migration tool.
+-   **[Appserver](appserver)**. Backend API service, written in Python using the the Flask framework.
+-   **[Client](client)**. Frontend Single Page Application, written in Typescript using the Angular framework.
+-   **[Statistical enrichment](statistical-enrichment)**. Statistics generation microservice, written in Python using the the Flask framework.
+-   **[Cache invalidator](cache-invalidator)**. Recurrent task runner for bulk large computations and cache data management, written in Python.
+-   **[Graph data migrator](graph-db)**. Utility service for migrating and versioning knowledge graph database, using the Liquibase database migration tool.
 
 ### Backing services
 
-- **PostgreSQL** as a RDBMS.
-- **ArangoDB** as a graph database.
-- **Elasticsearch** as a full-text search engine.
-- **Redis** as a key-value cache store.
-- **PDFParser** as a document parsing library.
-- **Sendgrid** as an email messaging service.
+-   **PostgreSQL** as a RDBMS.
+-   **ArangoDB** as a graph database.
+-   **Elasticsearch** as a full-text search engine.
+-   **Redis** as a key-value cache store.
+-   **PDFParser** as a document parsing library.
+-   **Sendgrid** as an email messaging service.
 
 ## License
 

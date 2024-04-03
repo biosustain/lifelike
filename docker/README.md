@@ -1,12 +1,10 @@
-
-
 # Getting Started with Lifelike using Docker
 
 Docker is an easy way to get started with Lifelike.
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/get-started)
+-   [Docker](https://www.docker.com/get-started)
 
 ## Run locally
 
@@ -21,7 +19,7 @@ make up
 
 ```text
 Building and running containers...
-This may take a while if running for the first time. 
+This may take a while if running for the first time.
 
 [+] Running 13/13
  ⠿ Network lifelike                             Created

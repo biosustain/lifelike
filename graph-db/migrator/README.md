@@ -30,10 +30,10 @@ docket run --rm \
 | Variable                   | Default        | Comment                             |
 | -------------------------- | -------------- | ----------------------------------- |
 | CHANGELOG_DIR              | lifelike-graph | Master changelog directory path     |
-| ARANGODB_HOST                 |                | Host and port of ArangoDB instance     |
-| ARANGODB_USERNAME             | neo4j          | ArangoDB authentication username       |
-| ARANGODB_PASSWORD             | password       | ArangoDB authentication password       |
-| ARANGODB_DATABASE             | neo4j          | ArangoDB target database               |
+| ARANGODB_HOST              |                | Host and port of ArangoDB instance  |
+| ARANGODB_USERNAME          | neo4j          | ArangoDB authentication username    |
+| ARANGODB_PASSWORD          | password       | ArangoDB authentication password    |
+| ARANGODB_DATABASE          | neo4j          | ArangoDB target database            |
 | STORAGE_TYPE               | azure          | Remote storage type to get TSV data |
 | AZURE_ACCOUNT_STORAGE_NAME |                | Azure Storage Account Name          |
 | AZURE_ACCOUNT_STORAGE_KEY  |                | Azure Storage Key                   |
@@ -41,8 +41,8 @@ docket run --rm \
 
 ### Docker build arguments
 
-| Argument                | Default value | Comment |
-| ----------------------- | ------------- | ------- |
-| LIQUIBASE_IMAGE_TAG     | 4.6 | Tag of the [Liquibase Docker image](https://hub.docker.com/r/liquibase/liquibase/tags) to use |
-| LIQUIBASE_ARANGODB_VERSION | 4.6.2 | [Liquibase-ArangoDB plugin](https://github.com/liquibase/liquibase-neo4j) version to install |
-| ARANGODB_JDBC_VERSION      | 4.0.5 | ArangoDB JDBC driver version |
+| Argument                   | Default value | Comment                                                                                       |
+| -------------------------- | ------------- | --------------------------------------------------------------------------------------------- |
+| LIQUIBASE_IMAGE_TAG        | 4.6           | Tag of the [Liquibase Docker image](https://hub.docker.com/r/liquibase/liquibase/tags) to use |
+| LIQUIBASE_ARANGODB_VERSION | 4.6.2         | [Liquibase-ArangoDB plugin](https://github.com/liquibase/liquibase-neo4j) version to install  |
+| ARANGODB_JDBC_VERSION      | 4.0.5         | ArangoDB JDBC driver version                                                                  |
