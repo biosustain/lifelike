@@ -5,7 +5,7 @@ echo "Checking migration integrity..."
 # Start in appserver directory
 __dir__="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-cd ${__dir__}/../migrations
+cd ${__dir__}/migrations
 
 head_count=$(alembic heads | wc -l)
 
