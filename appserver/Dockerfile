@@ -41,4 +41,4 @@ USER $N4J_USER
 # Setup flask application environment vars
 ENV MAX_ALLOWED_LOGIN_FAILURES 6
 
-CMD ["bin/startup.sh"]
+CMD [ "bin/startup.sh" ]
