@@ -28,7 +28,7 @@ jobs:
         id: build
         run: |
           ${{ env.DOCKER_COMPOSE_CMD }} build --build-arg DEV=True appserver
-          echo "image_hash=$(docker images | awk '{print $1}' | awk 'NR==2')" > $GITHUB_OUTPUT
+          echo "image_hash=$(docker images | awk '{print $3}' | awk 'NR==2')" > $GITHUB_OUTPUT
 
       - name: Migration Integrity Check
         run: docker run ${{ steps.build.outputs.image_hash }} bin/migration-integrity-check
