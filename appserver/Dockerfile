@@ -130,4 +130,4 @@ HEALTHCHECK --start-period=30s \
     CMD curl -f localhost:$PORT/meta || exit 1
 
 RUN chmod +x bin/startup.sh
-ENTRYPOINT ["bin/startup.sh"]
+CMD ["bin/startup.sh"]
