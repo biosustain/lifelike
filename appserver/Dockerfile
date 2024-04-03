@@ -1,133 +1,44 @@
-# ========================================
-# Base image
-# ========================================
-FROM python:3.9-slim as base
+FROM fedora:33 as base
+LABEL app=kg-prototypes
 
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONFAULTHANDLER 1
-
+# Install dependencies
+RUN dnf install htop postgresql graphviz python-pip python3-devel vim net-tools which -y \
+    && dnf groupinstall 'Development Tools' -y \
+    && dnf clean packages
 RUN pip install pipenv
 
+ENV N4J_USER n4j
+ENV N4J_HOME /home/$N4J_USER
+ENV UID 1000
+ENV GID 1000
 
-# ========================================
-# Build dependencies stage
-# ========================================
-FROM base as build-deps
+# User and group creation
+RUN groupadd -g $GID $N4J_USER && \
+    useradd -u $UID -g $GID -G wheel --create-home --home-dir $N4J_HOME --shell /bin/bash $N4J_USER
 
-# Install build dependencies
-RUN apt-get update \
-    && apt-get install -y liblmdb-dev python3-dev libxml2-dev libxslt-dev build-essential \
-    && apt-get clean
+WORKDIR $N4J_HOME
 
-# Copy Pipfiles
-COPY Pipfile Pipfile.lock ./
+# Copy Pipfiles and install dependencies FIRST to better apply Docker layer cache
+COPY --chown=1000:1000 Pipfile .
+COPY --chown=1000:1000 Pipfile.lock .
+RUN pipenv install --dev --deploy --system
 
-# Install Python dependencies
-ARG DEV
-RUN pipenv install --deploy $(if [ "$DEV" ]; then echo --dev; fi)
+# ...then copy everything else
+COPY --chown=1000:1000 . .
 
+# TODO: We should consider breaking this apart into dev and prod
+# builds, so we don't build unnecessary packages
 
-# ========================================
-# Runtime stage
-# ========================================
-FROM base
-LABEL org.opencontainers.image.source https://github.com/SBRG/lifelike
+# Don't lose stdin, stdout and stderr output due to buffering
+ENV PYTHONUNBUFFERED 1
+ENV PYTHONPATH $N4J_HOME
 
-# Install runtime system dependencies
-RUN apt-get update \
-    && apt-get install -y postgresql-client libmagic-dev graphviz libgraphviz-dev curl \
-    && apt-get clean
+# Set Python3 as the default when running "python"
+RUN echo 'alias python=python3' >> ~/.bashrc && source ~/.bashrc
 
-# Copy Python virtual environment
-COPY --from=build-deps /.venv /.venv
-ENV PATH="/.venv/bin:$PATH"
+USER $N4J_USER
 
-# Set user and workdir
-WORKDIR /app
-RUN useradd -m -d /app app
-USER app
+# Setup flask application environment vars
+ENV MAX_ALLOWED_LOGIN_FAILURES 6
 
-# Copy application code
-COPY --chown=app . .
-
-# Set to 1 to automatically apply any pending DB migrations at startup
-ENV MIGRATE_DB=
-
-# Create an initial admin user
-ENV INITIAL_ADMIN_EMAIL=
-
-# LMDB database volume
-ENV LMDB_DATA_DIR=/lmdb
-VOLUME /lmdb
-
-# LMDB download cloud storage
-# ENV AZURE_ACCOUNT_STORAGE_NAME=
-# ENV AZURE_ACCOUNT_STORAGE_KEY=
-
-# JWT Authendication
-ENV JWT_SECRET=secret
-
-# Base URL of this app, reachable by external services
-ENV APPSERVER_URL=http://localhost:5000
-
-# Base URL of the frontend app, for link generation
-ENV FRONTEND_URL=http://localhost:4242
-
-# PostgreSQL configuration
-ENV POSTGRES_HOST=postgres
-ENV POSTGRES_PORT=5432
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
-ENV POSTGRES_DB=postgres
-
-# ArangoDB configuration
-ENV ARANGODB_HOST=arangodb
-ENV ARANGODB_PORT=7687
-ENV ARANGODB_AUTH=arangodb/password
-ENV ARANGODB_DATABASE=arangodb
-ENV ARANGODB_SCHEME=bolt
-
-# Elasticsearch configuration
-ENV ELASTICSEARCH_URL=http://elasticsearch:9200
-ENV ELASTICSEARCH_FILE_INDEX=file
-
-# Statistical enrichment service
-ENV STATISTICAL_ENRICHMENT_URL=http://statistical-enrichment:5000
-
-# PDFParser service
-ENV PDFPARSER_URL=http://pdfparser:7600
-
-# NLP Processing service
-ENV NLP_URL=https://nlp-api.lifelike.bio/v1/predict
-ENV NLP_SECRET=secret
-
-# Mailserver configuration
-ENV FROM_EMAIL=lifelike@example.com
-
-# Sendgrid integration
-ENV SENDGRID_API_KEY=
-
-# Optional Sentry logging configuration
-ENV SENTRY_DSN=
-
-# Optional Elastic APM configuration.
-# To enable, at least ELASTIC_APM_SERVER_URL must be set
-# Other available variables: https://www.elastic.co/guide/en/apm/agent/python/master/configuration.html
-ENV ELASTIC_APM_SERVER_URL=
-ENV ELASTIC_APM_SERVICE_NAME=appserver
-
-# Flask env (development, testing, production)
-ENV FLASK_ENV=production
-
-# Listen port
-ENV PORT=5000
-EXPOSE $PORT
-
-# Health check by requesting system info to /meta endpoint
-HEALTHCHECK --start-period=30s \
-    CMD curl -f localhost:$PORT/meta || exit 1
-
-RUN chmod +x bin/startup.sh
 CMD ["bin/startup.sh"]
