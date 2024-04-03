@@ -26,7 +26,7 @@ COPY Pipfile Pipfile.lock ./
 
 # Install Python dependencies
 ARG DEV
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy $(if [ "$DEV" ]; then echo --dev; fi)
+RUN pipenv install --deploy $(if [ "$DEV" ]; then echo --dev; fi)
 
 
 # ========================================
