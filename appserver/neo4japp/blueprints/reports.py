@@ -20,7 +20,36 @@ bp = Blueprint('reports', __name__, url_prefix='/reports')
 class CopyrightInfringementReportView(MethodView):
     @use_args(CopyrightInfringementRequestSchema)
     def post(self, params: dict):
-        with db.session.begin_nested():
+        # Try to send an email to the user and currator
+        send_email_exception = None
+        try:
+            message = Mail(
+                from_email=MESSAGE_SENDER_IDENTITY,
+                to_emails=params['email'],
+                subject=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
+                html_content=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT.format(
+                    url=params['url'],
+                    description=params['description'],
+                    name=params['name'],
+                    company=params['company'],
+                    address=params['address'],
+                    country=params['country'],
+                    city=params['city'],
+                    province=params['province'],
+                    zip=params['zip'],
+                    phone=params['phone'],
+                    fax=params['fax'],
+                    email=params['email'],
+                ),
+            )
+            message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
+            get_send_grid_service().send(message)
+        except Exception as e:
+            # If the email fails to send, store the exception to raise later
+            # after the report is saved to the database
+            send_email_exception = e
+
+        try:
             copyright_infringement_report = CopyrightInfringementRequest(
                 url=params['url'],
                 description=params['description'],
@@ -41,38 +70,16 @@ class CopyrightInfringementReportView(MethodView):
                 signature=params['signature'],
             )
             db.session.add(copyright_infringement_report)
-
-        message = Mail(
-            from_email=MESSAGE_SENDER_IDENTITY,
-            to_emails=params['email'],
-            subject=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_TITLE,
-            html_content=COPYRIGHT_REPORT_CONFIRMATION_EMAIL_CONTENT.format(
-                url=params['url'],
-                description=params['description'],
-                name=params['name'],
-                company=params['company'],
-                address=params['address'],
-                country=params['country'],
-                city=params['city'],
-                province=params['province'],
-                zip=params['zip'],
-                phone=params['phone'],
-                fax=params['fax'],
-                email=params['email'],
-            ),
-        )
-        message.add_bcc(bcc_email=LIFELIKE_EMAIL_ACCOUNT)
-        try:
-            get_send_grid_service().send(message)
-        except Exception as e:
-            with db.session.begin_nested():
-                # If for some reason we cannot send a confirmation email, delete the row we just
-                # created and re-raise the error.
-                db.session.delete(copyright_infringement_report)
-                # rollback in case of error?
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
             raise
-
-        return jsonify(dict(result=copyright_infringement_report.to_dict()))
+        else:
+            return jsonify(dict(result=copyright_infringement_report.to_dict()))
+        finally:
+            # If the email failed to send, raise the exception before returning
+            if send_email_exception:
+                raise send_email_exception
 
 
 copyright_infringement_report_view = CopyrightInfringementReportView.as_view(

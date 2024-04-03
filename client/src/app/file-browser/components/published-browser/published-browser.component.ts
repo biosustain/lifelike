@@ -49,6 +49,8 @@ export class PublishedBrowserComponent implements OnInit, OnDestroy {
   );
 
   private loadTaskSubscription: Subscription;
+  readonly disablePublishMessage =
+    'You do not have permission to publish files. Please contact administrator if you need this feature.';
 
   constructor(
     private readonly filesystemService: FilesystemService,

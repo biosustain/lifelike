@@ -23,6 +23,9 @@
               class="btn btn-primary"
               style="width: max-content; flex-shrink: 0"
               (click)="openPublishDialog()"
+              placement="bottom-left"
+              [disabled]="(authService.isAdmin$ | async) === false"
+              [ngbTooltip]="(authService.isAdmin$ | async) ? null : disablePublishMessage"
             >
               <i class="fa fa-fw fa-upload"></i> Publish
             </button>

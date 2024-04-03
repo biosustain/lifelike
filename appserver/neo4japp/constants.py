@@ -451,7 +451,7 @@ RESET_PASSWORD_SYMBOLS = '!@#$%&()-_=+[]{};:><?'
 RESET_PASSWORD_ALPHABET = RESET_PASSWORD_SYMBOLS + string.ascii_letters + string.digits
 
 # Start email constants
-LIFELIKE_EMAIL_ACCOUNT = 'lifelike.science@gmail.com'
+LIFELIKE_EMAIL_ACCOUNT = 'lifelike@biosustain.dtu.dk'
 MESSAGE_SENDER_IDENTITY = 'lifelike-account-service@lifelike.bio'
 MAILING_API_KEY = LocalProxy(lambda: config.get('SEND_GRID_EMAIL_API_KEY'))
 RESET_PASSWORD_EMAIL_TITLE = 'Lifelike: Account password reset'

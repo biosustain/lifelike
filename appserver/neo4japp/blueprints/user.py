@@ -7,6 +7,7 @@ from sqlalchemy import and_
 from webargs.flaskparser import use_args
 
 from neo4japp.database import db
+from neo4japp.exceptions import NotAuthorized
 from neo4japp.models import Projects, Files
 from neo4japp.schemas.filesystem import (
     PublishSchema,
@@ -48,6 +49,9 @@ class PublishedView(MethodView):
 
     @use_args(PublishSchema, locations=['json', 'form', 'files', 'mixed_form_json'])
     def post(self, params: dict, user_hash_id: str):
+        if g.current_user.has_role('admin') is False:
+            raise NotAuthorized()
+
         file = Publish.create_uncommited_publication(
             user_hash_id, creator=g.current_user, **params
         )
