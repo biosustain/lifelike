@@ -3,7 +3,7 @@ DOCKER_REGISTRY:=us.gcr.io/able-goods-221820
 
 # Base Docker Compose command --------------------------------------------------
 #  docker-compose.yml           -> Base services containers
-#  docker-compose.services.yml  -> Third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
+#  docker-compose.services.yml  -> Third party services (PostgreSQL, ArangoDB, Elasticsearch, Redis)
 #  docker-compose.dev.yml       -> Override base services for local development
 COMPOSE_COMMAND=docker-compose -p lifelike \
   -f ${DOCKER_DIR}/docker-compose.yml \

@@ -79,7 +79,7 @@ export class GraphSearchComponent implements OnInit, OnDestroy, ModuleAwareCompo
     map(
       (legend) =>
         // Keys of the result dict are all lowercase, need to change the first character
-        // to uppercase to match Neo4j labels
+        // to uppercase to match ArangoDB labels
         new Map(Object.entries(legend).map(([label, { color }]) => [label, color]))
     ),
     startWith(new Map())

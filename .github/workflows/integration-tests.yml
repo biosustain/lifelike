@@ -21,28 +21,23 @@ jobs:
 
       - uses: actions/checkout@v3
 
-      - name: Build appserver image
-        uses: whoan/docker-build-with-cache-action@v5
-        with:
-          username: ${{ secrets.AZURE_CR_USERNAME }}
-          password: ${{ secrets.AZURE_CR_PASSWORD }}
-          registry: lifelike.azurecr.io
-          image_name: kg-appserver
-          image_tag: ${{ github.sha }}
-          context: ./appserver
-          dockerfile: ./Dockerfile
-
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
 
+      - name: Build Docker image
+        id: build
+        run: |
+          ${{ env.DOCKER_COMPOSE_CMD }} build --build-arg DEV=True appserver
+          echo "image_hash=$(docker images | awk '{print $3}' | awk 'NR==2')" | tee $GITHUB_OUTPUT
+
       - name: Migration Integrity Check
-        run: ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver bin/migration-integrity-check
+        run: docker run ${{ steps.build.outputs.image_hash }} bin/migration-integrity-check
 
       - name: Linting and code style
         run: |-
-          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver flake8 .
-          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver mypy .
-          ${{ env.DOCKER_COMPOSE_CMD }} run --no-deps appserver pycodestyle .
+          docker run ${{ steps.build.outputs.image_hash }} flake8 .
+          docker run ${{ steps.build.outputs.image_hash }} mypy .
+          docker run ${{ steps.build.outputs.image_hash }} pycodestyle .
 
       - name: Bring up containers and wait for webserver to be ready
         timeout-minutes: 10

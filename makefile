@@ -1,18 +1,5 @@
 APPSERVER_PATH=./appserver
-ANSIBLE_PATH=./deployment/ansible
 LMDB_PATH = $(APPSERVER_PATH)/neo4japp/services/annotations/lmdb
-
-# Fetches the password to unlock Ansible vault files
-ansible-secrets:
-	az storage blob download --account-name lifelike --container-name lifelike-secrets --name .vault_secrets_pw  --file $(ANSIBLE_PATH)/.vault_secrets_pw --auth-mode login
-
-# Fetches the credentials (env file) for Azure services
-azure-secrets:
-	az storage blob download --account-name lifelike --container-name lifelike-secrets --name azure-secrets.env --file ./azure-secrets.env --auth-mode login
-
-# Log into azure container registry
-container-login:
-	az acr login --name lifelike
 
 # Fetches the LMDB files needed to run the application
 lmdb:
@@ -22,7 +9,7 @@ lmdb:
 
 # Sets up everything you need to run the application
 # Mostly used for first time dev environment setup
-init: ansible-secrets azure-secrets container-login githooks docker-build lmdb
+init: githooks docker-build lmdb
 
 # Sets up commit hooks for linting
 githooks:
@@ -32,11 +19,11 @@ docker-build:
 	docker compose build
 
 # Runs enough containers for the application to function
-docker-run: azure-secrets container-login lmdb
+docker-run: lmdb
 	docker compose up -d
 
 # Runs additional containers such as Kibana/Logstash/Filebeat
-docker-run-all: azure-secrets container-login lmdb
+docker-run-all: lmdb
 	docker compose -f docker-compose.yml -f docker-compose.override.yml -f docker-compose.middleware.yml up -d
 
 docker-stop:

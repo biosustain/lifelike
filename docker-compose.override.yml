@@ -2,8 +2,6 @@ version: "3.8"
 
 x-appserver: &appserver
   build: ./appserver
-  env_file:
-    - azure-secrets.env
   environment:
     # Log Services
     - FORMAT_AS_JSON=false

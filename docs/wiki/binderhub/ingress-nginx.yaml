@@ -2,6 +2,13 @@
 ## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/charts/ingress-nginx/values.yaml
 
 controller:
+  # Set any nginx configurations here
+  config: { "proxy-body-size": "15m", "proxy-read-timeout": "15m", "proxy-send-timeout": "15m" }
+
   service:
+    annotations:
+      # It is critical that this annotation is present, otherwise the ingress pods may fail to start!
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
+
     # -- Used by cloud providers to connect the resulting `LoadBalancer` to a pre-existing static IP according to https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer
-    loadBalancerIP: <YOUR-IP-ADDRESS-HERE>
+    loadBalancerIP: <PUBLIC-IP-ADDRESS-HERE>

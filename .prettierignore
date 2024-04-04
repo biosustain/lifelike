@@ -1,3 +1,10 @@
+helm/lifelike/templates
+**/*.lock
+
+# --------------
+# Gitignore file
+# --------------
+
 # liinting
 /**/.husky
 

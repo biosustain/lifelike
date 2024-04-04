@@ -4,7 +4,7 @@ Docker is an easy way to get started with Lifelike.
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/get-started)
+-   [Docker](https://www.docker.com/get-started)
 
 ## Run locally
 
@@ -19,7 +19,7 @@ make up
 
 ```text
 Building and running containers...
-This may take a while if running for the first time. 
+This may take a while if running for the first time.
 
 [+] Running 13/13
  ⠿ Network lifelike                             Created
@@ -50,7 +50,7 @@ The stack definition is divided into three Docker Compose files:
 ```tree
 ├── docker-compose.yml           --> Base core services
 ├── docker-compose.dev.yml       --> Overrides base core services for local development and debugging.
-└── docker-compose.services.yml  --> Adds third party services (PostgreSQL, Neo4j, Elasticsearch, Redis)
+└── docker-compose.services.yml  --> Adds third party services (PostgreSQL, ArangoDB, Elasticsearch, Redis)
 ```
 
 You may combine them as you need and/or add your own `docker-compose.override.yml` to override any configuration. (this file will be ignored by Git)

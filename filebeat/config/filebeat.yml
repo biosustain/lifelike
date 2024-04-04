@@ -4,7 +4,7 @@ filebeat.autodiscover:
       templates:
         - condition:
             contains:
-              docker.container.image: kg-webserver
+              docker.container.image: ${WEBSERVER_IMAGE:kg-webserver}
           config:
             - type: docker
               containers.ids:
@@ -23,7 +23,7 @@ filebeat.autodiscover:
       templates:
         - condition:
             contains:
-              docker.container.image: kg-appserver
+              docker.container.image: ${APPSERVER_IMAGE:kg-appserver}
           config:
             - type: container
               paths:
@@ -37,4 +37,5 @@ processors:
       host: "unix:///var/run/docker.sock"
 
 output.logstash:
-  hosts: ["logstash:5044"]
+  hosts:
+    - ${LOGSTASH_OUTPUT_HOST:logstash:5044}

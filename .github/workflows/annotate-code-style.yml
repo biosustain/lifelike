@@ -49,7 +49,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.ACTION_TOKEN }}
+          # Set ACTION_TOKEN to re-run this action after autofix
+          token: ${{ secrets.ACTION_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
@@ -71,15 +72,8 @@ jobs:
 
       - name: Inform how to run autofix
         if: failure() && (github.event_name == 'pull_request')
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "Code style issues has been found - [AUTOFIX](${{ env.AUTOFIX_URL }})"
-            })
+        run: |
+          echo "Code style issues has been found - [AUTOFIX]($AUTOFIX_URL)" | tee $GITHUB_STEP_SUMMARY
 
       - name: Client linting autofix
         if: github.event.inputs.autoFix && github.event.inputs.tslintAutoFix

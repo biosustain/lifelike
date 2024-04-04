@@ -7,23 +7,17 @@
     {
       "os": "OS X Big Sur",
       "browser": "chrome",
-      "versions": [
-        "latest"
-      ]
+      "versions": ["latest"]
     },
     {
       "os": "Windows 10",
       "browser": "chrome",
-      "versions": [
-        "latest"
-      ]
+      "versions": ["latest"]
     },
     {
       "os": "OS X Big Sur",
       "browser": "firefox",
-      "versions": [
-        "latest"
-      ]
+      "versions": ["latest"]
     }
   ],
   "run_settings": {
@@ -36,8 +30,6 @@
     "project_name": "Lifelike App",
     "build_name": "DEMO environment",
     "parallels": "1",
-    "system_env_vars": [
-      "PERCY_TOKEN"
-    ]
+    "system_env_vars": ["PERCY_TOKEN"]
   }
 }

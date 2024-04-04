@@ -1,4 +1,4 @@
-name: 'BrowserStack Test'
+name: "BrowserStack Test"
 on:
   workflow_dispatch:
     inputs:
@@ -9,31 +9,30 @@ on:
 
 jobs:
   browserstack:
-    name: 'BrowserStack Tests'
+    name: "BrowserStack Tests"
     runs-on: ubuntu-latest
     steps:
-
-      - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
+      - name: "BrowserStack Env Setup" # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master
         with:
-          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           project-name: lifelike
 
-      - name: 'Checkout the repository'
+      - name: "Checkout the repository"
         uses: actions/checkout@v2
 
-      - name: 'Install BrowserStack Cypress CLI'
+      - name: "Install BrowserStack Cypress CLI"
         run: npm install -g browserstack-cypress-cli
-      
+
       - name: Run BrowserStack tests
         working-directory: ./tests/cypress
         run: browserstack-cypress run
 
-      - name: 'Running test on BrowserStack'  # Invokes the actual test script that would run on BrowserStack browsers
-        run: node index.js  # See sample test script above
+      - name: "Running test on BrowserStack" # Invokes the actual test script that would run on BrowserStack browsers
+        run: node index.js # See sample test script above
 
-      - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
+      - name: "BrowserStackLocal Stop" # Terminating the BrowserStackLocal tunnel connection
         uses: browserstack/github-actions/setup-local@master
         with:
           local-testing: stop

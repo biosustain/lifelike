@@ -364,9 +364,7 @@
             "version": "==2.1.0"
         },
         "elastic-apm": {
-            "extras": [
-                "flask"
-            ],
+            "extras": ["flask"],
             "hashes": [
                 "sha256:5d5cbe0c04d9c00303422f1f4e5bb5b4f0a5cc4dddd53f399db9a16fa8289367",
                 "sha256:c78937e44ece380e6fc98b7292cdf28eaf68917d723cef585efaa083168b3b84"
@@ -1884,9 +1882,7 @@
             "version": "==0.770"
         },
         "mypy-extensions": {
-            "hashes": [
-                "sha256:c8b707883a96efe9b4bb3aaf0dcc07e7e217d7d8368eec4db4049ee9e142f4fd"
-            ],
+            "hashes": ["sha256:c8b707883a96efe9b4bb3aaf0dcc07e7e217d7d8368eec4db4049ee9e142f4fd"],
             "markers": "python_version >= '2.7'",
             "version": "==0.4.4"
         },

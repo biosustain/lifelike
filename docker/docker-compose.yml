@@ -3,7 +3,9 @@ version: "3.8"
 services:
   ## Frontend web server
   frontend:
-    image: ghcr.io/sbrg/lifelike-frontend:${FRONTEND_IMAGE_TAG:-latest}
+    build:
+      context: ../client
+      dockerfile: Dockerfile
     restart: unless-stopped
     container_name: frontend
     environment:
@@ -15,7 +17,9 @@ services:
 
   ## Backend application server
   appserver:
-    image: ghcr.io/sbrg/lifelike-appserver:${APPSERVER_IMAGE_TAG:-latest}
+    build:
+      context: ../appserver
+      dockerfile: Dockerfile
     restart: unless-stopped
     container_name: appserver
     ports:
@@ -43,7 +47,9 @@ services:
 
   ## Statistical enrichment service
   statistical-enrichment:
-    image: ghcr.io/sbrg/lifelike-statistical-enrichment:${STATISTICAL_ENRICHMENT_IMAGE_TAG:-latest}
+    build:
+      context: ../statistical-enrichment
+      dockerfile: Dockerfile
     restart: unless-stopped
     container_name: statistical-enrichment
     ports:
@@ -51,7 +57,9 @@ services:
 
   # Cache invalidator service
   cache-invalidator:
-    image: ghcr.io/sbrg/lifelike-cache-invalidator:${CACHE_INVALIDATOR_IMAGE_TAG:-latest}
+    build:
+      context: ../cache-invalidator
+      dockerfile: Dockerfile
     restart: unless-stopped
     container_name: cache-invalidator
 

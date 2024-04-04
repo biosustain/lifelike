@@ -37,6 +37,3 @@ docker:
 workflow:
   - .github/*
   - .github/**/*
-
-infrastructure:
-  - deployment

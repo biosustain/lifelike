@@ -47,14 +47,14 @@ spec:
             - --port={{ template "lifelike.postgresqlPort" . }}
             - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
         {{- end }}
-        {{- if .Values.neo4j.enabled }}
-        - name: wait-for-neo4j
+        {{- if .Values.arangodb.enabled }}
+        - name: wait-for-arangodb
           image: {{ .Values.api.dbWaiter.image.repository }}:{{ .Values.api.dbWaiter.image.tag }}
           imagePullPolicy: {{ default "IfNotPresent" .Values.api.dbWaiter.image.imagePullPolicy }}
           command:
             - /wait-for-it.sh
-            - --host={{ template "lifelike.neo4jHost" . }}
-            - --port={{ template "lifelike.neo4jPort" . }}
+            - --host={{ template "lifelike.arangodbHost" . }}
+            - --port={{ template "lifelike.arangodbPort" . }}
             - --timeout={{ default 30 .Values.api.dbWaiter.timeoutSeconds }}
         {{- end }}
         - name: migrate-db

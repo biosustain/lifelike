@@ -11,7 +11,8 @@ ingress:
   className: ""
 
   ## -- Ingress annotations
-  annotations: {}
+  annotations:
+    {}
     # cert-manager.io/cluster-issuer: letsencrypt-prod
     # nginx.ingress.kubernetes.io/proxy-body-size: "0"
 
@@ -20,7 +21,6 @@ ingress:
   # - secretName: lifelike-tls
   #   hosts:
   #   - lifelike.local
-
 
 # ------------------------------------------------------------------------------
 # API (appserver)
@@ -136,7 +136,8 @@ frontend:
     targetMemoryUtilizationPercentage: 80
 
   ## -- Optional resources requests and limits
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 500m
     #   memory: 2000Mi
@@ -180,7 +181,8 @@ statisticalEnrichment:
   replicaCount: 1
 
   ## -- Optional resources requests and limits
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 500m
     #   memory: 2000Mi
@@ -207,11 +209,10 @@ statisticalEnrichment:
     periodSeconds: 10
     successThreshold: 1
     timeoutSeconds: 10
-  
+
   service:
     type: ClusterIP
     port: 5000
-
 
 # ------------------------------------------------------------------------------
 # PDF Parser
@@ -234,7 +235,8 @@ pdfparser:
     targetCPUUtilizationPercentage: 80
     targetMemoryUtilizationPercentage: 80
 
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 500m
     #   memory: 2000Mi
@@ -266,7 +268,6 @@ pdfparser:
     type: ClusterIP
     port: 7600
 
-
 # ------------------------------------------------------------------------------
 # External services
 # ------------------------------------------------------------------------------
@@ -282,21 +283,19 @@ postgresqlExternal:
   ## -- Read password from an existing secret, must contain key "postgres-password"
   existingSecret: ""
 
-## -- External Neo4j connection details, ignored if neo4j.enabled is set to true
-neo4jExternal:
-  host: neo4j.local
+## -- External ArangoDB connection details, ignored if arangodb.enabled is set to true
+arangodbExternal:
+  host: arangodb.local
   port: 7687
-  user: neo4j
+  user: arangodb
   password: password
-  database: neo4j
-
+  database: arangodb
 
 ## -- External Redis connection details, ignored if redis.enabled is set to true
 redisExternal:
   host: redis.local
   port: 6379
   password: ""
-
 
 ## -- External Elasticsearch connection details, ignored if elasticsearch.enabled is set to true
 elasticsearchExternal:
@@ -306,13 +305,11 @@ elasticsearchExternal:
   password: ""
   ssl: false
 
-
 # ---------------------------------------------------------------------------- #
 #                                                                              #
 #                               Subcharts                                      #
 #                                                                              #
 # ---------------------------------------------------------------------------- #
-
 
 # ------------------------------------------------------------------------------
 # PostgreSQL database
@@ -328,19 +325,19 @@ postgresql:
     database: database
 
 # ------------------------------------------------------------------------------
-# Neo4j database
+# ArangoDB database
 # ------------------------------------------------------------------------------
 
-## -- Embedded Neo4j subchart deployment
-## -- See all available values: https://github.com/neo4j-contrib/neo4j-helm/blob/master/values.yaml
-neo4j:
-  ## -- Set to false to disable automatic deployment of Neo4j
+## -- Embedded ArangoDB subchart deployment
+## -- See all available values: https://github.com/arangodb-contrib/arangodb-helm/blob/master/values.yaml
+arangodb:
+  ## -- Set to false to disable automatic deployment of ArangoDB
   enabled: true
 
   imageTag: 4.4.3-community
 
-  ## -- Neo4j password
-  neo4jPassword: password
+  ## -- ArangoDB password
+  arangodbPassword: password
 
   core:
     ## -- Whether to deploy a standalone server or a replicated cluster
@@ -350,7 +347,6 @@ neo4j:
     persistentVolume:
       ## -- Size of the persistent volume for each server
       size: 100Gi
-
 
 # ------------------------------------------------------------------------------
 # Elasticsearch
@@ -378,7 +374,6 @@ elasticsearch:
     resources:
       requests:
         storage: 30Gi
-
 
 # ------------------------------------------------------------------------------
 # Redis (cache)

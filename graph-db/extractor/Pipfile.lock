@@ -263,9 +263,7 @@
             "version": "==0.7.1"
         },
         "neo4j": {
-            "hashes": [
-                "sha256:06b12daa8fa6bf133abc8c4f35451748a2ee6dc207c52790304a8e12c997ce65"
-            ],
+            "hashes": ["sha256:06b12daa8fa6bf133abc8c4f35451748a2ee6dc207c52790304a8e12c997ce65"],
             "index": "pypi",
             "version": "==4.4.5"
         },

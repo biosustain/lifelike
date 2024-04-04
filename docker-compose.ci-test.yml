@@ -2,11 +2,11 @@
 version: "3.8"
 
 x-appserver: &appserver
+  build:
+    context: appserver
+    dockerfile: Dockerfile
   image: lifelike.azurecr.io/kg-appserver:${GITHUB_HASH}
   environment:
-    - NEO4J_HOST=neo4j
-    - NEO4J_AUTH=neo4j/password
-    - NEO4J_PORT=7687
     - FLASK_DEBUG=1
     - FLASK_ENV=development
     - FLASK_APP=app
@@ -33,7 +33,6 @@ x-appserver: &appserver
   depends_on:
     - postgres
     - elasticsearch
-    - neo4j
     - redis
     - arangodb
 
@@ -51,13 +50,6 @@ services:
     restart: on-failure
     environment:
       - POSTGRES_PASSWORD=postgres
-
-  neo4j:
-    image: neo4j:4.4-community
-    restart: on-failure
-    environment:
-      - NEO4J_AUTH=neo4j/password
-      - NEO4JLABS_PLUGINS=["apoc", "n10s"]
 
   elasticsearch:
     image: ghcr.io/sbrg/lifelike-elasticsearch:latest

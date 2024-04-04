@@ -29,12 +29,6 @@ class Base:
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
 
-    NEO4J_HOST = os.environ.get('NEO4J_HOST', '0.0.0.0')
-    NEO4J_SCHEME = os.environ.get('NEO4J_SCHEME', 'bolt')
-    NEO4J_AUTH = os.environ.get('NEO4J_AUTH', 'neo4j/password')
-    NEO4J_PORT = os.environ.get('NEO4J_PORT', '7687')
-    NEO4J_DATABASE = os.environ.get('NEO4J_DATABASE')
-
     ARANGO_HOST = os.environ.get('ARANGO_HOST', 'http://localhost:8529')
     ARANGO_USERNAME = os.environ.get('ARANGO_USERNAME', 'root')
     ARANGO_PASSWORD = os.environ.get('ARANGO_PASSWORD', 'password')

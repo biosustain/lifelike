@@ -7,8 +7,6 @@
 -   To seed LMDB data to Kibana:
 
 ```bash
-./deployment/kibana.sh -a None
-# or
 docker compose exec appserver python neo4japp/services/annotations/index_annotations.py -a
 ```
 
