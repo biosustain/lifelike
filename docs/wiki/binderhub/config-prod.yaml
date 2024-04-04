@@ -12,11 +12,11 @@ config:
 
   ingress:
     annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-prod
       kubernetes.io/ingress.class: nginx
       kubernetes.io/tls-acme: "true"
   enabled: true
-        hosts:
+  hosts:
     - binder.lifelike.bio
   https:
     enabled: true
@@ -71,17 +71,17 @@ jupyterhub:
         oauth_redirect_uri: https://binder.lifelike.bio/oauth_callback
 ingress:
   annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
-    enabled: true
-      hosts:
-      - jupyter.lifelike.bio
-    pathType: Prefix
-    tls:
-      - hosts:
-          - jupyter.lifelike.bio
-        secretName: jupyter-lifelike-bio-tls
+  enabled: true
+  hosts:
+    - jupyter.lifelike.bio
+  pathType: Prefix
+  tls:
+    - hosts:
+        - jupyter.lifelike.bio
+      secretName: jupyter-lifelike-bio-tls
   proxy:
     https:
       enabled: true
@@ -111,18 +111,18 @@ ingress:
     storage:
       capacity: 10Gi
       dynamic:
-        pvcNameTemplate: 'claim-{username}{servername}'
+        pvcNameTemplate: "claim-{username}{servername}"
         storageAccessModes:
           - ReadWriteOnce
         storageClass: standard
-        volumeNameTemplate: 'volume-{username}{servername}'
+        volumeNameTemplate: "volume-{username}{servername}"
       extraLabels: {}
       extraVolumeMounts: []
       extraVolumes: []
       homeMountPath: /home/jovyan
       static:
         pvcName: null
-        subPath: '{username}'
+        subPath: "{username}"
       type: none
     uid: 1000
 
