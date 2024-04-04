@@ -39,4 +39,4 @@ jobs:
             -d "$load"
 
           link="[$repo_owner/$repo_name](https://github.com/$repo_owner/$repo_name/actions)"
-          echo "Triggered webhook on $link"
+          echo "Triggered webhook on $link" | tee $GITHUB_STEP_SUMMARY
