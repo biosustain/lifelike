@@ -111,18 +111,18 @@ ingress:
     storage:
       capacity: 10Gi
       dynamic:
-        pvcNameTemplate: claim-{username}{servername}
+        pvcNameTemplate: 'claim-{username}{servername}'
         storageAccessModes:
           - ReadWriteOnce
         storageClass: standard
-        volumeNameTemplate: volume-{username}{servername}
+        volumeNameTemplate: 'volume-{username}{servername}'
       extraLabels: {}
       extraVolumeMounts: []
       extraVolumes: []
       homeMountPath: /home/jovyan
       static:
         pvcName: null
-        subPath: "{username}"
+        subPath: '{username}'
       type: none
     uid: 1000
 
