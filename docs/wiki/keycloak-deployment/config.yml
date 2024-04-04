@@ -1,7 +1,7 @@
 affinity: {}
 args: []
 auth:
-  adminPassword: '***REMOVED***'
+  adminPassword: "***REMOVED***"
   adminUser: admin
   existingSecret: ""
   passwordSecretKey: ""
