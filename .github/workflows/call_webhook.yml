@@ -19,11 +19,11 @@ jobs:
           load=$(
           cat<<EOF | jq
           {
-            event_type: "Source code update",
-            client_payload: {
-              caller: ${{ github.workflow }},
-              repository: ${{ github.repository }},
-              run_id: ${{ github.run_id }}
+            "event_type": "Source code update",
+            "client_payload": {
+              "caller": "${{ github.workflow }}",
+              "repository": "${{ github.repository }}",
+              "run_id": "${{ github.run_id }}"
             }
           }
           EOF
