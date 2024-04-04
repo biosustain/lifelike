@@ -12,23 +12,18 @@ jobs:
 
     steps:
       - name: Trigger Webhook
-        run: |
-          # Set the required variables
-          repo_owner="biosustain"
-          repo_name="lifelike-infrastructure"
-          load=$(
-            cat<<'---'
-            {
-              "event_type": "Source code update",
-              "client_payload": {
-                "caller": "${{ github.workflow }}",
-                "repository": "${{ github.repository }}",
-                "run_id": "${{ github.run_id }}"
-              }
+        env:
+          repo_owner: "biosustain"
+          repo_name: "lifelike-infrastructure"
+          load: ${{ toJSON({
+            event_type: "Source code update",
+            client_payload: {
+              caller: github.workflow,
+              repository: github.repository,
+              run_id: github.run_id
             }
-            ---
-          )
-
+          }) }}
+        run: |
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
