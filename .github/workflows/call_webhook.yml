@@ -2,9 +2,6 @@ name: Trigger Target Workflow
 
 on:
   workflow_dispatch:
-    secrets:
-      WEBHOOK_TOKEN:
-        required: true
   push:
     branches:
       - master
@@ -20,7 +17,7 @@ jobs:
           repo_owner="biosustain"
           repo_name="lifelike-infrastructure"
           load=$(
-            cat<<EOF
+            cat<<'---'
             {
               "event_type": "Source code update",
               "client_payload": {
@@ -29,7 +26,7 @@ jobs:
                 "run_id": "${{ github.run_id }}"
               }
             }
-            EOF
+            ---
           )
 
           curl -L \
