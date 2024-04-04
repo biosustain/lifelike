@@ -15,15 +15,20 @@ jobs:
         env:
           repo_owner: "biosustain"
           repo_name: "lifelike-infrastructure"
-          load: ${{ toJSON({
+        run: |
+          load=$(
+          cat<<EOF | jq
+          {
             event_type: "Source code update",
             client_payload: {
-              caller: github.workflow,
-              repository: github.repository,
-              run_id: github.run_id
+              caller: ${{ github.workflow }},
+              repository: ${{ github.repository }},
+              run_id: ${{ github.run_id }}
             }
-          }) }}
-        run: |
+          }
+          EOF
+          )
+          
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
