@@ -5,7 +5,7 @@ version: "3.8"
 services:
   # PostgreSQL database
   postgres:
-    image: postgres:11
+    image: postgres:18.2
     restart: unless-stopped
     container_name: postgres
     environment:
