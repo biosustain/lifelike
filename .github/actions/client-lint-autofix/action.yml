@@ -20,7 +20,7 @@ runs:
   steps:
     - name: Setup Node.js
       if: github.event.inputs.autoFix && github.event.inputs.tslintAutoFix
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: 14
         cache: yarn

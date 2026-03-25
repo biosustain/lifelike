@@ -47,7 +47,7 @@ jobs:
     name: Annotate code style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set ACTION_TOKEN to re-run this action after autofix
           token: ${{ secrets.ACTION_TOKEN || secrets.GITHUB_TOKEN }}
