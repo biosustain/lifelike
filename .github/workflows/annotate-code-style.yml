@@ -47,10 +47,10 @@ jobs:
     name: Annotate code style
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
+      - uses: actions/checkout@v4
+        # with:
           # Set ACTION_TOKEN to re-run this action after autofix
-          token: ${{ secrets.ACTION_TOKEN || secrets.GITHUB_TOKEN }}
+          # token: ${{ secrets.ACTION_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Annotate code style
         uses: wearerequired/lint-action@v2
