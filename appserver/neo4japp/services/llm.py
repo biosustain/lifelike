@@ -78,7 +78,7 @@ class LLM:
                     'transaction_id': getattr(g, 'transaction_id'),
                     'user': user,
                     'graph': {
-                        'database_type': 'neo4j',
+                        'database_type': 'arango',
                     },
                 }
             ),
