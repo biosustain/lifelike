@@ -69,7 +69,7 @@ def relationship_graph(params):
         ),
         temperature=options.get('temperature', 0),
         max_tokens=2000,
-        user=str(hash(current_username)),
+        user=str(hash(get_current_username())),
         timeout=60,
     )
     return LLM.graph_qa(**create_params)
