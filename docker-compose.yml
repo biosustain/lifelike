@@ -16,5 +16,8 @@ services:
   cache-invalidator:
     image: ${REGISTRY:-lifelike.azurecr.io}/kg-cache-invalidator:${GITHUB_HASH:-latest}
 
+  llm:
+    image: ${REGISTRY:-lifelike.azurecr.io}/kg-llm:${GITHUB_HASH:-latest}
+
   statistical-enrichment:
     image: ${REGISTRY:-lifelike.azurecr.io}/kg-statistical-enrichment:${GITHUB_HASH:-latest}

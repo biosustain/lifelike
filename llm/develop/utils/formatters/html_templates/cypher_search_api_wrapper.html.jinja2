@@ -1,0 +1,7 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(obj) %}
+    <dt>related nodes query</dt>
+    <dd>{{ obj.related_nodes_query|template(obj.related_nodes_query_params)|code(language='cypher') }}</dd>
+    <dt>relationships query</dt>
+    <dd>{{ obj.relationships_query|template(obj.relationships_query_params)|code(language='cypher') }}</dd>
+{% endcall %}

@@ -1,0 +1,26 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% set usage %}
+<dt>usage</dt>
+<dd>
+    <dl>
+        <dt>prompt</dt>
+        <dd>{{ obj.usage.prompt_tokens|escape }} tokens</dd>
+        <dt>completion</dt>
+        <dd>{{ obj.usage.completion_tokens|escape }} tokens</dd>
+        <dt>total</dt>
+        <dd>{{ obj.usage.total_tokens|escape }} tokens</dd>
+    </dl>
+</dd>
+{% endset %}
+{% call collapsed_object_dict_dl(obj, ('usage', 'choices'), 'choices', usage) %}
+    <dd>
+        <dl>
+            {% for choice in obj.choices %}
+                <dt title="Index:&#9;{{ choice.index }}&#10;Finish reason:&#9;{{ choice.finish_reason }}">
+                    {{ choice.message.role }}
+                </dt>
+                <dd>{{ choice.message.content|escape }}</dd>
+            {% endfor %}
+        </dl>
+    </dd>
+{% endcall %}

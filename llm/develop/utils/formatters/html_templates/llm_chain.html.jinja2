@@ -1,0 +1,7 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(chain, ('llm', 'prompt')) %}
+    <dt>llm</dt>
+    <dd>{{ chain.llm|format_object }}&nbsp;</dd>
+    <dt>prompt</dt>
+    <dd>{{ chain.prompt|format_object }}&nbsp;</dd>
+{% endcall %}

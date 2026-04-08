@@ -1,0 +1,35 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+mypy = "==1.5.1"
+pycodestyle = "==2.11.0"
+jupyterlab = "*"
+anyio = "*"
+ipycytoscape = "*"
+ipywidgets = "*"
+networkx = "*"
+adbnx-adapter = "*"
+llmlib = {file = ".", editable = true}
+tiktoken = "*"
+
+[packages]
+flask-marshmallow = "==0.15.0"
+Flask = "==2.3.3"
+gunicorn = "==21.2.0"
+python-arango = "==7.6.2"
+openai = "==0.28.0"
+langchain = "==0.0.296"
+redis = "==5.0.0"
+cachetools = "==5.3.1"
+webargs = "*"
+notebook = ">=7.0"
+timeflake = "*"
+chromadb = "*"
+neo4j = "*"
+
+[requires]
+python_version = "3.11"

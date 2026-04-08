@@ -1,0 +1,12 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(pt, ('messages',), 'messages') %}
+    <dd>
+        <ul>
+            {% for message in pt.messages %}
+                <li>
+                    {{ message|format_object }}
+                </li>
+            {% endfor %}
+        </ul>
+    </dd>
+{% endcall %}

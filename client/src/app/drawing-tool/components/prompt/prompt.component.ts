@@ -19,8 +19,8 @@ import {
 } from 'app/playground/components/form/drawing-tool-prompt-form/drawing-tool-prompt-form.component';
 import { OpenPlaygroundParams } from 'app/playground/components/open-playground/open-playground.component';
 import { OpenFileProvider } from 'app/shared/providers/open-file/open-file.provider';
-import { ExplainService } from 'app/shared/services/explain.service';
 import { DropdownController } from 'app/shared/utils/dropdown.controller.factory';
+import { ExplainService, GraphChatGPTResponse } from 'app/shared/services/explain.service';
 import { openModal } from 'app/shared/utils/modals';
 import { PlaygroundComponent } from 'app/playground/components/playground.component';
 import { ChatgptResponseInfoModalComponent } from 'app/shared/components/chatgpt-response-info-modal/chatgpt-response-info-modal.component';
@@ -28,6 +28,7 @@ import { ChatGPTResponse } from 'app/enrichment/services/enrichment-visualisatio
 import { addStatus, PipeStatus } from 'app/shared/pipes/add-status.pipe';
 import { ClipboardService } from 'app/shared/services/clipboard.service';
 import { AuthenticationService } from 'app/auth/services/authentication.service';
+import { annotationTypesMap } from 'app/shared/annotation-styles';
 
 import { MapStoreService, setContext } from '../../services/map-store.service';
 
@@ -45,6 +46,44 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
     private readonly mapStore: MapStoreService,
     readonly authService: AuthenticationService
   ) {}
+
+  networkConfig = {
+    interaction: {
+      hover: true,
+      multiselect: true,
+      selectConnectedEdges: false,
+    },
+    physics: {
+      enabled: true,
+      solver: 'barnesHut',
+    },
+    edges: {
+      font: {
+        size: 12,
+      },
+      length: 250,
+      widthConstraint: {
+        maximum: 90,
+      },
+    },
+    nodes: {
+      scaling: {
+        min: 25,
+        max: 50,
+        label: {
+          enabled: true,
+          min: 12,
+          max: 72,
+          maxVisible: 72,
+          drawThreshold: 5,
+        },
+      },
+      shape: 'box',
+      widthConstraint: {
+        maximum: 180,
+      },
+    },
+  };
 
   private readonly destroy$: Subject<void> = new Subject();
 
@@ -108,6 +147,38 @@ export class DrawingToolPromptComponent implements OnDestroy, OnChanges {
         startWith(undefined)
       )
     )
+  );
+
+  readonly graphExplanation$: Observable<PipeStatus<GraphChatGPTResponse>> = this.params$.pipe(
+    switchMap((params) =>
+      this.explain$.pipe(
+        map(() => params),
+        takeUntil(this.destroy$),
+        switchMap(({ entities, temperature, context }) =>
+          this.explainService
+            .relationshipGraph(entities, context, { temperature })
+            .pipe(addStatus())
+        ),
+        startWith(undefined)
+      )
+    )
+  );
+
+  readonly graph$ = this.graphExplanation$.pipe(
+    map((explanation) => explanation?.value?.graph),
+    map((graph) =>
+      graph
+        ? {
+            edges: graph.edges,
+            nodes: graph.nodes.map(({ eid, type, entityType, displayName }) => ({
+              id: eid,
+              label: displayName,
+              color: annotationTypesMap.get((type ?? entityType)?.toLowerCase())?.color,
+            })),
+          }
+        : undefined
+    ),
+    shareReplay({ bufferSize: 1, refCount: true })
   );
 
   readonly playgroundParams$: Observable<OpenPlaygroundParams<DrawingToolPromptFormParams>> =

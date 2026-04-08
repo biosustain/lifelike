@@ -1,0 +1,18 @@
+{% macro collapsed_object_dict_dl(obj, omit={}, dangling=None, details='') %}
+    <dl>
+        <details>
+            <summary>{{ obj.__class__.__name__ }}</summary>
+            {% for key, value in dict(obj)|items %}
+                {% if key not in omit %}
+                    <dt>{{ key|replace('_',' ')|escape }}</dt>
+                    <dd>{{ value|format_object }}</dd>
+                {% endif %}
+            {% endfor %}
+            {{ details }}
+            {% if dangling %}
+                <dt>{{ dangling }}</dt>
+            {% endif %}
+        </details>
+        {{ caller() }} {# content projection #}
+    </dl>
+{% endmacro %}

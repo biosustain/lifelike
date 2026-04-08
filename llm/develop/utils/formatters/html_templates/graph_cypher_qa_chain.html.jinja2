@@ -1,0 +1,9 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(pt, ('cypher_generation_chain', 'qa_chain', 'graph')) %}
+    <dt>graph</dt>
+    <dd>{{ chain.graph|format_object }}</dd>
+    <dt>cypher generation chain</dt>
+    <dd>{{ chain.cypher_generation_chain|format_object }}</dd>
+    <dt>qa chain</dt>
+    <dd>{{ chain.qa_chain|format_object }}</dd>
+{% endcall %}

@@ -1,0 +1,12 @@
+{% from 'macros/collapsed_object_dict_dl.html.jinja2' import collapsed_object_dict_dl %}
+{% call collapsed_object_dict_dl(chain, ('chains',), 'chains') %}
+    <dd>
+        <ol>
+            {% for c in chain.chains %}
+                <li>
+                    {{ c|format_object }}
+                </li>
+            {% endfor %}
+        </ol>
+    </dd>
+{% endcall %}
