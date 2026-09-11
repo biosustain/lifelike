@@ -57,6 +57,12 @@ services:
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
+      # The JDK bundled with this image predates the fix for JDK-8287073 and
+      # throws an NPE reading cgroup v2 controllers, which kills every JVM the
+      # startup scripts launch. Turning off container awareness makes the JVM
+      # skip that lookup. JAVA_TOOL_OPTIONS cannot be used here: bin/elasticsearch-env
+      # unsets it.
+      - JDK_JAVA_OPTIONS=-XX:-UseContainerSupport
 
   redis:
     container_name: redis
