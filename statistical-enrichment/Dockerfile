@@ -30,8 +30,15 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy $(if [ "$DEV" ]; then echo 
 FROM base
 LABEL org.opencontainers.image.source https://github.com/SBRG/lifelike
 
-# Install curl for self healthchecks
-RUN apt-get update && apt-get install -y curl && apt-get clean
+# Install curl for self healthchecks.
+# Debian buster (the base of python:3.8.2-slim) is end-of-life, so its packages
+# are only served from archive.debian.org and its Release files are expired.
+RUN sed -i -e 's|deb.debian.org/debian|archive.debian.org/debian|g' \
+           -e 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' \
+           -e '/buster-updates/d' /etc/apt/sources.list \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Python virtual environment
 COPY --from=build-deps /.venv /.venv
