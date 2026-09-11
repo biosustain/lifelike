@@ -16,11 +16,24 @@ jobs:
     name: Appserver Linting and Testing
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: read
+
     env:
       DOCKER_COMPOSE_CMD: docker compose -f docker-compose.ci-test.yml
 
     steps:
       - uses: actions/checkout@v4
+
+      # The Elasticsearch image this stack uses is published privately by
+      # build-images.yml, so the stack cannot be brought up without logging in.
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create environment variable to pass in GitHub hash for Docker Compose
         run: echo "GITHUB_HASH=${{ github.sha }}" >> .env
