@@ -72,6 +72,10 @@ services:
       dockerfile: Dockerfile
       target: angular-deps
     command: yarn dev-start
+    environment:
+      # Overridden to http://host.docker.internal:5000 when the appserver runs
+      # on the host under a debugger (see .vscode/tasks.json).
+      - APPSERVER_UPSTREAM=${APPSERVER_UPSTREAM:-http://appserver:5000}
     volumes:
       - ./client:/app
       # https://jdlm.info/articles/2019/09/06/lessons-building-node-app-docker.html
