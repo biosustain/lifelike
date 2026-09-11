@@ -200,6 +200,10 @@ services:
       - discovery.type=single-node
       - http.max_content_length=200mb #allow 200mb of content to be sent for indexing
       - bootstrap.memory_lock=true
+      # See docker-compose.ci-test.yml: the bundled JDK 15 cannot read cgroup v2
+      # controllers and there is no patched JDK 15 to move to, so turn off
+      # container awareness here as well.
+      - JDK_JAVA_OPTIONS=-XX:-UseContainerSupport
       - xpack.graph.enabled=false
       - xpack.watcher.enabled=false
       - xpack.license.self_generated.type=basic
