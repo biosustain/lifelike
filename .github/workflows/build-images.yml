@@ -54,8 +54,8 @@ jobs:
           - image: arangodb
             context: arangodb
 
-          - image: graph-db-migrator
-            context: graph-db/migrator
+          # graph-db-migrator is legacy and is not being changed; the last
+          # image published to ghcr.io stays usable, so it is not rebuilt here.
 
     steps:
       - name: Checkout repository
