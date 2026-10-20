@@ -1,5 +1,8 @@
 # ![Lifelike](https://sbrg.github.io/lifelike-website/favicon.ico) Lifelike
 
+> [!WARNING]
+> This repository is archived and no longer maintained.
+
 <img src="https://sbrg.github.io/lifelike-website/images/cfb_logo.png" alt="CFB" border="0" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://sbrg.github.io/lifelike-website/images/dtu_logo.png" alt="DTU" border="0" /> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://sbrg.github.io/lifelike-website/images/ucsd_logo.png" alt="UCSD" border="0" />
